@@ -1,4 +1,4 @@
-package com.sakethh.linkora.ui.screens.settings.section
+package com.sakethh.linkora.ui.screens.settings.section.general
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Start
 import androidx.compose.material.icons.filled.VideoLabel
+import androidx.compose.material.icons.outlined.EditNotifications
 import androidx.compose.material.icons.outlined.PresentToAll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -125,6 +126,23 @@ fun GeneralSettingsScreen() {
                     )
                 )
             }
+
+            item {
+                SettingComponent(
+                    SettingComponentParam(
+                        title = "Manage Reminders",
+                        doesDescriptionExists = false,
+                        description = Localization.Key.ChangeInitialRouteDesc.rememberLocalizedString(),
+                        isSwitchNeeded = false,
+                        isSwitchEnabled = mutableStateOf(false),
+                        onSwitchStateChange = {
+                            navController.navigate(Navigation.Settings.General.RemindersSettingsScreen())
+                        },
+                        isIconNeeded = mutableStateOf(true),
+                        icon = Icons.Outlined.EditNotifications
+                    )
+                )
+            }
             item {
                 SettingComponent(
                     SettingComponentParam(
@@ -189,10 +207,10 @@ fun GeneralSettingsScreen() {
                 ).forEach {
                     Row(
                         modifier = Modifier.fillMaxWidth().clickable(onClick = {
-                                currentlySelectedRoute.value = it.toString()
-                            }, indication = null, interactionSource = remember {
-                                MutableInteractionSource()
-                            }).pulsateEffect(), verticalAlignment = Alignment.CenterVertically
+                            currentlySelectedRoute.value = it.toString()
+                        }, indication = null, interactionSource = remember {
+                            MutableInteractionSource()
+                        }).pulsateEffect(), verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
                             selected = currentlySelectedRoute.value == it.toString(), onClick = {

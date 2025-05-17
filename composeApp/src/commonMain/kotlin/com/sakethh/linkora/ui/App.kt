@@ -83,6 +83,7 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.toRoute
 import com.sakethh.linkora.common.DependencyContainer
 import com.sakethh.linkora.common.Localization
 import com.sakethh.linkora.common.preferences.AppPreferences
@@ -131,13 +132,14 @@ import com.sakethh.linkora.ui.screens.search.SearchScreen
 import com.sakethh.linkora.ui.screens.settings.SettingsScreen
 import com.sakethh.linkora.ui.screens.settings.section.AcknowledgementSettingsScreen
 import com.sakethh.linkora.ui.screens.settings.section.AdvancedSettingsScreen
-import com.sakethh.linkora.ui.screens.settings.section.GeneralSettingsScreen
 import com.sakethh.linkora.ui.screens.settings.section.LanguageSettingsScreen
 import com.sakethh.linkora.ui.screens.settings.section.LayoutSettingsScreen
 import com.sakethh.linkora.ui.screens.settings.section.ThemeSettingsScreen
 import com.sakethh.linkora.ui.screens.settings.section.about.AboutSettingsScreen
 import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreen
 import com.sakethh.linkora.ui.screens.settings.section.data.sync.ServerSetupScreen
+import com.sakethh.linkora.ui.screens.settings.section.general.GeneralSettingsScreen
+import com.sakethh.linkora.ui.screens.settings.section.general.reminders.RemindersSettingsScreen
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.genericViewModelFactory
@@ -825,6 +827,11 @@ fun App(
                             appVM.markOnboardingComplete()
                         })
                     }
+                    composable<Navigation.Settings.General.RemindersSettingsScreen> { navBackStackEntry ->
+                        val linkId =
+                            navBackStackEntry.toRoute<Navigation.Settings.General.RemindersSettingsScreen>().linkId
+                        RemindersSettingsScreen(linkId = linkId)
+                    }
                 }
             }
 
@@ -973,8 +980,15 @@ fun App(
                     shouldShowArchiveOption = {
                         menuBtmSheetVM.shouldShowArchiveOption(selectedLinkForMenuBtmSheet.value.url)
                     },
-                    showProgressBarDuringRemoteSave = showProgressBarDuringRemoteSave
-                )
+                    showProgressBarDuringRemoteSave = showProgressBarDuringRemoteSave,
+                    onManageLinkReminders = {
+                        // BELOVEDDDD PARADISE JAAAAAAAZZZ
+                        localNavController.navigate(
+                            Navigation.Settings.General.RemindersSettingsScreen(
+                                linkId = selectedLinkForMenuBtmSheet.value.localId
+                            )
+                        )
+                    })
             )
             DeleteDialogBox(
                 DeleteDialogBoxParam(

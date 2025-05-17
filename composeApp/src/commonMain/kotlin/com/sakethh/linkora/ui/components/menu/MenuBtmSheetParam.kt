@@ -14,6 +14,7 @@ data class MenuBtmSheetParam @OptIn(ExperimentalMaterial3Api::class) constructor
     val shouldBtmModalSheetBeVisible: MutableState<Boolean>,
     val menuBtmSheetFor: MenuBtmSheetType,
     val onDelete: () -> Unit,
+    val onManageLinkReminders: () -> Unit,
     val onDeleteNote: () -> Unit,
     val onRename: () -> Unit,
     val onRefreshClick: () -> Unit,

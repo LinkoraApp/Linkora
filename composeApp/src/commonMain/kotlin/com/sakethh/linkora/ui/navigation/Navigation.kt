@@ -14,8 +14,7 @@ sealed interface Navigation {
 
         @Serializable
         data object HomeScreen : Root {
-            override fun toString(): String =
-                Localization.getLocalizedString(Localization.Key.Home)
+            override fun toString(): String = Localization.getLocalizedString(Localization.Key.Home)
         }
 
         @Serializable
@@ -72,8 +71,7 @@ sealed interface Navigation {
 
         @Serializable
         data object DataSettingsScreen : Settings {
-            override fun toString(): String =
-                Localization.getLocalizedString(Localization.Key.Data)
+            override fun toString(): String = Localization.getLocalizedString(Localization.Key.Data)
         }
 
         @Serializable
@@ -94,6 +92,14 @@ sealed interface Navigation {
             data object ServerSetupScreen : Data {
                 override fun toString(): String =
                     Localization.getLocalizedString(Localization.Key.LinkoraServerSetup)
+            }
+        }
+
+        @Serializable
+        sealed interface General : Settings {
+            @Serializable
+            data class RemindersSettingsScreen(val linkId: Long? = null) : Data {
+                override fun toString(): String = TODO()
             }
         }
     }
