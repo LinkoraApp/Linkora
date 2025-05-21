@@ -1,8 +1,11 @@
 package com.sakethh.linkora.ui.components
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,8 +19,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,19 +36,27 @@ import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerState
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.sakethh.linkora.common.utils.roundedCornerShape
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.ui.components.link.LinkListItemComposable
@@ -48,12 +64,18 @@ import com.sakethh.linkora.ui.domain.ReminderMode
 import com.sakethh.linkora.ui.domain.model.LinkUIComponentParam
 import com.sakethh.linkora.ui.screens.settings.section.data.components.ToggleButton
 import com.sakethh.linkora.ui.screens.settings.section.general.reminders.ReminderType
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManageReminderBtmSheet(
-    isVisible: MutableState<Boolean>, btmSheetState: SheetState, link: Link
+    isVisible: MutableState<Boolean>, btmSheetState: SheetState, link: Link, onSaveClick: (
+        title: String, description: String, selectedReminderType: ReminderType, selectedReminderMode: ReminderMode, datePickerState: DatePickerState, timePickerState: TimePickerState
+    ) -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
     if (isVisible.value.not()) return
 
     val selectedReminderType = rememberSaveable {
@@ -74,9 +96,20 @@ fun ManageReminderBtmSheet(
     val reminderDesc = rememberSaveable {
         mutableStateOf("")
     }
-    ModalBottomSheet(properties = remember { ModalBottomSheetProperties(shouldDismissOnBackPress = false) },sheetState = btmSheetState, onDismissRequest = {
-        isVisible.value = false
-    }) {
+    val showDatePicker = rememberSaveable {
+        mutableStateOf(false)
+    }
+    val showTimePicker = rememberSaveable {
+        mutableStateOf(false)
+    }
+    val datePickerState = rememberDatePickerState()
+    val timePickerState = rememberTimePickerState(is24Hour = false)
+    ModalBottomSheet(
+        properties = remember { ModalBottomSheetProperties(shouldDismissOnBackPress = false) },
+        sheetState = btmSheetState,
+        onDismissRequest = {
+            isVisible.value = false
+        }) {
         LazyColumn(modifier = Modifier.animateContentSize()) {
             item {
                 Spacer(modifier = Modifier.height(7.5.dp))
@@ -181,8 +214,10 @@ fun ManageReminderBtmSheet(
                             ),
                             paddingValues = PaddingValues(
                                 start = 15.dp, end = 15.dp, top = 15.dp, bottom = 7.5.dp
-                            )
-                        )
+                            ),
+                            onClick = {
+                                showDatePicker.value = true
+                            })
                         ReminderSetting(
                             string = selectedTime.value,
                             icon = Icons.Default.AccessTime,
@@ -194,8 +229,10 @@ fun ManageReminderBtmSheet(
                             ),
                             paddingValues = PaddingValues(
                                 start = 15.dp, end = 15.dp, bottom = 15.dp
-                            )
-                        )
+                            ),
+                            onClick = {
+                                showTimePicker.value = true
+                            })
                     }
                 }
             }
@@ -240,9 +277,87 @@ fun ManageReminderBtmSheet(
             }
             item {
                 Button(modifier = Modifier.fillMaxWidth().padding(15.dp), onClick = {
-
+                    onSaveClick(
+                        reminderTitle.value,
+                        reminderDesc.value,
+                        ReminderType.valueOf(selectedReminderType.value),
+                        ReminderMode.valueOf(selectedReminderMode.value),
+                        datePickerState,
+                        timePickerState
+                    )
+                    coroutineScope.launch {
+                        btmSheetState.hide()
+                    }.invokeOnCompletion {
+                        isVisible.value = false
+                    }
                 }) {
                     Text(text = "Save", style = MaterialTheme.typography.titleMedium)
+                }
+            }
+        }
+    }
+    if (showDatePicker.value) {
+        DatePickerDialog(
+            onDismissRequest = {
+            showDatePicker.value = false
+        }, confirmButton = {
+            Button(
+                modifier = Modifier.fillMaxWidth()
+                    .padding(start = 15.dp, end = 15.dp, bottom = 10.dp), onClick = {
+                    datePickerState.selectedDateMillis?.let {
+                        selectedDate.value = SimpleDateFormat("MMMM dd, yyyy").format(Date(it))
+                    }
+                    showDatePicker.value = false
+                }) {
+                Text(text = "Confirm", style = MaterialTheme.typography.titleMedium)
+            }
+        }, modifier = Modifier.scale(0.95f)
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+    if (showTimePicker.value) {
+        BasicAlertDialog(
+            onDismissRequest = {},
+            modifier = Modifier.clip(RoundedCornerShape(10.dp)).zIndex(100f)
+                .background(AlertDialogDefaults.containerColor).clip(
+                    AlertDialogDefaults.shape
+                )
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Spacer(modifier = Modifier.height(15.dp))
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
+                    Text(
+                        text = "Pick the time",
+                        fontSize = 24.sp,
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(start = 15.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(15.dp))
+                TimePicker(state = timePickerState)
+                Button(
+                    onClick = {
+                        selectedTime.value = buildString {
+                            append((if (timePickerState.isAfternoon) timePickerState.hour - 12 else timePickerState.hour).run {
+                                if (this.toString().length == 1) "0$this" else this
+                            })
+                            append(":")
+                            append(timePickerState.minute.run {
+                                if (this.toString().length == 1) "0$this" else this
+                            })
+                            append(if (timePickerState.isAfternoon) " PM" else " AM")
+                        }
+                        showTimePicker.value = false
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
+                ) {
+                    Text(text = "Confirm", style = MaterialTheme.typography.titleMedium)
                 }
             }
         }
@@ -251,10 +366,14 @@ fun ManageReminderBtmSheet(
 
 @Composable
 private fun ReminderSetting(
-    string: String, icon: ImageVector, paddingValues: PaddingValues, shape: Shape
+    string: String,
+    icon: ImageVector,
+    paddingValues: PaddingValues,
+    shape: Shape,
+    onClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(paddingValues), shape = shape
+        modifier = Modifier.fillMaxWidth().padding(paddingValues), shape = shape, onClick = onClick
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -267,9 +386,7 @@ private fun ReminderSetting(
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(start = 5.dp)
             )
-            IconButton(onClick = {
-
-            }) {
+            IconButton(onClick = onClick) {
                 Icon(
                     imageVector = icon, contentDescription = null
                 )

@@ -1112,8 +1112,10 @@ fun App(
             ManageReminderBtmSheet(
                 isVisible = isManageReminderBtmSheetVisible,
                 btmSheetState = manageReminderBtmSheetState,
-                link = selectedLinkForMenuBtmSheet.value
-            )
+                link = selectedLinkForMenuBtmSheet.value,
+                onSaveClick = { title, description, selectedReminderType, selectedReminderMode, datePickerState, timePickerState ->
+
+                })
         }
     }
 }
