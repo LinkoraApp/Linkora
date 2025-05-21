@@ -90,7 +90,7 @@ fun ReminderComponent(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = reminder.scheduleInfo, style = MaterialTheme.typography.titleSmall
+                    text = "reminder.scheduleInfo", style = MaterialTheme.typography.titleSmall
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = onEditClick) {

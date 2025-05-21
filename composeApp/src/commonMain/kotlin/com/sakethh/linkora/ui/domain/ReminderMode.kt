@@ -13,7 +13,7 @@ enum class ReminderMode {
     VIBRATE {
         override val imgVector: ImageVector = Icons.Default.Vibration
     },
-    URGENT {
+    CRUCIAL {
         override val imgVector: ImageVector = Icons.Default.VolumeUp
     }, ;
 

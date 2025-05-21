@@ -43,6 +43,7 @@ import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.ImportFileType
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.RawExportString
+import com.sakethh.linkora.domain.model.Reminder
 import com.sakethh.linkora.domain.model.Snapshot
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
@@ -281,4 +282,11 @@ actual suspend fun exportSnapshotData(
         .putString(key = "fileType", value = fileType.name).build()
     snapshotWorker.setInputData(parameters)
     WorkManager.getInstance(LinkoraApp.getContext()).enqueue(snapshotWorker.build())
+}
+
+actual suspend fun scheduleAReminder(
+    reminder: Reminder,
+    onCompletion: suspend (String) -> Unit
+) {
+
 }

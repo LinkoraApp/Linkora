@@ -82,7 +82,7 @@ fun ManageReminderBtmSheet(
         mutableStateOf(ReminderType.ONCE.name)
     }
     val selectedReminderMode = rememberSaveable {
-        mutableStateOf(ReminderMode.URGENT.name)
+        mutableStateOf(ReminderMode.CRUCIAL.name)
     }
     val selectedDate = rememberSaveable {
         mutableStateOf("Click to select date")

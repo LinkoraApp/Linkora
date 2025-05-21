@@ -24,6 +24,7 @@ import com.sakethh.linkora.domain.ImportFileType
 import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.RawExportString
+import com.sakethh.linkora.domain.model.Reminder
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.ui.utils.UIEvent
@@ -162,3 +163,7 @@ actual suspend fun exportSnapshotData(
         exportFileType = fileType, rawExportString = rawExportString, onCompletion = onCompletion
     )
 }
+
+actual suspend fun scheduleAReminder(
+    reminder: Reminder, onCompletion: suspend (String) -> Unit
+) = Unit

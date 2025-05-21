@@ -1,5 +1,8 @@
 package com.sakethh.linkora.ui
 
+import androidx.compose.material3.DatePickerState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TimePickerState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
@@ -7,6 +10,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.DataSyncingNotificationService
+import com.sakethh.exportSnapshotData
 import com.sakethh.linkora.common.Localization
 import com.sakethh.linkora.common.preferences.AppPreferenceType
 import com.sakethh.linkora.common.preferences.AppPreferences
@@ -23,6 +27,7 @@ import com.sakethh.linkora.domain.asLinkType
 import com.sakethh.linkora.domain.dto.server.AllTablesDTO
 import com.sakethh.linkora.domain.model.JSONExportSchema
 import com.sakethh.linkora.domain.model.PanelForJSONExportSchema
+import com.sakethh.linkora.domain.model.Reminder
 import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onLoading
 import com.sakethh.linkora.domain.onSuccess
@@ -34,12 +39,14 @@ import com.sakethh.linkora.domain.repository.local.LocalMultiActionRepo
 import com.sakethh.linkora.domain.repository.local.LocalPanelsRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
+import com.sakethh.linkora.ui.domain.ReminderMode
 import com.sakethh.linkora.ui.domain.TransferActionType
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM.Companion.clearAllSelections
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM.Companion.selectedFoldersViaLongClick
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM.Companion.selectedLinksViaLongClick
+import com.sakethh.linkora.ui.screens.settings.section.general.reminders.ReminderType
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
@@ -50,7 +57,6 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collect
@@ -64,6 +70,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.util.Date
 
 @OptIn(FlowPreview::class)
 class AppVM(
@@ -168,12 +177,12 @@ class AppVM(
 
                                     if (AppPreferences.snapshotsExportType.value.lowercase() == "both") {
                                         awaitAll(async {
-                                            com.sakethh.exportSnapshotData(
+                                            exportSnapshotData(
                                                 rawExportString = serializedJsonExportString,
                                                 fileType = FileType.JSON
                                             )
                                         }, async {
-                                            com.sakethh.exportSnapshotData(
+                                            exportSnapshotData(
                                                 rawExportString = exportDataRepo.rawExportDataAsHTML(
                                                     links = it.links, folders = it.folders
                                                 ), fileType = ExportFileType.HTML
@@ -182,14 +191,14 @@ class AppVM(
                                     }
 
                                     if (AppPreferences.snapshotsExportType.value == ExportFileType.JSON.name) {
-                                        com.sakethh.exportSnapshotData(
+                                        exportSnapshotData(
                                             rawExportString = serializedJsonExportString,
                                             fileType = FileType.JSON
                                         )
                                     }
 
                                     if (AppPreferences.snapshotsExportType.value == ExportFileType.HTML.name) {
-                                        com.sakethh.exportSnapshotData(
+                                        exportSnapshotData(
                                             rawExportString = exportDataRepo.rawExportDataAsHTML(
                                                 links = it.links, folders = it.folders
                                             ), fileType = ExportFileType.HTML
@@ -408,6 +417,43 @@ class AppVM(
         }.invokeOnCompletion {
             clearAllSelections()
             onCompletion()
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    fun scheduleAReminder(
+        linkId: Long,
+        title: String,
+        description: String,
+        timePickerState: TimePickerState,
+        datePickerState: DatePickerState,
+        reminderType: ReminderType,
+        reminderMode: ReminderMode
+    ) {
+        if (datePickerState.selectedDateMillis == null) return
+
+        viewModelScope.launch {
+            val selectedDate =
+                SimpleDateFormat("yyyy\nMM\ndd").format(Date(datePickerState.selectedDateMillis!!))
+                    .split("\n").map { it.toInt() }
+            val localDateTime = LocalDateTime.of(
+                selectedDate[0],
+                selectedDate[1],
+                selectedDate[2],
+                timePickerState.hour,
+                timePickerState.minute
+            )
+            val reminder = Reminder(
+                linkId = linkId,
+                title = title,
+                description = description,
+                reminderType = reminderType,
+                reminderMode = reminderMode,
+                time = localDateTime
+            )
+            com.sakethh.scheduleAReminder(reminder = reminder, onCompletion = {
+
+            })
         }
     }
 }

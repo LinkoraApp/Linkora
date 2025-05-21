@@ -9,6 +9,7 @@ import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.ImportFileType
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.RawExportString
+import com.sakethh.linkora.domain.model.Reminder
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import kotlinx.coroutines.flow.Flow
@@ -26,7 +27,9 @@ expect val linkoraDataStore: DataStore<Preferences>
 expect val poppinsFontFamily: FontFamily
 
 expect suspend fun writeRawExportStringToFile(
-    exportFileType: ExportFileType, rawExportString: RawExportString, onCompletion: suspend (String) -> Unit
+    exportFileType: ExportFileType,
+    rawExportString: RawExportString,
+    onCompletion: suspend (String) -> Unit
 )
 
 expect suspend fun isStorageAccessPermittedOnAndroid(): Boolean
@@ -58,7 +61,8 @@ expect class DataSyncingNotificationService() {
 }
 
 expect suspend fun exportSnapshotData(
-    rawExportString: String,
-    fileType: ExportFileType,
-    onCompletion: suspend(String) -> Unit = {}
+    rawExportString: String, fileType: ExportFileType, onCompletion: suspend (String) -> Unit = {}
 )
+
+// although this is android specific (for now), but if in case linkora goes ios, the foundation for this feature already gets done in the common module, so this is completely fine
+expect suspend fun scheduleAReminder(reminder: Reminder, onCompletion: suspend (String) -> Unit)
