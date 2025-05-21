@@ -83,7 +83,6 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.toRoute
 import com.sakethh.linkora.common.DependencyContainer
 import com.sakethh.linkora.common.Localization
 import com.sakethh.linkora.common.preferences.AppPreferences
@@ -107,6 +106,7 @@ import com.sakethh.linkora.ui.components.AddItemFab
 import com.sakethh.linkora.ui.components.DeleteDialogBox
 import com.sakethh.linkora.ui.components.DeleteDialogBoxParam
 import com.sakethh.linkora.ui.components.DeleteDialogBoxType
+import com.sakethh.linkora.ui.components.ManageReminderBtmSheet
 import com.sakethh.linkora.ui.components.RenameDialogBox
 import com.sakethh.linkora.ui.components.RenameDialogBoxParam
 import com.sakethh.linkora.ui.components.menu.MenuBtmSheetParam
@@ -828,9 +828,7 @@ fun App(
                         })
                     }
                     composable<Navigation.Settings.General.RemindersSettingsScreen> { navBackStackEntry ->
-                        val linkId =
-                            navBackStackEntry.toRoute<Navigation.Settings.General.RemindersSettingsScreen>().linkId
-                        RemindersSettingsScreen(linkId = linkId)
+                        RemindersSettingsScreen()
                     }
                 }
             }
@@ -877,6 +875,9 @@ fun App(
             val showProgressBarDuringRemoteSave = rememberSaveable {
                 mutableStateOf(false)
             }
+            val manageReminderBtmSheetState =
+                rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            val isManageReminderBtmSheetVisible = rememberSaveable { mutableStateOf(false) }
             MenuBtmSheetUI(
                 menuBtmSheetParam = MenuBtmSheetParam(
                     btmModalSheetState = menuBtmModalSheetState,
@@ -982,12 +983,10 @@ fun App(
                     },
                     showProgressBarDuringRemoteSave = showProgressBarDuringRemoteSave,
                     onManageLinkReminders = {
-                        // BELOVEDDDD PARADISE JAAAAAAAZZZ
-                        localNavController.navigate(
-                            Navigation.Settings.General.RemindersSettingsScreen(
-                                linkId = selectedLinkForMenuBtmSheet.value.localId
-                            )
-                        )
+                        isManageReminderBtmSheetVisible.value = true
+                        coroutineScope.launch {
+                            manageReminderBtmSheetState.show()
+                        }
                     })
             )
             DeleteDialogBox(
@@ -1109,6 +1108,11 @@ fun App(
                     shouldFoldersSelectionBeVisible = mutableStateOf(false),
                     shouldLinksSelectionBeVisible = mutableStateOf(false)
                 )
+            )
+            ManageReminderBtmSheet(
+                isVisible = isManageReminderBtmSheetVisible,
+                btmSheetState = manageReminderBtmSheetState,
+                link = selectedLinkForMenuBtmSheet.value
             )
         }
     }

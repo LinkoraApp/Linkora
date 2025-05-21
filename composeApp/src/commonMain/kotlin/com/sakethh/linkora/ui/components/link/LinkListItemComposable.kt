@@ -164,55 +164,63 @@ fun LinkListItemComposable(
                 maxLines = 1,
                 textAlign = TextAlign.Start,
                 overflow = TextOverflow.Ellipsis,
-                 fontSize = 12.sp
+                fontSize = 12.sp
             )
         } else {
             Spacer(modifier = Modifier.height(10.dp))
         }
-        Row(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                if (!linkUIComponentParam.isSelectionModeEnabled.value) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        /*IconButton(onClick = {
-                            linkUIComponentParam.onForceOpenInExternalBrowserClicked()
-                            localURIHandler.openUri(linkUIComponentParam.link.url)
-                        }) {
-                            Icon(
-                                imageVector = Icons.Outlined.OpenInBrowser,
-                                contentDescription = null
-                            )
-                        }*/
-                        IconButton(onClick = {
-                            localClipBoardManager.setText(
-                                AnnotatedString(linkUIComponentParam.link.url)
-                            )
-                        }) {
-                            Icon(
-                                imageVector = Icons.Outlined.ContentCopy, contentDescription = null
-                            )
-                        }
-                        if (platform is Platform.Android) {
-                            IconButton(onClick = {
-                                onShare(url = linkUIComponentParam.link.url)
+        if (linkUIComponentParam.showQuickOptions) {
+            Row(
+                modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+                    if (!linkUIComponentParam.isSelectionModeEnabled.value) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            /*IconButton(onClick = {
+                                linkUIComponentParam.onForceOpenInExternalBrowserClicked()
+                                localURIHandler.openUri(linkUIComponentParam.link.url)
                             }) {
-                                Icon(imageVector = Icons.Outlined.Share, contentDescription = null)
+                                Icon(
+                                    imageVector = Icons.Outlined.OpenInBrowser,
+                                    contentDescription = null
+                                )
+                            }*/
+                            IconButton(onClick = {
+                                localClipBoardManager.setText(
+                                    AnnotatedString(linkUIComponentParam.link.url)
+                                )
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Outlined.ContentCopy,
+                                    contentDescription = null
+                                )
                             }
-                        }
-                        IconButton(onClick = {
-                            linkUIComponentParam.onMoreIconClick()
-                        }) {
-                            Icon(
-                                imageVector = Icons.Filled.MoreVert, contentDescription = null
-                            )
+                            if (platform is Platform.Android) {
+                                IconButton(onClick = {
+                                    onShare(url = linkUIComponentParam.link.url)
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Share,
+                                        contentDescription = null
+                                    )
+                                }
+                            }
+                            IconButton(onClick = {
+                                linkUIComponentParam.onMoreIconClick()
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Filled.MoreVert, contentDescription = null
+                                )
+                            }
                         }
                     }
                 }
             }
+        } else {
+            return
         }
         AnimatedVisibility(
             visible = linkUIComponentParam.isSelectionModeEnabled.value.not(),

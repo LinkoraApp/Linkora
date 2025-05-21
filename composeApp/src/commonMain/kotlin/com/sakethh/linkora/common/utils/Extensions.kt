@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -21,6 +22,7 @@ import com.sakethh.linkora.domain.dto.server.Correlation
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.ui.navigation.Navigation
+import com.sakethh.linkora.ui.screens.settings.section.general.reminders.ReminderType
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.rememberDeserializableObject
@@ -56,8 +58,7 @@ fun String.baseUrl(throwOnException: Boolean = true): String {
 
 fun Modifier.fillMaxWidthWithPadding(
     paddingValues: PaddingValues = PaddingValues(
-        start = 15.dp,
-        end = 15.dp
+        start = 15.dp, end = 15.dp
     )
 ): Modifier {
     return this.fillMaxWidth().padding(paddingValues)
@@ -253,5 +254,25 @@ suspend fun File.duplicate(): File? = withContext(Dispatchers.IO) {
     } catch (e: Exception) {
         e.printStackTrace()
         null
+    }
+}
+
+fun <T> List<T>.roundedCornerShape(index: Int): RoundedCornerShape {
+   return when (index) {
+        0 -> RoundedCornerShape(
+            topStart = 15.dp,
+            bottomStart = 15.dp,
+            topEnd = 5.dp,
+            bottomEnd = 5.dp
+        )
+
+        lastIndex -> RoundedCornerShape(
+            topEnd = 15.dp,
+            bottomEnd = 15.dp,
+            topStart = 5.dp,
+            bottomStart = 5.dp
+        )
+
+        else -> RoundedCornerShape(5.dp)
     }
 }

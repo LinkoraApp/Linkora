@@ -98,7 +98,7 @@ sealed interface Navigation {
         @Serializable
         sealed interface General : Settings {
             @Serializable
-            data class RemindersSettingsScreen(val linkId: Long? = null) : Data {
+            data object RemindersSettingsScreen : Data {
                 override fun toString(): String = TODO()
             }
         }

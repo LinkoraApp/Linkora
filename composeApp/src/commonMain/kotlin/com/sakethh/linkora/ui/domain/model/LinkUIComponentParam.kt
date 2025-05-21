@@ -11,4 +11,5 @@ data class LinkUIComponentParam(
     val onForceOpenInExternalBrowserClicked: () -> Unit,
     val isItemSelected: MutableState<Boolean>,
     val onLongClick: () -> Unit,
+    val showQuickOptions: Boolean = true
 )

@@ -136,7 +136,7 @@ fun GeneralSettingsScreen() {
                         isSwitchNeeded = false,
                         isSwitchEnabled = mutableStateOf(false),
                         onSwitchStateChange = {
-                            navController.navigate(Navigation.Settings.General.RemindersSettingsScreen())
+                            navController.navigate(Navigation.Settings.General.RemindersSettingsScreen)
                         },
                         isIconNeeded = mutableStateOf(true),
                         icon = Icons.Outlined.EditNotifications
