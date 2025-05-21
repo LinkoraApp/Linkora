@@ -1,6 +1,7 @@
 package com.sakethh.linkora.ui.screens.settings.section.about
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -55,6 +58,9 @@ import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectio
 import com.sakethh.linkora.ui.utils.genericViewModelFactory
 import com.sakethh.linkora.ui.utils.rememberDeserializableMutableObject
 import kotlinx.coroutines.launch
+import linkora.composeapp.generated.resources.Res
+import linkora.composeapp.generated.resources.made_with_img
+import org.jetbrains.compose.resources.painterResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -99,7 +105,7 @@ fun AboutSettingsScreen() {
             item {
                 Spacer(Modifier.height(30.dp))
             }
-            item(key = "settingsCard") {
+            item {
                 Row {
                     Text(
                         text = Localization.Key.Linkora.rememberLocalizedString(),
@@ -112,6 +118,22 @@ fun AboutSettingsScreen() {
                         style = MaterialTheme.typography.titleSmall,
                         fontSize = 12.sp,
                         modifier = Modifier.alignByBaseline()
+                    )
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(top = 10.dp, start = 15.dp)
+                ) {
+                    Text(
+                        text = "built with",
+                        fontSize = 12.sp,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Image(
+                        painter = painterResource(Res.drawable.made_with_img),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
