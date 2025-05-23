@@ -52,9 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
@@ -63,14 +61,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import coil3.Bitmap
 import com.sakethh.linkora.common.utils.roundedCornerShape
+import com.sakethh.linkora.domain.model.Reminder
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.ui.components.link.LinkListItemComposable
-import com.sakethh.linkora.ui.domain.ReminderMode
 import com.sakethh.linkora.ui.domain.model.LinkUIComponentParam
 import com.sakethh.linkora.ui.screens.settings.section.data.components.ToggleButton
-import com.sakethh.linkora.ui.screens.settings.section.general.reminders.ReminderType
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -79,7 +75,7 @@ import java.util.Date
 @Composable
 fun ManageReminderBtmSheet(
     isVisible: MutableState<Boolean>, btmSheetState: SheetState, link: Link, onSaveClick: (
-        title: String, description: String, selectedReminderType: ReminderType, selectedReminderMode: ReminderMode, datePickerState: DatePickerState, timePickerState: TimePickerState, graphicsLayer: GraphicsLayer
+        title: String, description: String, selectedReminderType: Reminder.Type, selectedReminderMode: Reminder.Mode, datePickerState: DatePickerState, timePickerState: TimePickerState, graphicsLayer: GraphicsLayer
     ) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -88,10 +84,10 @@ fun ManageReminderBtmSheet(
     if (isVisible.value.not()) return
 
     val selectedReminderType = rememberSaveable {
-        mutableStateOf(ReminderType.ONCE.name)
+        mutableStateOf(Reminder.Type.ONCE.name)
     }
     val selectedReminderMode = rememberSaveable {
-        mutableStateOf(ReminderMode.CRUCIAL.name)
+        mutableStateOf(Reminder.Mode.CRUCIAL.name)
     }
     val selectedDate = rememberSaveable {
         mutableStateOf("Click to select date")
@@ -182,11 +178,11 @@ fun ManageReminderBtmSheet(
                     horizontalArrangement = Arrangement.spacedBy(15.dp)
                 ) {
                     Spacer(Modifier)
-                    ReminderType.entries.forEachIndexed { index, reminder ->
+                    Reminder.Type.entries.forEachIndexed { index, reminder ->
                         val selected = selectedReminderType.value == reminder.name
                         key(index) {
                             ToggleButton(
-                                shape = ReminderType.entries.roundedCornerShape(index),
+                                shape = Reminder.Type.entries.roundedCornerShape(index),
                                 checked = selected,
                                 onCheckedChange = {
                                     selectedReminderType.value = reminder.name
@@ -215,7 +211,7 @@ fun ManageReminderBtmSheet(
             }
             item {
                 when (selectedReminderType.value) {
-                    ReminderType.ONCE.name -> {
+                    Reminder.Type.ONCE.name -> {
                         ReminderSetting(
                             string = selectedDate.value,
                             icon = Icons.Default.CalendarMonth,
@@ -249,18 +245,18 @@ fun ManageReminderBtmSheet(
                     }
                 }
             }
-            if (selectedReminderType.value != ReminderType.STICKY.name) {
+            if (selectedReminderType.value != Reminder.Type.STICKY.name) {
                 item {
                     Row(
                         modifier = Modifier.horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(15.dp)
                     ) {
                         Spacer(Modifier)
-                        ReminderMode.entries.forEachIndexed { index, mode ->
+                        Reminder.Mode.entries.forEachIndexed { index, mode ->
                             val selected = selectedReminderMode.value == mode.name
                             key(index) {
                                 ToggleButton(
-                                    shape = ReminderType.entries.roundedCornerShape(index),
+                                    shape = Reminder.Type.entries.roundedCornerShape(index),
                                     checked = selected,
                                     onCheckedChange = {
                                         selectedReminderMode.value = mode.name
@@ -290,13 +286,12 @@ fun ManageReminderBtmSheet(
             }
             item {
                 Button(modifier = Modifier.fillMaxWidth().padding(15.dp), onClick = {
-                    coroutineScope.launch {
-                    }.invokeOnCompletion {
+                    coroutineScope.launch {}.invokeOnCompletion {
                         onSaveClick(
                             reminderTitle.value,
                             reminderDesc.value,
-                            ReminderType.valueOf(selectedReminderType.value),
-                            ReminderMode.valueOf(selectedReminderMode.value),
+                            Reminder.Type.valueOf(selectedReminderType.value),
+                            Reminder.Mode.valueOf(selectedReminderMode.value),
                             datePickerState,
                             timePickerState,
                             graphicsLayer

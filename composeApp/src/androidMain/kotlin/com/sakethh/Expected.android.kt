@@ -10,6 +10,8 @@ import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.media.RingtoneManager
 import android.os.Build
 import android.os.Environment
 import android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
@@ -307,6 +309,31 @@ actual suspend fun scheduleAReminder(
     // but SkiaBitmap doesn't support it on Android,
     // so it's handled here using Android's Bitmap.
     val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
+
+    if (reminder.reminderType == Reminder.Type.STICKY) {
+        val notificationManager = LinkoraApp.getContext()
+            .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val notificationSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        val notification = NotificationCompat.Builder(LinkoraApp.getContext(), "2")
+            .setSmallIcon(R.drawable.ic_stat_name).setStyle(
+                NotificationCompat.BigPictureStyle().bigPicture(bitmap)).setContentTitle(reminder.title).setContentText(reminder.description)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setSilent(reminder.reminderMode == Reminder.Mode.SILENT).apply {
+                if (reminder.reminderMode == Reminder.Mode.VIBRATE) {
+                    setVibrate(LongArray(5) { 1000 })
+                }
+                if (reminder.reminderMode == Reminder.Mode.CRUCIAL) {
+                    setSound(notificationSound)
+                }
+            }.setOngoing(true).build()
+
+        notificationManager.notify(2, notification)
+        linkoraLog("Here")
+        onCompletion("")
+        return
+    }
+
     val base64String: String = ByteArrayOutputStream().use {
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
         android.util.Base64.encodeToString(it.toByteArray(), android.util.Base64.DEFAULT)
@@ -351,7 +378,8 @@ actual suspend fun scheduleAReminder(
 }
 
 actual fun canScheduleAlarms(): Boolean {
-    val alarmManager = LinkoraApp.getContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    val alarmManager =
+        LinkoraApp.getContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
     return if (Build.VERSION.SDK_INT >= 31 && alarmManager.canScheduleExactAlarms().not()) {
         LinkoraApp.getContext().startActivity(
             Intent(ACTION_REQUEST_SCHEDULE_EXACT_ALARM).addFlags(

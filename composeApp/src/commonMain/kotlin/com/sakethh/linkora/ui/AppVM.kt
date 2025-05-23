@@ -6,7 +6,6 @@ import androidx.compose.material3.TimePickerState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.lifecycle.ViewModel
@@ -42,14 +41,12 @@ import com.sakethh.linkora.domain.repository.local.LocalPanelsRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.ReminderRepo
 import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
-import com.sakethh.linkora.ui.domain.ReminderMode
 import com.sakethh.linkora.ui.domain.TransferActionType
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM.Companion.clearAllSelections
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM.Companion.selectedFoldersViaLongClick
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM.Companion.selectedLinksViaLongClick
-import com.sakethh.linkora.ui.screens.settings.section.general.reminders.ReminderType
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
@@ -430,13 +427,31 @@ class AppVM(
         description: String,
         timePickerState: TimePickerState,
         datePickerState: DatePickerState,
-        reminderType: ReminderType,
-        reminderMode: ReminderMode,
+        reminderType: Reminder.Type,
+        reminderMode: Reminder.Mode,
         // bitmap conversion is a mess in the common module
         // since Skia's implementation doesn't work on android,
         // so this is the only way i can think of for now
         graphicsLayer: GraphicsLayer
     ) {
+        if (reminderType == Reminder.Type.STICKY) {
+            viewModelScope.launch {
+                val reminder = Reminder(
+                    linkId = linkId,
+                    title = title,
+                    description = description,
+                    reminderType = reminderType,
+                    reminderMode = reminderMode,
+                    date = Reminder.Date(0, 0, 0),
+                    time = Reminder.Time(0, 0, 0),
+                    linkView = ""
+                )
+                com.sakethh.scheduleAReminder(
+                    graphicsLayer = graphicsLayer, reminder = reminder, onCompletion = {})
+            }
+            return
+        }
+
         if (datePickerState.selectedDateMillis == null) return
 
         viewModelScope.launch {
@@ -464,10 +479,10 @@ class AppVM(
                     )
                 )
             )
+
             com.sakethh.scheduleAReminder(
                 graphicsLayer = graphicsLayer, reminder = reminder, onCompletion = { base64String ->
                     reminderRepo.updateAReminder(reminder.copy(linkView = base64String))
-                    linkoraLog("Scheduled \n$reminder")
                 })
         }
     }

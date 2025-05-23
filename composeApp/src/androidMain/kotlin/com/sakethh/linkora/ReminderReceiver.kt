@@ -8,7 +8,7 @@ import android.graphics.BitmapFactory
 import android.media.RingtoneManager
 import androidx.core.app.NotificationCompat
 import com.sakethh.linkora.common.DependencyContainer
-import com.sakethh.linkora.ui.domain.ReminderMode
+import com.sakethh.linkora.domain.model.Reminder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,17 +35,19 @@ class ReminderReceiver : BroadcastReceiver() {
                             })
                     ).setContentTitle(reminder.title).setContentText(reminder.description)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setSilent(reminder.reminderMode == ReminderMode.SILENT).apply {
-                        if (reminder.reminderMode == ReminderMode.VIBRATE) {
+                    .setSilent(reminder.reminderMode == Reminder.Mode.SILENT).apply {
+                        if (reminder.reminderMode == Reminder.Mode.VIBRATE) {
                             setVibrate(LongArray(5) { 1000 })
                         }
-                        if (reminder.reminderMode == ReminderMode.CRUCIAL) {
+                        if (reminder.reminderMode == Reminder.Mode.CRUCIAL) {
                             setSound(notificationSound)
                         }
                     }.build()
 
-            notificationManager.notify(1, notification)
-            DependencyContainer.remindersRepo.value.deleteAReminder(reminderId)
+            notificationManager.notify(2, notification)
+            if (reminder.reminderType == Reminder.Type.ONCE) {
+                DependencyContainer.remindersRepo.value.deleteAReminder(reminderId)
+            }
         }
     }
 }

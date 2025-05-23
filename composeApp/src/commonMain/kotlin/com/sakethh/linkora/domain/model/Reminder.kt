@@ -1,9 +1,15 @@
 package com.sakethh.linkora.domain.model
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.DoNotDisturbOnTotalSilence
+import androidx.compose.material.icons.filled.LooksOne
+import androidx.compose.material.icons.filled.Pin
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.Vibration
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.sakethh.linkora.ui.domain.ReminderMode
-import com.sakethh.linkora.ui.screens.settings.section.general.reminders.ReminderType
 import kotlinx.serialization.Serializable
 
 
@@ -13,8 +19,8 @@ data class Reminder(
     val linkId: Long,
     val title: String,
     val description: String,
-    val reminderType: ReminderType,
-    val reminderMode: ReminderMode,
+    val reminderType: Type,
+    val reminderMode: Mode,
     val date: Date,
     val time: Time,
     val linkView: String
@@ -26,4 +32,32 @@ data class Reminder(
 
     @Serializable
     data class Time(val hour: Int, val minute: Int, val second: Int = 0)
+
+    enum class Type {
+        ONCE {
+            override val imgVector: ImageVector = Icons.Default.LooksOne
+        },
+        PERIODIC {
+            override val imgVector: ImageVector = Icons.Default.Repeat
+        },
+        STICKY {
+            override val imgVector: ImageVector = Icons.Default.Pin
+        }, ;
+
+        abstract val imgVector: ImageVector
+    }
+
+    enum class Mode {
+        SILENT {
+            override val imgVector: ImageVector = Icons.Default.DoNotDisturbOnTotalSilence
+        },
+        VIBRATE {
+            override val imgVector: ImageVector = Icons.Default.Vibration
+        },
+        CRUCIAL {
+            override val imgVector: ImageVector = Icons.AutoMirrored.Filled.VolumeUp
+        }, ;
+
+        abstract val imgVector: ImageVector
+    }
 }

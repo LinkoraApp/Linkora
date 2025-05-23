@@ -22,7 +22,6 @@ import com.sakethh.linkora.domain.dto.server.Correlation
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.ui.navigation.Navigation
-import com.sakethh.linkora.ui.screens.settings.section.general.reminders.ReminderType
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.rememberDeserializableObject
