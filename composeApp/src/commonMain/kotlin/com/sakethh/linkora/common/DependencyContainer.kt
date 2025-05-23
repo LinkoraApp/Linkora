@@ -12,6 +12,7 @@ import com.sakethh.linkora.data.local.repository.LocalMultiActionRepoImpl
 import com.sakethh.linkora.data.local.repository.LocalPanelsRepoImpl
 import com.sakethh.linkora.data.local.repository.PendingSyncQueueRepoImpl
 import com.sakethh.linkora.data.local.repository.PreferencesImpl
+import com.sakethh.linkora.data.local.repository.ReminderRepoImpl
 import com.sakethh.linkora.data.local.repository.SnapshotRepoImpl
 import com.sakethh.linkora.data.remote.repository.GitHubReleasesRepoImpl
 import com.sakethh.linkora.data.remote.repository.RemoteFoldersRepoImpl
@@ -161,5 +162,9 @@ object DependencyContainer {
 
     val snapshotRepo = lazy {
         SnapshotRepoImpl(snapshotDao = localDatabase?.snapshotDao!!)
+    }
+
+    val  remindersRepo = lazy {
+        ReminderRepoImpl(reminderDao = localDatabase?.reminderDao!!)
     }
 }

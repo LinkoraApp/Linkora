@@ -44,14 +44,20 @@ class LinkoraApp : Application() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationChannel = NotificationChannel(
+            val dataSyncingNotificationChannel = NotificationChannel(
                 "1", "Data Syncing", NotificationManager.IMPORTANCE_HIGH
             )
-            notificationChannel.description =
+            dataSyncingNotificationChannel.description =
                 "Used to notify about the data syncing status, including link refresh."
+
+            val remindersNotificationChannel = NotificationChannel(
+                "2", "Reminders", NotificationManager.IMPORTANCE_HIGH
+            )
+
             val notificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(notificationChannel)
+                getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(dataSyncingNotificationChannel)
+            notificationManager.createNotificationChannel(remindersNotificationChannel)
         }
     }
 
@@ -369,6 +375,12 @@ class LinkoraApp : Application() {
             }
         }
 
+        val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("CREATE TABLE IF NOT EXISTS `reminder` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `linkId` INTEGER NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `reminderType` TEXT NOT NULL, `reminderMode` TEXT NOT NULL, `date` TEXT NOT NULL, `time` TEXT NOT NULL)")
+            }
+        }
+
         val dbFile = applicationContext.getDatabasePath(LocalDatabase.NAME)
         return Room.databaseBuilder(
             applicationContext, LocalDatabase::class.java, name = dbFile.absolutePath
@@ -381,7 +393,8 @@ class LinkoraApp : Application() {
             MIGRATION_6_7,
             MIGRATION_7_8,
             MIGRATION_8_9,
-            MIGRATION_9_10
+            MIGRATION_9_10,
+            MIGRATION_10_11
         ).build()
     }
 }

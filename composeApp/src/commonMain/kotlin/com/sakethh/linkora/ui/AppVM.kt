@@ -6,6 +6,8 @@ import androidx.compose.material3.TimePickerState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -38,6 +40,7 @@ import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.LocalMultiActionRepo
 import com.sakethh.linkora.domain.repository.local.LocalPanelsRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
+import com.sakethh.linkora.domain.repository.local.ReminderRepo
 import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
 import com.sakethh.linkora.ui.domain.ReminderMode
 import com.sakethh.linkora.ui.domain.TransferActionType
@@ -70,7 +73,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.jetbrains.skia.EncodedImageFormat
+import org.jetbrains.skia.Image
+import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
+import java.util.Base64
 import java.util.Date
 
 @OptIn(FlowPreview::class)
@@ -82,7 +89,8 @@ class AppVM(
     private val foldersRepo: LocalFoldersRepo,
     private val localMultiActionRepo: LocalMultiActionRepo,
     private val localPanelsRepo: LocalPanelsRepo,
-    private val exportDataRepo: ExportDataRepo
+    private val exportDataRepo: ExportDataRepo,
+    private val reminderRepo: ReminderRepo
 ) : ViewModel() {
 
     private val dataSyncingNotificationService = DataSyncingNotificationService()
@@ -427,7 +435,8 @@ class AppVM(
         timePickerState: TimePickerState,
         datePickerState: DatePickerState,
         reminderType: ReminderType,
-        reminderMode: ReminderMode
+        reminderMode: ReminderMode,
+        linkView: ImageBitmap
     ) {
         if (datePickerState.selectedDateMillis == null) return
 
@@ -442,17 +451,28 @@ class AppVM(
             val localTime = Reminder.Time(
                 timePickerState.hour, timePickerState.minute
             )
-            val reminder = Reminder(
-                linkId = linkId,
-                title = title,
-                description = description,
-                reminderType = reminderType,
-                reminderMode = reminderMode,
-                date = localDate,
-                time = localTime
+            val linkViewInBase64 = ByteArrayOutputStream().use {
+                Image.makeFromBitmap(linkView.asSkiaBitmap())
+                    .encodeToData(EncodedImageFormat.PNG)?.bytes
+            }?.run {
+                Base64.getEncoder().encodeToString(this)
+            }
+            val reminder = reminderRepo.getAReminder(
+                reminderRepo.createAReminder(
+                    Reminder(
+                        linkId = linkId,
+                        title = title,
+                        description = description,
+                        reminderType = reminderType,
+                        reminderMode = reminderMode,
+                        date = localDate,
+                        time = localTime,
+                        linkView = linkViewInBase64 ?: ""
+                    )
+                )
             )
             com.sakethh.scheduleAReminder(reminder = reminder, onCompletion = {
-                linkoraLog("Scheduled")
+                linkoraLog("Scheduled $reminder")
             })
         }
     }

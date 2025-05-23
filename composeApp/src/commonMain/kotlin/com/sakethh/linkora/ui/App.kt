@@ -163,7 +163,8 @@ fun App(
             foldersRepo = DependencyContainer.localFoldersRepo.value,
             localMultiActionRepo = DependencyContainer.localMultiActionRepo.value,
             localPanelsRepo = DependencyContainer.localPanelsRepo.value,
-            exportDataRepo = DependencyContainer.exportDataRepo.value
+            exportDataRepo = DependencyContainer.exportDataRepo.value,
+            reminderRepo = DependencyContainer.remindersRepo.value,
         )
     })
     val snackbarHostState = remember {
@@ -1113,7 +1114,7 @@ fun App(
                 isVisible = isManageReminderBtmSheetVisible,
                 btmSheetState = manageReminderBtmSheetState,
                 link = selectedLinkForMenuBtmSheet.value,
-                onSaveClick = { title, description, selectedReminderType, selectedReminderMode, datePickerState, timePickerState ->
+                onSaveClick = { title, description, selectedReminderType, selectedReminderMode, datePickerState, timePickerState,linkView ->
                     appVM.scheduleAReminder(
                         linkId = selectedLinkForMenuBtmSheet.value.localId,
                         title = title,
@@ -1121,7 +1122,8 @@ fun App(
                         timePickerState = timePickerState,
                         datePickerState = datePickerState,
                         reminderMode = selectedReminderMode,
-                        reminderType = selectedReminderType
+                        reminderType = selectedReminderType,
+                        linkView = linkView
                     )
                 })
         }

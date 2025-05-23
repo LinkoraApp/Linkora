@@ -63,8 +63,13 @@ actual val localDatabase: LocalDatabase? =
                 connection.execSQL("CREATE TABLE IF NOT EXISTS `snapshot` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `content` TEXT NOT NULL)")
             }
         }
+        val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("CREATE TABLE IF NOT EXISTS `reminder` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `linkId` INTEGER NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `reminderType` TEXT NOT NULL, `reminderMode` TEXT NOT NULL, `date` TEXT NOT NULL, `time` TEXT NOT NULL)")
+            }
+        }
         Room.databaseBuilder<LocalDatabase>(name = this.absolutePath)
-            .setDriver(BundledSQLiteDriver()).addMigrations(MIGRATION_9_10).build()
+            .setDriver(BundledSQLiteDriver()).addMigrations(MIGRATION_9_10,MIGRATION_10_11).build()
     }
 actual val linkoraDataStore: DataStore<Preferences> = PreferenceDataStoreFactory.createWithPath {
     linkoraSpecificFolder.resolve(Constants.DATA_STORE_NAME).absolutePath.toPath()
