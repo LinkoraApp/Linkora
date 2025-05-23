@@ -176,4 +176,5 @@ actual suspend fun scheduleAReminder(
     onCompletion: suspend (base64String: String) -> Unit
 ) = Unit
 
-actual fun canScheduleAlarms(): Boolean = false
+actual fun canScheduleReminders(): Boolean = false
+actual fun cancelAReminder(reminderId: Int) = Unit

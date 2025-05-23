@@ -986,7 +986,7 @@ fun App(
                     onManageLinkReminders = {
                         coroutineScope.launch {
                             if (com.sakethh.permittedToShowNotification()) {
-                                if (com.sakethh.canScheduleAlarms()) {
+                                if (com.sakethh.canScheduleReminders()) {
                                     isManageReminderBtmSheetVisible.value = true
                                     coroutineScope.launch {
                                         manageReminderBtmSheetState.show()

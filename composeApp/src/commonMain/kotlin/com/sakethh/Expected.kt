@@ -74,4 +74,6 @@ expect suspend fun scheduleAReminder(
     graphicsLayer: GraphicsLayer, onCompletion: suspend (base64String: String) -> Unit
 )
 
-expect fun canScheduleAlarms(): Boolean
+expect fun canScheduleReminders(): Boolean
+
+expect fun cancelAReminder(reminderId: Int)

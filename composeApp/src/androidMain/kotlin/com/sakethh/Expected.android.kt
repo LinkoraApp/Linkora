@@ -377,7 +377,7 @@ actual suspend fun scheduleAReminder(
     onCompletion(base64String)
 }
 
-actual fun canScheduleAlarms(): Boolean {
+actual fun canScheduleReminders(): Boolean {
     val alarmManager =
         LinkoraApp.getContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
     return if (Build.VERSION.SDK_INT >= 31 && alarmManager.canScheduleExactAlarms().not()) {
@@ -390,4 +390,22 @@ actual fun canScheduleAlarms(): Boolean {
     } else {
         true
     }
+}
+
+actual fun cancelAReminder(reminderId: Int) {
+    val alarmManager: AlarmManager =
+        LinkoraApp.getContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+    // this should exactly match with the pendingIntent that was previously set using @scheduleAReminder
+    // https://stackoverflow.com/questions/28922521/how-to-cancel-alarm-from-alarmmanager/28922621#28922621
+    val pendingIntent = PendingIntent.getBroadcast(
+        LinkoraApp.getContext(),
+        reminderId,
+        Intent(LinkoraApp.getContext(), ReminderReceiver::class.java).apply {
+            putExtra("id", reminderId)
+        },
+        PendingIntent.FLAG_IMMUTABLE
+    )
+    alarmManager.cancel(pendingIntent)
+    pendingIntent.cancel()
 }
