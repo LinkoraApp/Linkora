@@ -353,12 +353,12 @@ actual suspend fun scheduleAReminder(
 
     val reminderTime = Calendar.getInstance().apply {
         set(
-            reminder.date.year,
-            reminder.date.month - 1,
-            reminder.date.dayOfMonth,
-            reminder.time.hour,
-            reminder.time.minute,
-            reminder.time.second
+            reminder.date.year.toInt(),
+            reminder.date.month.toInt() - 1,
+            reminder.date.dayOfMonth.toInt(),
+            reminder.time.hour.toInt(),
+            reminder.time.minute.toInt(),
+            reminder.time.second.toInt()
         )
     }.timeInMillis
     linkoraLog(Date(reminderTime).toString())

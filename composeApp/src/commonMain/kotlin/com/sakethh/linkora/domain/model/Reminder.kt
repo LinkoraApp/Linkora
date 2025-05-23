@@ -27,11 +27,23 @@ data class Reminder(
 ) {
     @Serializable
     data class Date(
-        val year: Int, val month: Int, val dayOfMonth: Int
-    )
+        val year: String, val month: String, val dayOfMonth: String
+    ) {
+        constructor(
+            year: Int, month: Int, dayOfMonth: Int
+        ) : this(
+            year = year.toString(),
+            month = month.toString(),
+            dayOfMonth = dayOfMonth.toString()
+        )
+    }
 
     @Serializable
-    data class Time(val hour: Int, val minute: Int, val second: Int = 0)
+    data class Time(val hour: String, val minute: String, val second: String = "0") {
+        constructor(hour: Int, minute: Int, second: Int = 0) : this(
+            hour = hour.toString(), minute = minute.toString(), second = second.toString()
+        )
+    }
 
     enum class Type {
         ONCE {
