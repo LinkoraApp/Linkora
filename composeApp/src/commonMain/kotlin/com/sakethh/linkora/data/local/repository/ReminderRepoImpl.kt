@@ -21,4 +21,8 @@ class ReminderRepoImpl(private val reminderDao: ReminderDao) : ReminderRepo {
     override fun getAllReminders(): Flow<List<Reminder>> {
         return reminderDao.getAllReminders()
     }
+
+    override suspend fun updateAReminder(reminder: Reminder) {
+        return reminderDao.updateAReminder(reminder)
+    }
 }

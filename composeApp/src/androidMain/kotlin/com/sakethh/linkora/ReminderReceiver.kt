@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.media.RingtoneManager
-import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.sakethh.linkora.common.DependencyContainer
 import com.sakethh.linkora.ui.domain.ReminderMode
@@ -27,18 +26,15 @@ class ReminderReceiver : BroadcastReceiver() {
             val notificationSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
             val notification =
                 NotificationCompat.Builder(context, "2").setSmallIcon(R.drawable.ic_stat_name)
-                    .apply {
-                        if (Build.VERSION.SDK_INT >= 26) {
-                            setLargeIcon(
-                                android.util.Base64.decode(
-                                    reminder.linkView, android.util.Base64.DEFAULT
-                                ).run {
-                                    BitmapFactory.decodeByteArray(this, 0, this.size)
-                                })
-                        }
-                    }.setContentTitle(reminder.title).setContentText(
-                        (if (Build.VERSION.SDK_INT < 26) "Reminder for the link title: ${reminder.title}\n" else "") + reminder.description
-                    ).setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setStyle(
+                        NotificationCompat.BigPictureStyle().bigPicture(
+                            android.util.Base64.decode(
+                                reminder.linkView, android.util.Base64.DEFAULT
+                            ).run {
+                                BitmapFactory.decodeByteArray(this, 0, this.size)
+                            })
+                    ).setContentTitle(reminder.title).setContentText(reminder.description)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setSilent(reminder.reminderMode == ReminderMode.SILENT).apply {
                         if (reminder.reminderMode == ReminderMode.VIBRATE) {
                             setVibrate(LongArray(5) { 1000 })
@@ -49,6 +45,7 @@ class ReminderReceiver : BroadcastReceiver() {
                     }.build()
 
             notificationManager.notify(1, notification)
+            DependencyContainer.remindersRepo.value.deleteAReminder(reminderId)
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.sakethh
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -9,12 +8,17 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.os.Build
 import android.os.Environment
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.layer.GraphicsLayer
+import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontFamily
 import androidx.core.app.NotificationCompat
@@ -69,6 +73,7 @@ import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import okio.Path.Companion.toPath
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.text.DateFormat
 import java.util.Calendar
@@ -290,10 +295,22 @@ actual suspend fun exportSnapshotData(
     WorkManager.getInstance(LinkoraApp.getContext()).enqueue(snapshotWorker.build())
 }
 
-@SuppressLint("ScheduleExactAlarm")
 actual suspend fun scheduleAReminder(
-    reminder: Reminder, onCompletion: suspend () -> Unit
+    reminder: Reminder,
+    graphicsLayer: GraphicsLayer,
+    onCompletion: suspend (base64String: String) -> Unit
 ) {
+
+    // imageBitmap should be converted to base64,
+    // it should have been done in the common module,
+    // but SkiaBitmap doesn't support it on Android,
+    // so it's handled here using Android's Bitmap.
+    val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
+    val base64String: String = ByteArrayOutputStream().use {
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+        android.util.Base64.encodeToString(it.toByteArray(), android.util.Base64.DEFAULT)
+    }
+
     val alarmManager: AlarmManager =
         LinkoraApp.getContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
@@ -320,5 +337,5 @@ actual suspend fun scheduleAReminder(
     alarmManager.setExactAndAllowWhileIdle(
         AlarmManager.RTC_WAKEUP, reminderTime, pendingIntent
     )
-    onCompletion()
+    onCompletion(base64String)
 }

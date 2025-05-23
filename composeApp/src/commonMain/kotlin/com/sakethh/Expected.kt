@@ -1,6 +1,8 @@
 package com.sakethh
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.text.font.FontFamily
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -69,5 +71,9 @@ expect suspend fun exportSnapshotData(
 // although this is android specific (for now), but if in case linkora goes ios, the foundation for this feature already gets done in the common module, so this is completely fine
 expect suspend fun scheduleAReminder(
     reminder: Reminder,
-    onCompletion: suspend () -> Unit
+    // bitmap conversion is a mess in the common module
+    // since Skia's implementation doesn't work on android,
+    // so this is the only way i can think of for now
+    graphicsLayer: GraphicsLayer,
+    onCompletion: suspend (base64String: String) -> Unit
 )

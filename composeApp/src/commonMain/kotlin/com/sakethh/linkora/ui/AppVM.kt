@@ -7,7 +7,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asSkiaBitmap
+import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -73,11 +73,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.jetbrains.skia.EncodedImageFormat
-import org.jetbrains.skia.Image
-import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
-import java.util.Base64
 import java.util.Date
 
 @OptIn(FlowPreview::class)
@@ -436,7 +432,10 @@ class AppVM(
         datePickerState: DatePickerState,
         reminderType: ReminderType,
         reminderMode: ReminderMode,
-        linkView: ImageBitmap
+        // bitmap conversion is a mess in the common module
+        // since Skia's implementation doesn't work on android,
+        // so this is the only way i can think of for now
+        graphicsLayer: GraphicsLayer
     ) {
         if (datePickerState.selectedDateMillis == null) return
 
@@ -451,12 +450,6 @@ class AppVM(
             val localTime = Reminder.Time(
                 timePickerState.hour, timePickerState.minute
             )
-            val linkViewInBase64 = ByteArrayOutputStream().use {
-                Image.makeFromBitmap(linkView.asSkiaBitmap())
-                    .encodeToData(EncodedImageFormat.PNG)?.bytes
-            }?.run {
-                Base64.getEncoder().encodeToString(this)
-            }
             val reminder = reminderRepo.getAReminder(
                 reminderRepo.createAReminder(
                     Reminder(
@@ -467,13 +460,15 @@ class AppVM(
                         reminderMode = reminderMode,
                         date = localDate,
                         time = localTime,
-                        linkView = linkViewInBase64 ?: ""
+                        linkView = ""
                     )
                 )
             )
-            com.sakethh.scheduleAReminder(reminder = reminder, onCompletion = {
-                linkoraLog("Scheduled $reminder")
-            })
+            com.sakethh.scheduleAReminder(
+                graphicsLayer = graphicsLayer, reminder = reminder, onCompletion = { base64String ->
+                    reminderRepo.updateAReminder(reminder.copy(linkView = base64String))
+                    linkoraLog("Scheduled \n$base64String")
+                })
         }
     }
 }

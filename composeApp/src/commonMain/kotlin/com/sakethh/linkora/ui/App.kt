@@ -1114,7 +1114,7 @@ fun App(
                 isVisible = isManageReminderBtmSheetVisible,
                 btmSheetState = manageReminderBtmSheetState,
                 link = selectedLinkForMenuBtmSheet.value,
-                onSaveClick = { title, description, selectedReminderType, selectedReminderMode, datePickerState, timePickerState,linkView ->
+                onSaveClick = { title, description, selectedReminderType, selectedReminderMode, datePickerState, timePickerState,graphicsLayer ->
                     appVM.scheduleAReminder(
                         linkId = selectedLinkForMenuBtmSheet.value.localId,
                         title = title,
@@ -1123,7 +1123,7 @@ fun App(
                         datePickerState = datePickerState,
                         reminderMode = selectedReminderMode,
                         reminderType = selectedReminderType,
-                        linkView = linkView
+                        graphicsLayer = graphicsLayer
                     )
                 })
         }

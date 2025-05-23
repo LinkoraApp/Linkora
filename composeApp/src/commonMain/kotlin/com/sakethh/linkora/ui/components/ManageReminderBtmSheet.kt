@@ -54,7 +54,8 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.asComposeImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -62,6 +63,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import coil3.Bitmap
 import com.sakethh.linkora.common.utils.roundedCornerShape
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.ui.components.link.LinkListItemComposable
@@ -70,7 +72,6 @@ import com.sakethh.linkora.ui.domain.model.LinkUIComponentParam
 import com.sakethh.linkora.ui.screens.settings.section.data.components.ToggleButton
 import com.sakethh.linkora.ui.screens.settings.section.general.reminders.ReminderType
 import kotlinx.coroutines.launch
-import org.jetbrains.skia.Bitmap
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -78,7 +79,7 @@ import java.util.Date
 @Composable
 fun ManageReminderBtmSheet(
     isVisible: MutableState<Boolean>, btmSheetState: SheetState, link: Link, onSaveClick: (
-        title: String, description: String, selectedReminderType: ReminderType, selectedReminderMode: ReminderMode, datePickerState: DatePickerState, timePickerState: TimePickerState, linkViewImageBitmap: ImageBitmap
+        title: String, description: String, selectedReminderType: ReminderType, selectedReminderMode: ReminderMode, datePickerState: DatePickerState, timePickerState: TimePickerState, graphicsLayer: GraphicsLayer
     ) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -109,9 +110,6 @@ fun ManageReminderBtmSheet(
     }
     val showTimePicker = rememberSaveable {
         mutableStateOf(false)
-    }
-    var currLinkBitmap = remember {
-        Bitmap().asComposeImageBitmap()
     }
     val datePickerState = rememberDatePickerState()
     val timePickerState = rememberTimePickerState(is24Hour = false)
@@ -293,7 +291,6 @@ fun ManageReminderBtmSheet(
             item {
                 Button(modifier = Modifier.fillMaxWidth().padding(15.dp), onClick = {
                     coroutineScope.launch {
-                        currLinkBitmap = graphicsLayer.toImageBitmap()
                     }.invokeOnCompletion {
                         onSaveClick(
                             reminderTitle.value,
@@ -302,7 +299,7 @@ fun ManageReminderBtmSheet(
                             ReminderMode.valueOf(selectedReminderMode.value),
                             datePickerState,
                             timePickerState,
-                            currLinkBitmap
+                            graphicsLayer
                         )
 
                         coroutineScope.launch {
