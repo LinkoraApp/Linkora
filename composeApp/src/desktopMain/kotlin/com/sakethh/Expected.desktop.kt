@@ -40,6 +40,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.text.DateFormat
+import java.time.LocalDateTime
 import java.util.Date
 
 actual val showFollowSystemThemeOption: Boolean = true
@@ -165,5 +166,5 @@ actual suspend fun exportSnapshotData(
 }
 
 actual suspend fun scheduleAReminder(
-    reminder: Reminder, onCompletion: suspend (String) -> Unit
+    reminder: Reminder, onCompletion: suspend () -> Unit
 ) = Unit

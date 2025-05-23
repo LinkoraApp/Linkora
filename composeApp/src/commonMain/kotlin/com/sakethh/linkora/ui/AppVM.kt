@@ -71,7 +71,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.text.SimpleDateFormat
-import java.time.LocalDateTime
 import java.util.Date
 
 @OptIn(FlowPreview::class)
@@ -436,12 +435,12 @@ class AppVM(
             val selectedDate =
                 SimpleDateFormat("yyyy\nMM\ndd").format(Date(datePickerState.selectedDateMillis!!))
                     .split("\n").map { it.toInt() }
-            val localDateTime = LocalDateTime.of(
-                selectedDate[0],
-                selectedDate[1],
-                selectedDate[2],
-                timePickerState.hour,
-                timePickerState.minute
+
+            val localDate = Reminder.Date(
+                selectedDate[0], selectedDate[1], selectedDate[2]
+            )
+            val localTime = Reminder.Time(
+                timePickerState.hour, timePickerState.minute
             )
             val reminder = Reminder(
                 linkId = linkId,
@@ -449,10 +448,11 @@ class AppVM(
                 description = description,
                 reminderType = reminderType,
                 reminderMode = reminderMode,
-                time = localDateTime
+                date = localDate,
+                time = localTime
             )
             com.sakethh.scheduleAReminder(reminder = reminder, onCompletion = {
-
+                linkoraLog("Scheduled")
             })
         }
     }

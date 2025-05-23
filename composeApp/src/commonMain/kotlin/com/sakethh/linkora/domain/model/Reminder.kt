@@ -2,7 +2,7 @@ package com.sakethh.linkora.domain.model
 
 import com.sakethh.linkora.ui.domain.ReminderMode
 import com.sakethh.linkora.ui.screens.settings.section.general.reminders.ReminderType
-import java.time.LocalDateTime
+import kotlinx.serialization.Serializable
 
 
 data class Reminder(
@@ -12,5 +12,14 @@ data class Reminder(
     val description: String,
     val reminderType: ReminderType,
     val reminderMode: ReminderMode,
-    val time: LocalDateTime
-)
+    val date: Date,
+    val time: Time
+) {
+    @Serializable
+    data class Date(
+        val year: Int, val month: Int, val dayOfMonth: Int
+    )
+
+    @Serializable
+    data class Time(val hour: Int, val minute: Int, val second: Int = 0)
+}

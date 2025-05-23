@@ -12,8 +12,10 @@ import com.sakethh.linkora.domain.RawExportString
 import com.sakethh.linkora.domain.model.Reminder
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
+import com.sakethh.linkora.domain.repository.local.ReminderRepo
 import kotlinx.coroutines.flow.Flow
 import java.io.File
+import java.time.LocalDateTime
 
 expect val showFollowSystemThemeOption: Boolean
 expect val showDynamicThemingOption: Boolean
@@ -65,4 +67,7 @@ expect suspend fun exportSnapshotData(
 )
 
 // although this is android specific (for now), but if in case linkora goes ios, the foundation for this feature already gets done in the common module, so this is completely fine
-expect suspend fun scheduleAReminder(reminder: Reminder, onCompletion: suspend (String) -> Unit)
+expect suspend fun scheduleAReminder(
+    reminder: Reminder,
+    onCompletion: suspend () -> Unit
+)

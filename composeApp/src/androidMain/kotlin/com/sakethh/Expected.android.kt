@@ -1,7 +1,10 @@
 package com.sakethh
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.app.AlarmManager
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -31,6 +34,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.sakethh.linkora.LinkoraApp
 import com.sakethh.linkora.R
+import com.sakethh.linkora.ReminderReceiver
 import com.sakethh.linkora.common.DependencyContainer
 import com.sakethh.linkora.common.Localization
 import com.sakethh.linkora.common.preferences.AppPreferenceType
@@ -51,6 +55,7 @@ import com.sakethh.linkora.ui.AppVM
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.theme.poppinsFontFamily
 import com.sakethh.linkora.ui.utils.UIEvent
+import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.AndroidUIEvent
 import com.sakethh.linkora.utils.isTablet
 import com.sakethh.linkora.worker.RefreshAllLinksWorker
@@ -66,6 +71,7 @@ import kotlinx.coroutines.launch
 import okio.Path.Companion.toPath
 import java.io.File
 import java.text.DateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 
@@ -284,9 +290,35 @@ actual suspend fun exportSnapshotData(
     WorkManager.getInstance(LinkoraApp.getContext()).enqueue(snapshotWorker.build())
 }
 
+@SuppressLint("ScheduleExactAlarm")
 actual suspend fun scheduleAReminder(
-    reminder: Reminder,
-    onCompletion: suspend (String) -> Unit
+    reminder: Reminder, onCompletion: suspend () -> Unit
 ) {
+    val alarmManager: AlarmManager =
+        LinkoraApp.getContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
+    val pendingIntent = PendingIntent.getBroadcast(
+        LinkoraApp.getContext(),
+        reminder.id.toInt(),
+        Intent(LinkoraApp.getContext(), ReminderReceiver::class.java).apply {
+            putExtra("id", reminder.id)
+        },
+        PendingIntent.FLAG_IMMUTABLE
+    )
+
+    val reminderTime = Calendar.getInstance().apply {
+        set(
+            reminder.date.year,
+            reminder.date.month - 1,
+            reminder.date.dayOfMonth,
+            reminder.time.hour,
+            reminder.time.minute,
+            reminder.time.second
+        )
+    }.timeInMillis
+    linkoraLog(Date(reminderTime).toString())
+    alarmManager.setExactAndAllowWhileIdle(
+        AlarmManager.RTC_WAKEUP, reminderTime, pendingIntent
+    )
+    onCompletion()
 }
