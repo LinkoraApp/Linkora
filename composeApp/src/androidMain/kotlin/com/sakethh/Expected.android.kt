@@ -6,19 +6,19 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Environment
+import android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.layer.GraphicsLayer
-import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontFamily
 import androidx.core.app.NotificationCompat
@@ -295,6 +295,7 @@ actual suspend fun exportSnapshotData(
     WorkManager.getInstance(LinkoraApp.getContext()).enqueue(snapshotWorker.build())
 }
 
+
 actual suspend fun scheduleAReminder(
     reminder: Reminder,
     graphicsLayer: GraphicsLayer,
@@ -334,8 +335,31 @@ actual suspend fun scheduleAReminder(
         )
     }.timeInMillis
     linkoraLog(Date(reminderTime).toString())
-    alarmManager.setExactAndAllowWhileIdle(
-        AlarmManager.RTC_WAKEUP, reminderTime, pendingIntent
-    )
+    try {
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP, reminderTime, pendingIntent
+        )
+    } catch (e: SecurityException) {
+        e.printStackTrace()
+        if (Build.VERSION.SDK_INT >= 31) {
+            LinkoraApp.getContext().startActivity(
+                Intent(ACTION_REQUEST_SCHEDULE_EXACT_ALARM).addFlags(FLAG_ACTIVITY_NEW_TASK)
+            )
+        }
+    }
     onCompletion(base64String)
+}
+
+actual fun canScheduleAlarms(): Boolean {
+    val alarmManager = LinkoraApp.getContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    return if (Build.VERSION.SDK_INT >= 31 && alarmManager.canScheduleExactAlarms().not()) {
+        LinkoraApp.getContext().startActivity(
+            Intent(ACTION_REQUEST_SCHEDULE_EXACT_ALARM).addFlags(
+                FLAG_ACTIVITY_NEW_TASK
+            )
+        )
+        false
+    } else {
+        true
+    }
 }

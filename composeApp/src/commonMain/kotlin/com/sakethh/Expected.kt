@@ -1,7 +1,6 @@
 package com.sakethh
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.text.font.FontFamily
 import androidx.datastore.core.DataStore
@@ -14,10 +13,8 @@ import com.sakethh.linkora.domain.RawExportString
 import com.sakethh.linkora.domain.model.Reminder
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
-import com.sakethh.linkora.domain.repository.local.ReminderRepo
 import kotlinx.coroutines.flow.Flow
 import java.io.File
-import java.time.LocalDateTime
 
 expect val showFollowSystemThemeOption: Boolean
 expect val showDynamicThemingOption: Boolean
@@ -74,6 +71,7 @@ expect suspend fun scheduleAReminder(
     // bitmap conversion is a mess in the common module
     // since Skia's implementation doesn't work on android,
     // so this is the only way i can think of for now
-    graphicsLayer: GraphicsLayer,
-    onCompletion: suspend (base64String: String) -> Unit
+    graphicsLayer: GraphicsLayer, onCompletion: suspend (base64String: String) -> Unit
 )
+
+expect fun canScheduleAlarms(): Boolean

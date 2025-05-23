@@ -984,9 +984,15 @@ fun App(
                     },
                     showProgressBarDuringRemoteSave = showProgressBarDuringRemoteSave,
                     onManageLinkReminders = {
-                        isManageReminderBtmSheetVisible.value = true
                         coroutineScope.launch {
-                            manageReminderBtmSheetState.show()
+                            if (com.sakethh.permittedToShowNotification()) {
+                                if (com.sakethh.canScheduleAlarms()) {
+                                    isManageReminderBtmSheetVisible.value = true
+                                    coroutineScope.launch {
+                                        manageReminderBtmSheetState.show()
+                                    }
+                                }
+                            }
                         }
                     })
             )
@@ -1114,7 +1120,7 @@ fun App(
                 isVisible = isManageReminderBtmSheetVisible,
                 btmSheetState = manageReminderBtmSheetState,
                 link = selectedLinkForMenuBtmSheet.value,
-                onSaveClick = { title, description, selectedReminderType, selectedReminderMode, datePickerState, timePickerState,graphicsLayer ->
+                onSaveClick = { title, description, selectedReminderType, selectedReminderMode, datePickerState, timePickerState, graphicsLayer ->
                     appVM.scheduleAReminder(
                         linkId = selectedLinkForMenuBtmSheet.value.localId,
                         title = title,

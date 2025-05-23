@@ -7,19 +7,16 @@ import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
-There's also `AndroidUIEvent`, which I initially created for handling Android-specific APIs and behavior.
-But now, some of that functionality isn't strictly Android-specific and can be managed in common code.
-So this setup feels fine for now. Even though there are two different event objects—one for common and one for Android-specific cases—
-I could eventually merge them into this single `UIEvent` object. For now, it's not a problem.
+There's also `AndroidUIEvent`, meant for stuff between `actual` Android implementations and related components, like MainActivity in the android module, to handle Android-specific stuff.
+This object has nothing to do with that. This one is for common use cases.
  **/
 object UIEvent {
-    private val _uiEvents = MutableSharedFlow<Type>() // `StateFlow` won't emit the same value again, so to make sure we're playing it safe, `SharedFlow` is the way 🤪
+    private val _uiEvents =
+        MutableSharedFlow<Type>() // `StateFlow` won't emit the same value again, so to make sure we're playing it safe, `SharedFlow` is the way 🤪
     val uiEvents = _uiEvents.asSharedFlow()
 
     suspend fun pushUIEvent(type: Type) {

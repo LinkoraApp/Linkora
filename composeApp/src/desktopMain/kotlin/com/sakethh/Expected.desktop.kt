@@ -1,7 +1,6 @@
 package com.sakethh
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.text.font.FontFamily
 import androidx.datastore.core.DataStore
@@ -42,7 +41,6 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.text.DateFormat
-import java.time.LocalDateTime
 import java.util.Date
 
 actual val showFollowSystemThemeOption: Boolean = true
@@ -71,7 +69,7 @@ actual val localDatabase: LocalDatabase? =
             }
         }
         Room.databaseBuilder<LocalDatabase>(name = this.absolutePath)
-            .setDriver(BundledSQLiteDriver()).addMigrations(MIGRATION_9_10,MIGRATION_10_11).build()
+            .setDriver(BundledSQLiteDriver()).addMigrations(MIGRATION_9_10, MIGRATION_10_11).build()
     }
 actual val linkoraDataStore: DataStore<Preferences> = PreferenceDataStoreFactory.createWithPath {
     linkoraSpecificFolder.resolve(Constants.DATA_STORE_NAME).absolutePath.toPath()
@@ -173,5 +171,9 @@ actual suspend fun exportSnapshotData(
 }
 
 actual suspend fun scheduleAReminder(
-    reminder: Reminder, graphicsLayer: GraphicsLayer, onCompletion: suspend (base64String: String) -> Unit
+    reminder: Reminder,
+    graphicsLayer: GraphicsLayer,
+    onCompletion: suspend (base64String: String) -> Unit
 ) = Unit
+
+actual fun canScheduleAlarms(): Boolean = false

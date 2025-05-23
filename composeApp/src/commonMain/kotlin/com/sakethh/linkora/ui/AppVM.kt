@@ -467,7 +467,7 @@ class AppVM(
             com.sakethh.scheduleAReminder(
                 graphicsLayer = graphicsLayer, reminder = reminder, onCompletion = { base64String ->
                     reminderRepo.updateAReminder(reminder.copy(linkView = base64String))
-                    linkoraLog("Scheduled \n$base64String")
+                    linkoraLog("Scheduled \n$reminder")
                 })
         }
     }

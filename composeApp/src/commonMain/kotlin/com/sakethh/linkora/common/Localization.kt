@@ -679,7 +679,7 @@ object Localization {
         NotificationPermissionRequired(
             defaultValue = "Notification Permission Required"
         ),
-        NotificationPermissionDesc(defaultValue = "Linkora requires notification permission to display the progress of data syncing, including link refreshes."),
+        NotificationPermissionDesc(defaultValue = "Linkora requires notification permission to show data sync progress, link refresh status, and reminders."),
         NoPanelsFound(
             defaultValue = "No panels available. Create panels and add respective folders to organize by projects, research, tasks, events, or any other category."
         ),
