@@ -432,7 +432,8 @@ class AppVM(
         // bitmap conversion is a mess in the common module
         // since Skia's implementation doesn't work on android,
         // so this is the only way i can think of for now
-        graphicsLayer: GraphicsLayer
+        graphicsLayer: GraphicsLayer,
+        onCompletion: () -> Unit
     ) {
         if (reminderType == Reminder.Type.STICKY) {
             viewModelScope.launch {
@@ -448,6 +449,8 @@ class AppVM(
                 )
                 com.sakethh.scheduleAReminder(
                     graphicsLayer = graphicsLayer, reminder = reminder, onCompletion = {})
+            }.invokeOnCompletion {
+                onCompletion()
             }
             return
         }
@@ -484,6 +487,8 @@ class AppVM(
                 graphicsLayer = graphicsLayer, reminder = reminder, onCompletion = { base64String ->
                     reminderRepo.updateAReminder(reminder.copy(linkView = base64String))
                 })
+        }.invokeOnCompletion {
+            onCompletion()
         }
     }
 }

@@ -56,7 +56,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.VerticalDivider
@@ -167,9 +166,6 @@ fun App(
             reminderRepo = DependencyContainer.remindersRepo.value,
         )
     })
-    val snackbarHostState = remember {
-        SnackbarHostState()
-    }
     val showRenameDialogBox = rememberSaveable {
         mutableStateOf(false)
     }
@@ -221,11 +217,17 @@ fun App(
         MenuBtmSheetVM(DependencyContainer.localLinksRepo.value)
     })
 
+    val standardBottomSheet =
+        rememberStandardBottomSheetState(skipHiddenState = false, initialValue = SheetValue.Hidden)
+
+    val scaffoldSheetState =
+        rememberBottomSheetScaffoldState(bottomSheetState = standardBottomSheet)
+
     LaunchedEffect(Unit) {
         UIEvent.uiEvents.collectLatest { eventType ->
             when (eventType) {
                 is UIEvent.Type.ShowSnackbar -> {
-                    snackbarHostState.showSnackbar(message = eventType.message)
+                    scaffoldSheetState.snackbarHostState.showSnackbar(message = eventType.message)
                 }
 
                 is UIEvent.Type.ShowAddANewFolderDialogBox -> shouldShowNewFolderDialog.value = true
@@ -280,10 +282,6 @@ fun App(
     val inRootScreen = localNavController.inRootScreen(includeSettingsScreen = true)
     val currentBackStackEntryState = localNavController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntryState.value?.destination
-    val standardBottomSheet =
-        rememberStandardBottomSheetState(skipHiddenState = false, initialValue = SheetValue.Hidden)
-    val scaffoldSheetState =
-        rememberBottomSheetScaffoldState(bottomSheetState = standardBottomSheet)
 
     val rotationAnimation = remember {
         Animatable(0f)
@@ -696,17 +694,19 @@ fun App(
                     )
                 )
             }
-        }, snackbarHost = {
-            SnackbarHost(snackbarHostState, snackbar = {
-                Snackbar(
-                    it,
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-            })
         }, modifier = Modifier.fillMaxSize()
         ) {
             BottomSheetScaffold(
+                snackbarHost = {
+                SnackbarHost(
+                    hostState = scaffoldSheetState.snackbarHostState, snackbar = {
+                        Snackbar(
+                            snackbarData = it,
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    })
+            },
                 sheetDragHandle = {},
                 sheetPeekHeight = 0.dp,
                 scaffoldState = scaffoldSheetState,
@@ -1129,8 +1129,14 @@ fun App(
                         datePickerState = datePickerState,
                         reminderMode = selectedReminderMode,
                         reminderType = selectedReminderType,
-                        graphicsLayer = graphicsLayer
-                    )
+                        graphicsLayer = graphicsLayer,
+                        onCompletion = {
+                            coroutineScope.launch {
+                                manageReminderBtmSheetState.hide()
+                            }.invokeOnCompletion {
+                                isManageReminderBtmSheetVisible.value = false
+                            }
+                        })
                 })
         }
     }

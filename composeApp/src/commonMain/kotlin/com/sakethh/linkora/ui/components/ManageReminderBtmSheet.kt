@@ -1,5 +1,6 @@
 package com.sakethh.linkora.ui.components
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,6 +31,7 @@ import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -67,6 +70,8 @@ import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.ui.components.link.LinkListItemComposable
 import com.sakethh.linkora.ui.domain.model.LinkUIComponentParam
 import com.sakethh.linkora.ui.screens.settings.section.data.components.ToggleButton
+import com.sakethh.linkora.ui.utils.UIEvent
+import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -109,13 +114,16 @@ fun ManageReminderBtmSheet(
     }
     val datePickerState = rememberDatePickerState()
     val timePickerState = rememberTimePickerState(is24Hour = false)
+    val showProgressbar = rememberSaveable {
+        mutableStateOf(false)
+    }
     ModalBottomSheet(
         properties = remember { ModalBottomSheetProperties(shouldDismissOnBackPress = false) },
         sheetState = btmSheetState,
         onDismissRequest = {
             isVisible.value = false
         }) {
-        LazyColumn(modifier = Modifier.animateContentSize()) {
+        LazyColumn(modifier = Modifier.wrapContentSize().animateContentSize()) {
             item {
                 Spacer(modifier = Modifier.height(7.5.dp))
                 Text(
@@ -285,26 +293,31 @@ fun ManageReminderBtmSheet(
                 }
             }
             item {
-                Button(modifier = Modifier.fillMaxWidth().padding(15.dp), onClick = {
-                    coroutineScope.launch {}.invokeOnCompletion {
-                        onSaveClick(
-                            reminderTitle.value,
-                            reminderDesc.value,
-                            Reminder.Type.valueOf(selectedReminderType.value),
-                            Reminder.Mode.valueOf(selectedReminderMode.value),
-                            datePickerState,
-                            timePickerState,
-                            graphicsLayer
-                        )
-
-                        coroutineScope.launch {
-                            btmSheetState.hide()
-                        }.invokeOnCompletion {
-                            isVisible.value = false
+                AnimatedContent(targetState = showProgressbar.value) {
+                    if (it) {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(15.dp))
+                    } else {
+                        Button(modifier = Modifier.fillMaxWidth().padding(15.dp), onClick = {
+                            if (reminderTitle.value.isBlank() or reminderDesc.value.isBlank() or (selectedReminderType.value != Reminder.Type.STICKY.name && datePickerState.selectedDateMillis == null)) {
+                                coroutineScope.launch {
+                                    pushUIEvent(UIEvent.Type.ShowSnackbar(message = "All fields, including date and time, are required."))
+                                }
+                                return@Button
+                            }
+                            showProgressbar.value = true
+                            onSaveClick(
+                                reminderTitle.value,
+                                reminderDesc.value,
+                                Reminder.Type.valueOf(selectedReminderType.value),
+                                Reminder.Mode.valueOf(selectedReminderMode.value),
+                                datePickerState,
+                                timePickerState,
+                                graphicsLayer
+                            )
+                        }) {
+                            Text(text = "Save", style = MaterialTheme.typography.titleMedium)
                         }
                     }
-                }) {
-                    Text(text = "Save", style = MaterialTheme.typography.titleMedium)
                 }
             }
         }
