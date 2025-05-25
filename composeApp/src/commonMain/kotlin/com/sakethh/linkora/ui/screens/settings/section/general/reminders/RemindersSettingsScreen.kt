@@ -102,7 +102,7 @@ fun RemindersSettingsScreen() {
     val reminders = remindersSettingsScreenVM.reminders.collectAsStateWithLifecycle()
     val localFocusManager = LocalFocusManager.current
     SettingsSectionScaffold(
-        topAppBarText = "Reminders", navController = navController, bottomBar = {
+        topAppBarText = "Manage Reminders", navController = navController, bottomBar = {
             OutlinedTextField(
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = {

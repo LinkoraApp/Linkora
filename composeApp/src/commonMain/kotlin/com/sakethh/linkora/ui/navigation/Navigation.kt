@@ -96,11 +96,8 @@ sealed interface Navigation {
         }
 
         @Serializable
-        sealed interface General : Settings {
-            @Serializable
-            data object RemindersSettingsScreen : Data {
-                override fun toString(): String = TODO()
-            }
+        data object RemindersSettingsScreen : Data {
+            override fun toString(): String = TODO()
         }
     }
 

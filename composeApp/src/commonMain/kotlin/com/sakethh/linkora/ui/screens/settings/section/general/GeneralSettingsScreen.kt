@@ -130,22 +130,6 @@ fun GeneralSettingsScreen() {
             item {
                 SettingComponent(
                     SettingComponentParam(
-                        title = "Manage Reminders",
-                        doesDescriptionExists = false,
-                        description = Localization.Key.ChangeInitialRouteDesc.rememberLocalizedString(),
-                        isSwitchNeeded = false,
-                        isSwitchEnabled = mutableStateOf(false),
-                        onSwitchStateChange = {
-                            navController.navigate(Navigation.Settings.General.RemindersSettingsScreen)
-                        },
-                        isIconNeeded = mutableStateOf(true),
-                        icon = Icons.Outlined.EditNotifications
-                    )
-                )
-            }
-            item {
-                SettingComponent(
-                    SettingComponentParam(
                         title = Localization.getLocalizedString(Localization.Key.ShowOnboardingSlides),
                         doesDescriptionExists = false,
                         description = "",

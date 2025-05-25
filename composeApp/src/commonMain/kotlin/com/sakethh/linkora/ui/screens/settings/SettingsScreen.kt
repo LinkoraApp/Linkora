@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.EditNotifications
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
@@ -104,6 +105,13 @@ private fun settingsScreenOptions(navController: NavController): List<SettingSec
             },
             sectionTitle = Localization.getLocalizedString(Localization.Key.Layout),
             sectionIcon = Icons.Default.Dashboard
+        ),
+        SettingSectionComponentParam(
+            onClick = {
+                navController.navigate(Navigation.Settings.RemindersSettingsScreen)
+            },
+            sectionTitle = "Reminders",
+            sectionIcon = Icons.Default.EditNotifications
         ),
         SettingSectionComponentParam(
             onClick = {

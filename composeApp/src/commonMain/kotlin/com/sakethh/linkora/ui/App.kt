@@ -830,7 +830,7 @@ fun App(
                             appVM.markOnboardingComplete()
                         })
                     }
-                    composable<Navigation.Settings.General.RemindersSettingsScreen> { navBackStackEntry ->
+                    composable<Navigation.Settings.RemindersSettingsScreen> { navBackStackEntry ->
                         RemindersSettingsScreen()
                     }
                 }
