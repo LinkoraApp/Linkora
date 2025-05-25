@@ -4,7 +4,9 @@ import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TimePickerState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -503,12 +505,12 @@ class AppVM(
         }
     }
 
-     private val _existingReminder = MutableStateFlow<Reminder?>(null)
-     val existingReminder = _existingReminder.asStateFlow()
+     var existingReminder by mutableStateOf<Reminder?>(null)
+         private set
 
     fun checkForAnExistingReminder(linkId: Long) {
         viewModelScope.launch {
-            _existingReminder.value = reminderRepo.existingReminder(linkId)
+            existingReminder = reminderRepo.existingReminder(linkId)
         }
     }
 }

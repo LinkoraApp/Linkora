@@ -65,7 +65,6 @@ import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -1138,7 +1137,7 @@ fun App(
                             }
                         })
                 },
-                reminderScheduledPreviously = appVM.existingReminder,
+                scheduledReminder = appVM.existingReminder,
                 onEditClick = { },
                 onDeleteClick = { reminder ->
                     appVM.deleteAReminder(reminderId = reminder.id, onCompletion = {

@@ -14,6 +14,7 @@ import kotlinx.serialization.Serializable
 
 
 @Entity(tableName = "reminder")
+@Serializable
 data class Reminder(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val linkId: Long,
@@ -45,6 +46,7 @@ data class Reminder(
         )
     }
 
+    @Serializable
     enum class Type {
         ONCE {
             override val imgVector: ImageVector = Icons.Default.LooksOne
@@ -59,6 +61,7 @@ data class Reminder(
         abstract val imgVector: ImageVector
     }
 
+    @Serializable
     enum class Mode {
         SILENT {
             override val imgVector: ImageVector = Icons.Default.DoNotDisturbOnTotalSilence

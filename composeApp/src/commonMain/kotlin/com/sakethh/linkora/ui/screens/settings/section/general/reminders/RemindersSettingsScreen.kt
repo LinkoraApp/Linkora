@@ -7,7 +7,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
@@ -17,15 +23,55 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sakethh.linkora.common.DependencyContainer
+import com.sakethh.linkora.domain.LinkType
+import com.sakethh.linkora.domain.MediaType
+import com.sakethh.linkora.domain.model.Reminder
+import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.ui.LocalNavController
+import com.sakethh.linkora.ui.components.ManageReminderBtmSheet
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
 import com.sakethh.linkora.ui.utils.genericViewModelFactory
+import com.sakethh.linkora.ui.utils.rememberDeserializableMutableObject
+import kotlinx.coroutines.launch
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RemindersSettingsScreen() {
     val navController = LocalNavController.current
     val localUriHandler = LocalUriHandler.current
+    val manageReminderBtmSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val isManageReminderBtmSheetVisible = rememberSaveable { mutableStateOf(false) }
+    val selectedReminderData = rememberDeserializableMutableObject {
+        mutableStateOf<ReminderData>(
+            ReminderData(
+                link = Link(
+                    linkType = LinkType.SAVED_LINK,
+                    localId = 0,
+                    remoteId = 0,
+                    title = "TODO()",
+                    url = "TODO()",
+                    baseURL = "TODO()",
+                    imgURL = "TODO()",
+                    note = "TODO()",
+                    idOfLinkedFolder = 0,
+                    userAgent = "TODO()",
+                    markedAsImportant = false,
+                    mediaType = MediaType.GIF,
+                    lastModified = 0
+                ), reminder = Reminder(
+                    linkId = 0,
+                    title = "TODO()",
+                    description = "TODO()",
+                    reminderType = Reminder.Type.ONCE,
+                    reminderMode = Reminder.Mode.CRUCIAL,
+                    date = Reminder.Date("", "", ""),
+                    time = Reminder.Time("", ""),
+                    linkView = "TODO()"
+                )
+            )
+        )
+    }
     val remindersSettingsScreenVM: RemindersSettingsScreenVM =
         viewModel(factory = genericViewModelFactory {
             RemindersSettingsScreenVM(
@@ -33,6 +79,11 @@ fun RemindersSettingsScreen() {
                 linksRepo = DependencyContainer.localLinksRepo.value
             )
         })
+    val coroutineScope = rememberCoroutineScope()
+
+    val datePickerState = rememberDatePickerState()
+    val timePickerState = rememberTimePickerState(is24Hour = false)
+
     val reminders = remindersSettingsScreenVM.reminders.collectAsStateWithLifecycle()
     SettingsSectionScaffold(
         topAppBarText = "Reminders",
@@ -61,9 +112,74 @@ fun RemindersSettingsScreen() {
                 }, onDeleteClick = {
                     remindersSettingsScreenVM.deleteAReminder(it.reminder.id)
                 }, onEditClick = {
+                    selectedReminderData.value = it
 
+                    timePickerState.minute = it.reminder.time.minute.toInt()
+                    timePickerState.hour = it.reminder.time.hour.toInt()
+                    timePickerState.isAfternoon = it.reminder.time.hour.toInt() > 12
+
+                    datePickerState.selectedDateMillis = Calendar.getInstance().apply {
+                        set(
+                            it.reminder.date.year.toInt(),
+                            it.reminder.date.month.toInt() - 1,
+                            it.reminder.date.dayOfMonth.toInt(),
+                            it.reminder.time.hour.toInt(),
+                            it.reminder.time.minute.toInt(),
+                            it.reminder.time.second.toInt()
+                        )
+                    }.timeInMillis
+
+                    isManageReminderBtmSheetVisible.value = true
+                    coroutineScope.launch {
+                        manageReminderBtmSheetState.show()
+                    }
                 })
             }
         }
     }
+    ManageReminderBtmSheet(
+        isVisible = isManageReminderBtmSheetVisible,
+        btmSheetState = manageReminderBtmSheetState,
+        link = selectedReminderData.value.link,
+        onSaveClick = { title, description, selectedReminderType, selectedReminderMode, datePickerState, timePickerState, graphicsLayer ->
+            remindersSettingsScreenVM.updateAReminder(
+                reminderId = selectedReminderData.value.reminder.id,
+                title = title,
+                description = description,
+                timePickerState = timePickerState,
+                datePickerState = datePickerState,
+                reminderType = selectedReminderType,
+                reminderMode = selectedReminderMode,
+                graphicsLayer = graphicsLayer
+            ) {
+                coroutineScope.launch {
+                    manageReminderBtmSheetState.hide()
+                }.invokeOnCompletion {
+                    isManageReminderBtmSheetVisible.value = false
+                }
+            }
+        },
+        scheduledReminder = null,
+        sheetTitle = "Update Reminder",
+        reminderTitle = rememberSaveable(selectedReminderData.value) {
+            mutableStateOf(selectedReminderData.value.reminder.title)
+        },
+        reminderDesc = rememberSaveable(selectedReminderData.value) {
+            mutableStateOf(selectedReminderData.value.reminder.description)
+        },
+        datePickerState = datePickerState,
+        timePickerState = timePickerState,
+        selectedTime = rememberSaveable(selectedReminderData.value) {
+            mutableStateOf("${selectedReminderData.value.reminder.time.hour}:${selectedReminderData.value.reminder.time.minute}")
+        },
+        selectedDate = rememberSaveable(selectedReminderData.value) {
+            mutableStateOf("${selectedReminderData.value.reminder.date.dayOfMonth}-${selectedReminderData.value.reminder.date.month}-${selectedReminderData.value.reminder.date.year}")
+        },
+        selectedReminderType = rememberSaveable(selectedReminderData.value) {
+            mutableStateOf(selectedReminderData.value.reminder.reminderType.name)
+        },
+        selectedReminderMode = rememberSaveable(selectedReminderData.value) {
+            mutableStateOf(selectedReminderData.value.reminder.reminderMode.name)
+        },
+    )
 }

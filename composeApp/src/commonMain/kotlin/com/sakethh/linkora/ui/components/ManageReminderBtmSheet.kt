@@ -66,7 +66,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sakethh.linkora.common.utils.roundedCornerShape
 import com.sakethh.linkora.domain.model.Reminder
 import com.sakethh.linkora.domain.model.link.Link
@@ -76,7 +75,6 @@ import com.sakethh.linkora.ui.screens.settings.section.data.components.ToggleBut
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.pulsateEffect
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -90,34 +88,36 @@ fun ManageReminderBtmSheet(
     onSaveClick: (
         title: String, description: String, selectedReminderType: Reminder.Type, selectedReminderMode: Reminder.Mode, datePickerState: DatePickerState, timePickerState: TimePickerState, graphicsLayer: GraphicsLayer
     ) -> Unit,
-    reminderScheduledPreviously: StateFlow<Reminder?>,
-    onEditClick: (reminder: Reminder) -> Unit,
-    onDeleteClick: (reminder: Reminder) -> Unit
+    scheduledReminder: Reminder?,
+    onEditClick: (reminder: Reminder) -> Unit = {},
+    onDeleteClick: (reminder: Reminder) -> Unit = {},
+    sheetTitle: String? = null,
+    reminderTitle: MutableState<String> = rememberSaveable {
+        mutableStateOf("")
+    },
+    reminderDesc: MutableState<String> = rememberSaveable {
+        mutableStateOf("")
+    },
+    datePickerState: DatePickerState = rememberDatePickerState(),
+    timePickerState: TimePickerState = rememberTimePickerState(is24Hour = false),
+    selectedTime: MutableState<String> = rememberSaveable {
+        mutableStateOf("Click to select time")
+    },
+    selectedDate: MutableState<String> = rememberSaveable {
+        mutableStateOf("Click to select date")
+    },
+    selectedReminderType: MutableState<String> = rememberSaveable {
+        mutableStateOf(Reminder.Type.ONCE.name)
+    },
+    selectedReminderMode: MutableState<String> = rememberSaveable {
+        mutableStateOf(Reminder.Mode.CRUCIAL.name)
+    }
 ) {
     val coroutineScope = rememberCoroutineScope()
     val graphicsLayer = rememberGraphicsLayer()
-    val scheduledReminder = reminderScheduledPreviously.collectAsStateWithLifecycle()
     if (isVisible.value.not()) return
     val forceScheduleReminder = rememberSaveable {
         mutableStateOf(false)
-    }
-    val selectedReminderType = rememberSaveable {
-        mutableStateOf(Reminder.Type.ONCE.name)
-    }
-    val selectedReminderMode = rememberSaveable {
-        mutableStateOf(Reminder.Mode.CRUCIAL.name)
-    }
-    val selectedDate = rememberSaveable {
-        mutableStateOf("Click to select date")
-    }
-    val selectedTime = rememberSaveable {
-        mutableStateOf("Click to select time")
-    }
-    val reminderTitle = rememberSaveable {
-        mutableStateOf("")
-    }
-    val reminderDesc = rememberSaveable {
-        mutableStateOf("")
     }
     val showDatePicker = rememberSaveable {
         mutableStateOf(false)
@@ -125,8 +125,6 @@ fun ManageReminderBtmSheet(
     val showTimePicker = rememberSaveable {
         mutableStateOf(false)
     }
-    val datePickerState = rememberDatePickerState()
-    val timePickerState = rememberTimePickerState(is24Hour = false)
     val showProgressbar = rememberSaveable {
         mutableStateOf(false)
     }
@@ -140,7 +138,7 @@ fun ManageReminderBtmSheet(
             item {
                 Spacer(modifier = Modifier.height(7.5.dp))
                 Text(
-                    text = if (forceScheduleReminder.value.not() && scheduledReminder.value != null) "A reminder is already scheduled for this link" else "Add a new Reminder",
+                    text = if (sheetTitle != null) sheetTitle else if (forceScheduleReminder.value.not() && scheduledReminder != null) "A reminder is already scheduled for this link" else "Add a new Reminder",
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 24.sp,
                     textAlign = TextAlign.Start,
@@ -167,7 +165,7 @@ fun ManageReminderBtmSheet(
                         drawLayer(graphicsLayer)
                     })
             }
-            if (scheduledReminder.value != null && forceScheduleReminder.value.not()) {
+            if (scheduledReminder != null && forceScheduleReminder.value.not()) {
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp),
@@ -175,12 +173,12 @@ fun ManageReminderBtmSheet(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "${scheduledReminder.value!!.date.dayOfMonth}-${scheduledReminder.value!!.date.month}-${scheduledReminder.value!!.date.year} ${scheduledReminder.value!!.time.hour}:${scheduledReminder.value!!.time.minute}",
+                            text = "${scheduledReminder.date.dayOfMonth}-${scheduledReminder.date.month}-${scheduledReminder.date.year} ${scheduledReminder.time.hour}:${scheduledReminder.time.minute}",
                             style = MaterialTheme.typography.titleSmall
                         )
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             IconButton(onClick = {
-                                onEditClick(scheduledReminder.value!!)
+                                onEditClick(scheduledReminder)
                             }) {
                                 Icon(
                                     imageVector = Icons.Default.EditNotifications,
@@ -188,7 +186,7 @@ fun ManageReminderBtmSheet(
                                 )
                             }
                             IconButton(onClick = {
-                                onDeleteClick(scheduledReminder.value!!)
+                                onDeleteClick(scheduledReminder)
                             }) {
                                 Icon(
                                     imageVector = Icons.Default.DeleteForever,
@@ -400,7 +398,9 @@ fun ManageReminderBtmSheet(
     }
     if (showTimePicker.value) {
         BasicAlertDialog(
-            onDismissRequest = {},
+            onDismissRequest = {
+                showTimePicker.value = false
+            },
             modifier = Modifier.clip(RoundedCornerShape(10.dp)).zIndex(100f)
                 .background(AlertDialogDefaults.containerColor).clip(
                     AlertDialogDefaults.shape
