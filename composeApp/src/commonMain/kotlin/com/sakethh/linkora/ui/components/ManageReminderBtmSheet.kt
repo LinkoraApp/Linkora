@@ -75,6 +75,7 @@ import com.sakethh.linkora.ui.domain.model.LinkUIComponentParam
 import com.sakethh.linkora.ui.screens.settings.section.data.components.ToggleButton
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
+import com.sakethh.linkora.ui.utils.pulsateEffect
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -95,9 +96,11 @@ fun ManageReminderBtmSheet(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val graphicsLayer = rememberGraphicsLayer()
-
+    val scheduledReminder = reminderScheduledPreviously.collectAsStateWithLifecycle()
     if (isVisible.value.not()) return
-
+    val forceScheduleReminder = rememberSaveable {
+        mutableStateOf(false)
+    }
     val selectedReminderType = rememberSaveable {
         mutableStateOf(Reminder.Type.ONCE.name)
     }
@@ -127,7 +130,6 @@ fun ManageReminderBtmSheet(
     val showProgressbar = rememberSaveable {
         mutableStateOf(false)
     }
-    val scheduledReminder = reminderScheduledPreviously.collectAsStateWithLifecycle()
     ModalBottomSheet(
         properties = remember { ModalBottomSheetProperties(shouldDismissOnBackPress = false) },
         sheetState = btmSheetState,
@@ -138,7 +140,7 @@ fun ManageReminderBtmSheet(
             item {
                 Spacer(modifier = Modifier.height(7.5.dp))
                 Text(
-                    text = if (scheduledReminder.value != null) "A reminder is already scheduled for this link" else "Add a new Reminder",
+                    text = if (forceScheduleReminder.value.not() && scheduledReminder.value != null) "A reminder is already scheduled for this link" else "Add a new Reminder",
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 24.sp,
                     textAlign = TextAlign.Start,
@@ -165,7 +167,7 @@ fun ManageReminderBtmSheet(
                         drawLayer(graphicsLayer)
                     })
             }
-            if (scheduledReminder.value != null) {
+            if (scheduledReminder.value != null && forceScheduleReminder.value.not()) {
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp),
@@ -194,6 +196,16 @@ fun ManageReminderBtmSheet(
                                 )
                             }
                         }
+                    }
+                    Button(
+                        modifier = Modifier.pulsateEffect().fillMaxWidth()
+                            .padding(start = 15.dp, end = 15.dp), onClick = {
+                            forceScheduleReminder.value = true
+                        }) {
+                        Text(
+                            text = "Schedule another reminder",
+                            style = MaterialTheme.typography.titleMedium
+                        )
                     }
                 }
                 return@LazyColumn
