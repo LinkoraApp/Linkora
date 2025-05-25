@@ -3,6 +3,10 @@ package com.sakethh.linkora.ui.screens.settings.section.general.reminders
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TimePickerState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,8 +14,10 @@ import com.sakethh.linkora.domain.model.Reminder
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.ReminderRepo
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -19,6 +25,14 @@ import java.util.Date
 class RemindersSettingsScreenVM(
     private val reminderRepo: ReminderRepo, private val linksRepo: LocalLinksRepo
 ) : ViewModel() {
+
+    var searchQuery by mutableStateOf("")
+        private set
+
+    fun updateSearchQuery(query: String) {
+        searchQuery = query
+    }
+
     val reminders = reminderRepo.getAllReminders().map {
         it.map {
             ReminderData(
@@ -33,6 +47,26 @@ class RemindersSettingsScreenVM(
                     )
                 )
             )
+        }
+    }.combine(snapshotFlow { searchQuery }) { allReminders, searchQuery ->
+        allReminders to searchQuery
+    }.transform { (it, searchQuery) ->
+        if (searchQuery.isBlank()) {
+            emit(it)
+        } else {
+            emit(it.filter {
+                it.reminder.time.hour.contains(searchQuery) or it.reminder.time.minute.contains(
+                    searchQuery
+                ) or it.reminder.date.month.contains(searchQuery) or it.reminder.date.year.contains(
+                    searchQuery
+                ) or it.reminder.date.dayOfMonth.contains(searchQuery) or it.reminder.title.contains(
+                    searchQuery
+                ) or it.reminder.description.contains(
+                    searchQuery
+                ) or it.link.title.contains(searchQuery) or it.link.note.contains(searchQuery) or it.link.url.contains(
+                    searchQuery
+                )
+            })
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = emptyList())
 

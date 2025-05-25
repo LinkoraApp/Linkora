@@ -1,11 +1,24 @@
 package com.sakethh.linkora.ui.screens.settings.section.general.reminders
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -16,7 +29,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -85,11 +100,42 @@ fun RemindersSettingsScreen() {
     val timePickerState = rememberTimePickerState(is24Hour = false)
 
     val reminders = remindersSettingsScreenVM.reminders.collectAsStateWithLifecycle()
+    val localFocusManager = LocalFocusManager.current
     SettingsSectionScaffold(
-        topAppBarText = "Reminders",
-        navController = navController,
-        actions = {},
-    ) { paddingValues, topAppBarScrollBehaviour ->
+        topAppBarText = "Reminders", navController = navController, bottomBar = {
+            OutlinedTextField(
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = {
+                    localFocusManager.clearFocus(force = true)
+                }),
+                placeholder = {
+                    Text(text = "Search Reminders", style = MaterialTheme.typography.titleSmall)
+                },
+                leadingIcon = {
+                    Icon(imageVector = Icons.Default.Search, contentDescription = null)
+                },
+                trailingIcon = {
+                    AnimatedVisibility(
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                        visible = remindersSettingsScreenVM.searchQuery.isNotBlank()
+                    ) {
+                        IconButton(modifier = Modifier.padding(end = 5.dp), onClick = {
+                            localFocusManager.clearFocus(force = true)
+                            remindersSettingsScreenVM.updateSearchQuery("")
+                        }) {
+                            Icon(imageVector = Icons.Default.Clear, contentDescription = null)
+                        }
+                    }
+                },
+                value = remindersSettingsScreenVM.searchQuery,
+                onValueChange = {
+                    remindersSettingsScreenVM.updateSearchQuery(it)
+                },
+                shape = RoundedCornerShape(15.dp),
+                modifier = Modifier.fillMaxWidth().padding(15.dp),
+            )
+        }) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
             modifier = Modifier.padding(paddingValues)
                 .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection).fillMaxSize()

@@ -176,23 +176,13 @@ fun ManageReminderBtmSheet(
                             text = "${scheduledReminder.date.dayOfMonth}-${scheduledReminder.date.month}-${scheduledReminder.date.year} ${scheduledReminder.time.hour}:${scheduledReminder.time.minute}",
                             style = MaterialTheme.typography.titleSmall
                         )
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            IconButton(onClick = {
-                                onEditClick(scheduledReminder)
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.EditNotifications,
-                                    contentDescription = null
-                                )
-                            }
-                            IconButton(onClick = {
-                                onDeleteClick(scheduledReminder)
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.DeleteForever,
-                                    contentDescription = null
-                                )
-                            }
+                        IconButton(onClick = {
+                            onDeleteClick(scheduledReminder)
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.DeleteForever,
+                                contentDescription = null
+                            )
                         }
                     }
                     Button(
