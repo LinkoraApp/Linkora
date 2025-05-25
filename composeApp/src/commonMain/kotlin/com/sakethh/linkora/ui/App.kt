@@ -65,6 +65,7 @@ import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -82,6 +83,7 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.sakethh.canScheduleReminders
 import com.sakethh.linkora.common.DependencyContainer
 import com.sakethh.linkora.common.Localization
 import com.sakethh.linkora.common.preferences.AppPreferences
@@ -144,6 +146,7 @@ import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.genericViewModelFactory
 import com.sakethh.linkora.ui.utils.rememberDeserializableMutableObject
 import com.sakethh.linkora.ui.utils.rememberDeserializableObject
+import com.sakethh.permittedToShowNotification
 import com.sakethh.platform
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -984,14 +987,11 @@ fun App(
                     },
                     showProgressBarDuringRemoteSave = showProgressBarDuringRemoteSave,
                     onManageLinkReminders = {
+                        appVM.checkForAnExistingReminder(selectedLinkForMenuBtmSheet.value.localId)
                         coroutineScope.launch {
-                            if (com.sakethh.permittedToShowNotification()) {
-                                if (com.sakethh.canScheduleReminders()) {
-                                    isManageReminderBtmSheetVisible.value = true
-                                    coroutineScope.launch {
-                                        manageReminderBtmSheetState.show()
-                                    }
-                                }
+                            if (permittedToShowNotification() && canScheduleReminders()) {
+                                isManageReminderBtmSheetVisible.value = true
+                                manageReminderBtmSheetState.show()
                             }
                         }
                     })
@@ -1137,7 +1137,19 @@ fun App(
                                 isManageReminderBtmSheetVisible.value = false
                             }
                         })
-                })
+                },
+                reminderScheduledPreviously = appVM.existingReminder,
+                onEditClick = { },
+                onDeleteClick = { reminder ->
+                    appVM.deleteAReminder(reminderId = reminder.id, onCompletion = {
+                        coroutineScope.launch {
+                            manageReminderBtmSheetState.hide()
+                        }.invokeOnCompletion {
+                            isManageReminderBtmSheetVisible.value = false
+                        }
+                    })
+                },
+            )
         }
     }
 }

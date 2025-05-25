@@ -24,4 +24,7 @@ interface ReminderDao {
 
     @Query("SELECT * FROM reminder")
     fun getAllReminders(): Flow<List<Reminder>>
+
+    @Query("SELECT * FROM reminder WHERE linkId = :linkId")
+    suspend fun existingReminder(linkId: Long): Reminder?
 }

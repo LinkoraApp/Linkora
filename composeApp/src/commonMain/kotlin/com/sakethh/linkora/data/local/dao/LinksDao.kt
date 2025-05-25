@@ -44,10 +44,16 @@ interface LinksDao {
     @Query("UPDATE links SET title = :newTitle WHERE localId=:linkId")
     suspend fun updateLinkTitle(linkId: Long, newTitle: String)
 
-    @Query("SELECT linkType = '${LinkType.IMPORTANT_LINK}' OR markedAsImportant FROM links WHERE url=:url")
+    @Query("""
+    SELECT EXISTS(
+        SELECT 1 FROM links 
+        WHERE url = :url 
+        AND (linkType = '${LinkType.IMPORTANT_LINK}' OR markedAsImportant)
+    )
+""")
     suspend fun markedAsImportant(url: String): Boolean
 
-    @Query("SELECT linkType = '${LinkType.ARCHIVE_LINK}' FROM links WHERE url=:url")
+    @Query("SELECT EXISTS(SELECT 1 FROM links WHERE url = :url AND linkType = '${LinkType.ARCHIVE_LINK}')")
     suspend fun isInArchive(url: String): Boolean
 
     @Query(

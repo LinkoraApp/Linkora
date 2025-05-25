@@ -25,4 +25,8 @@ class ReminderRepoImpl(private val reminderDao: ReminderDao) : ReminderRepo {
     override suspend fun updateAReminder(reminder: Reminder) {
         return reminderDao.updateAReminder(reminder)
     }
+
+    override suspend fun existingReminder(linkId: Long): Reminder? {
+        return reminderDao.existingReminder(linkId)
+    }
 }

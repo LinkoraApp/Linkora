@@ -57,6 +57,8 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collect
@@ -489,6 +491,24 @@ class AppVM(
                 })
         }.invokeOnCompletion {
             onCompletion()
+        }
+    }
+
+    fun deleteAReminder(reminderId: Long,onCompletion: () -> Unit) {
+        viewModelScope.launch {
+            com.sakethh.cancelAReminder(reminderId.toInt())
+            reminderRepo.deleteAReminder(reminderId)
+        }.invokeOnCompletion {
+            onCompletion()
+        }
+    }
+
+     private val _existingReminder = MutableStateFlow<Reminder?>(null)
+     val existingReminder = _existingReminder.asStateFlow()
+
+    fun checkForAnExistingReminder(linkId: Long) {
+        viewModelScope.launch {
+            _existingReminder.value = reminderRepo.existingReminder(linkId)
         }
     }
 }

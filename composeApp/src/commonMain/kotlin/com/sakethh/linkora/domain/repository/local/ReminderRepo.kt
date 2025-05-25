@@ -13,4 +13,6 @@ interface ReminderRepo {
     suspend fun getAReminder(reminderId: Long): Reminder
 
     fun getAllReminders(): Flow<List<Reminder>>
+
+    suspend fun existingReminder(linkId: Long): Reminder?
 }
