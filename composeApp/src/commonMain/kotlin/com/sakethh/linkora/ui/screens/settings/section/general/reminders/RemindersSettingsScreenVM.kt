@@ -4,6 +4,7 @@ import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TimePickerState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -31,6 +32,11 @@ class RemindersSettingsScreenVM(
 
     fun updateSearchQuery(query: String) {
         searchQuery = query
+    }
+
+    companion object {
+        val selectedWeeklyDays = mutableStateListOf<String>()
+        val selectedMonthlyDates = mutableStateListOf<String>()
     }
 
     val reminders = reminderRepo.getAllReminders().map {

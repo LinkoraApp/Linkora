@@ -71,9 +71,11 @@ import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.ui.components.link.LinkListItemComposable
 import com.sakethh.linkora.ui.domain.model.LinkUIComponentParam
 import com.sakethh.linkora.ui.screens.settings.section.data.components.ToggleButton
+import com.sakethh.linkora.ui.screens.settings.section.general.reminders.RemindersSettingsScreenVM
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.pulsateEffect
+import com.sakethh.linkora.ui.utils.rememberDeserializableObject
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -129,6 +131,13 @@ fun ManageReminderBtmSheet(
     }
     val remindersType = remember {
         listOf(Reminder.Type.ONCE, Reminder.Type.PERIODIC, Reminder.Type.STICKY)
+    }
+    val selectedPeriodicType = rememberSaveable {
+        mutableStateOf(Reminder.Type.PERIODIC.WEEKLY.toString())
+    }
+
+    val periodicTypes = rememberDeserializableObject {
+        listOf(Reminder.Type.PERIODIC.WEEKLY, Reminder.Type.PERIODIC.MONTHLY)
     }
     ModalBottomSheet(
         properties = remember { ModalBottomSheetProperties(shouldDismissOnBackPress = false) },
@@ -263,43 +272,130 @@ fun ManageReminderBtmSheet(
                     }
                 }
             }
-            item {
-                when (selectedReminderType.value) {
-                    Reminder.Type.ONCE.toString() -> {
-                        ReminderSetting(
-                            string = selectedDate.value,
-                            icon = Icons.Default.CalendarMonth,
-                            shape = RoundedCornerShape(
-                                topStart = 15.dp,
-                                topEnd = 15.dp,
-                                bottomStart = 5.dp,
-                                bottomEnd = 5.dp
-                            ),
-                            paddingValues = PaddingValues(
-                                start = 15.dp, end = 15.dp, top = 15.dp, bottom = 7.5.dp
-                            ),
-                            onClick = {
-                                showDatePicker.value = true
-                            })
-                        ReminderSetting(
-                            string = selectedTime.value,
-                            icon = Icons.Default.AccessTime,
-                            shape = RoundedCornerShape(
-                                bottomStart = 15.dp,
-                                bottomEnd = 15.dp,
-                                topStart = 5.dp,
-                                topEnd = 5.dp
-                            ),
-                            paddingValues = PaddingValues(
-                                start = 15.dp, end = 15.dp, bottom = 15.dp
-                            ),
-                            onClick = {
-                                showTimePicker.value = true
-                            })
+            if (selectedReminderType.value == Reminder.Type.PERIODIC.toString()) {
+                item {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth().padding(
+                            start = 15.dp, end = 15.dp, bottom = 15.dp, top = 7.5.dp
+                        ),
+                    ) {
+                        periodicTypes.forEachIndexed { index, type ->
+                            val selected = selectedPeriodicType.value == type.toString()
+                            ToggleButton(
+                                shape = periodicTypes.roundedCornerShape(index),
+                                checked = selected,
+                                onCheckedChange = {
+                                    selectedPeriodicType.value = type.toString()
+                                },
+                                content = {
+                                    Text(
+                                        style = if (selected) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleSmall,
+                                        text = type.toString(),
+                                        color = if (selected) MaterialTheme.colorScheme.onPrimary else LocalContentColor.current
+                                    )
+                                })
+                            Spacer(Modifier.width(5.dp))
+                        }
                     }
+                }
+            }
+            item {
+                if (selectedReminderType.value == Reminder.Type.ONCE.toString()) {
+                    ReminderSetting(
+                        string = selectedDate.value,
+                        icon = Icons.Default.CalendarMonth,
+                        shape = RoundedCornerShape(
+                            topStart = 15.dp, topEnd = 15.dp, bottomStart = 5.dp, bottomEnd = 5.dp
+                        ),
+                        paddingValues = PaddingValues(
+                            start = 15.dp, end = 15.dp, top = 15.dp, bottom = 7.5.dp
+                        ),
+                        onClick = {
+                            showDatePicker.value = true
+                        })
+                }
 
-                    Reminder.Type.PERIODIC.toString() -> {
-
+                if (selectedReminderType.value == Reminder.Type.ONCE.toString() || selectedReminderType.value == Reminder.Type.PERIODIC.toString()) {
+                    ReminderSetting(
+                        string = selectedTime.value,
+                        icon = Icons.Default.AccessTime,
+                        shape = RoundedCornerShape(
+                            bottomStart = 15.dp,
+                            bottomEnd = 15.dp,
+                            topStart = if (selectedReminderType.value == Reminder.Type.PERIODIC.toString()) 15.dp else 5.dp,
+                            topEnd = if (selectedReminderType.value == Reminder.Type.PERIODIC.toString()) 15.dp else 5.dp
+                        ),
+                        paddingValues = PaddingValues(
+                            start = 15.dp, end = 15.dp, bottom = 15.dp
+                        ),
+                        onClick = {
+                            showTimePicker.value = true
+                        })
+                }
+            }
+            if (selectedReminderType.value == Reminder.Type.PERIODIC.toString()) {
+                item {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
+                            .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
+                    ) {
+                        remember(selectedPeriodicType.value) {
+                            if (selectedPeriodicType.value == Reminder.Type.PERIODIC.WEEKLY.toString()) {
+                                listOf(
+                                    "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"
+                                )
+                            } else {
+                                (1..31).map { it.toString() }
+                            }
+                        }.let {
+                            it.forEachIndexed { index, string ->
+                                val selected =
+                                    if (selectedPeriodicType.value == Reminder.Type.PERIODIC.WEEKLY.toString()) {
+                                        RemindersSettingsScreenVM.selectedWeeklyDays.contains(
+                                            string
+                                        )
+                                    } else {
+                                        RemindersSettingsScreenVM.selectedMonthlyDates.contains(
+                                            string
+                                        )
+                                    }
+                                ToggleButton(
+                                    shape = it.roundedCornerShape(index),
+                                    checked = selected,
+                                    onCheckedChange = {
+                                        if (selectedPeriodicType.value == Reminder.Type.PERIODIC.WEEKLY.toString()) {
+                                            if (it) {
+                                                RemindersSettingsScreenVM.selectedWeeklyDays.add(
+                                                    string
+                                                )
+                                            } else {
+                                                RemindersSettingsScreenVM.selectedWeeklyDays.remove(
+                                                    string
+                                                )
+                                            }
+                                        } else {
+                                            if (it) {
+                                                RemindersSettingsScreenVM.selectedMonthlyDates.add(
+                                                    string
+                                                )
+                                            } else {
+                                                RemindersSettingsScreenVM.selectedMonthlyDates.remove(
+                                                    string
+                                                )
+                                            }
+                                        }
+                                    }) {
+                                    Text(
+                                        modifier = Modifier.padding(5.dp),
+                                        style = if (selected) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleSmall,
+                                        text = string,
+                                        color = if (selected) MaterialTheme.colorScheme.onPrimary else LocalContentColor.current
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -345,7 +441,9 @@ fun ManageReminderBtmSheet(
             item {
                 AnimatedContent(targetState = showProgressbar.value) {
                     if (it) {
-                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(15.dp))
+                        LinearProgressIndicator(
+                            modifier = Modifier.fillMaxWidth().padding(15.dp)
+                        )
                     } else {
                         Button(modifier = Modifier.fillMaxWidth().padding(15.dp), onClick = {
                             if (reminderTitle.value.isBlank() or reminderDesc.value.isBlank() or (selectedReminderType.value != Reminder.Type.STICKY.toString() && datePickerState.selectedDateMillis == null)) {
@@ -373,73 +471,75 @@ fun ManageReminderBtmSheet(
                 }
             }
         }
-    }
-    if (showDatePicker.value) {
-        DatePickerDialog(
-            onDismissRequest = {
-            showDatePicker.value = false
-        }, confirmButton = {
-            Button(
-                modifier = Modifier.fillMaxWidth()
-                    .padding(start = 15.dp, end = 15.dp, bottom = 10.dp), onClick = {
-                    datePickerState.selectedDateMillis?.let {
-                        selectedDate.value = SimpleDateFormat("MMMM dd, yyyy").format(Date(it))
-                    }
-                    showDatePicker.value = false
-                }) {
-                Text(text = "Confirm", style = MaterialTheme.typography.titleMedium)
-            }
-        }, modifier = Modifier.scale(0.95f)
-        ) {
-            DatePicker(state = datePickerState)
-        }
-    }
-    if (showTimePicker.value) {
-        BasicAlertDialog(
-            onDismissRequest = {
-                showTimePicker.value = false
-            },
-            modifier = Modifier.clip(RoundedCornerShape(10.dp)).zIndex(100f)
-                .background(AlertDialogDefaults.containerColor).clip(
-                    AlertDialogDefaults.shape
-                )
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Spacer(modifier = Modifier.height(15.dp))
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
-                    Text(
-                        text = "Pick the time",
-                        fontSize = 24.sp,
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(start = 15.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.height(15.dp))
-                TimePicker(state = timePickerState)
+        if (showDatePicker.value) {
+            DatePickerDialog(
+                onDismissRequest = {
+                showDatePicker.value = false
+            }, confirmButton = {
                 Button(
-                    onClick = {
-                        selectedTime.value = buildString {
-                            append((if (timePickerState.isAfternoon) timePickerState.hour - 12 else timePickerState.hour).run {
-                                if (this.toString().length == 1) "0$this" else this
-                            }.run {
-                                if (this.toString() == "00" && timePickerState.isAfternoon) "12" else this
-                            })
-                            append(":")
-                            append(timePickerState.minute.run {
-                                if (this.toString().length == 1) "0$this" else this
-                            })
-                            append(if (timePickerState.isAfternoon) " PM" else " AM")
-                        }
-                        showTimePicker.value = false
-                    },
                     modifier = Modifier.fillMaxWidth()
-                        .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
-                ) {
+                        .padding(start = 15.dp, end = 15.dp, bottom = 10.dp), onClick = {
+                        datePickerState.selectedDateMillis?.let {
+                            selectedDate.value = SimpleDateFormat("MMMM dd, yyyy").format(Date(it))
+                        }
+                        showDatePicker.value = false
+                    }) {
                     Text(text = "Confirm", style = MaterialTheme.typography.titleMedium)
+                }
+            }, modifier = Modifier.scale(0.95f)
+            ) {
+                DatePicker(state = datePickerState)
+            }
+        }
+        if (showTimePicker.value) {
+            BasicAlertDialog(
+                onDismissRequest = {
+                    showTimePicker.value = false
+                },
+                modifier = Modifier.clip(RoundedCornerShape(10.dp)).zIndex(100f)
+                    .background(AlertDialogDefaults.containerColor).clip(
+                        AlertDialogDefaults.shape
+                    )
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Spacer(modifier = Modifier.height(15.dp))
+                    Box(
+                        modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart
+                    ) {
+                        Text(
+                            text = "Pick the time",
+                            fontSize = 24.sp,
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(start = 15.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(15.dp))
+                    TimePicker(state = timePickerState)
+                    Button(
+                        onClick = {
+                            selectedTime.value = buildString {
+                                append((if (timePickerState.isAfternoon) timePickerState.hour - 12 else timePickerState.hour).run {
+                                    if (this.toString().length == 1) "0$this" else this
+                                }.run {
+                                    if (this.toString() == "00" && timePickerState.isAfternoon) "12" else this
+                                })
+                                append(":")
+                                append(timePickerState.minute.run {
+                                    if (this.toString().length == 1) "0$this" else this
+                                })
+                                append(if (timePickerState.isAfternoon) " PM" else " AM")
+                            }
+                            showTimePicker.value = false
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
+                    ) {
+                        Text(text = "Confirm", style = MaterialTheme.typography.titleMedium)
+                    }
                 }
             }
         }
