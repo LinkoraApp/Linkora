@@ -33,9 +33,7 @@ data class Reminder(
         constructor(
             year: Int, month: Int, dayOfMonth: Int
         ) : this(
-            year = year.toString(),
-            month = month.toString(),
-            dayOfMonth = dayOfMonth.toString()
+            year = year.toString(), month = month.toString(), dayOfMonth = dayOfMonth.toString()
         )
     }
 
@@ -47,18 +45,37 @@ data class Reminder(
     }
 
     @Serializable
-    enum class Type {
-        ONCE {
-            override val imgVector: ImageVector = Icons.Default.LooksOne
-        },
-        PERIODIC {
-            override val imgVector: ImageVector = Icons.Default.Repeat
-        },
-        STICKY {
-            override val imgVector: ImageVector = Icons.Default.Pin
-        }, ;
+    sealed interface Type {
 
-        abstract val imgVector: ImageVector
+        @Serializable
+        data object ONCE : Type {
+            override val imgVector = Icons.Default.LooksOne
+        }
+
+        @Serializable
+        sealed interface PERIODIC : Type {
+            override val imgVector: ImageVector
+                get() = Icons.Default.Repeat
+
+            @Serializable
+            data object WEEKLY : PERIODIC
+
+            @Serializable
+            data object MONTHLY : PERIODIC
+
+            companion object : Type {
+                override val imgVector = Icons.Default.Repeat
+                override fun toString(): String = "PERIODIC"
+            }
+
+        }
+
+        @Serializable
+        data object STICKY : Type {
+            override val imgVector = Icons.Default.Pin
+        }
+
+        val imgVector: ImageVector
     }
 
     @Serializable

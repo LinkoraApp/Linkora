@@ -222,7 +222,7 @@ fun RemindersSettingsScreen() {
             mutableStateOf("${selectedReminderData.value.reminder.date.dayOfMonth}-${selectedReminderData.value.reminder.date.month}-${selectedReminderData.value.reminder.date.year}")
         },
         selectedReminderType = rememberSaveable(selectedReminderData.value) {
-            mutableStateOf(selectedReminderData.value.reminder.reminderType.name)
+            mutableStateOf(selectedReminderData.value.reminder.reminderType.toString())
         },
         selectedReminderMode = rememberSaveable(selectedReminderData.value) {
             mutableStateOf(selectedReminderData.value.reminder.reminderMode.name)

@@ -22,7 +22,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.DeleteForever
-import androidx.compose.material.icons.filled.EditNotifications
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -107,7 +106,7 @@ fun ManageReminderBtmSheet(
         mutableStateOf("Click to select date")
     },
     selectedReminderType: MutableState<String> = rememberSaveable {
-        mutableStateOf(Reminder.Type.ONCE.name)
+        mutableStateOf(Reminder.Type.ONCE.toString())
     },
     selectedReminderMode: MutableState<String> = rememberSaveable {
         mutableStateOf(Reminder.Mode.CRUCIAL.name)
@@ -128,6 +127,9 @@ fun ManageReminderBtmSheet(
     val showProgressbar = rememberSaveable {
         mutableStateOf(false)
     }
+    val remindersType = remember {
+        listOf(Reminder.Type.ONCE, Reminder.Type.PERIODIC, Reminder.Type.STICKY)
+    }
     ModalBottomSheet(
         properties = remember { ModalBottomSheetProperties(shouldDismissOnBackPress = false) },
         sheetState = btmSheetState,
@@ -138,7 +140,8 @@ fun ManageReminderBtmSheet(
             item {
                 Spacer(modifier = Modifier.height(7.5.dp))
                 Text(
-                    text = if (sheetTitle != null) sheetTitle else if (forceScheduleReminder.value.not() && scheduledReminder != null) "A reminder is already scheduled for this link" else "Add a new Reminder",
+                    text = sheetTitle
+                        ?: if (forceScheduleReminder.value.not() && scheduledReminder != null) "A reminder is already scheduled for this link" else "Add a new Reminder",
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 24.sp,
                     textAlign = TextAlign.Start,
@@ -180,8 +183,7 @@ fun ManageReminderBtmSheet(
                             onDeleteClick(scheduledReminder)
                         }) {
                             Icon(
-                                imageVector = Icons.Default.DeleteForever,
-                                contentDescription = null
+                                imageVector = Icons.Default.DeleteForever, contentDescription = null
                             )
                         }
                     }
@@ -230,14 +232,14 @@ fun ManageReminderBtmSheet(
                     horizontalArrangement = Arrangement.spacedBy(15.dp)
                 ) {
                     Spacer(Modifier)
-                    Reminder.Type.entries.forEachIndexed { index, reminder ->
-                        val selected = selectedReminderType.value == reminder.name
+                    remindersType.forEachIndexed { index, reminder ->
+                        val selected = selectedReminderType.value == reminder.toString()
                         key(index) {
                             ToggleButton(
-                                shape = Reminder.Type.entries.roundedCornerShape(index),
+                                shape = remindersType.roundedCornerShape(index),
                                 checked = selected,
                                 onCheckedChange = {
-                                    selectedReminderType.value = reminder.name
+                                    selectedReminderType.value = reminder.toString()
                                 }) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
@@ -252,7 +254,7 @@ fun ManageReminderBtmSheet(
                                     )
                                     Text(
                                         style = if (selected) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleSmall,
-                                        text = reminder.name,
+                                        text = reminder.toString(),
                                         color = if (selected) MaterialTheme.colorScheme.onPrimary else LocalContentColor.current
                                     )
                                 }
@@ -263,7 +265,7 @@ fun ManageReminderBtmSheet(
             }
             item {
                 when (selectedReminderType.value) {
-                    Reminder.Type.ONCE.name -> {
+                    Reminder.Type.ONCE.toString() -> {
                         ReminderSetting(
                             string = selectedDate.value,
                             icon = Icons.Default.CalendarMonth,
@@ -295,9 +297,13 @@ fun ManageReminderBtmSheet(
                                 showTimePicker.value = true
                             })
                     }
+
+                    Reminder.Type.PERIODIC.toString() -> {
+
+                    }
                 }
             }
-            if (selectedReminderType.value != Reminder.Type.STICKY.name) {
+            if (selectedReminderType.value != Reminder.Type.STICKY.toString()) {
                 item {
                     Row(
                         modifier = Modifier.horizontalScroll(rememberScrollState()),
@@ -308,7 +314,7 @@ fun ManageReminderBtmSheet(
                             val selected = selectedReminderMode.value == mode.name
                             key(index) {
                                 ToggleButton(
-                                    shape = Reminder.Type.entries.roundedCornerShape(index),
+                                    shape = remindersType.roundedCornerShape(index),
                                     checked = selected,
                                     onCheckedChange = {
                                         selectedReminderMode.value = mode.name
@@ -342,7 +348,7 @@ fun ManageReminderBtmSheet(
                         LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(15.dp))
                     } else {
                         Button(modifier = Modifier.fillMaxWidth().padding(15.dp), onClick = {
-                            if (reminderTitle.value.isBlank() or reminderDesc.value.isBlank() or (selectedReminderType.value != Reminder.Type.STICKY.name && datePickerState.selectedDateMillis == null)) {
+                            if (reminderTitle.value.isBlank() or reminderDesc.value.isBlank() or (selectedReminderType.value != Reminder.Type.STICKY.toString() && datePickerState.selectedDateMillis == null)) {
                                 coroutineScope.launch {
                                     pushUIEvent(UIEvent.Type.ShowSnackbar(message = "All fields, including date and time, are required."))
                                 }
@@ -352,7 +358,9 @@ fun ManageReminderBtmSheet(
                             onSaveClick(
                                 reminderTitle.value,
                                 reminderDesc.value,
-                                Reminder.Type.valueOf(selectedReminderType.value),
+                                remindersType.find {
+                                    it.toString() == selectedReminderType.value
+                                }!!,
                                 Reminder.Mode.valueOf(selectedReminderMode.value),
                                 datePickerState,
                                 timePickerState,

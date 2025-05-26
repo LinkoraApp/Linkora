@@ -31,4 +31,15 @@ class TypeConverter {
 
     @TypeConverter
     fun serializedStringToTime(string: String) = Json.decodeFromString<Reminder.Time>(string)
+
+    @TypeConverter
+    fun reminderTypeToSerializedString(type: Reminder.Type) = type.toString()
+
+    @TypeConverter
+    fun serializedReminderTypeToReminderTypeObj(string: String): Reminder.Type = when(string){
+        Reminder.Type.ONCE.toString() -> Reminder.Type.ONCE
+        Reminder.Type.PERIODIC.WEEKLY.toString() -> Reminder.Type.PERIODIC.WEEKLY
+        Reminder.Type.PERIODIC.MONTHLY.toString() -> Reminder.Type.PERIODIC.MONTHLY
+        else -> Reminder.Type.STICKY
+    }
 }
