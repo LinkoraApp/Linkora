@@ -329,7 +329,6 @@ actual suspend fun scheduleAReminder(
             }.setOngoing(true).build()
 
         notificationManager.notify(2, notification)
-        linkoraLog("Here")
         onCompletion("")
         return
     }
@@ -352,14 +351,14 @@ actual suspend fun scheduleAReminder(
     )
 
     val reminderTime = Calendar.getInstance().apply {
-        set(
+        /*set(
             reminder.date.year.toInt(),
             reminder.date.month.toInt() - 1,
             reminder.date.dayOfMonth.toInt(),
             reminder.time.hour.toInt(),
             reminder.time.minute.toInt(),
             reminder.time.second.toInt()
-        )
+        )*/
     }.timeInMillis
     linkoraLog(Date(reminderTime).toString())
     try {

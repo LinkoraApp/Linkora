@@ -36,10 +36,30 @@ class TypeConverter {
     fun reminderTypeToSerializedString(type: Reminder.Type) = type.toString()
 
     @TypeConverter
-    fun serializedReminderTypeToReminderTypeObj(string: String): Reminder.Type = when(string){
+    fun serializedReminderTypeToReminderTypeObj(string: String): Reminder.Type = when (string) {
         Reminder.Type.ONCE.toString() -> Reminder.Type.ONCE
         Reminder.Type.PERIODIC.WEEKLY.toString() -> Reminder.Type.PERIODIC.WEEKLY
         Reminder.Type.PERIODIC.MONTHLY.toString() -> Reminder.Type.PERIODIC.MONTHLY
         else -> Reminder.Type.STICKY
+    }
+
+    @TypeConverter
+    fun listOfStringToString(list: List<String>): String {
+        return Json.encodeToString(list)
+    }
+
+    @TypeConverter
+    fun listOfIntToString(list: List<Int>): String {
+        return Json.encodeToString(list)
+    }
+
+    @TypeConverter
+    fun stringToListOfString(string: String): List<String> {
+        return Json.decodeFromString(string)
+    }
+
+    @TypeConverter
+    fun stringToListOfInt(string: String): List<Int> {
+        return Json.decodeFromString(string)
     }
 }

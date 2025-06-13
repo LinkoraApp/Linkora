@@ -89,10 +89,12 @@ fun ReminderComponent(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = "${reminder.date.dayOfMonth}-${reminder.date.month}-${reminder.date.year} ${reminder.time.hour}:${reminder.time.minute}",
-                    style = MaterialTheme.typography.titleSmall
-                )
+                if (reminder.date != null && reminder.time != null){
+                    Text(
+                        text = "${reminder.date.dayOfMonth}-${reminder.date.month}-${reminder.date.year} ${reminder.time.hour}:${reminder.time.minute}",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = onEditClick) {
                         Icon(

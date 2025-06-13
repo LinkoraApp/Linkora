@@ -36,21 +36,21 @@ class RemindersSettingsScreenVM(
 
     companion object {
         val selectedWeeklyDays = mutableStateListOf<String>()
-        val selectedMonthlyDates = mutableStateListOf<String>()
+        val selectedMonthlyDates = mutableStateListOf<Int>()
     }
 
     val reminders = reminderRepo.getAllReminders().map {
         it.map {
             ReminderData(
                 link = linksRepo.getALink(it.linkId), reminder = it.copy(
-                    date = Reminder.Date(
+                    date = if (it.date != null) Reminder.Date(
                         month = if (it.date.month.toString().length == 1) "0${it.date.month}" else it.date.month,
                         dayOfMonth = if (it.date.dayOfMonth.toString().length == 1) "0${it.date.dayOfMonth}" else it.date.dayOfMonth,
                         year = it.date.year
-                    ), time = Reminder.Time(
+                    ) else null, time = if (it.time != null) Reminder.Time(
                         hour = if (it.time.hour.toString().length == 1) "0${it.time.hour}" else it.time.hour,
                         minute = if (it.time.minute.toString().length == 1) "0${it.time.minute}" else it.time.minute
-                    )
+                    ) else null
                 )
             )
         }
@@ -61,15 +61,15 @@ class RemindersSettingsScreenVM(
             emit(it)
         } else {
             emit(it.filter {
-                it.reminder.time.hour.contains(searchQuery) or it.reminder.time.minute.contains(
+                if(it.reminder.time == null) false else it.reminder.time.hour.contains(searchQuery) || it.reminder.time.minute.contains(
                     searchQuery
-                ) or it.reminder.date.month.contains(searchQuery) or it.reminder.date.year.contains(
+                ) || if(it.reminder.date == null) false else it.reminder.date.month.contains(searchQuery) || it.reminder.date.year.contains(
                     searchQuery
-                ) or it.reminder.date.dayOfMonth.contains(searchQuery) or it.reminder.title.contains(
+                ) || it.reminder.date.dayOfMonth.contains(searchQuery) || it.reminder.title.contains(
                     searchQuery
-                ) or it.reminder.description.contains(
+                ) || it.reminder.description.contains(
                     searchQuery
-                ) or it.link.title.contains(searchQuery) or it.link.note.contains(searchQuery) or it.link.url.contains(
+                ) || it.link.title.contains(searchQuery) || it.link.note.contains(searchQuery) || it.link.url.contains(
                     searchQuery
                 )
             })

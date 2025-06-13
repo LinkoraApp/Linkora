@@ -184,10 +184,12 @@ fun ManageReminderBtmSheet(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            text = "${scheduledReminder.date.dayOfMonth}-${scheduledReminder.date.month}-${scheduledReminder.date.year} ${scheduledReminder.time.hour}:${scheduledReminder.time.minute}",
-                            style = MaterialTheme.typography.titleSmall
-                        )
+                        if (scheduledReminder.date != null && scheduledReminder.time != null) {
+                            Text(
+                                text = "${scheduledReminder.date.dayOfMonth}-${scheduledReminder.date.month}-${scheduledReminder.date.year} ${scheduledReminder.time.hour}:${scheduledReminder.time.minute}",
+                                style = MaterialTheme.typography.titleSmall
+                            )
+                        }
                         IconButton(onClick = {
                             onDeleteClick(scheduledReminder)
                         }) {
@@ -341,7 +343,7 @@ fun ManageReminderBtmSheet(
                         modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
                             .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
                     ) {
-                        remember(selectedPeriodicType.value) {
+                        rememberDeserializableObject(selectedPeriodicType.value) {
                             if (selectedPeriodicType.value == Reminder.Type.PERIODIC.WEEKLY.toString()) {
                                 listOf(
                                     "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"
@@ -358,7 +360,7 @@ fun ManageReminderBtmSheet(
                                         )
                                     } else {
                                         RemindersSettingsScreenVM.selectedMonthlyDates.contains(
-                                            string
+                                            string.toInt()
                                         )
                                     }
                                 ToggleButton(
@@ -378,11 +380,11 @@ fun ManageReminderBtmSheet(
                                         } else {
                                             if (it) {
                                                 RemindersSettingsScreenVM.selectedMonthlyDates.add(
-                                                    string
+                                                    string.toInt()
                                                 )
                                             } else {
                                                 RemindersSettingsScreenVM.selectedMonthlyDates.remove(
-                                                    string
+                                                    string.toInt()
                                                 )
                                             }
                                         }

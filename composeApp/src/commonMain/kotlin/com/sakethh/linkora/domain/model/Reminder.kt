@@ -22,9 +22,11 @@ data class Reminder(
     val description: String,
     val reminderType: Type,
     val reminderMode: Mode,
-    val date: Date,
-    val time: Time,
-    val linkView: String
+    val date: Date?,             // only used for ONCE type reminders
+    val daysOfWeek: List<String>?, // only used for PERIODIC weekly reminders
+    val datesOfMonth: List<Int>?,  // only used for PERIODIC monthly reminders
+    val time: Time?,
+    val linkView: String         // base64‑encoded "view"
 ) {
     @Serializable
     data class Date(

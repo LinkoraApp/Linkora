@@ -13,6 +13,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.DataSyncingNotificationService
+import com.sakethh.cancelAReminder
 import com.sakethh.exportSnapshotData
 import com.sakethh.linkora.common.Localization
 import com.sakethh.linkora.common.preferences.AppPreferenceType
@@ -49,6 +50,7 @@ import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM.Companion.clearAllSelections
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM.Companion.selectedFoldersViaLongClick
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM.Companion.selectedLinksViaLongClick
+import com.sakethh.linkora.ui.screens.settings.section.general.reminders.RemindersSettingsScreenVM
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
@@ -447,9 +449,11 @@ class AppVM(
                     description = description,
                     reminderType = reminderType,
                     reminderMode = reminderMode,
-                    date = Reminder.Date(0, 0, 0),
-                    time = Reminder.Time(0, 0, 0),
-                    linkView = ""
+                    date = null,
+                    time = null,
+                    linkView = "",
+                    daysOfWeek = null,
+                    datesOfMonth = null
                 )
                 com.sakethh.scheduleAReminder(
                     graphicsLayer = graphicsLayer, reminder = reminder, onCompletion = {})
@@ -482,7 +486,9 @@ class AppVM(
                         reminderMode = reminderMode,
                         date = localDate,
                         time = localTime,
-                        linkView = ""
+                        linkView = "",
+                        daysOfWeek = RemindersSettingsScreenVM.selectedWeeklyDays.toList(),
+                        datesOfMonth = RemindersSettingsScreenVM.selectedMonthlyDates.toList(),
                     )
                 )
             )
@@ -498,7 +504,7 @@ class AppVM(
 
     fun deleteAReminder(reminderId: Long,onCompletion: () -> Unit) {
         viewModelScope.launch {
-            com.sakethh.cancelAReminder(reminderId.toInt())
+            cancelAReminder(reminderId.toInt())
             reminderRepo.deleteAReminder(reminderId)
         }.invokeOnCompletion {
             onCompletion()

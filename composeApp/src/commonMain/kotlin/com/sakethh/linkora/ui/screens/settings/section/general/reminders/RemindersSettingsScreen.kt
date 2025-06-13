@@ -82,7 +82,9 @@ fun RemindersSettingsScreen() {
                     reminderMode = Reminder.Mode.CRUCIAL,
                     date = Reminder.Date("", "", ""),
                     time = Reminder.Time("", ""),
-                    linkView = "TODO()"
+                    linkView = "you can go through the code later, now just listen to this: https://open.spotify.com/track/34j4OxJxKznBs88cjSL2j9 (J. Ivy's verse ❤️‍🔥️‍❤️‍🔥🫡)",
+                    daysOfWeek = null,
+                    datesOfMonth = null,
                 )
             )
         )
@@ -160,20 +162,24 @@ fun RemindersSettingsScreen() {
                 }, onEditClick = {
                     selectedReminderData.value = it
 
-                    timePickerState.minute = it.reminder.time.minute.toInt()
-                    timePickerState.hour = it.reminder.time.hour.toInt()
-                    timePickerState.isAfternoon = it.reminder.time.hour.toInt() > 12
+                    if (it.reminder.time != null) {
+                        timePickerState.minute = it.reminder.time.minute.toInt()
+                        timePickerState.hour = it.reminder.time.hour.toInt()
+                        timePickerState.isAfternoon = it.reminder.time.hour.toInt() > 12
+                    }
 
-                    datePickerState.selectedDateMillis = Calendar.getInstance().apply {
-                        set(
-                            it.reminder.date.year.toInt(),
-                            it.reminder.date.month.toInt() - 1,
-                            it.reminder.date.dayOfMonth.toInt(),
-                            it.reminder.time.hour.toInt(),
-                            it.reminder.time.minute.toInt(),
-                            it.reminder.time.second.toInt()
-                        )
-                    }.timeInMillis
+                    if (it.reminder.date != null && it.reminder.time != null) {
+                        datePickerState.selectedDateMillis = Calendar.getInstance().apply {
+                            set(
+                                it.reminder.date.year.toInt(),
+                                it.reminder.date.month.toInt() - 1,
+                                it.reminder.date.dayOfMonth.toInt(),
+                                it.reminder.time.hour.toInt(),
+                                it.reminder.time.minute.toInt(),
+                                it.reminder.time.second.toInt()
+                            )
+                        }.timeInMillis
+                    }
 
                     isManageReminderBtmSheetVisible.value = true
                     coroutineScope.launch {
@@ -216,10 +222,10 @@ fun RemindersSettingsScreen() {
         datePickerState = datePickerState,
         timePickerState = timePickerState,
         selectedTime = rememberSaveable(selectedReminderData.value) {
-            mutableStateOf("${selectedReminderData.value.reminder.time.hour}:${selectedReminderData.value.reminder.time.minute}")
+            mutableStateOf("${selectedReminderData.value.reminder.time?.hour}:${selectedReminderData.value.reminder.time?.minute}")
         },
         selectedDate = rememberSaveable(selectedReminderData.value) {
-            mutableStateOf("${selectedReminderData.value.reminder.date.dayOfMonth}-${selectedReminderData.value.reminder.date.month}-${selectedReminderData.value.reminder.date.year}")
+            mutableStateOf("${selectedReminderData.value.reminder.date?.dayOfMonth}-${selectedReminderData.value.reminder.date?.month}-${selectedReminderData.value.reminder.date?.year}")
         },
         selectedReminderType = rememberSaveable(selectedReminderData.value) {
             mutableStateOf(selectedReminderData.value.reminder.reminderType.toString())

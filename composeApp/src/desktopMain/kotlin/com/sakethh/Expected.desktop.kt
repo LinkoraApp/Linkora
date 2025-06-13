@@ -65,7 +65,7 @@ actual val localDatabase: LocalDatabase? =
         }
         val MIGRATION_10_11 = object : Migration(10, 11) {
             override fun migrate(connection: SQLiteConnection) {
-                connection.execSQL("CREATE TABLE IF NOT EXISTS `reminder` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `linkId` INTEGER NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `reminderType` TEXT NOT NULL, `reminderMode` TEXT NOT NULL, `date` TEXT NOT NULL, `time` TEXT NOT NULL, `linkView` TEXT NOT NULL)")
+                connection.execSQL("CREATE TABLE IF NOT EXISTS `reminder` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `linkId` INTEGER NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `reminderType` TEXT NOT NULL, `reminderMode` TEXT NOT NULL, `date` TEXT, `daysOfWeek` TEXT, `datesOfMonth` TEXT, `time` TEXT, `linkView` TEXT NOT NULL)")
             }
         }
         Room.databaseBuilder<LocalDatabase>(name = this.absolutePath)
