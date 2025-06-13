@@ -10,7 +10,6 @@ import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.media.RingtoneManager
 import android.os.Build
 import android.os.Environment
@@ -301,7 +300,8 @@ actual suspend fun exportSnapshotData(
 actual suspend fun scheduleAReminder(
     reminder: Reminder,
     graphicsLayer: GraphicsLayer,
-    onCompletion: suspend (base64String: String) -> Unit
+    onFailure: suspend (String) -> Unit,
+    onSuccess: suspend (base64String: String) -> Unit
 ) {
 
     // imageBitmap should be converted to base64,
@@ -317,7 +317,8 @@ actual suspend fun scheduleAReminder(
         val notificationSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
         val notification = NotificationCompat.Builder(LinkoraApp.getContext(), "2")
             .setSmallIcon(R.drawable.ic_stat_name).setStyle(
-                NotificationCompat.BigPictureStyle().bigPicture(bitmap)).setContentTitle(reminder.title).setContentText(reminder.description)
+                NotificationCompat.BigPictureStyle().bigPicture(bitmap)
+            ).setContentTitle(reminder.title).setContentText(reminder.description)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setSilent(reminder.reminderMode == Reminder.Mode.SILENT).apply {
                 if (reminder.reminderMode == Reminder.Mode.VIBRATE) {
@@ -329,7 +330,6 @@ actual suspend fun scheduleAReminder(
             }.setOngoing(true).build()
 
         notificationManager.notify(2, notification)
-        onCompletion("")
         return
     }
 
@@ -341,39 +341,58 @@ actual suspend fun scheduleAReminder(
     val alarmManager: AlarmManager =
         LinkoraApp.getContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    val pendingIntent = PendingIntent.getBroadcast(
-        LinkoraApp.getContext(),
-        reminder.id.toInt(),
-        Intent(LinkoraApp.getContext(), ReminderReceiver::class.java).apply {
-            putExtra("id", reminder.id)
-        },
-        PendingIntent.FLAG_IMMUTABLE
-    )
-
-    val reminderTime = Calendar.getInstance().apply {
-        /*set(
-            reminder.date.year.toInt(),
-            reminder.date.month.toInt() - 1,
-            reminder.date.dayOfMonth.toInt(),
-            reminder.time.hour.toInt(),
-            reminder.time.minute.toInt(),
-            reminder.time.second.toInt()
-        )*/
-    }.timeInMillis
-    linkoraLog(Date(reminderTime).toString())
     try {
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP, reminderTime, pendingIntent
-        )
-    } catch (e: SecurityException) {
-        e.printStackTrace()
-        if (Build.VERSION.SDK_INT >= 31) {
-            LinkoraApp.getContext().startActivity(
-                Intent(ACTION_REQUEST_SCHEDULE_EXACT_ALARM).addFlags(FLAG_ACTIVITY_NEW_TASK)
-            )
+        when (reminder.reminderType) {
+            Reminder.Type.ONCE -> {
+                if (reminder.date == null || reminder.time == null) return onFailure("reminder.date == null || reminder.time == null")
+
+                val pendingIntent = PendingIntent.getBroadcast(
+                    LinkoraApp.getContext(),
+                    reminder.id.toInt(),
+                    Intent(LinkoraApp.getContext(), ReminderReceiver::class.java).apply {
+                        putExtra("id", reminder.id)
+                    },
+                    PendingIntent.FLAG_IMMUTABLE
+                )
+
+                val reminderTime = Calendar.getInstance().apply {
+                    set(
+                        reminder.date.year.toInt(),
+                        reminder.date.month.toInt() - 1,
+                        reminder.date.dayOfMonth.toInt(),
+                        reminder.time.hour.toInt(),
+                        reminder.time.minute.toInt(),
+                        reminder.time.second.toInt()
+                    )
+                }.timeInMillis
+
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP, reminderTime, pendingIntent
+                )
+            }
+
+            Reminder.Type.PERIODIC.WEEKLY -> {
+                linkoraLog(Reminder.Type.PERIODIC.WEEKLY)
+            }
+
+            Reminder.Type.PERIODIC.MONTHLY -> {
+                linkoraLog(Reminder.Type.PERIODIC.MONTHLY)
+            }
+
+            else -> Unit
         }
+        onSuccess(base64String)
+    } catch (e: Exception) {
+        if (e is SecurityException) {
+            if (Build.VERSION.SDK_INT >= 31) {
+                LinkoraApp.getContext().startActivity(
+                    Intent(ACTION_REQUEST_SCHEDULE_EXACT_ALARM).addFlags(FLAG_ACTIVITY_NEW_TASK)
+                )
+            }
+        }
+        e.printStackTrace()
+        onFailure(e.message.toString())
     }
-    onCompletion(base64String)
 }
 
 actual fun canScheduleReminders(): Boolean {

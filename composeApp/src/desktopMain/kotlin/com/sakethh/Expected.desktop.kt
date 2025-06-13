@@ -173,7 +173,8 @@ actual suspend fun exportSnapshotData(
 actual suspend fun scheduleAReminder(
     reminder: Reminder,
     graphicsLayer: GraphicsLayer,
-    onCompletion: suspend (base64String: String) -> Unit
+    onFailure:suspend (String) -> Unit,
+    onSuccess:suspend (base64String: String)-> Unit
 ) = Unit
 
 actual fun canScheduleReminders(): Boolean = false

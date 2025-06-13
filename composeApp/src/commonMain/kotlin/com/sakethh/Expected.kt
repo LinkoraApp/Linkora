@@ -71,7 +71,9 @@ expect suspend fun scheduleAReminder(
     // bitmap conversion is a mess in the common module
     // since Skia's implementation doesn't work on android,
     // so this is the only way i can think of for now
-    graphicsLayer: GraphicsLayer, onCompletion: suspend (base64String: String) -> Unit
+    graphicsLayer: GraphicsLayer,
+    onFailure:suspend (String) -> Unit,
+    onSuccess:suspend (base64String: String)-> Unit
 )
 
 expect fun canScheduleReminders(): Boolean

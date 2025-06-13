@@ -118,10 +118,10 @@ class RemindersSettingsScreenVM(
             com.sakethh.scheduleAReminder(
                 reminder = updatedReminder,
                 graphicsLayer = graphicsLayer,
-                onCompletion = { base64String ->
+                onSuccess = { base64String ->
                     // yet another update needs to be done as the image and title may have changed if a refresh of the link took place after saving the reminder
                     reminderRepo.updateAReminder(updatedReminder.copy(linkView = base64String))
-                })
+                }, onFailure = {})
         }.invokeOnCompletion {
             onCompletion()
         }

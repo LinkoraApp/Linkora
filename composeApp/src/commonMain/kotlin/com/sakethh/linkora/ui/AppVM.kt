@@ -61,8 +61,6 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collect
@@ -456,7 +454,10 @@ class AppVM(
                     datesOfMonth = null
                 )
                 com.sakethh.scheduleAReminder(
-                    graphicsLayer = graphicsLayer, reminder = reminder, onCompletion = {})
+                    graphicsLayer = graphicsLayer,
+                    reminder = reminder,
+                    onFailure = {},
+                    onSuccess = {})
             }.invokeOnCompletion {
                 onCompletion()
             }
@@ -494,15 +495,23 @@ class AppVM(
             )
 
             com.sakethh.scheduleAReminder(
-                graphicsLayer = graphicsLayer, reminder = reminder, onCompletion = { base64String ->
+                graphicsLayer = graphicsLayer,
+                reminder = reminder,
+                onFailure = {
+                    reminderRepo.deleteAReminder(reminderId = reminder.id)
+                },
+                onSuccess = { base64String ->
                     reminderRepo.updateAReminder(reminder.copy(linkView = base64String))
                 })
+
         }.invokeOnCompletion {
+            RemindersSettingsScreenVM.selectedWeeklyDays.clear()
+            RemindersSettingsScreenVM.selectedMonthlyDates.clear()
             onCompletion()
         }
     }
 
-    fun deleteAReminder(reminderId: Long,onCompletion: () -> Unit) {
+    fun deleteAReminder(reminderId: Long, onCompletion: () -> Unit) {
         viewModelScope.launch {
             cancelAReminder(reminderId.toInt())
             reminderRepo.deleteAReminder(reminderId)
@@ -511,8 +520,8 @@ class AppVM(
         }
     }
 
-     var existingReminder by mutableStateOf<Reminder?>(null)
-         private set
+    var existingReminder by mutableStateOf<Reminder?>(null)
+        private set
 
     fun checkForAnExistingReminder(linkId: Long) {
         viewModelScope.launch {

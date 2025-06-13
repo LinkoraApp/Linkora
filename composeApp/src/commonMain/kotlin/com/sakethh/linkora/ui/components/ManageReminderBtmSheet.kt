@@ -448,7 +448,7 @@ fun ManageReminderBtmSheet(
                         )
                     } else {
                         Button(modifier = Modifier.fillMaxWidth().padding(15.dp), onClick = {
-                            if (reminderTitle.value.isBlank() or reminderDesc.value.isBlank() or (selectedReminderType.value != Reminder.Type.STICKY.toString() && datePickerState.selectedDateMillis == null)) {
+                            if (reminderTitle.value.isBlank() || reminderDesc.value.isBlank() || ((selectedReminderType.value == Reminder.Type.ONCE.toString() || (selectedReminderType.value == Reminder.Type.PERIODIC.toString() && selectedPeriodicType.value == Reminder.Type.PERIODIC.MONTHLY.toString())) && datePickerState.selectedDateMillis == null)) {
                                 coroutineScope.launch {
                                     pushUIEvent(UIEvent.Type.ShowSnackbar(message = "All fields, including date and time, are required."))
                                 }
@@ -460,7 +460,17 @@ fun ManageReminderBtmSheet(
                                 reminderDesc.value,
                                 remindersType.find {
                                     it.toString() == selectedReminderType.value
-                                }!!,
+                                }!!.run {
+                                    if (this == Reminder.Type.PERIODIC) {
+                                        if (selectedPeriodicType.value == Reminder.Type.PERIODIC.WEEKLY.toString()) {
+                                            Reminder.Type.PERIODIC.WEEKLY
+                                        } else {
+                                            Reminder.Type.PERIODIC.MONTHLY
+                                        }
+                                    } else {
+                                        this
+                                    }
+                                },
                                 Reminder.Mode.valueOf(selectedReminderMode.value),
                                 datePickerState,
                                 timePickerState,
