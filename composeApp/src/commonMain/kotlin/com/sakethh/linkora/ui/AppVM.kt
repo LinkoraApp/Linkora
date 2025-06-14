@@ -464,16 +464,24 @@ class AppVM(
             return
         }
 
-        if (datePickerState.selectedDateMillis == null) return
+        if (datePickerState.selectedDateMillis == null && reminderType == Reminder.Type.ONCE) return
 
         viewModelScope.launch {
-            val selectedDate =
+            val selectedDate: List<Int>? = if (reminderType == Reminder.Type.ONCE) {
                 SimpleDateFormat("yyyy\nMM\ndd").format(Date(datePickerState.selectedDateMillis!!))
                     .split("\n").map { it.toInt() }
+            } else {
+                null
+            }
 
-            val localDate = Reminder.Date(
-                selectedDate[0], selectedDate[1], selectedDate[2]
-            )
+            val localDate: Reminder.Date? = if (selectedDate != null) {
+                Reminder.Date(
+                    selectedDate[0], selectedDate[1], selectedDate[2]
+                )
+            } else {
+                null
+            }
+
             val localTime = Reminder.Time(
                 timePickerState.hour, timePickerState.minute
             )

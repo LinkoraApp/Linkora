@@ -448,7 +448,7 @@ fun ManageReminderBtmSheet(
                         )
                     } else {
                         Button(modifier = Modifier.fillMaxWidth().padding(15.dp), onClick = {
-                            if (reminderTitle.value.isBlank() || reminderDesc.value.isBlank() || ((selectedReminderType.value == Reminder.Type.ONCE.toString() || (selectedReminderType.value == Reminder.Type.PERIODIC.toString() && selectedPeriodicType.value == Reminder.Type.PERIODIC.MONTHLY.toString())) && datePickerState.selectedDateMillis == null)) {
+                            if (reminderTitle.value.isBlank() || reminderDesc.value.isBlank() || (selectedReminderType.value == Reminder.Type.ONCE.toString() && datePickerState.selectedDateMillis == null)) {
                                 coroutineScope.launch {
                                     pushUIEvent(UIEvent.Type.ShowSnackbar(message = "All fields, including date and time, are required."))
                                 }
