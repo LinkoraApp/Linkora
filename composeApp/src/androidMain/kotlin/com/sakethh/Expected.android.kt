@@ -47,6 +47,7 @@ import com.sakethh.linkora.common.preferences.AppPreferences
 import com.sakethh.linkora.common.utils.Constants
 import com.sakethh.linkora.common.utils.getLocalizedString
 import com.sakethh.linkora.common.utils.isNull
+import com.sakethh.linkora.common.utils.suspendTryAndCatch
 import com.sakethh.linkora.data.local.LocalDatabase
 import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.ImportFileType
@@ -341,10 +342,26 @@ actual suspend fun scheduleAReminder(
     val alarmManager: AlarmManager =
         LinkoraApp.getContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    try {
-        when (reminder.reminderType) {
-            Reminder.Type.ONCE -> {
-                if (reminder.date == null || reminder.time == null) return onFailure("reminder.date == null || reminder.time == null")
+    val catchInit: suspend (Exception) -> Unit = { exception: Exception ->
+        if (exception is SecurityException) {
+            if (Build.VERSION.SDK_INT >= 31) {
+                LinkoraApp.getContext().startActivity(
+                    Intent(ACTION_REQUEST_SCHEDULE_EXACT_ALARM).addFlags(FLAG_ACTIVITY_NEW_TASK)
+                )
+            }
+        }
+        exception.printStackTrace()
+        onFailure(exception.message.toString())
+    }
+
+    when (reminder.reminderType) {
+        Reminder.Type.ONCE -> {
+            suspendTryAndCatch(onCatch = {
+                catchInit(it)
+            }) {
+                if (reminder.date == null || reminder.time == null) return@suspendTryAndCatch onFailure(
+                    "reminder.date == null || reminder.time == null"
+                )
 
                 val pendingIntent = PendingIntent.getBroadcast(
                     LinkoraApp.getContext(),
@@ -369,29 +386,31 @@ actual suspend fun scheduleAReminder(
                 alarmManager.setExactAndAllowWhileIdle(
                     AlarmManager.RTC_WAKEUP, reminderTime, pendingIntent
                 )
+                onSuccess(base64String)
             }
+        }
 
-            Reminder.Type.PERIODIC.WEEKLY -> {
+        Reminder.Type.PERIODIC.WEEKLY -> {
+            suspendTryAndCatch(onCatch = {
+                catchInit(it)
+            }) {
                 linkoraLog(Reminder.Type.PERIODIC.WEEKLY)
+                TODO()
+                onSuccess(base64String)
             }
+        }
 
-            Reminder.Type.PERIODIC.MONTHLY -> {
+        Reminder.Type.PERIODIC.MONTHLY -> {
+            suspendTryAndCatch(onCatch = {
+                catchInit(it)
+            }) {
                 linkoraLog(Reminder.Type.PERIODIC.MONTHLY)
+                TODO()
+                onSuccess(base64String)
             }
+        }
 
-            else -> Unit
-        }
-        onSuccess(base64String)
-    } catch (e: Exception) {
-        if (e is SecurityException) {
-            if (Build.VERSION.SDK_INT >= 31) {
-                LinkoraApp.getContext().startActivity(
-                    Intent(ACTION_REQUEST_SCHEDULE_EXACT_ALARM).addFlags(FLAG_ACTIVITY_NEW_TASK)
-                )
-            }
-        }
-        e.printStackTrace()
-        onFailure(e.message.toString())
+        else -> Unit
     }
 }
 

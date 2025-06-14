@@ -257,21 +257,40 @@ suspend fun File.duplicate(): File? = withContext(Dispatchers.IO) {
 }
 
 fun <T> List<T>.roundedCornerShape(index: Int): RoundedCornerShape {
-   return when (index) {
+    return when (index) {
         0 -> RoundedCornerShape(
-            topStart = 15.dp,
-            bottomStart = 15.dp,
-            topEnd = 5.dp,
-            bottomEnd = 5.dp
+            topStart = 15.dp, bottomStart = 15.dp, topEnd = 5.dp, bottomEnd = 5.dp
         )
 
         lastIndex -> RoundedCornerShape(
-            topEnd = 15.dp,
-            bottomEnd = 15.dp,
-            topStart = 5.dp,
-            bottomStart = 5.dp
+            topEnd = 15.dp, bottomEnd = 15.dp, topStart = 5.dp, bottomStart = 5.dp
         )
 
         else -> RoundedCornerShape(5.dp)
+    }
+}
+
+fun tryAndCatch(
+    onCatch: (exception: Exception) -> Unit = { it.printStackTrace() }, tryBlock: () -> Unit
+) {
+    try {
+        tryBlock()
+    } catch (e: Exception) {
+        onCatch(e)
+    } catch (e: Error) {
+        onCatch(Exception(e))
+    }
+}
+
+suspend fun suspendTryAndCatch(
+    onCatch: suspend (exception: Exception) -> Unit = { it.printStackTrace() },
+    tryBlock: suspend () -> Unit
+) {
+    try {
+        tryBlock()
+    } catch (e: Exception) {
+        onCatch(e)
+    } catch (e: Error) {
+        onCatch(Exception(e))
     }
 }
