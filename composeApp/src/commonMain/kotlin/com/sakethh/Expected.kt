@@ -78,4 +78,4 @@ expect suspend fun scheduleAReminder(
 
 expect fun canScheduleReminders(): Boolean
 
-expect fun cancelAReminder(reminderId: Int)
+expect fun cancelAReminder(requestCode: Int)

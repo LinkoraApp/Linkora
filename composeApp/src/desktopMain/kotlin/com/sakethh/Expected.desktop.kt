@@ -178,4 +178,4 @@ actual suspend fun scheduleAReminder(
 ) = Unit
 
 actual fun canScheduleReminders(): Boolean = false
-actual fun cancelAReminder(reminderId: Int) = Unit
+actual fun cancelAReminder(requestCode: Int) = Unit

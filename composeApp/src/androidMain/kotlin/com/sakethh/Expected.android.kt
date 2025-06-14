@@ -61,7 +61,6 @@ import com.sakethh.linkora.ui.AppVM
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.theme.poppinsFontFamily
 import com.sakethh.linkora.ui.utils.UIEvent
-import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.AndroidUIEvent
 import com.sakethh.linkora.utils.isTablet
 import com.sakethh.linkora.worker.RefreshAllLinksWorker
@@ -353,6 +352,7 @@ actual suspend fun scheduleAReminder(
         exception.printStackTrace()
         onFailure(exception.message.toString())
     }
+    val now = Calendar.getInstance().timeInMillis
 
     when (reminder.reminderType) {
         Reminder.Type.ONCE -> {
@@ -369,7 +369,7 @@ actual suspend fun scheduleAReminder(
                     Intent(LinkoraApp.getContext(), ReminderReceiver::class.java).apply {
                         putExtra("id", reminder.id)
                     },
-                    PendingIntent.FLAG_IMMUTABLE
+                    PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
 
                 val reminderTime = Calendar.getInstance().apply {
@@ -391,21 +391,89 @@ actual suspend fun scheduleAReminder(
         }
 
         Reminder.Type.PERIODIC.WEEKLY -> {
+            if (reminder.time == null) return
             suspendTryAndCatch(onCatch = {
                 catchInit(it)
             }) {
-                linkoraLog(Reminder.Type.PERIODIC.WEEKLY)
-                TODO()
+                reminder.daysOfWeek?.forEachIndexed { index, dayOfWeek ->
+                    val weekDay = when (dayOfWeek.uppercase()) {
+                        "SUN" -> Calendar.SUNDAY
+                        "MON" -> Calendar.MONDAY
+                        "TUE" -> Calendar.TUESDAY
+                        "WED" -> Calendar.WEDNESDAY
+                        "THU" -> Calendar.THURSDAY
+                        "FRI" -> Calendar.FRIDAY
+                        "SAT" -> Calendar.SATURDAY
+                        else -> return@forEachIndexed
+                    }
+
+                    val scheduledCalendar = Calendar.getInstance().apply {
+                        set(Calendar.DAY_OF_WEEK, weekDay)
+                        set(Calendar.HOUR_OF_DAY, reminder.time.hour.toInt())
+                        set(Calendar.MINUTE, reminder.time.minute.toInt())
+                        set(Calendar.SECOND, reminder.time.second.toInt())
+                        if (timeInMillis <= now) add(Calendar.WEEK_OF_YEAR, 1)
+                    }
+
+                    val intent =
+                        Intent(LinkoraApp.getContext(), ReminderReceiver::class.java).apply {
+                            putExtra("id", reminder.id)
+                        }
+                    val requestCode = reminder.id.toInt() * 100 + weekDay * 10 + index
+                    val pendingIntent = PendingIntent.getBroadcast(
+                        LinkoraApp.getContext(),
+                        requestCode,
+                        intent,
+                        PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    )
+
+                    alarmManager.setRepeating(
+                        AlarmManager.RTC_WAKEUP,
+                        scheduledCalendar.timeInMillis,
+                        AlarmManager.INTERVAL_DAY * 7,
+                        pendingIntent
+                    )
+                }
+
                 onSuccess(base64String)
             }
         }
 
         Reminder.Type.PERIODIC.MONTHLY -> {
+            if (reminder.time == null) return
+
             suspendTryAndCatch(onCatch = {
                 catchInit(it)
             }) {
-                linkoraLog(Reminder.Type.PERIODIC.MONTHLY)
-                TODO()
+                reminder.datesOfMonth?.forEachIndexed { index, dateOfMonth ->
+                    val scheduledCalendar = Calendar.getInstance().apply {
+                        set(Calendar.DAY_OF_MONTH, dateOfMonth)
+                        set(Calendar.HOUR_OF_DAY, reminder.time.hour.toInt())
+                        set(Calendar.MINUTE, reminder.time.minute.toInt())
+                        set(Calendar.SECOND, reminder.time.second.toInt())
+                        if (timeInMillis <= now) add(Calendar.MONTH, 1)
+                    }
+
+                    val intent = Intent(LinkoraApp.getContext(), ReminderReceiver::class.java).apply {
+                        putExtra("id", reminder.id)
+                    }
+
+                    val requestCode = reminder.id.toInt() * 100 + dateOfMonth * 10 + index
+                    val pendingIntent = PendingIntent.getBroadcast(
+                        LinkoraApp.getContext(),
+                        requestCode,
+                        intent,
+                        PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    )
+
+                    alarmManager.setRepeating(
+                        AlarmManager.RTC_WAKEUP,
+                        scheduledCalendar.timeInMillis,
+                        AlarmManager.INTERVAL_DAY * 30,
+                        pendingIntent
+                    )
+                }
+
                 onSuccess(base64String)
             }
         }
@@ -429,7 +497,7 @@ actual fun canScheduleReminders(): Boolean {
     }
 }
 
-actual fun cancelAReminder(reminderId: Int) {
+actual fun cancelAReminder(requestCode: Int) {
     val alarmManager: AlarmManager =
         LinkoraApp.getContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
@@ -437,11 +505,11 @@ actual fun cancelAReminder(reminderId: Int) {
     // https://stackoverflow.com/questions/28922521/how-to-cancel-alarm-from-alarmmanager/28922621#28922621
     val pendingIntent = PendingIntent.getBroadcast(
         LinkoraApp.getContext(),
-        reminderId,
+        requestCode,
         Intent(LinkoraApp.getContext(), ReminderReceiver::class.java).apply {
-            putExtra("id", reminderId)
+            putExtra("id", requestCode)
         },
-        PendingIntent.FLAG_IMMUTABLE
+        PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
     alarmManager.cancel(pendingIntent)
     pendingIntent.cancel()
