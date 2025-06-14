@@ -3,9 +3,11 @@ package com.sakethh.linkora.ui.screens.collections
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.common.Localization
+import com.sakethh.linkora.common.preferences.AppPreferenceType
 import com.sakethh.linkora.common.preferences.AppPreferences
 import com.sakethh.linkora.common.utils.Constants
 import com.sakethh.linkora.common.utils.getLocalizedString
@@ -23,6 +25,7 @@ import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onSuccess
 import com.sakethh.linkora.domain.repository.local.LocalFoldersRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
+import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.ui.components.menu.MenuBtmSheetVM
 import com.sakethh.linkora.ui.domain.model.CollectionDetailPaneInfo
 import com.sakethh.linkora.ui.domain.model.SearchNavigated
@@ -30,6 +33,7 @@ import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushLocalizedSnackbar
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,16 +41,19 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
+@OptIn(FlowPreview::class)
 open class CollectionsScreenVM(
     private val localFoldersRepo: LocalFoldersRepo,
     private val localLinksRepo: LocalLinksRepo,
     loadNonArchivedRootFoldersOnInit: Boolean = true,
     loadArchivedRootFoldersOnInit: Boolean = true,
-    val collectionDetailPaneInfo: CollectionDetailPaneInfo? = null
+    val collectionDetailPaneInfo: CollectionDetailPaneInfo? = null,
+    preferencesRepo: PreferencesRepository? = null
 ) : ViewModel() {
 
     companion object {
@@ -222,6 +229,20 @@ open class CollectionsScreenVM(
         }
         if (collectionDetailPaneInfo.isNotNull()) {
             updateCollectionDetailPaneInfoAndCollectData(collectionDetailPaneInfo!!)
+        }
+
+        if (preferencesRepo != null) {
+            viewModelScope.launch {
+                snapshotFlow {
+                    AppPreferences.selectedCollectionSourceId.value
+                }.cancellable().debounce(1000).collectLatest {
+                    preferencesRepo.changePreferenceValue(
+                        preferenceKey = intPreferencesKey(
+                            AppPreferenceType.COLLECTION_SOURCE_ID.name
+                        ), newValue = it
+                    )
+                }
+            }
         }
     }
 

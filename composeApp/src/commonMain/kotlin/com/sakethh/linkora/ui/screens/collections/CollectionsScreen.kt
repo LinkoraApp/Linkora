@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,11 +15,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.Numbers
 import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.DatasetLinked
 import androidx.compose.material.icons.outlined.Link
@@ -27,19 +33,27 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,6 +66,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sakethh.PlatformSpecificBackHandler
 import com.sakethh.linkora.common.Localization
+import com.sakethh.linkora.common.preferences.AppPreferences
 import com.sakethh.linkora.common.utils.Constants
 import com.sakethh.linkora.common.utils.getLocalizedString
 import com.sakethh.linkora.common.utils.isNull
@@ -71,6 +86,7 @@ import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.pulsateEffect
 import com.sakethh.platform
+import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -84,6 +100,28 @@ fun CollectionsScreen(
     val navController = LocalNavController.current
     val platform = LocalPlatform.current
     val topAppBarScrollState = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val rootContentPagerState =
+        rememberPagerState(initialPage = AppPreferences.selectedCollectionSourceId.value) { 2 }
+    val rootLabelPagerState =
+        rememberPagerState(initialPage = AppPreferences.selectedCollectionSourceId.value) { 2 }
+    val isRootContentSwitcherBtmSheetVisible = rememberSaveable {
+        mutableStateOf(false)
+    }
+    val rootContentSwitcherBtmSheetState =
+        rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    LaunchedEffect(AppPreferences.selectedCollectionSourceId.value) {
+        rootContentPagerState.animateScrollToPage(AppPreferences.selectedCollectionSourceId.value)
+    }
+    LaunchedEffect(Unit) {
+        snapshotFlow { rootContentPagerState.currentPageOffsetFraction }.collect {
+            rootLabelPagerState.animateScrollToPage(
+                page = rootContentPagerState.currentPage,
+                pageOffsetFraction = rootContentPagerState.currentPageOffsetFraction
+            )
+            AppPreferences.selectedCollectionSourceId.value = rootContentPagerState.currentPage
+        }
+    }
     Scaffold(
         floatingActionButtonPosition = FabPosition.End,
         modifier = Modifier.background(MaterialTheme.colorScheme.surface),
@@ -236,13 +274,44 @@ fun CollectionsScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            text = Localization.rememberLocalizedString(Localization.Key.Folders),
-                            color = MaterialTheme.colorScheme.primary,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontSize = 20.sp,
+                        Row(
                             modifier = Modifier.padding(start = 15.dp)
-                        )
+                            .clickable(indication = null, interactionSource = remember {
+                                MutableInteractionSource()
+                            }) {
+                                isRootContentSwitcherBtmSheetVisible.value = true
+                                coroutineScope.launch {
+                                    rootContentSwitcherBtmSheetState.show()
+                                }
+                            }, verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            FilledTonalIconButton(onClick = {
+                                isRootContentSwitcherBtmSheetVisible.value = true
+                                coroutineScope.launch {
+                                    rootContentSwitcherBtmSheetState.show()
+                                }
+                            }, modifier = Modifier.size(22.dp)) {
+                                Icon(
+                                    imageVector = Icons.Default.ArrowDownward,
+                                    contentDescription = null
+                                )
+                            }
+                            Spacer(Modifier.width(10.dp))
+                            HorizontalPager(
+                                state = rootLabelPagerState,
+                                modifier = Modifier.fillMaxWidth(0.3f),
+                                userScrollEnabled = false
+                            ) { currentPage ->
+                                Text(
+                                    text = if (currentPage == 0) Localization.rememberLocalizedString(
+                                        Localization.Key.Folders
+                                    ) else "Tags",
+                                    color = MaterialTheme.colorScheme.primary,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontSize = 20.sp,
+                                )
+                            }
+                        }
                         SortingIconButton()
                     }
                 }
@@ -254,73 +323,131 @@ fun CollectionsScreen(
                         )
                     }
                 }
-                items(rootFolders.value) { folder ->
-                    FolderComponent(
-                        FolderComponentParam(
-                            folder = folder,
-                            onClick = { ->
-                                if (CollectionsScreenVM.selectedFoldersViaLongClick.contains(folder)) {
-                                    return@FolderComponentParam
+                item {
+                    HorizontalPager(
+                        state = rootContentPagerState, modifier = Modifier.fillMaxSize()
+                    ) { currentPage ->
+                        if (currentPage == 0) {
+                            Column(modifier = Modifier.fillMaxSize()) {
+                                rootFolders.value.forEach { folder ->
+                                    key(folder) {
+                                        FolderComponent(
+                                            FolderComponentParam(
+                                                folder = folder,
+                                                onClick = { ->
+                                                    if (CollectionsScreenVM.selectedFoldersViaLongClick.contains(
+                                                            folder
+                                                        )
+                                                    ) {
+                                                        return@FolderComponentParam
+                                                    }
+                                                    val collectionDetailPaneInfo =
+                                                        CollectionDetailPaneInfo(
+                                                            currentFolder = folder,
+                                                            isAnyCollectionSelected = true
+                                                        )
+                                                    if (platform is Platform.Android.Mobile) {
+                                                        navController.currentBackStackEntry?.savedStateHandle?.set(
+                                                            key = Constants.COLLECTION_INFO_SAVED_STATE_HANDLE_KEY,
+                                                            value = Json.encodeToString(
+                                                                collectionDetailPaneInfo
+                                                            )
+                                                        )
+                                                        navController.navigate(
+                                                            Navigation.Collection.CollectionDetailPane
+                                                        )
+                                                    } else {
+                                                        collectionsScreenVM.updateCollectionDetailPaneInfoAndCollectData(
+                                                            collectionDetailPaneInfo
+                                                        )
+                                                    }
+                                                },
+                                                onLongClick = { ->
+                                                    if (CollectionsScreenVM.isSelectionEnabled.value.not()) {
+                                                        CollectionsScreenVM.isSelectionEnabled.value =
+                                                            true
+                                                        CollectionsScreenVM.selectedFoldersViaLongClick.add(
+                                                            folder
+                                                        )
+                                                    }
+                                                },
+                                                onMoreIconClick = { ->
+                                                    coroutineScope.pushUIEvent(
+                                                        UIEvent.Type.ShowMenuBtmSheetUI(
+                                                            menuBtmSheetFor = MenuBtmSheetType.Folder.RegularFolder,
+                                                            selectedLinkForMenuBtmSheet = null,
+                                                            selectedFolderForMenuBtmSheet = folder
+                                                        )
+                                                    )
+                                                },
+                                                isCurrentlyInDetailsView = remember(
+                                                    CollectionsScreenVM.collectionDetailPaneInfo.value.currentFolder?.localId
+                                                ) {
+                                                    mutableStateOf(CollectionsScreenVM.collectionDetailPaneInfo.value.currentFolder?.localId == folder.localId)
+                                                },
+                                                showMoreIcon = rememberSaveable {
+                                                    mutableStateOf(true)
+                                                },
+                                                isSelectedForSelection = rememberSaveable(
+                                                    CollectionsScreenVM.isSelectionEnabled.value,
+                                                    CollectionsScreenVM.selectedFoldersViaLongClick.size
+                                                ) {
+                                                    mutableStateOf(
+                                                        CollectionsScreenVM.isSelectionEnabled.value && CollectionsScreenVM.selectedFoldersViaLongClick.contains(
+                                                            folder
+                                                        )
+                                                    )
+                                                },
+                                                showCheckBox = CollectionsScreenVM.isSelectionEnabled,
+                                                onCheckBoxChanged = { bool ->
+                                                    if (bool) {
+                                                        CollectionsScreenVM.selectedFoldersViaLongClick.add(
+                                                            folder
+                                                        )
+                                                    } else {
+                                                        CollectionsScreenVM.selectedFoldersViaLongClick.remove(
+                                                            folder
+                                                        )
+                                                    }
+                                                })
+                                        )
+                                    }
                                 }
-                                val collectionDetailPaneInfo = CollectionDetailPaneInfo(
-                                    currentFolder = folder, isAnyCollectionSelected = true
-                                )
-                                if (platform is Platform.Android.Mobile) {
-                                    navController.currentBackStackEntry?.savedStateHandle?.set(
-                                        key = Constants.COLLECTION_INFO_SAVED_STATE_HANDLE_KEY,
-                                        value = Json.encodeToString(collectionDetailPaneInfo)
-                                    )
-                                    navController.navigate(
-                                        Navigation.Collection.CollectionDetailPane
-                                    )
-                                } else {
-                                    collectionsScreenVM.updateCollectionDetailPaneInfoAndCollectData(
-                                        collectionDetailPaneInfo
-                                    )
+                            }
+                        } else {
+                            Column(modifier = Modifier.fillMaxSize()) {
+                                repeat(15) {
+                                    key(it) {
+                                        FolderComponent(
+                                            FolderComponentParam(
+                                                mainIcon = Icons.Filled.Numbers,
+                                                isCurrentlyInDetailsView = rememberSaveable {
+                                                    mutableStateOf(false)
+                                                },
+                                                onLongClick = {},
+                                                onMoreIconClick = {},
+                                                folder = Folder(
+                                                    name = "Tag $it",
+                                                    note = "",
+                                                    parentFolderId = null
+                                                ),
+                                                onClick = {},
+                                                showMoreIcon = rememberSaveable {
+                                                    mutableStateOf(true)
+                                                },
+                                                isSelectedForSelection = rememberSaveable {
+                                                    mutableStateOf(false)
+                                                },
+                                                showCheckBox = rememberSaveable {
+                                                    mutableStateOf(false)
+                                                },
+                                                onCheckBoxChanged = {})
+                                        )
+                                    }
                                 }
-                            },
-                            onLongClick = { ->
-                                if (CollectionsScreenVM.isSelectionEnabled.value.not()) {
-                                    CollectionsScreenVM.isSelectionEnabled.value = true
-                                    CollectionsScreenVM.selectedFoldersViaLongClick.add(folder)
-                                }
-                            },
-                            onMoreIconClick = { ->
-                                coroutineScope.pushUIEvent(
-                                    UIEvent.Type.ShowMenuBtmSheetUI(
-                                        menuBtmSheetFor = MenuBtmSheetType.Folder.RegularFolder,
-                                        selectedLinkForMenuBtmSheet = null,
-                                        selectedFolderForMenuBtmSheet = folder
-                                    )
-                                )
-                            },
-                            isCurrentlyInDetailsView = remember(CollectionsScreenVM.collectionDetailPaneInfo.value.currentFolder?.localId) {
-                                mutableStateOf(CollectionsScreenVM.collectionDetailPaneInfo.value.currentFolder?.localId == folder.localId)
-                            },
-                            showMoreIcon = rememberSaveable {
-                                mutableStateOf(true)
-                            },
-                            isSelectedForSelection = rememberSaveable(
-                                CollectionsScreenVM.isSelectionEnabled.value,
-                                CollectionsScreenVM.selectedFoldersViaLongClick.size
-                            ) {
-                                mutableStateOf(
-                                    CollectionsScreenVM.isSelectionEnabled.value && CollectionsScreenVM.selectedFoldersViaLongClick.contains(
-                                        folder
-                                    )
-                                )
-                            },
-                            showCheckBox = CollectionsScreenVM.isSelectionEnabled,
-                            onCheckBoxChanged = { bool ->
-                                if (bool) {
-                                    CollectionsScreenVM.selectedFoldersViaLongClick.add(folder)
-                                } else {
-                                    CollectionsScreenVM.selectedFoldersViaLongClick.remove(
-                                        folder
-                                    )
-                                }
-                            })
-                    )
+                            }
+                        }
+                    }
                 }
                 item {
                     Spacer(Modifier.height(250.dp))
@@ -341,6 +468,52 @@ fun CollectionsScreen(
                 CollectionDetailPane(
                     collectionsScreenVM = collectionsScreenVM,
                 )
+            }
+        }
+    }
+    if (isRootContentSwitcherBtmSheetVisible.value) {
+        ModalBottomSheet(onDismissRequest = {
+            isRootContentSwitcherBtmSheetVisible.value = false
+            coroutineScope.launch {
+                rootContentSwitcherBtmSheetState.hide()
+            }
+        }, sheetState = rootContentSwitcherBtmSheetState) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Select a collection source",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(15.dp)
+                )
+                listOf(0, 1).forEach { contentTypeId ->
+                    Row(modifier = Modifier.fillMaxWidth().clickable {
+                        AppPreferences.selectedCollectionSourceId.value = contentTypeId
+                        coroutineScope.launch {
+                            rootContentSwitcherBtmSheetState.hide()
+                        }.invokeOnCompletion {
+                            isRootContentSwitcherBtmSheetVisible.value = false
+                        }
+                    }.padding(5.dp), verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(
+                            selected = contentTypeId == AppPreferences.selectedCollectionSourceId.value,
+                            onClick = {
+                                AppPreferences.selectedCollectionSourceId.value = contentTypeId
+                                coroutineScope.launch {
+                                    rootContentSwitcherBtmSheetState.hide()
+                                }.invokeOnCompletion {
+                                    isRootContentSwitcherBtmSheetVisible.value = false
+                                }
+                            })
+                        Spacer(Modifier.width(5.dp))
+                        Text(
+                            text = if (contentTypeId == 0) "Folders" else "Tags",
+                            style = if (contentTypeId == AppPreferences.selectedCollectionSourceId.value) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall,
+                            color = if (contentTypeId == AppPreferences.selectedCollectionSourceId.value) LocalContentColor.current else LocalContentColor.current.copy(
+                                0.85f
+                            )
+                        )
+                    }
+                }
             }
         }
     }

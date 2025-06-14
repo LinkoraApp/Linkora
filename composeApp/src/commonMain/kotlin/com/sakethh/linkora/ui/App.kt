@@ -262,7 +262,7 @@ fun App(
     }
     val collectionsScreenVM = viewModel<CollectionsScreenVM>(factory = genericViewModelFactory {
         CollectionsScreenVM(
-            DependencyContainer.localFoldersRepo.value, DependencyContainer.localLinksRepo.value
+            DependencyContainer.localFoldersRepo.value, DependencyContainer.localLinksRepo.value, preferencesRepo = DependencyContainer.preferencesRepo.value
         )
     })
     val rootRouteList = rememberDeserializableObject {

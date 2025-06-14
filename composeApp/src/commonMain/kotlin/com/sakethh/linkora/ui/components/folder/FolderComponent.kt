@@ -79,7 +79,7 @@ fun FolderComponent(folderComponentParam: FolderComponentParam) {
                 )
             } else {
                 Icon(
-                    imageVector = Icons.Outlined.Folder,
+                    imageVector = folderComponentParam.mainIcon,
                     contentDescription = null,
                     modifier = Modifier.padding(20.dp).size(28.dp)
                 )
