@@ -160,7 +160,7 @@ fun MobileMenu(
         if (menuBtmSheetFor == MenuBtmSheetType.Folder.RegularFolder) {
             MenuNonImageHeader(
                 onClick = {
-                    localClipBoardManager.setText(AnnotatedString(currentFolder?.name ?: ""))
+                    localClipBoardManager.setText(AnnotatedString(currentFolder.name))
                     coroutineScope.pushUIEvent(
                         UIEvent.Type.ShowSnackbar(
                             Localization.Key.CopiedTitleToTheClipboard.getLocalizedString()
@@ -179,13 +179,18 @@ fun MobileMenu(
                     menuBtmSheetFor
                 )
             ) {
-                val commonModifier = Modifier.padding(start = 10.dp, end = 10.dp).fillMaxWidth()
+                val commonModifier = Modifier.padding(
+                    start = 10.dp,
+                    end = 10.dp,
+                ).fillMaxWidth()
                 if (showTags) {
                     Text(
                         text = Localization.Key.AssociatedTags.rememberLocalizedString(),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.secondary,
-                        modifier = commonModifier,
+                        modifier = commonModifier.padding(
+                            top = if (!AppPreferences.showAssociatedImageInLinkMenu.value || currentLinkTagsPair.link.imgURL.isEmpty()) 10.dp else 0.dp
+                        ),
                         fontSize = 12.sp
                     )
                     TagsRow(
