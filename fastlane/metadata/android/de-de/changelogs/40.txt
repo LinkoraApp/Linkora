@@ -1,0 +1,3 @@
+Du kannst diese Version überspringen und in der Regel v0.13.2 verwenden, wenn du Linkora nur lokal nutzt.
+
+- Das WebSocket-Schema kann jetzt über den Server-Konfigurationsbildschirm geändert werden.
