@@ -1,0 +1,4 @@
+- Mehrfachauswahl zum Kopieren, Verschieben, Löschen, Archivieren und Entarchivieren von Links/Ordnern hinzugefügt.
+- Archivierte Ordner werden nun auf Mobilgeräten korrekt angezeigt.
+- Das AMOLED-Design wird beim Start wie erwartet geladen, sofern gewünscht.
+- Der Synchronisierungsserver unterbricht die Verbindungen zwischen Links und Ordnern beim Aktualisieren der Links nicht mehr. Wenn du davon betroffen sind, aktualisiere alle Links in den Dateneinstellungen (gilt nur bei Verwendung des Synchronisierungsservers).
