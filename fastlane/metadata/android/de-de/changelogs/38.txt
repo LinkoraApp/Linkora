@@ -1,0 +1,5 @@
+- Unterstützung für Snapshots (automatische Backups) hinzugefügt
+- Unterstützung für die Auswahl der Ausgangsroute hinzugefügt
+- Option „Force Shuffle“ als Sortieroption hinzugefügt
+- Option zum Ausblenden der Basis-URL in Listenansichten hinzugefügt
+- Option zum Anzeigen von Link-Notizen in Listenansichten hinzugefügt
