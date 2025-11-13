@@ -1,0 +1,15 @@
+Speichere, organisiere und synchronisiere deine Links zwischen Android und Desktop. Egal, ob du schnell etwas mit einem Lesezeichen versiehst oder eine strukturierte Ordnerhierarchie mit Tags verwaltest, Linkora erledigt alles mit optionaler selbst gehosteter Synchronisierung.
+
+Eine Browser-Erweiterung ist verfügbar, um Weblinks über den Sync-Server direkt in Linkora zu speichern.
+
+Organisiere deine Links mit einer einfachen, übersichtlichen Benutzeroberfläche.
+
+Funktionen
+- Verwalte Links mit unbegrenzten Ordnern und Unterordnern, Tags und einfachem Kopieren/Verschieben zwischen Ordnern
+- Mehrere Ansichtslayouts (Raster, Liste, versetzte Ansichten) mit AMOLED-Themenunterstützung
+- Markiere wichtige Links und archiviere alte Links für eine übersichtliche Organisation
+- Passe Linknamen an und erkenne Bilder/Titel von Webseiten automatisch
+- Teile Inhalte aus anderen Apps (Android) und füge Ordner zu Panels hinzu, um schnell darauf zugreifen zu können
+- Sortieren, Suchen, Import/Export von Daten in JSON- und HTML-Formaten mit automatischen Backups
+- Synchronisiere deine Links geräteübergreifend mit einem optionalen selbst gehosteten Server (https://github.com/LinkoraApp/sync-server)
+- Browser-Erweiterungsunterstützung zum Speichern von Weblinks (https://github.com/LinkoraApp/browser-extension)
