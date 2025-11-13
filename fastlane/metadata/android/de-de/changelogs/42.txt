@@ -1,0 +1,4 @@
+- Option zum Umgehen der Zertifikatsüberprüfung für Synchronisierungsserververbindungen hinzugefügt
+- Pull-to-Refresh- und Synchronisierungsschaltflächen zum manuellen Auslösen der Synchronisierung und zum erneuten Herstellen einer Verbindung mit WebSocket
+- Verbesserungen der randlosen Anzeige mit transparenten Navigationsleisten
+- Ziel-SDK auf 36 aktualisiert
