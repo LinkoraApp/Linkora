@@ -1,0 +1,1 @@
+Ein Problem wurde behoben, um sicherzustellen, dass das Bedienfeld beim Hinzufügen von Ordnern korrekt registriert wird.
