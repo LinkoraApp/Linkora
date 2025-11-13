@@ -38,14 +38,28 @@ import com.sakethh.linkora.ui.theme.DarkColors
 import com.sakethh.linkora.ui.theme.LightColors
 import com.sakethh.linkora.ui.theme.LinkoraTheme
 import com.sakethh.linkora.ui.utils.UIEvent
+import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.isTablet
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class IntentActivity : ComponentActivity() {
+class ShareToSaveActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (AppPreferences.autoSaveOnShareIntent.value) {
+            linkoraLog("Redirecting the intent action to AutoSaveLinkService")
+            val autoSaveServiceIntent = Intent(this, AutoSaveLinkService::class.java).putExtra(
+                Intent.EXTRA_TEXT, this@ShareToSaveActivity.intent?.getStringExtra(
+                    Intent.EXTRA_TEXT
+                ).toString()
+            )
+            startForegroundService(autoSaveServiceIntent)
+            linkoraLog("Redirected the intent action to AutoSaveLinkService")
+            finishAndRemoveTask()
+        }
+
         setContent {
             val localConfiguration = LocalConfiguration.current
             val navController = rememberNavController()
@@ -121,21 +135,21 @@ class IntentActivity : ComponentActivity() {
                     AddANewLinkDialogBox(
                         onDismiss = {
                             if (MainActivity.wasLaunched) {
-                                this@IntentActivity.finishAndRemoveTask()
+                                this@ShareToSaveActivity.finishAndRemoveTask()
                                 return@AddANewLinkDialogBox
                             }
                             if (AppPreferences.areSnapshotsEnabled.value) {
                                 intentActivityVM.createADataSnapshot(onCompletion = {
-                                    this@IntentActivity.finishAndRemoveTask()
+                                    this@ShareToSaveActivity.finishAndRemoveTask()
                                 })
                             } else {
-                                this@IntentActivity.finishAndRemoveTask()
+                                this@ShareToSaveActivity.finishAndRemoveTask()
                             }
                         },
                         screenType = ScreenType.INTENT_ACTIVITY,
                         currentFolder = null,
                         collectionsScreenVM = viewModel(factory = CollectionScreenVMAssistedFactory.createForIntentActivity()),
-                        url = this@IntentActivity.intent?.getStringExtra(
+                        url = this@ShareToSaveActivity.intent?.getStringExtra(
                             Intent.EXTRA_TEXT
                         ).toString()
                     )
@@ -146,7 +160,7 @@ class IntentActivity : ComponentActivity() {
 }
 
 class IntentActivityVM(
-    private val localLinksRepo: LocalLinksRepo,
+    val localLinksRepo: LocalLinksRepo,
     private val localFoldersRepo: LocalFoldersRepo,
     private val localPanelsRepo: LocalPanelsRepo,
     private val localTagsRepo: LocalTagsRepo,

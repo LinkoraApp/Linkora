@@ -26,7 +26,8 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
 
             SortingBtmSheetVM::class -> SortingBtmSheetVM(
                 preferencesRepository = DependencyContainer.preferencesRepo,
-                nativeUtils = LinkoraSDK.getInstance().nativeUtils
+                nativeUtils = LinkoraSDK.getInstance().nativeUtils,
+                permissionManager = LinkoraSDK.getInstance().permissionManager,
             )
 
             SearchScreenVM::class -> SearchScreenVM(
@@ -37,7 +38,8 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
 
             SettingsScreenViewModel::class -> SettingsScreenViewModel(
                 preferencesRepository = DependencyContainer.preferencesRepo,
-                nativeUtils = LinkoraSDK.getInstance().nativeUtils
+                nativeUtils = LinkoraSDK.getInstance().nativeUtils,
+                permissionManager = LinkoraSDK.getInstance().permissionManager
             )
 
             LanguageSettingsScreenVM::class -> DependencyContainer.localizationRepo.let {

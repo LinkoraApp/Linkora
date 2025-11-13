@@ -1,6 +1,7 @@
 package com.sakethh.linkora.ui.screens.settings
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoMode
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.PublicOff
@@ -17,12 +18,14 @@ import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.MediaType
+import com.sakethh.linkora.domain.PermissionStatus
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.platform.NativeUtils
+import com.sakethh.linkora.platform.PermissionManager
 import com.sakethh.linkora.preferences.AppPreferenceType
 import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.domain.AppIconCode
@@ -34,11 +37,14 @@ import com.sakethh.linkora.ui.screens.onboarding.Slide1
 import com.sakethh.linkora.ui.screens.onboarding.Slide2
 import com.sakethh.linkora.ui.screens.onboarding.Slide3
 import com.sakethh.linkora.ui.screens.onboarding.Slide4
+import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.utils.getLocalizedString
 import kotlinx.coroutines.launch
 
 open class SettingsScreenViewModel(
-    private val preferencesRepository: PreferencesRepository, private val nativeUtils: NativeUtils
+    private val preferencesRepository: PreferencesRepository,
+    private val nativeUtils: NativeUtils,
+    private val permissionManager: PermissionManager
 ) : ViewModel() {
 
     fun generalSection(platform: Platform): List<SettingComponentParam> {
@@ -140,6 +146,32 @@ open class SettingsScreenViewModel(
                                 AppPreferences.showAssociatedImageInLinkMenu.value = it
                             }
                         })
+                )
+
+                add(
+                    SettingComponentParam(
+                        title = "Auto-save links when shared from other apps",
+                        doesDescriptionExists = true,
+                        description = "Auto-saved links will be added to \"Saved Links\" without tags, and their title and image will be fetched automatically.",
+                        isSwitchNeeded = true,
+                        isSwitchEnabled = AppPreferences.autoSaveOnShareIntent,
+                        onSwitchStateChange = {
+                            viewModelScope.launch {
+                                if (permissionManager.permittedToShowNotification() == PermissionStatus.Granted) {
+                                    changeSettingPreferenceValue(
+                                        preferenceKey = booleanPreferencesKey(
+                                            AppPreferenceType.AUTO_SAVE_ON_SHARE_INTENT.name
+                                        ), newValue = it
+                                    )
+                                    AppPreferences.autoSaveOnShareIntent.value = it
+                                } else {
+                                    UIEvent.pushUIEvent(UIEvent.Type.ShowSnackbar(message = "Auto-saving requires notification permission."))
+                                }
+                            }
+                        },
+                        isIconNeeded = mutableStateOf(true),
+                        icon = Icons.Default.AutoMode
+                    )
                 )
             }
             add(

@@ -1,22 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:name=".LinkoraApp"
         android:allowBackup="true"
+        android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:usesCleartextTraffic="true"
-        android:enableOnBackInvokedCallback="true"
-        android:theme="@style/Theme.Linkora">
+        android:theme="@style/Theme.Linkora"
+        android:usesCleartextTraffic="true">
         <receiver
             android:name=".CancelRefreshingActionReceiver"
             android:exported="true" />
@@ -34,8 +37,8 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/mondstern_logo"
-            android:roundIcon="@mipmap/mondstern_logo_round"
             android:label="@string/app_name"
+            android:roundIcon="@mipmap/mondstern_logo_round"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -48,8 +51,8 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/lolcatpl_logo"
-            android:roundIcon="@mipmap/lolcatpl_logo_round"
             android:label="@string/app_name"
+            android:roundIcon="@mipmap/lolcatpl_logo_round"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -62,22 +65,22 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/legacy_logo"
-            android:roundIcon="@mipmap/legacy_logo_round"
             android:label="@string/app_name"
+            android:roundIcon="@mipmap/legacy_logo_round"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
-    
+
         <activity-alias
             android:name=".new_logo"
             android:enabled="true"
             android:exported="true"
             android:icon="@mipmap/ic_launcher"
-            android:roundIcon="@mipmap/ic_launcher_round"
             android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -112,7 +115,7 @@
         </activity-alias>
 
         <activity
-            android:name=".IntentActivity"
+            android:name=".ShareToSaveActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@style/Theme.IntentActivity">
@@ -124,6 +127,9 @@
             </intent-filter>
 
         </activity>
+        <service
+            android:name=".AutoSaveLinkService"
+            android:foregroundServiceType="specialUse" />
     </application>
 
 </manifest>

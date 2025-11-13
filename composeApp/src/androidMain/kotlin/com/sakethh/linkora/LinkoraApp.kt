@@ -64,7 +64,7 @@ class LinkoraApp : Application() {
                 "1", "Data Syncing", NotificationManager.IMPORTANCE_HIGH
             )
             notificationChannel.description =
-                "Used to notify about the data syncing status, including link refresh."
+                "Used to notify about the data syncing status, link refreshes, and auto-save status."
             val notificationManager =
                 getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(notificationChannel)

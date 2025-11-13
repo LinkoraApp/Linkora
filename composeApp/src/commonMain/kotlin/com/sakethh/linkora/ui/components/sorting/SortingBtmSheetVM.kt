@@ -7,13 +7,14 @@ import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.platform.NativeUtils
+import com.sakethh.linkora.platform.PermissionManager
 import com.sakethh.linkora.ui.domain.SortingType
 import com.sakethh.linkora.ui.domain.model.SortingBtmSheet
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 
 
-class SortingBtmSheetVM(preferencesRepository: PreferencesRepository,nativeUtils: NativeUtils) :
-    SettingsScreenViewModel(preferencesRepository, nativeUtils) {
+class SortingBtmSheetVM(preferencesRepository: PreferencesRepository,nativeUtils: NativeUtils, permissionManager: PermissionManager) :
+    SettingsScreenViewModel(preferencesRepository, nativeUtils, permissionManager) {
 
     fun sortingBtmSheetData(): List<SortingBtmSheet> {
         return listOf(

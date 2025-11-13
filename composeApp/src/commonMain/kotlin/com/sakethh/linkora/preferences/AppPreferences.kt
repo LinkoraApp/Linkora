@@ -91,6 +91,7 @@ object AppPreferences {
     var selectedAppIcon by mutableStateOf(AppIconCode.new_logo.name)
     var showTagsInAddNewLinkDialogBox by mutableStateOf(false)
     var showMenuOnGridLinkClick by mutableStateOf(true)
+    val autoSaveOnShareIntent = mutableStateOf(false)
     suspend fun lastSyncedLocally(preferencesRepository: PreferencesRepository): Long {
         return preferencesRepository.readPreferenceValue(
             preferenceKey = longPreferencesKey(AppPreferenceType.LAST_TIME_SYNCED_WITH_SERVER.name)
@@ -476,7 +477,13 @@ object AppPreferences {
                             preferenceKey = booleanPreferencesKey(
                                 AppPreferenceType.SHOW_MENU_ON_GRID_LINK_CLICK.name
                             )
-                        ) ?: true
+                        ) ?: showMenuOnGridLinkClick
+                    }, launch {
+                        autoSaveOnShareIntent.value = preferencesRepository.readPreferenceValue(
+                            preferenceKey = booleanPreferencesKey(
+                                AppPreferenceType.AUTO_SAVE_ON_SHARE_INTENT.name
+                            )
+                        ) ?: autoSaveOnShareIntent.value
                     }
                 ).joinAll()
             }

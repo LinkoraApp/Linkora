@@ -6,17 +6,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.viewModelScope
-import com.sakethh.linkora.platform.FileManager
-import com.sakethh.linkora.platform.NativeUtils
-import com.sakethh.linkora.platform.PermissionManager
 import com.sakethh.linkora.Localization
-import com.sakethh.linkora.preferences.AppPreferenceType
-import com.sakethh.linkora.preferences.AppPreferences
-import com.sakethh.linkora.utils.duplicate
-import com.sakethh.linkora.utils.getLocalizedString
-import com.sakethh.linkora.utils.getRemoteOnlyFailureMsg
-import com.sakethh.linkora.utils.isNull
-import com.sakethh.linkora.utils.pushSnackbarOnFailure
 import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.ImportFileType
 import com.sakethh.linkora.domain.LinkoraPlaceHolder
@@ -30,11 +20,21 @@ import com.sakethh.linkora.domain.repository.ImportDataRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
+import com.sakethh.linkora.platform.FileManager
+import com.sakethh.linkora.platform.NativeUtils
+import com.sakethh.linkora.platform.PermissionManager
+import com.sakethh.linkora.preferences.AppPreferenceType
+import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.AppVM
 import com.sakethh.linkora.ui.domain.ImportFileSelectionMethod
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
+import com.sakethh.linkora.utils.duplicate
+import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.getRemoteOnlyFailureMsg
+import com.sakethh.linkora.utils.isNull
+import com.sakethh.linkora.utils.pushSnackbarOnFailure
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
@@ -51,7 +51,7 @@ class DataSettingsScreenVM(
     private val nativeUtils: NativeUtils,
     private val fileManager: FileManager,
     private val permissionManager: PermissionManager
-) : SettingsScreenViewModel(preferencesRepository,nativeUtils) {
+) : SettingsScreenViewModel(preferencesRepository, nativeUtils, permissionManager) {
     val importExportProgressLogs = mutableStateListOf<String>()
 
     private var importExportJob: Job? = null
