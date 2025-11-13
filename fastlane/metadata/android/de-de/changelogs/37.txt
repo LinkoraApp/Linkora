@@ -1,0 +1,3 @@
+- Viele kleinere Verbesserungen an der Benutzeroberfläche und den Animationen.
+- Die App merkt sich nun, ob du über die Suche oder den Startbildschirm zu Ordnern navigiert bist, und navigiert wie erwartet zurück.
+- Onboarding für neue Benutzer hinzugefügt. Du kannst dies manuell unter „Einstellungen“ → „Allgemein“ → „Einführung anzeigen“ überprüfen.
