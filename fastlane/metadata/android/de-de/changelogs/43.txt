@@ -1,0 +1,5 @@
+- Exporte und Backups verwenden nun ein neues Zeitstempel-Muster, um Konflikte im Dateisystem zu vermeiden.
+- Die Speicherorte für Exporte und Snapshots sind nun anpassbar; du musst die Ordner für Exporte und Backups einzeln auswählen.
+- Optionale automatische Löschung alter Backups hinzugefügt (standardmäßig deaktiviert, gilt nur für Backups, die ab dieser Version erstellt wurden).
+- Doppelte Bildschirme im Backstack beim Navigieren über die untere Leiste wurden behoben (von @tuuhin).
+- Snapshots wurden auf einen neuen Bildschirm verschoben: Daten > Snapshots.
