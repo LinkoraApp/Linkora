@@ -1,7 +1,0 @@
-Wenn du sync-server verwendest, musst du sync-server Version v0.2.0 oder höher verwenden.
-
-- Unterstützung für Tags hinzugefügt; Tags werden beim JSON-Export/Snapshot exportiert, HTML-Tags hingegen nicht.
-- Ordner können beim Speichern eines Links durchsucht und sortiert werden.
-- Durch Doppeltippen auf das Suchsymbol wird die Suchleiste direkt geöffnet.
-- Die Adressen ausgewählter Links können geteilt werden (durch eine Zeile getrennt).
-- Unterstützung für alternative App-Symbole hinzugefügt.
