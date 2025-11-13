@@ -59,8 +59,8 @@ object AppPreferences {
     val remoteStringsLastUpdatedOn = mutableStateOf("")
     val selectedLinkLayout = mutableStateOf(Layout.REGULAR_LIST_VIEW.name)
     val enableBorderForNonListViews = mutableStateOf(true)
-    val enableTitleForNonListViews = mutableStateOf(true)
-    val enableBaseURLForLinkViews = mutableStateOf(true)
+    val showTitleInLinkGridView = mutableStateOf(true)
+    val showHostInLinkListView = mutableStateOf(true)
     val enableFadedEdgeForNonListViews = mutableStateOf(true)
     val shouldFollowAmoledTheme = mutableStateOf(false)
     val forceSaveWithoutFetchingAnyMetaData = mutableStateOf(false)
@@ -90,6 +90,7 @@ object AppPreferences {
     var selectedCollectionSourceId by mutableIntStateOf(0)
     var selectedAppIcon by mutableStateOf(AppIconCode.new_logo.name)
     var showTagsInAddNewLinkDialogBox by mutableStateOf(false)
+    var showMenuOnGridLinkClick by mutableStateOf(true)
     suspend fun lastSyncedLocally(preferencesRepository: PreferencesRepository): Long {
         return preferencesRepository.readPreferenceValue(
             preferenceKey = longPreferencesKey(AppPreferenceType.LAST_TIME_SYNCED_WITH_SERVER.name)
@@ -277,17 +278,17 @@ object AppPreferences {
                                 ) ?: enableBorderForNonListViews.value
                     },
                     launch {
-                        enableTitleForNonListViews.value =
+                        showTitleInLinkGridView.value =
                             preferencesRepository.readPreferenceValue(
                                 preferenceKey = booleanPreferencesKey(AppPreferenceType.TITLE_VISIBILITY_FOR_NON_LIST_VIEWS.name),
 
-                                ) ?: enableTitleForNonListViews.value
+                                ) ?: showTitleInLinkGridView.value
                     },
                     launch {
-                        enableBaseURLForLinkViews.value = preferencesRepository.readPreferenceValue(
+                        showHostInLinkListView.value = preferencesRepository.readPreferenceValue(
                             preferenceKey = booleanPreferencesKey(AppPreferenceType.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS.name),
 
-                            ) ?: enableBaseURLForLinkViews.value
+                            ) ?: showHostInLinkListView.value
                     },
                     launch {
                         enableFadedEdgeForNonListViews.value =
@@ -468,6 +469,12 @@ object AppPreferences {
                         showTagsInAddNewLinkDialogBox = preferencesRepository.readPreferenceValue(
                             preferenceKey = booleanPreferencesKey(
                                 AppPreferenceType.SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK.name
+                            )
+                        ) ?: true
+                    }, launch {
+                        showMenuOnGridLinkClick = preferencesRepository.readPreferenceValue(
+                            preferenceKey = booleanPreferencesKey(
+                                AppPreferenceType.SHOW_MENU_ON_GRID_LINK_CLICK.name
                             )
                         ) ?: true
                     }

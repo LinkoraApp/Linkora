@@ -56,16 +56,15 @@ import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.components.CoilImage
-import com.sakethh.linkora.ui.domain.model.LinkUIComponentParam
+import com.sakethh.linkora.ui.domain.model.LinkComponentParam
 import com.sakethh.linkora.ui.screens.collections.components.ItemDivider
 import com.sakethh.linkora.ui.utils.pressScaleEffect
-import kotlinx.coroutines.flow.Flow
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun LinkListItemComposable(
-    linkUIComponentParam: LinkUIComponentParam,
-    forTitleOnlyView: Boolean,
+fun ListViewLinkComponent(
+    linkComponentParam: LinkComponentParam,
+    titleOnlyView: Boolean,
     modifier: Modifier = Modifier,
     imageAlignment: Alignment = Alignment.Center,
     onShare: (url: String) -> Unit
@@ -75,15 +74,15 @@ fun LinkListItemComposable(
     val platform = LocalPlatform.current
     Column(
         modifier = Modifier.background(
-            if (linkUIComponentParam.isItemSelected.value) MaterialTheme.colorScheme.primary.copy(
+            if (linkComponentParam.isItemSelected.value) MaterialTheme.colorScheme.primary.copy(
                 0.25f
             ) else Color.Transparent
         ).pointerHoverIcon(icon = PointerIcon.Hand).combinedClickable(interactionSource = remember {
             MutableInteractionSource()
         }, indication = null, onClick = {
-            linkUIComponentParam.onLinkClick()
+            linkComponentParam.onLinkClick()
         }, onLongClick = {
-            linkUIComponentParam.onLongClick()
+            linkComponentParam.onLongClick()
         }).padding(start = 15.dp, top = 15.dp).fillMaxWidth().wrapContentHeight().pressScaleEffect()
             .animateContentSize().then(modifier), verticalArrangement = Arrangement.SpaceBetween
     ) {
@@ -92,23 +91,23 @@ fun LinkListItemComposable(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = linkUIComponentParam.link.title,
+                text = linkComponentParam.link.title,
                 style = MaterialTheme.typography.titleSmall,
                 fontSize = 16.sp,
-                modifier = Modifier.fillMaxWidth(if (!linkUIComponentParam.isSelectionModeEnabled.value && forTitleOnlyView) 1f else 0.65f)
+                modifier = Modifier.fillMaxWidth(if (!linkComponentParam.isSelectionModeEnabled.value && titleOnlyView) 1f else 0.65f)
                     .padding(end = 15.dp),
                 maxLines = 4,
                 lineHeight = 20.sp,
                 textAlign = TextAlign.Start,
                 overflow = TextOverflow.Ellipsis,
             )
-            if (!linkUIComponentParam.isItemSelected.value && !forTitleOnlyView) {
-                if (linkUIComponentParam.link.imgURL.isNotEmpty()) {
+            if (!linkComponentParam.isItemSelected.value && !titleOnlyView) {
+                if (linkComponentParam.link.imgURL.isNotEmpty()) {
                     CoilImage(
                         modifier = Modifier.width(95.dp).height(60.dp)
                             .clip(RoundedCornerShape(15.dp)),
-                        imgURL = linkUIComponentParam.link.imgURL,
-                        userAgent = linkUIComponentParam.link.userAgent
+                        imgURL = linkComponentParam.link.imgURL,
+                        userAgent = linkComponentParam.link.userAgent
                             ?: AppPreferences.primaryJsoupUserAgent.value,
                         alignment = imageAlignment
                     )
@@ -127,7 +126,7 @@ fun LinkListItemComposable(
                         )
                     }
                 }
-            } else if (linkUIComponentParam.isItemSelected.value) {
+            } else if (linkComponentParam.isItemSelected.value) {
                 Box(
                     modifier = Modifier.width(95.dp).height(60.dp).clip(RoundedCornerShape(15.dp))
                         .background(MaterialTheme.colorScheme.primary),
@@ -142,12 +141,12 @@ fun LinkListItemComposable(
                 }
             }
         }
-        if (linkUIComponentParam.link.note.isNotBlank() && AppPreferences.showNoteInListViewLayout.value) {
+        if (linkComponentParam.link.note.isNotBlank() && AppPreferences.showNoteInListViewLayout.value) {
             Text(
                 modifier = Modifier.padding(
                     end = 15.dp, top = 10.dp
                 ),
-                text = linkUIComponentParam.link.note,
+                text = linkComponentParam.link.note,
                 style = MaterialTheme.typography.titleSmall,
                 maxLines = 3,
                 textAlign = TextAlign.Start,
@@ -156,23 +155,23 @@ fun LinkListItemComposable(
                 color = MaterialTheme.colorScheme.onSurface.copy(0.75f)
             )
         }
-        if (linkUIComponentParam.tags != null) {
-            TagsRow(tags = linkUIComponentParam.tags, onTagClick = {
-                linkUIComponentParam.onTagClick(it)
+        if (linkComponentParam.tags != null) {
+            TagsRow(tags = linkComponentParam.tags, onTagClick = {
+                linkComponentParam.onTagClick(it)
             })
         }
 
-        if (AppPreferences.enableBaseURLForLinkViews.value) {
+        if (AppPreferences.showHostInLinkListView.value) {
             Text(
                 modifier = Modifier.padding(
-                    top = if (linkUIComponentParam.tags != null) 5.dp else 15.dp,
+                    top = if (linkComponentParam.tags != null) 5.dp else 15.dp,
                     end = 15.dp,
-                    bottom = if (linkUIComponentParam.isSelectionModeEnabled.value) 15.dp else 0.dp
+                    bottom = if (linkComponentParam.isSelectionModeEnabled.value) 15.dp else 0.dp
                 ).background(
                     color = MaterialTheme.colorScheme.primary.copy(0.1f),
                     shape = RoundedCornerShape(5.dp)
                 ).padding(5.dp),
-                text = linkUIComponentParam.link.baseURL.replace("www.", "").replace("http://", "")
+                text = linkComponentParam.link.baseURL.replace("www.", "").replace("http://", "")
                     .replace("https://", ""),
                 style = MaterialTheme.typography.titleLarge,
                 maxLines = 1,
@@ -188,13 +187,13 @@ fun LinkListItemComposable(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                if (!linkUIComponentParam.isSelectionModeEnabled.value) {
+                if (!linkComponentParam.isSelectionModeEnabled.value) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(modifier=Modifier.pointerHoverIcon(icon = PointerIcon.Hand),onClick = {
                             localClipBoardManager.setText(
-                                AnnotatedString(linkUIComponentParam.link.url)
+                                AnnotatedString(linkComponentParam.link.url)
                             )
                         }) {
                             Icon(
@@ -203,13 +202,13 @@ fun LinkListItemComposable(
                         }
                         if (platform is Platform.Android) {
                             IconButton(modifier=Modifier.pointerHoverIcon(icon = PointerIcon.Hand),onClick = {
-                                onShare(linkUIComponentParam.link.url)
+                                onShare(linkComponentParam.link.url)
                             }) {
                                 Icon(imageVector = Icons.Outlined.Share, contentDescription = null)
                             }
                         }
                         IconButton(modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand), onClick = {
-                            linkUIComponentParam.onMoreIconClick()
+                            linkComponentParam.onMoreIconClick()
                         }) {
                             Icon(
                                 imageVector = Icons.Filled.MoreVert, contentDescription = null
@@ -220,7 +219,7 @@ fun LinkListItemComposable(
             }
         }
         AnimatedVisibility(
-            visible = linkUIComponentParam.isSelectionModeEnabled.value.not(),
+            visible = linkComponentParam.isSelectionModeEnabled.value.not(),
             enter = fadeIn(),
             exit = fadeOut()
         ) {

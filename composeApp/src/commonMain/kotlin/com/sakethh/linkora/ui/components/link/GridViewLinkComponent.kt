@@ -4,6 +4,7 @@ package com.sakethh.linkora.ui.components.link
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -15,6 +16,8 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -30,41 +33,39 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sakethh.linkora.preferences.AppPreferences
-import com.sakethh.linkora.utils.host
-import com.sakethh.linkora.utils.getVideoPlatformBaseUrls
 import com.sakethh.linkora.domain.MediaType
+import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.components.CoilImage
-import com.sakethh.linkora.ui.domain.model.LinkUIComponentParam
+import com.sakethh.linkora.ui.domain.model.LinkComponentParam
 import com.sakethh.linkora.ui.utils.fadedEdges
 import com.sakethh.linkora.ui.utils.pressScaleEffect
+import com.sakethh.linkora.utils.getVideoPlatformBaseUrls
+import com.sakethh.linkora.utils.host
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun GridViewLinkUIComponent(
-    linkUIComponentParam: LinkUIComponentParam,
-    forStaggeredView: Boolean,
-    modifier: Modifier = Modifier
+fun GridViewLinkComponent(
+    linkComponentParam: LinkComponentParam, forStaggeredView: Boolean, modifier: Modifier = Modifier
 ) {
     val colorScheme = MaterialTheme.colorScheme
     Card(
-        colors = CardDefaults.cardColors(containerColor = if (linkUIComponentParam.isSelectionModeEnabled.value) colorScheme.primaryContainer else CardDefaults.cardColors().containerColor),
-        modifier = Modifier.fillMaxWidth().animateContentSize()
+        colors = CardDefaults.cardColors(containerColor = if (linkComponentParam.isSelectionModeEnabled.value) colorScheme.primaryContainer else CardDefaults.cardColors().containerColor),
+        modifier = Modifier.fillMaxWidth()
             .then(if (!forStaggeredView) Modifier.wrapContentHeight() else Modifier)
-            .pointerHoverIcon(icon = PointerIcon.Hand)
-            .combinedClickable(onClick = {
-                if (!linkUIComponentParam.isSelectionModeEnabled.value) {
-                    linkUIComponentParam.onMoreIconClick()
+            .pointerHoverIcon(icon = PointerIcon.Hand).combinedClickable(onClick = {
+                if (AppPreferences.showMenuOnGridLinkClick && !linkComponentParam.isSelectionModeEnabled.value) {
+                    linkComponentParam.onMoreIconClick()
                     return@combinedClickable
                 }
-                linkUIComponentParam.onLinkClick()
+                linkComponentParam.onLinkClick()
             }, interactionSource = remember {
                 MutableInteractionSource()
             }, indication = null, onLongClick = {
-                linkUIComponentParam.onLongClick()
-            }).pressScaleEffect().padding(4.dp).then(modifier)
+                linkComponentParam.onLongClick()
+            }).pressScaleEffect().padding(start = 4.dp, end = 4.dp, top = 4.dp).then(modifier)
+            .animateContentSize()
     ) {
-        if (linkUIComponentParam.isItemSelected.value) {
+        if (linkComponentParam.isItemSelected.value) {
             Box(
                 Modifier.fillMaxWidth().height(150.dp)
                     .background(MaterialTheme.colorScheme.primary),
@@ -72,7 +73,7 @@ fun GridViewLinkUIComponent(
             ) {
                 Icon(Icons.Default.CheckCircle, null, tint = colorScheme.onPrimary)
             }
-        } else if (linkUIComponentParam.link.imgURL.trim().isNotBlank()) {
+        } else if (linkComponentParam.link.imgURL.trim().isNotBlank()) {
             Box(modifier = if (forStaggeredView) Modifier.fillMaxSize() else Modifier.height(150.dp)) {
                 CoilImage(
                     modifier = Modifier.fillMaxSize().then(
@@ -80,12 +81,12 @@ fun GridViewLinkUIComponent(
                             colorScheme
                         ) else Modifier
                     ),
-                    imgURL = linkUIComponentParam.link.imgURL,
-                    contentScale = if (linkUIComponentParam.link.imgURL.startsWith("https://pbs.twimg.com/profile_images/") || !AppPreferences.isShelfMinimizedInHomeScreen.value || !forStaggeredView) ContentScale.Crop else ContentScale.Fit,
-                    userAgent = linkUIComponentParam.link.userAgent
+                    imgURL = linkComponentParam.link.imgURL,
+                    contentScale = if (linkComponentParam.link.imgURL.startsWith("https://pbs.twimg.com/profile_images/") || !AppPreferences.isShelfMinimizedInHomeScreen.value || !forStaggeredView) ContentScale.Crop else ContentScale.Fit,
+                    userAgent = linkComponentParam.link.userAgent
                         ?: AppPreferences.primaryJsoupUserAgent.value
                 )
-                if (AppPreferences.showVideoTagOnUIIfApplicable.value && (linkUIComponentParam.link.mediaType == MediaType.VIDEO || linkUIComponentParam.link.url.host(
+                if (AppPreferences.showVideoTagOnUIIfApplicable.value && (linkComponentParam.link.mediaType == MediaType.VIDEO || linkComponentParam.link.url.host(
                         throwOnException = false
                     ) in getVideoPlatformBaseUrls())
                 ) {
@@ -94,7 +95,7 @@ fun GridViewLinkUIComponent(
                         modifier = Modifier.padding(
                             start = 10.dp,
                         )
-                            .padding(bottom = if (AppPreferences.enableBaseURLForLinkViews.value || (!AppPreferences.enableBaseURLForLinkViews.value && !AppPreferences.enableTitleForNonListViews.value)) 10.dp else 0.dp)
+                            .padding(bottom = if (AppPreferences.showHostInLinkListView.value || (!AppPreferences.showHostInLinkListView.value && !AppPreferences.showTitleInLinkGridView.value)) 10.dp else 0.dp)
                             .background(
                                 color = MaterialTheme.colorScheme.secondary.copy(0.25f),
                                 shape = RoundedCornerShape(5.dp)
@@ -107,14 +108,14 @@ fun GridViewLinkUIComponent(
                 }
             }
         }
-        if (AppPreferences.enableTitleForNonListViews.value) {
+        if (AppPreferences.showTitleInLinkGridView.value) {
             Text(
-                text = linkUIComponentParam.link.title,
+                text = linkComponentParam.link.title,
                 modifier = Modifier.padding(
                     start = 10.dp,
                     top = 10.dp,
                     end = 10.dp,
-                    bottom = if (linkUIComponentParam.isSelectionModeEnabled.value || !AppPreferences.enableBaseURLForLinkViews.value) 10.dp else 0.dp
+                    bottom = if (!AppPreferences.showHostInLinkListView.value) 10.dp else 0.dp
                 ),
                 style = MaterialTheme.typography.titleSmall,
                 overflow = TextOverflow.Ellipsis,
@@ -122,10 +123,15 @@ fun GridViewLinkUIComponent(
                 maxLines = 3
             )
         }
-        if (!linkUIComponentParam.isSelectionModeEnabled.value && AppPreferences.enableBaseURLForLinkViews.value) {
+        if (!linkComponentParam.isSelectionModeEnabled.value && AppPreferences.showHostInLinkListView.value) {
             Text(
-                text = linkUIComponentParam.link.url.host(throwOnException = false),
-                modifier = Modifier.padding(10.dp).background(
+                text = linkComponentParam.link.url.host(throwOnException = false),
+                modifier = Modifier.padding(
+                    start = 10.dp,
+                    top = 10.dp,
+                    end = 10.dp,
+                    bottom = if (AppPreferences.showMenuOnGridLinkClick) 10.dp else 0.dp
+                ).background(
                     color = MaterialTheme.colorScheme.primary.copy(0.25f),
                     shape = RoundedCornerShape(5.dp)
                 ).padding(5.dp),
@@ -134,6 +140,20 @@ fun GridViewLinkUIComponent(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+        }
+        if (!AppPreferences.showMenuOnGridLinkClick) {
+            Box(
+                modifier = Modifier.padding(top = if ((!AppPreferences.showTitleInLinkGridView.value && AppPreferences.showHostInLinkListView.value) || (AppPreferences.showTitleInLinkGridView.value && AppPreferences.showHostInLinkListView.value)) 10.dp else 0.dp)
+                    .fillMaxWidth()
+                    .background(ButtonDefaults.filledTonalButtonColors().containerColor)
+                    .height(36.dp).clickable(
+                        interactionSource = null,
+                        indication = null,
+                        onClick = linkComponentParam.onMoreIconClick
+                    ).pointerHoverIcon(PointerIcon.Hand), contentAlignment = Alignment.Center
+            ) {
+                Icon(imageVector = Icons.Default.MoreHoriz, contentDescription = null)
+            }
         }
     }
 }

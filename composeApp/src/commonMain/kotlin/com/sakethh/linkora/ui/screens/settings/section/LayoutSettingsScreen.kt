@@ -41,18 +41,18 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.LinkoraSDK
+import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.preferences.AppPreferenceType
 import com.sakethh.linkora.preferences.AppPreferences
-import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
-import com.sakethh.linkora.utils.getLocalizedString
-import com.sakethh.linkora.utils.rememberLocalizedString
-import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.ui.LocalNavController
-import com.sakethh.linkora.ui.components.link.GridViewLinkUIComponent
-import com.sakethh.linkora.ui.components.link.LinkListItemComposable
+import com.sakethh.linkora.ui.components.link.GridViewLinkComponent
+import com.sakethh.linkora.ui.components.link.ListViewLinkComponent
 import com.sakethh.linkora.ui.domain.Layout
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
+import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
+import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.rememberLocalizedString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,15 +94,15 @@ fun LayoutSettingsScreen() {
                         ) {
                             LinkViewPreferenceSwitch(
                                 onClick = {
-                                    AppPreferences.enableBaseURLForLinkViews.value =
-                                        !AppPreferences.enableBaseURLForLinkViews.value
+                                    AppPreferences.showHostInLinkListView.value =
+                                        !AppPreferences.showHostInLinkListView.value
                                     settingsScreenViewModel.changeSettingPreferenceValue(
                                         preferenceKey = booleanPreferencesKey(AppPreferenceType.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS.name),
-                                        newValue = AppPreferences.enableBaseURLForLinkViews.value
+                                        newValue = AppPreferences.showHostInLinkListView.value
                                     )
                                 },
                                 title = Localization.Key.ShowHostAddress.getLocalizedString(),
-                                isSwitchChecked = AppPreferences.enableBaseURLForLinkViews.value
+                                isSwitchChecked = AppPreferences.showHostInLinkListView.value
                             )
                         }
                     }
@@ -143,12 +143,12 @@ fun LayoutSettingsScreen() {
                         )
                     }
                     items(sampleList) {
-                        LinkListItemComposable(
-                            linkUIComponentParam = it,
+                        ListViewLinkComponent(
+                            linkComponentParam = it,
                             onShare = {
                                 LinkoraSDK.getInstance().nativeUtils.onShare(it)
                             },
-                            forTitleOnlyView = AppPreferences.selectedLinkLayout.value == Layout.TITLE_ONLY_LIST_VIEW.name,
+                            titleOnlyView = AppPreferences.selectedLinkLayout.value == Layout.TITLE_ONLY_LIST_VIEW.name,
                         )
                     }
                     item {
@@ -160,7 +160,7 @@ fun LayoutSettingsScreen() {
             Layout.GRID_VIEW.name -> {
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(150.dp),
-                    modifier = Modifier.padding(start = 10.dp, end = 10.dp).padding(paddingValues)
+                    modifier = Modifier.padding(start = 10.dp, end = 10.dp).addEdgeToEdgeScaffoldPadding(paddingValues)
                         .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection)
                         .navigationBarsPadding()
                 ) {
@@ -182,13 +182,13 @@ fun LayoutSettingsScreen() {
                         )
                     }
 
-                    items(settingsScreenViewModel.nonListPref, span = {
+                    items(settingsScreenViewModel.gridViewPref, span = {
                         GridItemSpan(maxLineSpan)
                     }) {
                         LinkViewPreferenceSwitch(
                             onClick = it.onClick,
                             title = it.title,
-                            isSwitchChecked = it.isSwitchChecked.value
+                            isSwitchChecked = it.isSwitchChecked()
                         )
                     }
 
@@ -213,7 +213,7 @@ fun LayoutSettingsScreen() {
                         )
                     }
                     items(sampleList) {
-                        GridViewLinkUIComponent(it, forStaggeredView = false)
+                        GridViewLinkComponent(it, forStaggeredView = false)
                     }
                     item(span = {
                         GridItemSpan(maxLineSpan)
@@ -251,12 +251,12 @@ fun LayoutSettingsScreen() {
                     }
 
                     items(
-                        items = settingsScreenViewModel.nonListPref,
+                        items = settingsScreenViewModel.gridViewPref,
                         span = { StaggeredGridItemSpan.FullLine }) {
                         LinkViewPreferenceSwitch(
                             onClick = it.onClick,
                             title = it.title,
-                            isSwitchChecked = it.isSwitchChecked.value
+                            isSwitchChecked = it.isSwitchChecked()
                         )
                     }
 
@@ -277,8 +277,8 @@ fun LayoutSettingsScreen() {
                         )
                     }
                     items(sampleList) {
-                        GridViewLinkUIComponent(
-                            linkUIComponentParam = it, forStaggeredView = true
+                        GridViewLinkComponent(
+                            linkComponentParam = it, forStaggeredView = true
                         )
                     }
                     item(span = StaggeredGridItemSpan.FullLine) {
@@ -296,11 +296,12 @@ private fun LinkViewPreferenceSwitch(
     onClick: () -> Unit, title: String, isSwitchChecked: Boolean
 ) {
     Row(
-        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth().clickable(onClick = {
-            onClick()
-        }, interactionSource = remember {
-            MutableInteractionSource()
-        }, indication = null).padding(start = 15.dp, end = 15.dp),
+        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
+            .clickable(onClick = {
+                onClick()
+            }, interactionSource = remember {
+                MutableInteractionSource()
+            }, indication = null).padding(start = 15.dp, end = 15.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -311,7 +312,8 @@ private fun LinkViewPreferenceSwitch(
         )
         Switch(
             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-            checked = isSwitchChecked, onCheckedChange = {
+            checked = isSwitchChecked,
+            onCheckedChange = {
                 onClick()
             })
     }
@@ -325,17 +327,17 @@ private fun LinkViewRadioButtonComponent(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth().clickable {
-            AppPreferences.selectedLinkLayout.value = linkLayout.name
-            settingsScreenViewModel.changeSettingPreferenceValue(
-                preferenceKey = stringPreferencesKey(AppPreferenceType.CURRENTLY_SELECTED_LINK_VIEW.name),
-                newValue = linkLayout.name
-            )
-        }.padding(paddingValues)
+        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
+            .clickable(interactionSource = null, indication = null) {
+                AppPreferences.selectedLinkLayout.value = linkLayout.name
+                settingsScreenViewModel.changeSettingPreferenceValue(
+                    preferenceKey = stringPreferencesKey(AppPreferenceType.CURRENTLY_SELECTED_LINK_VIEW.name),
+                    newValue = linkLayout.name
+                )
+            }.padding(paddingValues)
     ) {
         RadioButton(
-            selected = AppPreferences.selectedLinkLayout.value == linkLayout.name,
-            onClick = {
+            selected = AppPreferences.selectedLinkLayout.value == linkLayout.name, onClick = {
                 AppPreferences.selectedLinkLayout.value = linkLayout.name
                 settingsScreenViewModel.changeSettingPreferenceValue(
                     preferenceKey = stringPreferencesKey(AppPreferenceType.CURRENTLY_SELECTED_LINK_VIEW.name),

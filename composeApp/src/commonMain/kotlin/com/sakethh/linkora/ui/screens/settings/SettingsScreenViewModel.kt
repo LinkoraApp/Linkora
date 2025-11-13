@@ -26,8 +26,8 @@ import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.preferences.AppPreferenceType
 import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.domain.AppIconCode
+import com.sakethh.linkora.ui.domain.model.LinkComponentParam
 import com.sakethh.linkora.ui.domain.model.LinkPref
-import com.sakethh.linkora.ui.domain.model.LinkUIComponentParam
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.onboarding.OnboardingSlide
 import com.sakethh.linkora.ui.screens.onboarding.Slide1
@@ -146,7 +146,7 @@ open class SettingsScreenViewModel(
                 SettingComponentParam(
                     title = Localization.Key.EnableHomeScreen.getLocalizedString(),
                     doesDescriptionExists = true,
-                    description =Localization.Key.EnableHomeScreenDesc.getLocalizedString(),
+                    description = Localization.Key.EnableHomeScreenDesc.getLocalizedString(),
                     isSwitchNeeded = true,
                     isSwitchEnabled = AppPreferences.isHomeScreenEnabled,
                     onSwitchStateChange = {
@@ -203,9 +203,9 @@ open class SettingsScreenViewModel(
         }
     }
 
-    fun sampleLinks(localUriHandler: UriHandler): List<LinkUIComponentParam> {
+    fun sampleLinks(localUriHandler: UriHandler): List<LinkComponentParam> {
         return listOf(
-            LinkUIComponentParam(
+            LinkComponentParam(
                 link = Link(
                 title = "This Could Be A Dream - YouTube Music",
                 baseURL = "music.youtube.com",
@@ -217,17 +217,17 @@ open class SettingsScreenViewModel(
                 note = "",
                 idOfLinkedFolder = null
             ),
-                onMoreIconClick = { -> },
-                onLinkClick = { ->
+                onMoreIconClick = { },
+                onLinkClick = {
                     localUriHandler.openUri("https://music.youtube.com/watch?v=DbiB1AtCA9k")
                 },
-                onForceOpenInExternalBrowserClicked = { -> },
+                onForceOpenInExternalBrowserClicked = { },
                 isSelectionModeEnabled = mutableStateOf(false),
                 isItemSelected = mutableStateOf(false),
-                onLongClick = { -> },
+                onLongClick = { },
                 tags = listOf(Tag(name = "TGWCT")),
                 onTagClick = {}),
-            LinkUIComponentParam(
+            LinkComponentParam(
                 link = Link(
                 title = "Red Dead Redemption 2 - Rockstar Games",
                 baseURL = "rockstargames.com",
@@ -239,17 +239,17 @@ open class SettingsScreenViewModel(
                 note = "RDR2 is the epic tale of outlaw Arthur Morgan and the infamous Van der Linde gang, on the run across America at the dawn of the modern age.",
                 idOfLinkedFolder = null
             ),
-                onMoreIconClick = { -> },
-                onLinkClick = { ->
+                onMoreIconClick = { },
+                onLinkClick = {
                     localUriHandler.openUri("https://www.rockstargames.com/reddeadredemption2")
                 },
-                onForceOpenInExternalBrowserClicked = { -> },
+                onForceOpenInExternalBrowserClicked = { },
                 isSelectionModeEnabled = mutableStateOf(false),
                 isItemSelected = mutableStateOf(false),
-                onLongClick = { -> },
+                onLongClick = { },
                 tags = listOf(Tag(name = "oh arthur")),
                 onTagClick = {}),
-            LinkUIComponentParam(
+            LinkComponentParam(
                 link = Link(
                 title = "A Plague Tale: Requiem | Download and Buy Today - Epic Games Store",
                 baseURL = "store.epicgames.com",
@@ -272,17 +272,17 @@ open class SettingsScreenViewModel(
                 note = "The plague ravages the Kingdom of France. Amicia and her younger brother Hugo are pursued by the Inquisition through villages devastated by the disease.",
                 idOfLinkedFolder = null
             ),
-                onMoreIconClick = { -> },
-                onLinkClick = { ->
+                onMoreIconClick = { },
+                onLinkClick = {
                     localUriHandler.openUri("https://store.epicgames.com/en-US/p/a-plague-tale-requiem")
                 },
-                onForceOpenInExternalBrowserClicked = { -> },
+                onForceOpenInExternalBrowserClicked = { },
                 isSelectionModeEnabled = mutableStateOf(false),
                 isItemSelected = mutableStateOf(false),
-                onLongClick = { -> },
+                onLongClick = { },
                 tags = null,
                 onTagClick = {}),
-            LinkUIComponentParam(
+            LinkComponentParam(
                 link = Link(
                 title = "Shadow of the Tomb Raider",
                 imgURL = "https://images.ctfassets.net/x77ixfmkpoiv/4UnPNfdN8Yq2aZvOhIdBx9/1b641d296ebb37bfa3eca8873c25a321/SOTTR_Product_Image.jpg",
@@ -293,17 +293,17 @@ open class SettingsScreenViewModel(
                 note = "As Lara Croft races to save the world from a Maya apocalypse, she must become the Tomb Raider she is destined to be.",
                 idOfLinkedFolder = null
             ),
-                onMoreIconClick = { -> },
-                onLinkClick = { ->
+                onMoreIconClick = { },
+                onLinkClick = {
                     localUriHandler.openUri("https://www.tombraider.com/products/games/shadow-of-the-tomb-raider")
                 },
-                onForceOpenInExternalBrowserClicked = { -> },
+                onForceOpenInExternalBrowserClicked = { },
                 isSelectionModeEnabled = mutableStateOf(false),
                 isItemSelected = mutableStateOf(false),
-                onLongClick = { -> },
+                onLongClick = { },
                 tags = null,
                 onTagClick = {}),
-            LinkUIComponentParam(
+            LinkComponentParam(
                 link = Link(
                     title = "Nas | Spotify",
                     baseURL = "open.spotify.com",
@@ -315,17 +315,17 @@ open class SettingsScreenViewModel(
                     note = "he's da man",
                     idOfLinkedFolder = null
                 ),
-                onForceOpenInExternalBrowserClicked = { -> },
+                onForceOpenInExternalBrowserClicked = { },
                 isSelectionModeEnabled = mutableStateOf(false),
                 isItemSelected = mutableStateOf(false),
-                onLongClick = { -> },
-                onMoreIconClick = { -> },
-                onLinkClick = { ->
+                onLongClick = { },
+                onMoreIconClick = { },
+                onLinkClick = {
                     localUriHandler.openUri("https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q")
                 },
                 tags = listOf(Tag(name = "half man, half amazing.")),
                 onTagClick = {}),
-            LinkUIComponentParam(
+            LinkComponentParam(
                 link = Link(
                     title = "Listen Gentle - YouTube Music",
                     baseURL = "music.youtube.com",
@@ -337,17 +337,17 @@ open class SettingsScreenViewModel(
                     note = "listen to this RN!!! If you like this (you will), you'll love the album, also check out McKinley's previous work such as Beautiful Paradise Jazz.",
                     idOfLinkedFolder = null
                 ),
-                onForceOpenInExternalBrowserClicked = { -> },
+                onForceOpenInExternalBrowserClicked = { },
                 isSelectionModeEnabled = mutableStateOf(false),
                 isItemSelected = mutableStateOf(false),
-                onLongClick = { -> },
-                onMoreIconClick = { -> },
-                onLinkClick = { ->
+                onLongClick = { },
+                onMoreIconClick = { },
+                onLinkClick = {
                     localUriHandler.openUri("https://music.youtube.com/watch?v=Q5jl_fmMd8M")
                 },
                 tags = null,
                 onTagClick = {}),
-            LinkUIComponentParam(
+            LinkComponentParam(
                 link = Link(
                     title = "Hacker (small type)",
                     baseURL = "twitter.com",
@@ -359,17 +359,17 @@ open class SettingsScreenViewModel(
                     note = "",
                     idOfLinkedFolder = null
                 ),
-                onForceOpenInExternalBrowserClicked = { -> },
+                onForceOpenInExternalBrowserClicked = { },
                 isSelectionModeEnabled = mutableStateOf(false),
                 isItemSelected = mutableStateOf(false),
-                onLongClick = { -> },
-                onMoreIconClick = { -> },
-                onLinkClick = { ->
+                onLongClick = { },
+                onMoreIconClick = { },
+                onLinkClick = {
                     localUriHandler.openUri("https://twitter.com/CatWorkers/status/1819121250226127061")
                 },
                 tags = listOf(Tag(name = "\uD83D\uDE97")),
                 onTagClick = {}),
-            LinkUIComponentParam(
+            LinkComponentParam(
                 link = Link(
                     title = "Nas - You're da Man (from Made You Look: God's Son Live)",
                     baseURL = "youtube.com",
@@ -382,17 +382,17 @@ open class SettingsScreenViewModel(
                     idOfLinkedFolder = null,
                     mediaType = MediaType.VIDEO
                 ),
-                onForceOpenInExternalBrowserClicked = { -> },
+                onForceOpenInExternalBrowserClicked = { },
                 isSelectionModeEnabled = mutableStateOf(false),
                 isItemSelected = mutableStateOf(false),
-                onLongClick = { -> },
-                onMoreIconClick = { -> },
-                onLinkClick = { ->
+                onLongClick = { },
+                onMoreIconClick = { },
+                onLinkClick = {
                     localUriHandler.openUri("https://www.youtube.com/watch?v=3vlqI5TPVjQ")
                 },
                 tags = null,
                 onTagClick = {}),
-            LinkUIComponentParam(
+            LinkComponentParam(
                 link = Link(
                     title = "Clipse, Nas, Pusha T, Malice - Let God Sort Em Out/Chandeliers - YouTube Music",
                     baseURL = "music.youtube.com",
@@ -405,17 +405,17 @@ open class SettingsScreenViewModel(
                     idOfLinkedFolder = null,
                     mediaType = MediaType.IMAGE
                 ),
-                onForceOpenInExternalBrowserClicked = { -> },
+                onForceOpenInExternalBrowserClicked = { },
                 isSelectionModeEnabled = mutableStateOf(false),
                 isItemSelected = mutableStateOf(false),
-                onLongClick = { -> },
-                onMoreIconClick = { -> },
-                onLinkClick = { ->
+                onLongClick = { },
+                onMoreIconClick = { },
+                onLinkClick = {
                     localUriHandler.openUri("https://music.youtube.com/watch?v=78YNulckDng")
                 },
                 tags = null,
                 onTagClick = {}),
-            LinkUIComponentParam(
+            LinkComponentParam(
                 link = Link(
                     title = "Nas - Rare (Official Video)",
                     baseURL = "youtube.com",
@@ -428,12 +428,12 @@ open class SettingsScreenViewModel(
                     idOfLinkedFolder = null,
                     mediaType = MediaType.VIDEO
                 ),
-                onForceOpenInExternalBrowserClicked = { -> },
+                onForceOpenInExternalBrowserClicked = { },
                 isSelectionModeEnabled = mutableStateOf(false),
                 isItemSelected = mutableStateOf(false),
-                onLongClick = { -> },
-                onMoreIconClick = { -> },
-                onLinkClick = { ->
+                onLongClick = { },
+                onMoreIconClick = { },
+                onLinkClick = {
                     localUriHandler.openUri("https://www.youtube.com/watch?v=66OFYWBrg3o")
                 },
                 tags = listOf(Tag(name = "KD"), Tag(name = "Kings Disease")),
@@ -443,43 +443,50 @@ open class SettingsScreenViewModel(
         }
     }
 
-    val nonListPref = listOf(
+    val gridViewPref = listOf(
         LinkPref(
             onClick = {
-                AppPreferences.enableTitleForNonListViews.value =
-                    !AppPreferences.enableTitleForNonListViews.value
-                changeSettingPreferenceValue(
-                    preferenceKey = booleanPreferencesKey(AppPreferenceType.TITLE_VISIBILITY_FOR_NON_LIST_VIEWS.name),
-                    newValue = AppPreferences.enableTitleForNonListViews.value
-                )
-            },
+            AppPreferences.showTitleInLinkGridView.value =
+                !AppPreferences.showTitleInLinkGridView.value
+            changeSettingPreferenceValue(
+                preferenceKey = booleanPreferencesKey(AppPreferenceType.TITLE_VISIBILITY_FOR_NON_LIST_VIEWS.name),
+                newValue = AppPreferences.showTitleInLinkGridView.value
+            )
+        },
             title = Localization.Key.ShowTitle.getLocalizedString(),
-            isSwitchChecked = AppPreferences.enableTitleForNonListViews
-        ),
+            isSwitchChecked = { AppPreferences.showTitleInLinkGridView.value }),
         LinkPref(
             onClick = {
-                AppPreferences.enableBaseURLForLinkViews.value =
-                    !AppPreferences.enableBaseURLForLinkViews.value
-                changeSettingPreferenceValue(
-                    preferenceKey = booleanPreferencesKey(AppPreferenceType.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS.name),
-                    newValue = AppPreferences.enableBaseURLForLinkViews.value
-                )
-            },
+            AppPreferences.showHostInLinkListView.value =
+                !AppPreferences.showHostInLinkListView.value
+            changeSettingPreferenceValue(
+                preferenceKey = booleanPreferencesKey(AppPreferenceType.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS.name),
+                newValue = AppPreferences.showHostInLinkListView.value
+            )
+        },
             title = Localization.Key.ShowHostAddress.getLocalizedString(),
-            isSwitchChecked = AppPreferences.enableBaseURLForLinkViews
-        ),
+            isSwitchChecked = { AppPreferences.showHostInLinkListView.value }),
         LinkPref(
             onClick = {
-                AppPreferences.enableFadedEdgeForNonListViews.value =
-                    !AppPreferences.enableFadedEdgeForNonListViews.value
-                changeSettingPreferenceValue(
-                    preferenceKey = booleanPreferencesKey(AppPreferenceType.FADED_EDGE_VISIBILITY_FOR_NON_LIST_VIEWS.name),
-                    newValue = AppPreferences.enableFadedEdgeForNonListViews.value
-                )
-            },
+            AppPreferences.enableFadedEdgeForNonListViews.value =
+                !AppPreferences.enableFadedEdgeForNonListViews.value
+            changeSettingPreferenceValue(
+                preferenceKey = booleanPreferencesKey(AppPreferenceType.FADED_EDGE_VISIBILITY_FOR_NON_LIST_VIEWS.name),
+                newValue = AppPreferences.enableFadedEdgeForNonListViews.value
+            )
+        },
             title = Localization.Key.ShowBottomFadedEdge.getLocalizedString(),
-            isSwitchChecked = AppPreferences.enableFadedEdgeForNonListViews
-        ),
+            isSwitchChecked = { AppPreferences.enableFadedEdgeForNonListViews.value }),
+        LinkPref(
+            onClick = {
+            AppPreferences.showMenuOnGridLinkClick = !AppPreferences.showMenuOnGridLinkClick
+            changeSettingPreferenceValue(
+                preferenceKey = booleanPreferencesKey(AppPreferenceType.SHOW_MENU_ON_GRID_LINK_CLICK.name),
+                newValue = AppPreferences.showMenuOnGridLinkClick
+            )
+        },
+            title = "Click to Open Menu",
+            isSwitchChecked = { AppPreferences.showMenuOnGridLinkClick }),
     )
 
     private val allIconCodes = AppIconCode.entries.map { it.name }

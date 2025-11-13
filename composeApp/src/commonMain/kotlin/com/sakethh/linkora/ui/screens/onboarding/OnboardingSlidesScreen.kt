@@ -70,11 +70,11 @@ import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.components.folder.FolderComponent
-import com.sakethh.linkora.ui.components.link.LinkListItemComposable
+import com.sakethh.linkora.ui.components.link.ListViewLinkComponent
 import com.sakethh.linkora.ui.domain.CurrentFABContext
 import com.sakethh.linkora.ui.domain.FABContext
 import com.sakethh.linkora.ui.domain.model.FolderComponentParam
-import com.sakethh.linkora.ui.domain.model.LinkUIComponentParam
+import com.sakethh.linkora.ui.domain.model.LinkComponentParam
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.collections.components.ItemDivider
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
@@ -282,8 +282,8 @@ fun Slide2() {
                     },
                     onCheckBoxChanged = {})
             )
-            LinkListItemComposable(
-                linkUIComponentParam = LinkUIComponentParam(
+            ListViewLinkComponent(
+                linkComponentParam = LinkComponentParam(
                     link = Link(
                 title = "Red Dead Redemption 2 - Rockstar Games",
                 baseURL = "rockstargames.com",
@@ -310,11 +310,11 @@ fun Slide2() {
                 tags = listOf(
                     Tag(name = "Tahiti"), Tag(name = "AndaquarterDONTFORGETTHEQUARTRR")
                 ),
-                onTagClick = {}), forTitleOnlyView = false, onShare = {
+                onTagClick = {}), titleOnlyView = false, onShare = {
                 LinkoraSDK.getInstance().nativeUtils.onShare(it)
             })
-            LinkListItemComposable(
-                linkUIComponentParam = LinkUIComponentParam(
+            ListViewLinkComponent(
+                linkComponentParam = LinkComponentParam(
                 link = Link(
                 title = "Nas | Spotify",
                 baseURL = "open.spotify.com",
@@ -340,7 +340,7 @@ fun Slide2() {
                 },
                 tags = listOf(Tag(name = "half man half amazing")),
                 onTagClick = {}),
-                forTitleOnlyView = false,
+                titleOnlyView = false,
                 imageAlignment = Alignment.TopCenter,
                 onShare = {
                     LinkoraSDK.getInstance().nativeUtils.onShare(it)
@@ -445,8 +445,8 @@ fun Slide3() {
                                 },
                                 onCheckBoxChanged = {})
                         )
-                        LinkListItemComposable(
-                            linkUIComponentParam = LinkUIComponentParam(
+                        ListViewLinkComponent(
+                            linkComponentParam = LinkComponentParam(
                                 link = Link(
                             title = "Synchronization in Linkora • Saketh Pathike",
                             baseURL = "sakethpathike.github.io",
@@ -467,7 +467,7 @@ fun Slide3() {
                             isItemSelected = rememberSaveable { mutableStateOf(false) },
                             onLongClick = { -> },
                             tags = listOf(Tag(name = "Linkora")),
-                            onTagClick = {}), forTitleOnlyView = false, onShare = {
+                            onTagClick = {}), titleOnlyView = false, onShare = {
                             LinkoraSDK.getInstance().nativeUtils.onShare(it)
                         })
                     }
@@ -494,8 +494,8 @@ fun Slide3() {
                                 },
                                 onCheckBoxChanged = {})
                         )
-                        LinkListItemComposable(
-                            linkUIComponentParam = LinkUIComponentParam(
+                        ListViewLinkComponent(
+                            linkComponentParam = LinkComponentParam(
                                 link = Link(
                                 title = "LinkoraApp/sync-server: self-hostable sync-server for Linkora with browser extension support.",
                                 baseURL = "github.com",
@@ -519,7 +519,7 @@ fun Slide3() {
                                 onLongClick = { -> },
                                 tags = listOf(Tag(name = "Linkora")),
                                 onTagClick = {}),
-                            forTitleOnlyView = false,
+                            titleOnlyView = false,
                             imageAlignment = Alignment.TopCenter,
                             onShare = {
                                 LinkoraSDK.getInstance().nativeUtils.onShare(it)

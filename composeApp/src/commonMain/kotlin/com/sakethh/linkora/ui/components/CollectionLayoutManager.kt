@@ -30,12 +30,12 @@ import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.components.folder.FolderComponent
-import com.sakethh.linkora.ui.components.link.GridViewLinkUIComponent
-import com.sakethh.linkora.ui.components.link.LinkListItemComposable
+import com.sakethh.linkora.ui.components.link.GridViewLinkComponent
+import com.sakethh.linkora.ui.components.link.ListViewLinkComponent
 import com.sakethh.linkora.ui.domain.Layout
 import com.sakethh.linkora.ui.domain.model.FolderComponentParam
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
-import com.sakethh.linkora.ui.domain.model.LinkUIComponentParam
+import com.sakethh.linkora.ui.domain.model.LinkComponentParam
 import com.sakethh.linkora.ui.screens.DataEmptyScreen
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM
 import com.sakethh.linkora.utils.rememberLocalizedString
@@ -57,9 +57,9 @@ fun CollectionLayoutManager(
     emptyDataText: String = "",
     nestedScrollConnection: NestedScrollConnection?
 ) {
-    val linkUIComponentParam: (linkTagsPair: LinkTagsPair) -> LinkUIComponentParam =
+    val linkComponentParam: (linkTagsPair: LinkTagsPair) -> LinkComponentParam =
         { linkTagsPair ->
-            LinkUIComponentParam(
+            LinkComponentParam(
                 link = linkTagsPair.link,
                 isSelectionModeEnabled = CollectionsScreenVM.isSelectionEnabled,
                 onMoreIconClick = {
@@ -85,7 +85,7 @@ fun CollectionLayoutManager(
                     )
                 ),
                 onLongClick = {
-                    if (CollectionsScreenVM.isSelectionEnabled.value.not()) {
+                    if (!CollectionsScreenVM.isSelectionEnabled.value) {
                         CollectionsScreenVM.isSelectionEnabled.value = true
                         CollectionsScreenVM.selectedLinkTagPairsViaLongClick.add(linkTagsPair)
                     }
@@ -174,9 +174,9 @@ fun CollectionLayoutManager(
                 }
 
                 items(items = linksTagsPairs) {
-                    LinkListItemComposable(
-                        linkUIComponentParam = linkUIComponentParam(it),
-                        forTitleOnlyView = AppPreferences.selectedLinkLayout.value == Layout.TITLE_ONLY_LIST_VIEW.name,
+                    ListViewLinkComponent(
+                        linkComponentParam = linkComponentParam(it),
+                        titleOnlyView = AppPreferences.selectedLinkLayout.value == Layout.TITLE_ONLY_LIST_VIEW.name,
                         onShare = {
                             LinkoraSDK.getInstance().nativeUtils.onShare(it)
                         })
@@ -228,8 +228,8 @@ fun CollectionLayoutManager(
                 }
 
                 items(linksTagsPairs) {
-                    GridViewLinkUIComponent(
-                        linkUIComponentParam = linkUIComponentParam(it),
+                    GridViewLinkComponent(
+                        linkComponentParam = linkComponentParam(it),
                         forStaggeredView = AppPreferences.selectedLinkLayout.value == Layout.STAGGERED_VIEW.name
                     )
                 }
@@ -248,32 +248,32 @@ fun CollectionLayoutManager(
                     if (nestedScrollConnection != null) Modifier.nestedScroll(nestedScrollConnection) else Modifier
                 )
             ) {
-                items(items = folders, span = { StaggeredGridItemSpan.Companion.FullLine }) {
+                items(items = folders, span = { StaggeredGridItemSpan.FullLine }) {
                     FolderComponent(folderComponentParam = folderComponentParam(it))
                 }
 
                 if (folders.isNotEmpty()) {
-                    item(span = StaggeredGridItemSpan.Companion.FullLine) {
+                    item(span = StaggeredGridItemSpan.FullLine) {
                         Spacer(Modifier.height(10.dp))
                     }
                 }
 
-                items(items = tags, span = { StaggeredGridItemSpan.Companion.FullLine }) {
+                items(items = tags, span = { StaggeredGridItemSpan.FullLine }) {
                     FolderComponent(folderComponentParam = tagComponentParam(it))
                 }
                 if (tags.isNotEmpty()) {
-                    item(span = StaggeredGridItemSpan.Companion.FullLine) {
+                    item(span = StaggeredGridItemSpan.FullLine) {
                         Spacer(Modifier.height(10.dp))
                     }
                 }
                 items(linksTagsPairs) {
-                    GridViewLinkUIComponent(
-                        linkUIComponentParam = linkUIComponentParam(it),
+                    GridViewLinkComponent(
+                        linkComponentParam = linkComponentParam(it),
                         forStaggeredView = AppPreferences.selectedLinkLayout.value == Layout.STAGGERED_VIEW.name
                     )
                 }
 
-                item(span = StaggeredGridItemSpan.Companion.FullLine) {
+                item(span = StaggeredGridItemSpan.FullLine) {
                     Spacer(Modifier.height(bottomSpacing.value))
                 }
             }

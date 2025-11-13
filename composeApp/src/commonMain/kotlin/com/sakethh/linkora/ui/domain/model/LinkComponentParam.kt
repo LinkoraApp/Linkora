@@ -4,7 +4,7 @@ import androidx.compose.runtime.MutableState
 import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.domain.model.link.Link
 
-data class LinkUIComponentParam(
+data class LinkComponentParam(
     val link: Link,
     val tags: List<Tag>?,
     val isSelectionModeEnabled: MutableState<Boolean>,
