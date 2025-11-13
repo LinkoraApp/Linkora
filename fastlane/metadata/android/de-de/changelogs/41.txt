@@ -1,0 +1,5 @@
+- Unterstützung für die Verbindung zum Sync-Server (v0.1.0) über HTTPS hinzugefügt
+- Die Suche funktioniert nun auch anhand der URL sowie anhand von Notizen und Titeln
+- Linkora kann nun das Speichern von Links blockieren, die bereits am Zielort vorhanden sind (standardmäßig aktiviert, kann in den Einstellungen deaktiviert werden)
+- Positionierung des Haupt-FAB (+-Schaltfläche) korrigiert
+- Benutzeroberfläche zum Umbenennen aktualisiert, sodass nun ein Bottom Sheet anstelle des Vollbildmodus verwendet wird
