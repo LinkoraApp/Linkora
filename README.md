@@ -18,7 +18,7 @@ height="80">](https://f-droid.org/packages/com.sakethh.linkora)
 
 Get it on Arch Linux:
 
-![AUR Version](https://img.shields.io/aur/version/linkora-bin?style=flat&logo=archlinux&label=linkora-bin&link=https%3A%2F%2Faur.archlinux.org%2Fpackages%2Flinkora-bin) ![AUR Maintainer](https://img.shields.io/aur/maintainer/linkora-bin)
+[<img src="https://img.shields.io/aur/version/linkora-bin?style=flat&logo=archlinux&label=linkora-bin" alt="AUR version">](https://aur.archlinux.org/packages/linkora-bin) ![AUR Maintainer](https://img.shields.io/aur/maintainer/linkora-bin)
 
 ## Features
 
