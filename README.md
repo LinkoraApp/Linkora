@@ -14,7 +14,11 @@ A browser extension is available for saving web links directly to Linkora via sy
 alt="Get it on GitHub"
 height="80">](https://github.com/sakethpathike/Linkora/releases) [<img src="https://f-droid.org/badge/get-it-on.png"
 alt="Get it on F-Droid"
-height="80">](https://f-droid.org/packages/com.sakethh.linkora)
+height="80">](https://f-droid.org/packages/com.sakethh.linkora) 
+
+Get it on Arch Linux:
+
+![AUR Version](https://img.shields.io/aur/version/linkora-bin?style=flat&logo=archlinux&label=linkora-bin&link=https%3A%2F%2Faur.archlinux.org%2Fpackages%2Flinkora-bin) ![AUR Maintainer](https://img.shields.io/aur/maintainer/linkora-bin)
 
 ## Features
 
