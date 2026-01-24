@@ -51,7 +51,6 @@ import com.sakethh.linkora.ui.utils.rememberDeserializableMutableObject
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.getLocalizedString
-import com.sakethh.linkora.utils.isNull
 import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
 
@@ -104,7 +103,7 @@ fun AboutScreen() {
                             aboutSettingsScreenVM.retrieveLatestVersionData(onLoading = {
                                 shouldVersionCheckerDialogAppear.value = true
                             }, onCompletion = { githubReleaseDTO ->
-                                if (githubReleaseDTO.isNull()) {
+                                if (githubReleaseDTO == null) {
                                     retrievedAppVersionData.value = GitHubReleaseDTOItem(
                                         assets = listOf(),
                                         body = "",

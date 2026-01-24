@@ -10,7 +10,6 @@ import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.LinkSaveConfig
 import com.sakethh.linkora.domain.LinkType
-import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.model.FlatChildFolderData
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.model.panel.Panel
@@ -19,7 +18,6 @@ import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.domain.repository.local.LocalDatabaseUtilsRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.LocalPanelsRepo
-import com.sakethh.linkora.domain.repository.local.LocalTagsRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.preferences.AppPreferenceType
 import com.sakethh.linkora.preferences.AppPreferences
@@ -29,14 +27,15 @@ import com.sakethh.linkora.ui.domain.PaginationState
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.asStateInWhileSubscribed
 import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.shuffleLinks
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -50,7 +49,6 @@ import java.util.TreeMap
 class HomeScreenVM(
     private val localLinksRepo: LocalLinksRepo,
     private val localDatabaseUtilsRepo: LocalDatabaseUtilsRepo,
-    private val localTagsRepo: LocalTagsRepo,
     private val localPanelsRepo: LocalPanelsRepo,
     private val preferencesRepository: PreferencesRepository,
     triggerCollectionOfPanels: Boolean = true,
@@ -116,7 +114,7 @@ class HomeScreenVM(
     private val appPreferencesCombined = combine(snapshotFlow {
         AppPreferences.forceShuffleLinks.value
     }, snapshotFlow {
-        AppPreferences.selectedSortingTypeType.value
+        AppPreferences.selectedSortingType.value
     }) { shuffleLinks, sortingType ->
         Pair(shuffleLinks, sortingType)
     }
@@ -140,40 +138,11 @@ class HomeScreenVM(
     var selectedPanelData by mutableStateOf<Panel?>(null)
 
     private suspend fun freeUpPanelFolderPaginators() {
+        _panelFoldersDataFlat.emit(TreeMap())
         for ((_, paginator) in panelFolderPaginators) {
             paginator.cancelAndReset()
         }
         panelFolderPaginators.clear()
-    }
-
-    private fun Flow<Result<List<Link>>>.mapToFlatChildFolderFlow(): Flow<Result<List<FlatChildFolderData>>> {
-        return this.flatMapLatest {
-            flowOf(
-                when (it) {
-                    is Result.Failure -> Result.Failure(it.message)
-                    is Result.Loading -> Result.Loading()
-                    is Result.Success -> {
-                        Result.Success(it.data.map {
-                            FlatChildFolderData(
-                                itemType = Constants.LINK,
-                                lastModified = it.lastModified,
-                                linkType = it.linkType,
-                                linkLocalId = it.localId,
-                                linkRemoteId = it.remoteId,
-                                linkTitle = it.title,
-                                linkUrl = it.url,
-                                linkHost = it.host,
-                                linkImgUrl = it.imgURL,
-                                linkNote = it.note,
-                                linkIdOfLinkedFolder = it.idOfLinkedFolder,
-                                linkUserAgent = it.userAgent,
-                                linkMediaType = it.mediaType,
-                            )
-                        })
-                    }
-                }
-            )
-        }
     }
 
     init {
@@ -214,7 +183,7 @@ class HomeScreenVM(
                     } else {
                         emptyFlow()
                     }
-                }.collectLatest { panelFolders ->
+                }.distinctUntilChanged().collectLatest { panelFolders ->
                     freeUpPanelFolderPaginators()
                     _activePanelAssociatedPanelFolders.emit(panelFolders)
                 }
@@ -222,6 +191,7 @@ class HomeScreenVM(
 
             viewModelScope.launch {
                 var lastSortingType: String? = null
+                var lastShuffleLinks: Boolean? = null
 
                 combine(
                     appPreferencesCombined,
@@ -229,11 +199,14 @@ class HomeScreenVM(
                 ) { (shuffleLinks, sortingType), activePanelFolders ->
                     Triple(shuffleLinks, sortingType, activePanelFolders)
                 }
+                    .distinctUntilChanged()
                     .collectLatest { (shuffleLinks, sortingType, activePanelFolders) ->
                         val isSortChanged = lastSortingType != sortingType
+                        val isShuffleLinksChanged = lastShuffleLinks != shuffleLinks
                         lastSortingType = sortingType
+                        lastShuffleLinks = shuffleLinks
 
-                        if (isSortChanged) {
+                        if (isSortChanged || isShuffleLinksChanged) {
                             freeUpPanelFolderPaginators()
                         }
                         val activeFolderIds = activePanelFolders.map { it.folderId }.toSet()
@@ -264,21 +237,25 @@ class HomeScreenVM(
                                 coroutineScope = viewModelScope,
                                 onRetrieve = { pageStartIndex ->
                                     pageStartIndex to when (panelFolder.folderId) {
-                                        Constants.SAVED_LINKS_ID -> localLinksRepo.getLinks(
+                                        Constants.SAVED_LINKS_ID -> localDatabaseUtilsRepo.getChildFolderData(
                                             linkType = LinkType.SAVED_LINK,
                                             parentFolderId = Constants.SAVED_LINKS_ID,
                                             sortOption = sortingType,
                                             pageSize = Constants.PAGE_SIZE,
                                             startIndex = pageStartIndex
-                                        ).mapToFlatChildFolderFlow()
+                                        ).run {
+                                            if (shuffleLinks) this.shuffleLinks() else this
+                                        }
 
-                                        Constants.IMPORTANT_LINKS_ID -> localLinksRepo.getLinks(
+                                        Constants.IMPORTANT_LINKS_ID -> localDatabaseUtilsRepo.getChildFolderData(
                                             linkType = LinkType.IMPORTANT_LINK,
                                             parentFolderId = Constants.IMPORTANT_LINKS_ID,
                                             sortOption = sortingType,
                                             pageSize = Constants.PAGE_SIZE,
                                             startIndex = pageStartIndex
-                                        ).mapToFlatChildFolderFlow()
+                                        ).run {
+                                            if (shuffleLinks) this.shuffleLinks() else this
+                                        }
 
                                         else -> localDatabaseUtilsRepo.getChildFolderData(
                                             parentFolderId = panelFolder.folderId,
@@ -286,7 +263,9 @@ class HomeScreenVM(
                                             sortOption = sortingType,
                                             pageSize = Constants.PAGE_SIZE,
                                             startIndex = pageStartIndex
-                                        )
+                                        ).run {
+                                            if (shuffleLinks) this.shuffleLinks() else this
+                                        }
                                     }
                                 },
                                 onRetrieved = { currentPageKey, data ->

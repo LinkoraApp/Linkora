@@ -25,12 +25,14 @@ import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.asStateInWhileSubscribed
 import com.sakethh.linkora.utils.getRemoteOnlyFailureMsg
+import com.sakethh.linkora.utils.hexadCombine
 import com.sakethh.linkora.utils.ifNot
 import com.sakethh.linkora.utils.onError
 import com.sakethh.linkora.utils.onPagesFinished
 import com.sakethh.linkora.utils.onRetrieved
 import com.sakethh.linkora.utils.onRetrieving
 import com.sakethh.linkora.utils.pushSnackbarOnFailure
+import com.sakethh.linkora.utils.shuffleLinks
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -91,7 +93,7 @@ class SearchScreenVM(
             }
 
             val currentSort =
-                AppPreferences.selectedSortingTypeType.value
+                AppPreferences.selectedSortingType.value
 
             val appliedFolderFilters = _appliedFolderFilters.toList()
             val appliedLinkFilters = _appliedLinkFilters.toList()
@@ -128,7 +130,9 @@ class SearchScreenVM(
                 shouldShowLinks = shouldShowLinks,
                 isLinkTypeFilterActive = isLinkTypeFilterActive,
                 activeLinkTypeFilters = activeLinkTypeFilters,
-            )
+            ).run {
+                if (AppPreferences.forceShuffleLinks.value) shuffleLinks() else this
+            }
         },
         onRetrieved = _searchResultsState::onRetrieved,
         onError = _searchResultsState::onError,
@@ -139,12 +143,13 @@ class SearchScreenVM(
 
     init {
         viewModelScope.launch {
-            combine(
+            hexadCombine(
                 snapshotFlow { _searchQuery.value },
-                snapshotFlow { AppPreferences.selectedSortingTypeType.value },
+                snapshotFlow { AppPreferences.selectedSortingType.value },
+                snapshotFlow { AppPreferences.forceShuffleLinks.value },
                 snapshotFlow { _appliedFolderFilters.toList() },
                 snapshotFlow { _appliedLinkFilters.toList() },
-                snapshotFlow { _appliedTagFiltering.value }) { query, _, _, _, _ ->
+                snapshotFlow { _appliedTagFiltering.value }) { query, _, _, _, _, _ ->
                 query
             }.collectLatest { query ->
                 searchResultsPaginator.cancelAndReset()
@@ -227,7 +232,7 @@ class SearchScreenVM(
         onRetrieve = { nextPageStartIndex ->
             nextPageStartIndex to combine(
                 snapshotFlow {
-                    AppPreferences.selectedSortingTypeType.value
+                    AppPreferences.selectedSortingType.value
                 },
                 snapshotFlow {
                     AppPreferences.forceShuffleLinks.value

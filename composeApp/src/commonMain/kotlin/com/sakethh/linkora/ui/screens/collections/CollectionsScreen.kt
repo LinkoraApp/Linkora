@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,6 +42,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
@@ -55,6 +57,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -92,6 +95,7 @@ import com.sakethh.linkora.ui.screens.collections.components.ItemDivider
 import com.sakethh.linkora.ui.screens.collections.components.RootCollectionSwitcher
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
+import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.getLocalizedString
@@ -120,6 +124,9 @@ fun CollectionsScreen(
         }
     }
     val rootFolders by collectionScreenParams.rootRegularFolders.collectAsStateWithLifecycle()
+    LaunchedEffect(rootFolders) {
+        linkoraLog("rootFolders:\n:${rootFolders}")
+    }
     val coroutineScope = rememberCoroutineScope()
     val navController = LocalNavController.current
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -168,7 +175,7 @@ fun CollectionsScreen(
     val parentScrollState = rememberScrollState()
 
     // yoinked from SO: https://stackoverflow.com/a/72329873
-    val defaultFoldersScrollConnection = remember {
+    val defaultFoldersScrollConnection = retain {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 if (available.y < 0) {
@@ -204,21 +211,29 @@ fun CollectionsScreen(
         floatingActionButtonPosition = FabPosition.End,
         modifier = Modifier.background(MaterialTheme.colorScheme.surface),
         topBar = {
-            MediumTopAppBar(
-                scrollBehavior = topAppBarScrollBehavior, title = {
-                    Text(
-                        text = Navigation.Root.CollectionsScreen.toString(),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontSize = 22.sp
-                    )
-                })
+            Column {
+                MediumTopAppBar(
+                    scrollBehavior = topAppBarScrollBehavior, title = {
+                        Text(
+                            text = Navigation.Root.CollectionsScreen.toString(),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontSize = 22.sp
+                        )
+                    })
+                if (platform !is Platform.Android.Mobile) {
+                    HorizontalDivider()
+                }
+            }
         }) { padding ->
         Row(
             modifier = Modifier.padding(padding).fillMaxSize()
                 .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
         ) {
-            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            BoxWithConstraints(
+                modifier = Modifier.fillMaxHeight()
+                    .fillMaxWidth(if (platform() is Platform.Android.Mobile) 1f else 0.4f)
+            ) {
                 val screenHeight = maxHeight
                 Column(
                     modifier = Modifier.fillMaxWidth().verticalScroll(parentScrollState)

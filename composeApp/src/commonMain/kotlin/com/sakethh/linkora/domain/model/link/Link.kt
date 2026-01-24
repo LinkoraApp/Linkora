@@ -40,6 +40,11 @@ data class Link(
     @Transient
     val date: String? = epochToReadableDateTime(lastModified)
 
+
+    @Ignore
+    @Transient
+    val path: String? = null
+
     class Invalid(message: String = Localization.getLocalizedString(Localization.Key.InvalidLink)) :
         Throwable(message)
 }
