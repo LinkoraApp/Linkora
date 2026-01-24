@@ -1,6 +1,9 @@
 package com.sakethh.linkora.ui.components
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -191,7 +194,7 @@ fun CollectionLayoutManager(
     }
 
     val loadingIndicatorModifier = retain(isDataEmpty) {
-        Modifier.then(if (!isDataEmpty) Modifier.padding(top = 25.dp) else Modifier)
+        Modifier.padding(top = 25.dp)
             .fillMaxWidth()
             .then(
                 if (!isDataEmpty) Modifier.padding(
@@ -332,22 +335,21 @@ fun CollectionLayoutManager(
                     }
                 }
                 item {
-                    AnimatedVisibility(!showLoading && isDataEmpty) {
-                        DataEmptyScreen(text = emptyDataText)
-                    }
-                }
-                item {
-                    AnimatedVisibility(showLoading) {
-                        Box(
-                            modifier = loadingIndicatorModifier,
-                            contentAlignment = Alignment.Center
-                        ) {
-                            ContainedLoadingIndicator()
+                    AnimatedContent(targetState = showLoading) {
+                        if (it) {
+                            Box(
+                                modifier = loadingIndicatorModifier,
+                                contentAlignment = Alignment.Center
+                            ) {
+                                ContainedLoadingIndicator()
+                            }
+                        } else if (isDataEmpty) {
+                            DataEmptyScreen(text = emptyDataText)
                         }
                     }
                 }
                 item {
-                    AnimatedVisibility(!showLoading) {
+                    AnimatedVisibility(enter = fadeIn(), exit = fadeOut(), visible = !showLoading) {
                         Spacer(Modifier.height(bottomSpacing.value))
                     }
                 }
@@ -451,15 +453,19 @@ fun CollectionLayoutManager(
                     }
                 }
 
-                if (showLoading) {
-                    item(span = {
-                        GridItemSpan(this.maxLineSpan)
-                    }) {
-                        Box(
-                            modifier = loadingIndicatorModifier,
-                            contentAlignment = Alignment.Center
-                        ) {
-                            ContainedLoadingIndicator()
+                item(span = {
+                    GridItemSpan(this.maxLineSpan)
+                }) {
+                    AnimatedContent(targetState = showLoading) {
+                        if (it) {
+                            Box(
+                                modifier = loadingIndicatorModifier,
+                                contentAlignment = Alignment.Center
+                            ) {
+                                ContainedLoadingIndicator()
+                            }
+                        } else if (isDataEmpty) {
+                            DataEmptyScreen(text = emptyDataText)
                         }
                     }
                 }
@@ -467,15 +473,11 @@ fun CollectionLayoutManager(
                 item(span = {
                     GridItemSpan(this.maxLineSpan)
                 }) {
-                    AnimatedVisibility(!showLoading && isDataEmpty) {
-                        DataEmptyScreen(text = emptyDataText)
-                    }
-                }
-
-                if (pagesCompleted) {
-                    item(span = {
-                        GridItemSpan(this.maxLineSpan)
-                    }) {
+                    AnimatedVisibility(
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                        visible = pagesCompleted
+                    ) {
                         Spacer(Modifier.height(bottomSpacing.value))
                     }
                 }
@@ -489,7 +491,7 @@ fun CollectionLayoutManager(
             }
 
             LaunchedEffect(gridLayoutState.canScrollForward) {
-                if (!gridLayoutState.canScrollForward/*TODO: && !linksTagsPairsState.pagesCompleted && !linksTagsPairsState.isRetrieving*/) {
+                if (!gridLayoutState.canScrollForward) {
                     onRetrieveNextPage()
                 }
             }
@@ -581,20 +583,18 @@ fun CollectionLayoutManager(
                     }
                 }
 
-                if (showLoading) {
-                    item(span = StaggeredGridItemSpan.FullLine) {
-                        Box(
-                            modifier = loadingIndicatorModifier,
-                            contentAlignment = Alignment.Center
-                        ) {
-                            ContainedLoadingIndicator()
-                        }
-                    }
-                }
-
                 item(span = StaggeredGridItemSpan.FullLine) {
-                    AnimatedVisibility(!showLoading && isDataEmpty) {
-                        DataEmptyScreen(text = emptyDataText)
+                    AnimatedContent(targetState = showLoading) {
+                        if (it) {
+                            Box(
+                                modifier = loadingIndicatorModifier,
+                                contentAlignment = Alignment.Center
+                            ) {
+                                ContainedLoadingIndicator()
+                            }
+                        } else if (isDataEmpty) {
+                            DataEmptyScreen(text = emptyDataText)
+                        }
                     }
                 }
 
@@ -614,7 +614,7 @@ fun CollectionLayoutManager(
             }
 
             LaunchedEffect(staggeredGridLayoutState.canScrollForward) {
-                if (!staggeredGridLayoutState.canScrollForward /*TODO: && !linksTagsPairsState.pagesCompleted && !linksTagsPairsState.isRetrieving*/) {
+                if (!staggeredGridLayoutState.canScrollForward) {
                     onRetrieveNextPage()
                 }
             }

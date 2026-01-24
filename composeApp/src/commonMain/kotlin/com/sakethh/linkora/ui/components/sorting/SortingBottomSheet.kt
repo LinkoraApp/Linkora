@@ -94,12 +94,12 @@ fun SortingBottomSheet(
                         fontSize = 16.sp,
                         style = MaterialTheme.typography.titleSmall,
                         color = if (it.sortingType == SortingType.valueOf(
-                                AppPreferences.selectedSortingTypeType.value
+                                AppPreferences.selectedSortingType.value
                             ) && !didAnyCheckBoxStateChanged.value
                         ) MaterialTheme.colorScheme.primary else LocalTextStyle.current.color
                     )
                     RadioButton(
-                        selected = it.sortingType.name == AppPreferences.selectedSortingTypeType.value && !didAnyCheckBoxStateChanged.value,
+                        selected = it.sortingType.name == AppPreferences.selectedSortingType.value && !didAnyCheckBoxStateChanged.value,
                         onClick = {
                             sortingBottomSheetParam.onSelected(
                                 it.sortingType,

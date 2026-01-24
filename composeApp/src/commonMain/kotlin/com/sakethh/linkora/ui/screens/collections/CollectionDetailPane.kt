@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -135,7 +136,8 @@ fun CollectionDetailPane(
         if (collectionDetailPaneParams.collectionDetailPaneInfo != null) collectionDetailPaneParams.collectionDetailPaneInfo.currentFolder?.localId == Constants.ARCHIVE_ID else peekCollectionPaneHistory?.currentFolder?.localId == Constants.ARCHIVE_ID
     val showAllLinksCollection =
         if (collectionDetailPaneParams.collectionDetailPaneInfo != null) collectionDetailPaneParams.collectionDetailPaneInfo.currentFolder?.localId == Constants.ALL_LINKS_ID else peekCollectionPaneHistory?.currentFolder?.localId == Constants.ALL_LINKS_ID
-    val flatChildFolderDataState = collectionDetailPaneParams.childFoldersFlat.collectAsStateWithLifecycle().value
+    val flatChildFolderDataState =
+        collectionDetailPaneParams.childFoldersFlat.collectAsStateWithLifecycle().value
     val collectionDetailPaneInfo = if (platform is Platform.Android.Mobile) {
         collectionDetailPaneParams.collectionDetailPaneInfo!!
     } else {
@@ -207,6 +209,9 @@ fun CollectionDetailPane(
                     )
                 }
             })
+            if (platform !is Platform.Android.Mobile) {
+                HorizontalDivider()
+            }
         }
     }) { paddingValues ->
         if (showArchiveCollection) {
@@ -544,10 +549,7 @@ fun CollectionDetailPane(
                     peekCollectionPaneHistory?.currentFolder?.localId == it.localId
                 },
                 nestedScrollConnection = topAppBarScrollBehavior.nestedScrollConnection,
-                emptyDataText = if (currentTag != null) Localization.Key.NoAttachmentsToTags.rememberLocalizedString() else if (currentFolder?.localId in listOf(
-                        Constants.SAVED_LINKS_ID, Constants.IMPORTANT_LINKS_ID, Constants.ALL_LINKS_ID
-                    )
-                ) Localization.Key.NoLinksFound.rememberLocalizedString() else "",
+                emptyDataText = if (currentTag != null) Localization.Key.NoAttachmentsToTags.rememberLocalizedString() else Localization.Key.NoLinksFound.rememberLocalizedString(),
                 onAttachedTagClick = {
                     if (currentTag?.localId == it.localId) {
                         return@CollectionLayoutManager

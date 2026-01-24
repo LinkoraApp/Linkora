@@ -72,7 +72,6 @@ import com.sakethh.linkora.ui.screens.DataEmptyScreen
 import com.sakethh.linkora.ui.screens.LoadingScreen
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
-import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.rememberLocalizedString
@@ -100,7 +99,7 @@ fun HomeScreen(currentFABContext: (CurrentFABContext) -> Unit) {
         activePanelAssociatedPanelFolders.value.size
     })
     val localUriHandler = LocalUriHandler.current
-    val childFoldersFlat by homeScreenVM.panelFoldersDataFlat.collectAsStateWithLifecycle()
+    val panelFoldersDataFlat by homeScreenVM.panelFoldersDataFlat.collectAsStateWithLifecycle()
     Scaffold(topBar = {
         Column(
             modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars).animateContentSize()
@@ -209,17 +208,7 @@ fun HomeScreen(currentFABContext: (CurrentFABContext) -> Unit) {
                     }
                 CollectionLayoutManager(
                     screenType = ScreenType.FOLDERS_AND_LINKS,
-                    /*
-                    flatChildFolderDataState =  TODO() /*activePanelAssociatedFolders[pageIndex]*/,
-                    linksTagsPairsState = TODO()/*TODO: if (activePanelAssociatedPanelFolders.value.any { it.folderId == Constants.SAVED_LINKS_ID }) {
-                        when (pageIndex) {
-                            0 -> activePanelAssociatedFolderLinks.getOrNull(0) ?: emptyList()
-
-                            else -> activePanelAssociatedFolderLinks.getOrNull(1) ?: emptyList()
-                        }
-                    } else activePanelAssociatedFolderLinks.getOrNull(pageIndex) ?: emptyList()*/,
-                    * */
-                    flatChildFolderDataState = childFoldersFlat[panelFolderId],
+                    flatChildFolderDataState = panelFoldersDataFlat[panelFolderId],
                     linksTagsPairsState = null,
                     paddingValues = PaddingValues(0.dp),
                     folderMoreIconClick = {

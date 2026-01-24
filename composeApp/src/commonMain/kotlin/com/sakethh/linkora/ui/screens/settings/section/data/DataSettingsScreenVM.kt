@@ -34,7 +34,6 @@ import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.utils.duplicate
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.getRemoteOnlyFailureMsg
-import com.sakethh.linkora.utils.isNull
 import com.sakethh.linkora.utils.pushSnackbarOnFailure
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -80,7 +79,11 @@ class DataSettingsScreenVM(
             val file =
                 if (importFileSelectionMethod.first == ImportFileSelectionMethod.FileLocationString) {
                     File(importFileSelectionMethod.second).let {
-                        if (it.exists() && it.extension.equals(importFileType.name, ignoreCase = true)) {
+                        if (it.exists() && it.extension.equals(
+                                importFileType.name,
+                                ignoreCase = true
+                            )
+                        ) {
                             onStart()
                             it
                         } else if (it.exists() && it.extension.lowercase() != importFileType.name.lowercase()) {
@@ -104,8 +107,7 @@ class DataSettingsScreenVM(
                         importExportProgressLogs.add(Localization.Key.ReadingFile.getLocalizedString())
                     })
                 }
-            if (file.isNull()) return@launch
-            file as File
+            if (file == null) return@launch
             if (importFileType == ImportFileType.JSON) {
                 importDataRepo.importDataFromAJSONFile(file)
             } else {
@@ -232,7 +234,9 @@ class DataSettingsScreenVM(
             }
             launch {
                 nativeUtils.onRefreshAllLinks(
-                    localLinksRepo = linksRepo, preferencesRepository = preferencesRepository, refreshLinksRepo = refreshLinksRepo
+                    localLinksRepo = linksRepo,
+                    preferencesRepository = preferencesRepository,
+                    refreshLinksRepo = refreshLinksRepo
                 )
             }
         }.invokeOnCompletion {

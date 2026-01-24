@@ -17,7 +17,6 @@ import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.model.FlatChildFolderData
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.link.Link
-import com.sakethh.linkora.domain.model.tag.LinkTag
 import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onSuccess
@@ -38,7 +37,6 @@ import com.sakethh.linkora.ui.domain.model.LinkTagsPair
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushLocalizedSnackbar
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
-import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.asStateInWhileSubscribed
 import com.sakethh.linkora.utils.getLocalizedString
@@ -49,6 +47,7 @@ import com.sakethh.linkora.utils.onRetrieved
 import com.sakethh.linkora.utils.onRetrieving
 import com.sakethh.linkora.utils.pushSnackbarOnFailure
 import com.sakethh.linkora.utils.replaceFirstPlaceHolderWith
+import com.sakethh.linkora.utils.shuffleLinks
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,6 +61,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import okhttp3.internal.toImmutableMap
@@ -79,6 +79,7 @@ class CollectionsScreenVM(
     preferencesRepo: PreferencesRepository? = null
 ) : ViewModel() {
 
+
     private val _linkTagsPairsState = MutableStateFlow(
         value = PaginationState.retrieving<List<LinkTagsPair>>()
     )
@@ -92,30 +93,51 @@ class CollectionsScreenVM(
         FolderBased
     }
 
-    lateinit var linkTagsPairPaginatorType: LinkTagsPairPaginatorType
-
-    private val currentInstanceLinkType = when (collectionDetailPaneInfo?.currentFolder?.localId) {
-        Constants.SAVED_LINKS_ID -> {
-            LinkType.SAVED_LINK
+    val linkTagsPairPaginatorType
+        get() = run {
+            val collectionInfo = dynamicCollectionDetailPaneInfo
+            if (collectionInfo?.collectionType == CollectionType.TAG && collectionInfo.currentTag != null) {
+                LinkTagsPairPaginatorType.LinksAssociatedWithATag
+            } else {
+                LinkTagsPairPaginatorType.FolderBased
+            }
         }
 
-        Constants.IMPORTANT_LINKS_ID -> {
-            LinkType.IMPORTANT_LINK
+    private val currentInstanceLinkType
+        get() = when (dynamicCollectionDetailPaneInfo?.currentFolder?.localId) {
+            Constants.SAVED_LINKS_ID -> {
+                LinkType.SAVED_LINK
+            }
+
+            Constants.IMPORTANT_LINKS_ID -> {
+                LinkType.IMPORTANT_LINK
+            }
+
+            Constants.ARCHIVE_ID -> {
+                LinkType.ARCHIVE_LINK
+            }
+
+            Constants.HISTORY_ID -> {
+                LinkType.HISTORY_LINK
+            }
+
+            else -> {
+                LinkType.FOLDER_LINK
+            }
         }
 
-        Constants.ARCHIVE_ID -> {
-            LinkType.ARCHIVE_LINK
-        }
-
-        Constants.HISTORY_ID -> {
-            LinkType.HISTORY_LINK
-        }
-
-        else -> {
-            LinkType.FOLDER_LINK
-        }
+    private val appPreferencesCombined = combine(snapshotFlow {
+        AppPreferences.forceShuffleLinks.value
+    }, snapshotFlow {
+        AppPreferences.selectedSortingType.value
+    }) { shuffleLinks, sortingType ->
+        Pair(shuffleLinks, sortingType)
     }
 
+    val sortingType get() = AppPreferences.selectedSortingType.value
+    val shuffleLinks get() = AppPreferences.forceShuffleLinks.value
+
+    // localDatabaseUtilsRepo#getChildFolderData supports this directly, since it directly queries and returns the result. This can be replaced with it, but this should be fine.
     fun Flow<Result<List<Link>>>.mapToLinkTagsPair(): Flow<Result<List<LinkTagsPair>>> {
         return flatMapLatest { result ->
             when (result) {
@@ -140,26 +162,27 @@ class CollectionsScreenVM(
     private val linkTagsPairPaginator = Paginator(
         coroutineScope = viewModelScope,
         onRetrieve = { nextPageStartIndex ->
-            nextPageStartIndex to snapshotFlow {
-                AppPreferences.selectedSortingTypeType.value
-            }.flatMapLatest { sortingType ->
-                if (linkTagsPairPaginatorType == LinkTagsPairPaginatorType.LinksAssociatedWithATag) {
-                    localLinksRepo.getLinks(
-                        tagId = collectionDetailPaneInfo?.currentTag?.localId!!,
-                        sortOption = sortingType,
-                        pageSize = Constants.PAGE_SIZE,
-                        startIndex = nextPageStartIndex
-                    ).mapToLinkTagsPair()
-                } else {
-                    localLinksRepo.getLinks(
-                        linkType = currentInstanceLinkType,
-                        parentFolderId = collectionDetailPaneInfo?.currentFolder?.localId
-                            ?: error("linkTagsPairPaginator-collectionDetailPaneInfo?.currentFolder?.localId is null"),
-                        sortOption = sortingType,
-                        pageSize = Constants.PAGE_SIZE,
-                        startIndex = nextPageStartIndex
-                    ).mapToLinkTagsPair()
-                }
+            nextPageStartIndex to if (linkTagsPairPaginatorType == LinkTagsPairPaginatorType.LinksAssociatedWithATag) {
+                localLinksRepo.getLinks(
+                    tagId = dynamicCollectionDetailPaneInfo?.currentTag?.localId
+                        ?: error("linkTagsPairPaginator-dynamicCollectionDetailPaneInfo?.currentTag?.localId is null"),
+                    sortOption = sortingType,
+                    pageSize = Constants.PAGE_SIZE,
+                    startIndex = nextPageStartIndex
+                ).run {
+                    if (shuffleLinks) shuffleLinks() else this
+                }.mapToLinkTagsPair()
+            } else {
+                localLinksRepo.getLinks(
+                    linkType = currentInstanceLinkType,
+                    parentFolderId = dynamicCollectionDetailPaneInfo?.currentFolder?.localId
+                        ?: error("linkTagsPairPaginator-dynamicCollectionDetailPaneInfo?.currentFolder?.localId is null"),
+                    sortOption = sortingType,
+                    pageSize = Constants.PAGE_SIZE,
+                    startIndex = nextPageStartIndex
+                ).run {
+                    if (shuffleLinks) shuffleLinks() else this
+                }.mapToLinkTagsPair()
             }
         },
         onRetrieved = _linkTagsPairsState::onRetrieved,
@@ -179,17 +202,15 @@ class CollectionsScreenVM(
     private val childFoldersFlatPaginator = Paginator(
         coroutineScope = viewModelScope,
         onRetrieve = { nextPageStartIndex ->
-            nextPageStartIndex to snapshotFlow {
-                AppPreferences.selectedSortingTypeType.value
-            }.flatMapLatest { sortingType ->
-                localDatabaseUtilsRepo.getChildFolderData(
-                    parentFolderId = collectionDetailPaneInfo?.currentFolder?.localId
-                        ?: error("childFoldersPaginator-collectionDetailPaneInfo?.currentFolder?.localId is null"),
-                    sortOption = sortingType,
-                    pageSize = Constants.PAGE_SIZE,
-                    startIndex = nextPageStartIndex,
-                    linkType = LinkType.FOLDER_LINK
-                )
+            nextPageStartIndex to localDatabaseUtilsRepo.getChildFolderData(
+                parentFolderId = dynamicCollectionDetailPaneInfo?.currentFolder?.localId
+                    ?: error("childFoldersPaginator-dynamicCollectionDetailPaneInfo?.currentFolder?.localId is null"),
+                sortOption = sortingType,
+                pageSize = Constants.PAGE_SIZE,
+                startIndex = nextPageStartIndex,
+                linkType = LinkType.FOLDER_LINK
+            ).run {
+                if (shuffleLinks) shuffleLinks() else this
             }
         },
         onRetrieved = _childFoldersFlat::onRetrieved,
@@ -222,6 +243,9 @@ class CollectionsScreenVM(
             null
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val dynamicCollectionDetailPaneInfo: CollectionDetailPaneInfo?
+        get() = if (platform is Platform.Android.Mobile) collectionDetailPaneInfo else peekPaneHistory.value
 
     fun clearDetailPaneHistoryUntilLast() {
         viewModelScope.launch {
@@ -308,7 +332,7 @@ class CollectionsScreenVM(
         CollectionsAction.ClearDetailPaneHistoryUntilLast -> clearDetailPaneHistoryUntilLast()
 
         is CollectionsAction.OnFirstVisibleItemIndexChangeOfLinkTagsPair -> {
-            if (collectionDetailPaneInfo?.currentFolder?.localId == Constants.ALL_LINKS_ID) {
+            if (dynamicCollectionDetailPaneInfo?.currentFolder?.localId == Constants.ALL_LINKS_ID) {
                 updateAllLinksPaginatorFirstVisibleIndex(collectionsAction.index)
             } else {
                 updateLinkTagsPaginatorFirstVisibleIndex(
@@ -318,7 +342,7 @@ class CollectionsScreenVM(
         }
 
         CollectionsAction.RetrieveNextLinksPage -> {
-            if (collectionDetailPaneInfo?.currentFolder?.localId == Constants.ALL_LINKS_ID) {
+            if (dynamicCollectionDetailPaneInfo?.currentFolder?.localId == Constants.ALL_LINKS_ID) {
                 retrieveNextAllLinksPage()
             } else {
                 retrieveNextLinksPage()
@@ -333,8 +357,9 @@ class CollectionsScreenVM(
     }
 
     private fun updateLinkTagsPaginatorFirstVisibleIndex(index: Long) {
+        val currentCollectionInfo = dynamicCollectionDetailPaneInfo
         viewModelScope.launch {
-            if (collectionDetailPaneInfo?.currentFolder?.localId != null && collectionDetailPaneInfo.currentFolder.localId >= 0) {
+            if (currentCollectionInfo?.currentFolder?.localId != null && currentCollectionInfo.currentFolder.localId >= 0) {
                 childFoldersFlatPaginator.updateFirstVisibleItemIndex(index)
             } else {
                 linkTagsPairPaginator.updateFirstVisibleItemIndex(index)
@@ -349,8 +374,9 @@ class CollectionsScreenVM(
     }
 
     private fun retrieveNextLinksPage() {
+        val currentCollectionInfo = dynamicCollectionDetailPaneInfo
         viewModelScope.launch {
-            if (collectionDetailPaneInfo?.currentFolder?.localId != null && collectionDetailPaneInfo.currentFolder.localId >= 0) {
+            if (currentCollectionInfo?.currentFolder?.localId != null && currentCollectionInfo.currentFolder.localId >= 0) {
                 childFoldersFlatPaginator.retrieveNextBatch()
             } else {
                 linkTagsPairPaginator.retrieveNextBatch()
@@ -382,10 +408,12 @@ class CollectionsScreenVM(
             nextPageStartIndex to localLinksRepo.getAllLinks(
                 applyLinkFilters = appliedFiltersForAllLinks.isNotEmpty(),
                 activeLinkFilters = appliedFiltersForAllLinks.toList().map { it.name },
-                sortOption = AppPreferences.selectedSortingTypeType.value,
+                sortOption = sortingType,
                 pageSize = Constants.PAGE_SIZE,
                 startIndex = nextPageStartIndex,
-            ).mapToLinkTagsPair()
+            ).run {
+                if (shuffleLinks) shuffleLinks() else this
+            }.mapToLinkTagsPair()
         },
         onRetrieved = _linkTagsPairsState::onRetrieved,
         onError = _linkTagsPairsState::onError,
@@ -454,16 +482,12 @@ class CollectionsScreenVM(
     private val regularRootFoldersPaginator = Paginator(
         coroutineScope = viewModelScope,
         onRetrieve = { nextPageStartIndex ->
-            nextPageStartIndex to snapshotFlow {
-                AppPreferences.selectedSortingTypeType.value
-            }.flatMapLatest { sortingType ->
-                localFoldersRepo.getRootFolders(
-                    sortingType,
-                    isArchived = false,
-                    pageSize = Constants.PAGE_SIZE,
-                    startIndex = nextPageStartIndex
-                )
-            }
+            nextPageStartIndex to localFoldersRepo.getRootFolders(
+                sortingType,
+                isArchived = false,
+                pageSize = Constants.PAGE_SIZE,
+                startIndex = nextPageStartIndex
+            )
         },
         onRetrieved = _rootRegularFolders::onRetrieved,
         onError = _rootRegularFolders::onError,
@@ -474,16 +498,12 @@ class CollectionsScreenVM(
     private val archiveRootFoldersPaginator = Paginator(
         coroutineScope = viewModelScope,
         onRetrieve = { nextPageStartIndex ->
-            nextPageStartIndex to snapshotFlow {
-                AppPreferences.selectedSortingTypeType.value
-            }.flatMapLatest { sortingType ->
-                localFoldersRepo.getRootFolders(
-                    sortingType,
-                    isArchived = true,
-                    pageSize = Constants.PAGE_SIZE,
-                    startIndex = nextPageStartIndex
-                )
-            }
+            nextPageStartIndex to localFoldersRepo.getRootFolders(
+                sortingType,
+                isArchived = true,
+                pageSize = Constants.PAGE_SIZE,
+                startIndex = nextPageStartIndex
+            )
         },
         onRetrieved = _rootArchiveFolders::onRetrieved,
         onError = _rootArchiveFolders::onError,
@@ -494,15 +514,11 @@ class CollectionsScreenVM(
     private val tagsPaginator = Paginator(
         coroutineScope = viewModelScope,
         onRetrieve = { nextPageStartIndex ->
-            nextPageStartIndex to snapshotFlow {
-                AppPreferences.selectedSortingTypeType.value
-            }.flatMapLatest { sortingType ->
-                localTagsRepo.getTags(
-                    sortingType,
-                    pageSize = Constants.PAGE_SIZE,
-                    startIndex = nextPageStartIndex
-                )
-            }
+            nextPageStartIndex to localTagsRepo.getTags(
+                sortingType,
+                pageSize = Constants.PAGE_SIZE,
+                startIndex = nextPageStartIndex
+            )
         },
         onRetrieved = _allTags::onRetrieved,
         onError = _allTags::onError,
@@ -581,7 +597,7 @@ class CollectionsScreenVM(
             combine(snapshotFlow {
                 foldersSearchQuery
             }, snapshotFlow {
-                AppPreferences.selectedSortingTypeType.value
+                AppPreferences.selectedSortingType.value
             }) { query, sortingType ->
                 Pair(query, sortingType)
             }.cancellable().collectLatest { (query, sortingType) ->
@@ -623,7 +639,9 @@ class CollectionsScreenVM(
             tagsPaginator.retrieveNextBatch()
         }
 
-        viewModelScope.launch {
+        suspend fun loadRootFolders() {
+            _rootArchiveFolders.emit(PaginationState.retrievingOnEmpty())
+            _rootRegularFolders.emit(PaginationState.retrievingOnEmpty())
 
             if (loadNonArchivedRootFoldersOnInit && loadArchivedRootFoldersOnInit) {
                 regularRootFoldersPaginator.retrieveNextBatch()
@@ -638,7 +656,13 @@ class CollectionsScreenVM(
                 regularRootFoldersPaginator.retrieveNextBatch()
             }
         }
+
         viewModelScope.launch {
+            loadRootFolders()
+        }
+        viewModelScope.launch {
+
+            // android-mobile handing
             if (collectionDetailPaneInfo != null) {
 
                 if (collectionDetailPaneInfo.currentFolder?.localId == Constants.ALL_LINKS_ID) {
@@ -647,33 +671,72 @@ class CollectionsScreenVM(
                     return@launch
                 }
 
-
-                linkTagsPairPaginatorType =
-                    if (collectionDetailPaneInfo.collectionType == CollectionType.TAG && collectionDetailPaneInfo.currentTag != null) {
-                        LinkTagsPairPaginatorType.LinksAssociatedWithATag
-                    } else {
-                        LinkTagsPairPaginatorType.FolderBased
-                    }
-
                 _linkTagsPairsState.emit(PaginationState.retrieving())
                 emptyCollectableChildFolders()
                 retrieveNextLinksPage()
-            } else {
-                peekPaneHistory.collectLatest {
-                    if (it != null) {
-                        TODO()
-                        // updateCollectionDetailPaneInfoAndCollectData(it)
-                    }
-                }
             }
         }
 
+
+        // ==== RESET THE STATE OF PAGINATORS (+HANDLE DESKTOP COLLECTION-DETAIL-PANE) =====
+
         viewModelScope.launch {
-            combine(snapshotFlow { AppPreferences.selectedSortingTypeType.value }, snapshotFlow {
-                _appliedFiltersForAllLinks.toList()
-            }) { _, _ -> }.collectLatest {
-                allLinksPaginator.cancelAndReset()
-                retrieveNextAllLinksPage()
+
+            launch {
+                snapshotFlow {
+                    _appliedFiltersForAllLinks.toList()
+                }.transform {
+                    if (dynamicCollectionDetailPaneInfo?.currentFolder?.localId == Constants.ALL_LINKS_ID) {
+                        emit(it)
+                    }
+                }.collectLatest {
+                    allLinksPaginator.cancelAndReset()
+                    _linkTagsPairsState.emit(PaginationState.retrievingOnEmpty())
+                    retrieveNextAllLinksPage()
+                }
+            }
+
+            launch {
+
+                var lastSortingType = AppPreferences.selectedSortingType.value
+
+                combine(appPreferencesCombined, peekPaneHistory) { appPreferences, paneHistory ->
+                    appPreferences.second to paneHistory
+                }
+                    .collectLatest { (sortingType, paneHistory) ->
+
+                        val collectionPaneInfo = collectionDetailPaneInfo ?: paneHistory
+
+                        linkTagsPairPaginator.cancelAndReset()
+                        allLinksPaginator.cancelAndReset()
+                        childFoldersFlatPaginator.cancelAndReset()
+                        val isSortingTypeChanged = if (sortingType == lastSortingType) {
+                            false
+                        } else {
+                            lastSortingType = sortingType
+                            true
+                        }
+
+                        if (isSortingTypeChanged) {
+                            tagsPaginator.cancelAndReset()
+                            archiveRootFoldersPaginator.cancelAndReset()
+                            regularRootFoldersPaginator.cancelAndReset()
+
+                            loadRootFolders()
+                            tagsPaginator.retrieveNextBatch()
+                        }
+
+                        if (collectionPaneInfo == null) return@collectLatest
+
+                        _linkTagsPairsState.emit(PaginationState.retrievingOnEmpty())
+
+                        if (collectionPaneInfo.currentFolder?.localId == Constants.ALL_LINKS_ID) {
+                            retrieveNextAllLinksPage()
+                            return@collectLatest
+                        }
+                        emptyCollectableChildFolders()
+                        retrieveNextLinksPage()
+                    }
             }
         }
     }
@@ -937,126 +1000,141 @@ class CollectionsScreenVM(
         }
     }
 
- /* init {
-         viewModelScope.launch {
-             localTagsRepo.createATag(Tag(name = "SAVED_LINK")).collect {
-                 it.onSuccess { (tagId)->
-                     localLinksRepo.addMultipleLinks((0..500).map {
-                         Link(
-                             linkType = LinkType.SAVED_LINK,
-                             title = "SAVED_LINK_$it",
-                             url = "",
-                             imgURL = "",
-                             note = "",
-                             idOfLinkedFolder = Constants.SAVED_LINKS_ID
-                         )
-                     }).run {
-                         localTagsRepo.createLinkTags(this.map {
-                             LinkTag(linkId = it, tagId = tagId)
-                         })
-                     }
-                 }
-             }
-             localTagsRepo.createATag(Tag(name = "IMPORTANT_LINK")).collect {
-                 it.onSuccess { (tagId)->
-                     localLinksRepo.addMultipleLinks((0..500).map {
-                         Link(
-                             linkType = LinkType.IMPORTANT_LINK,
-                             title = "IMPORTANT_LINK_$it",
-                             url = "",
-                             imgURL = "",
-                             note = "",
-                             idOfLinkedFolder = Constants.IMPORTANT_LINKS_ID
-                         )
-                     }).run {
-                         localTagsRepo.createLinkTags(this.map {
-                             LinkTag(linkId = it, tagId = tagId)
-                         })
-                     }
-                 }
-             }
-             localTagsRepo.createATag(Tag(name = "ARCHIVE_LINK")).collect {
-                 it.onSuccess { (tagId)->
-                     localLinksRepo.addMultipleLinks((0..500).map {
-                         Link(
-                             linkType = LinkType.ARCHIVE_LINK,
-                             title = "ARCHIVE_LINK_$it",
-                             url = "",
-                             imgURL = "",
-                             note = "",
-                             idOfLinkedFolder = Constants.ARCHIVE_ID
-                         )
-                     }).run {
-                         localTagsRepo.createLinkTags(this.map {
-                             LinkTag(linkId = it, tagId = tagId)
-                         })
-                     }
-                 }
-             }
-             localTagsRepo.createATag(Tag(name = "HISTORY_LINK")).collect {
-                 it.onSuccess { (tagId)->
-                     localLinksRepo.addMultipleLinks((0..500).map {
-                         Link(
-                             linkType = LinkType.HISTORY_LINK,
-                             title = "HISTORY_LINK_$it",
-                             url = "",
-                             imgURL = "",
-                             note = "",
-                             idOfLinkedFolder = Constants.HISTORY_ID
-                         )
-                     }).run {
-                         localTagsRepo.createLinkTags(this.map {
-                             LinkTag(linkId = it, tagId = tagId)
-                         })
-                     }
-                 }
-             }
+    /*init {
+        viewModelScope.launch {
+            localTagsRepo.createATag(Tag(name = "SAVED_LINK")).collect {
+                it.onSuccess { (tagId) ->
+                    localLinksRepo.addMultipleLinks((0..500).map {
+                        Link(
+                            linkType = LinkType.SAVED_LINK,
+                            title = "SAVED_LINK_$it",
+                            url = "",
+                            imgURL = "",
+                            note = "",
+                            idOfLinkedFolder = Constants.SAVED_LINKS_ID
+                        )
+                    }).run {
+                        localTagsRepo.createLinkTags(this.map {
+                            LinkTag(linkId = it, tagId = tagId)
+                        })
+                    }
+                    linkoraLog("TESTING__SAVED_LINK")
+                }
+            }
+            localTagsRepo.createATag(Tag(name = "IMPORTANT_LINK")).collect {
+                it.onSuccess { (tagId) ->
+                    localLinksRepo.addMultipleLinks((0..500).map {
+                        Link(
+                            linkType = LinkType.IMPORTANT_LINK,
+                            title = "IMPORTANT_LINK_$it",
+                            url = "",
+                            imgURL = "",
+                            note = "",
+                            idOfLinkedFolder = Constants.IMPORTANT_LINKS_ID
+                        )
+                    }).run {
+                        localTagsRepo.createLinkTags(this.map {
+                            LinkTag(linkId = it, tagId = tagId)
+                        })
+                    }
+                    linkoraLog("TESTING__IMPORTANT_LINK")
+                }
+            }
+            localTagsRepo.createATag(Tag(name = "ARCHIVE_LINK")).collect {
+                it.onSuccess { (tagId) ->
+                    localLinksRepo.addMultipleLinks((0..500).map {
+                        Link(
+                            linkType = LinkType.ARCHIVE_LINK,
+                            title = "ARCHIVE_LINK_$it",
+                            url = "",
+                            imgURL = "",
+                            note = "",
+                            idOfLinkedFolder = Constants.ARCHIVE_ID
+                        )
+                    }).run {
+                        localTagsRepo.createLinkTags(this.map {
+                            LinkTag(linkId = it, tagId = tagId)
+                        })
+                    }
+                    linkoraLog("TESTING__ARCHIVE_LINK")
+                }
+            }
+            localTagsRepo.createATag(Tag(name = "HISTORY_LINK")).collect {
+                it.onSuccess { (tagId) ->
+                    localLinksRepo.addMultipleLinks((0..500).map {
+                        Link(
+                            linkType = LinkType.HISTORY_LINK,
+                            title = "HISTORY_LINK_$it",
+                            url = "",
+                            imgURL = "",
+                            note = "",
+                            idOfLinkedFolder = Constants.HISTORY_ID
+                        )
+                    }).run {
+                        localTagsRepo.createLinkTags(this.map {
+                            LinkTag(linkId = it, tagId = tagId)
+                        })
+                    }
+                    linkoraLog("TESTING__HISTORY_LINK")
+                }
+            }
 
 
-             (0..500).forEach { index ->
-                 localFoldersRepo.insertANewFolder(
-                     folder = Folder(
-                         name = "REGULAR_ROOT_FOLDER-$index",
-                         note = "",
-                         parentFolderId = null
-                     ),
-                     ignoreFolderAlreadyExistsException = true
-                 ).collect {
-                     if (index == 0) {
-                         it.onSuccess { (folderId) ->
-                             localTagsRepo.createATag(Tag(name = "FOLDER_LINK")).collect {
-                                 it.onSuccess { (tagId)->
-                                     localLinksRepo.addMultipleLinks((0..500).map {
-                                         Link(
-                                             linkType = LinkType.FOLDER_LINK,
-                                             title = "FOLDER_LINK_$it",
-                                             url = "",
-                                             imgURL = "",
-                                             note = "",
-                                             idOfLinkedFolder = folderId
-                                         )
-                                     }).run {
-                                         localTagsRepo.createLinkTags(this.map {
-                                             LinkTag(linkId = it, tagId = tagId)
-                                         })
-                                     }
-                                 }
-                             }
-                         }
-                     }
-                 }
-                 localFoldersRepo.insertANewFolder(
-                     folder = Folder(
-                         name = "ARCHIVED_ROOT_FOLDER-$index",
-                         note = "",
-                         parentFolderId = null,
-                         isArchived = true
-                     ),
-                     ignoreFolderAlreadyExistsException = true
-                 ).collect()
-             }
-         }.invokeOnCompletion {
-             linkoraLog("_DONE__DONE__DONE__DONE__DONE__DONE_")
-         }
-     }*/
+            (0..500).forEach { index ->
+                localFoldersRepo.insertANewFolder(
+                    folder = Folder(
+                        name = "REGULAR_ROOT_FOLDER-$index",
+                        note = "",
+                        parentFolderId = null
+                    ),
+                    ignoreFolderAlreadyExistsException = true
+                ).collect {
+                    if (index == 0) {
+                        it.onSuccess { (folderId) ->
+                            localTagsRepo.createATag(Tag(name = "FOLDER_LINK")).collect {
+                                it.onSuccess { (tagId) ->
+                                    localLinksRepo.addMultipleLinks((0..500).map {
+                                        Link(
+                                            linkType = LinkType.FOLDER_LINK,
+                                            title = "FOLDER_LINK_$it",
+                                            url = "",
+                                            imgURL = "",
+                                            note = "",
+                                            idOfLinkedFolder = folderId
+                                        )
+                                    }).run {
+                                        localTagsRepo.createLinkTags(this.map {
+                                            LinkTag(linkId = it, tagId = tagId)
+                                        })
+                                    }
+                                }
+                            }
+
+                            (0..250).forEach { index ->
+                                localFoldersRepo.insertANewFolder(
+                                    folder = Folder(
+                                        name = "CHILD_FOLDER-$index",
+                                        note = "",
+                                        parentFolderId = folderId
+                                    ),
+                                    ignoreFolderAlreadyExistsException = true
+                                ).collect()
+                            }
+                        }
+                    }
+                }
+                localFoldersRepo.insertANewFolder(
+                    folder = Folder(
+                        name = "ARCHIVED_ROOT_FOLDER-$index",
+                        note = "",
+                        parentFolderId = null,
+                        isArchived = true
+                    ),
+                    ignoreFolderAlreadyExistsException = true
+                ).collect()
+            }
+        }.invokeOnCompletion {
+            linkoraLog("_DONE__DONE__DONE__DONE__DONE__DONE_")
+        }
+    }*/
 }

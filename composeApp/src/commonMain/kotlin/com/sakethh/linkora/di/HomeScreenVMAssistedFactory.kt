@@ -13,7 +13,6 @@ object HomeScreenVMAssistedFactory {
                 triggerCollectionOfPanels = true,
                 triggerCollectionOfPanelFolders = false,
                 preferencesRepository = DependencyContainer.preferencesRepo,
-                localTagsRepo = DependencyContainer.localTagsRepo,
                 localDatabaseUtilsRepo = DependencyContainer.localDatabaseUtilsImpl
             )
         }
@@ -26,7 +25,6 @@ object HomeScreenVMAssistedFactory {
                 localPanelsRepo = DependencyContainer.localPanelsRepo,
                 localLinksRepo = DependencyContainer.localLinksRepo,
                 preferencesRepository = DependencyContainer.preferencesRepo,
-                localTagsRepo = DependencyContainer.localTagsRepo,
             )
         }
     }

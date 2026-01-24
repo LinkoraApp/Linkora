@@ -37,7 +37,7 @@ object AppPreferences {
     val isHomeScreenEnabled = mutableStateOf(true)
     val useRemoteStrings = mutableStateOf(false)
     val isOnLatestUpdate = mutableStateOf(false)
-    val selectedSortingTypeType = mutableStateOf(SortingType.NEW_TO_OLD.name)
+    val selectedSortingType = mutableStateOf(SortingType.NEW_TO_OLD.name)
     val primaryJsoupUserAgent = mutableStateOf(Constants.DEFAULT_USER_AGENT)
     val localizationServerURL = mutableStateOf(Constants.LOCALIZATION_SERVER_URL)
     val preferredAppLanguageName = mutableStateOf("English")
@@ -151,7 +151,7 @@ object AppPreferences {
 
                             ) == true
                 }, launch {
-                    selectedSortingTypeType.value = preferencesRepository.readPreferenceValue(
+                    selectedSortingType.value = preferencesRepository.readPreferenceValue(
                         preferenceKey = stringPreferencesKey(AppPreferenceType.SORTING_PREFERENCE.name),
                     ) ?: SortingType.NEW_TO_OLD.name
                 }, launch {

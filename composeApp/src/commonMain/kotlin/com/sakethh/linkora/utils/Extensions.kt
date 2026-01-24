@@ -22,6 +22,9 @@ import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.dto.server.Correlation
+import com.sakethh.linkora.domain.model.FlatChildFolderData
+import com.sakethh.linkora.domain.model.FlatSearchResult
+import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.preferences.AppPreferenceType
@@ -31,6 +34,7 @@ import com.sakethh.linkora.ui.domain.PaginationState
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
+import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.ui.utils.rememberDeserializableObject
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
@@ -43,18 +47,11 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.TreeMap
-
-fun String?.ifNullOrBlank(string: () -> String): String {
-    return if (this.isNullOrBlank()) {
-        string()
-    } else {
-        this
-    }
-}
 
 fun String.addZeroAtPrefixOnInt() =
     try {
@@ -110,10 +107,6 @@ fun Modifier.addEdgeToEdgeScaffoldPadding(paddingValues: PaddingValues) = this.p
     ), end = paddingValues.calculateEndPadding(LayoutDirection.Rtl)
 ).consumeWindowInsets(paddingValues)
 
-fun Any?.isNull(): Boolean {
-    return this == null
-}
-
 fun String?.isNotNullOrNotBlank(): Boolean {
     return !this.isNullOrBlank()
 }
@@ -123,6 +116,7 @@ fun String.isAValidLink(): Boolean {
         this.host()
         true
     } catch (e: Exception) {
+        e.printStackTrace()
         false
     }
 }
@@ -336,4 +330,43 @@ fun <T> Flow<T>.asStateInWhileSubscribed(
         started = SharingStarted.WhileSubscribed(stopTimeoutMillis = stopTimeoutMillis),
         initialValue = initialValue
     )
+}
+
+@JvmName("shuffleLinksFlatChildFolderData")
+fun Flow<Result<List<FlatChildFolderData>>>.shuffleLinks(): Flow<Result<List<FlatChildFolderData>>> {
+    return transform {
+        when (it) {
+            is Result.Success -> emit(it.copy(data = it.data.filter {
+                it.itemType != Constants.LINK
+            } + it.data.filter {
+                it.itemType == Constants.LINK
+            }.shuffled()))
+
+            else -> emit(it)
+        }
+    }
+}
+
+fun Flow<Result<List<Link>>>.shuffleLinks(): Flow<Result<List<Link>>> {
+    return transform {
+        when (it) {
+            is Result.Success -> emit(it.copy(data = it.data.shuffled()))
+            else -> emit(it)
+        }
+    }
+}
+
+@JvmName("shuffleLinksFlatSearchResult")
+fun Flow<Result<List<FlatSearchResult>>>.shuffleLinks(): Flow<Result<List<FlatSearchResult>>> {
+    return transform {
+        when (it) {
+            is Result.Success -> emit(it.copy(data = it.data.filter {
+                it.itemType != Constants.LINK
+            } + it.data.filter {
+                it.itemType == Constants.LINK
+            }.shuffled()))
+
+            else -> emit(it)
+        }
+    }
 }

@@ -97,7 +97,7 @@ class SnapshotRepoImpl(
                             snapshotFlow {
                                 forceSnapshot.value
                             },
-                            localTagsRepo.getAllTags(AppPreferences.selectedSortingTypeType.value),
+                            localTagsRepo.getAllTags(AppPreferences.selectedSortingType.value),
                             localTagsRepo.getAllLinkTags()
                         ) { links, folders, panels, panelFolders, _, tags, linkTags ->
                             AllTablesDTO(

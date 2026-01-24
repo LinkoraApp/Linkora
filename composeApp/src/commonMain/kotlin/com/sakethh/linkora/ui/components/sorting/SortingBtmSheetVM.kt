@@ -20,7 +20,7 @@ class SortingBtmSheetVM(preferencesRepository: PreferencesRepository,nativeUtils
         return listOf(
             SortingBtmSheet(
                 sortingName = Localization.Key.NewestToOldest.getLocalizedString(), onClick = {
-                    AppPreferences.selectedSortingTypeType.value = SortingType.NEW_TO_OLD.name
+                    AppPreferences.selectedSortingType.value = SortingType.NEW_TO_OLD.name
                     changeSettingPreferenceValue(
                         preferenceKey = stringPreferencesKey(
                             AppPreferenceType.SORTING_PREFERENCE.name
@@ -30,7 +30,7 @@ class SortingBtmSheetVM(preferencesRepository: PreferencesRepository,nativeUtils
             ),
             SortingBtmSheet(
                 sortingName = Localization.Key.OldestToNewest.getLocalizedString(), onClick = {
-                    AppPreferences.selectedSortingTypeType.value = SortingType.OLD_TO_NEW.name
+                    AppPreferences.selectedSortingType.value = SortingType.OLD_TO_NEW.name
                     changeSettingPreferenceValue(
                         preferenceKey = stringPreferencesKey(
                             AppPreferenceType.SORTING_PREFERENCE.name
@@ -40,7 +40,7 @@ class SortingBtmSheetVM(preferencesRepository: PreferencesRepository,nativeUtils
             ),
             SortingBtmSheet(
                 sortingName = Localization.Key.AToZSequence.getLocalizedString(), onClick = {
-                    AppPreferences.selectedSortingTypeType.value = SortingType.A_TO_Z.name
+                    AppPreferences.selectedSortingType.value = SortingType.A_TO_Z.name
                     changeSettingPreferenceValue(
                         preferenceKey = stringPreferencesKey(
                             AppPreferenceType.SORTING_PREFERENCE.name
@@ -52,7 +52,7 @@ class SortingBtmSheetVM(preferencesRepository: PreferencesRepository,nativeUtils
                 sortingType = SortingType.Z_TO_A,
                 sortingName = Localization.Key.ZToASequence.getLocalizedString(),
                 onClick = {
-                    AppPreferences.selectedSortingTypeType.value = SortingType.Z_TO_A.name
+                    AppPreferences.selectedSortingType.value = SortingType.Z_TO_A.name
                     changeSettingPreferenceValue(
                         preferenceKey = stringPreferencesKey(
                             AppPreferenceType.SORTING_PREFERENCE.name
