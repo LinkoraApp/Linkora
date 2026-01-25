@@ -53,6 +53,7 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -145,6 +146,26 @@ fun CollectionsScreen(
     val paneHistoryPeek by collectionScreenParams.peekPaneHistory.collectAsStateWithLifecycle()
     val rootFoldersListState = rememberLazyListState()
     val tagsListState = rememberLazyListState()
+
+    val isRootFoldersListAtTheEnd = retain {
+        derivedStateOf {
+            (rootFoldersListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) >= (rootFoldersListState.layoutInfo.totalItemsCount - Constants.TRIGGER_THRESHOLD_AT_THE_END)
+        }
+    }
+    val isTagsListAtTheEnd = retain {
+        derivedStateOf {
+            (tagsListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) >= (tagsListState.layoutInfo.totalItemsCount - Constants.TRIGGER_THRESHOLD_AT_THE_END)
+        }
+    }
+
+    LaunchedEffect(isRootFoldersListAtTheEnd.value) {
+        collectionScreenParams.onRetrieveNextRegularRootFolderPage()
+    }
+
+    LaunchedEffect(isTagsListAtTheEnd.value) {
+        collectionScreenParams.onRetrieveNextTagsPage()
+    }
+
     LaunchedEffect(Unit) {
         snapshotFlow {
             rootFoldersListState.firstVisibleItemIndex
@@ -153,23 +174,11 @@ fun CollectionsScreen(
         }
     }
 
-    LaunchedEffect(rootFoldersListState.canScrollForward) {
-        if (!rootFoldersListState.canScrollForward) {
-            collectionScreenParams.onRetrieveNextRegularRootFolderPage()
-        }
-    }
-
     LaunchedEffect(Unit) {
         snapshotFlow {
             tagsListState.firstVisibleItemIndex
         }.debounce(500).distinctUntilChanged().collectLatest {
             collectionScreenParams.onTagsFirstVisibleItemIndexChange(it.toLong())
-        }
-    }
-
-    LaunchedEffect(tagsListState.canScrollForward) {
-        if (!tagsListState.canScrollForward) {
-            collectionScreenParams.onRetrieveNextTagsPage()
         }
     }
     val parentScrollState = rememberScrollState()

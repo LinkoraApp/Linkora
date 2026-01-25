@@ -27,6 +27,8 @@ object Constants {
     const val FOLDER = "FOLDER"
     const val LINK = "LINK"
     const val TAG = "TAG"
+
+    const val TRIGGER_THRESHOLD_AT_THE_END = 5
 }
 
 object LinkType {

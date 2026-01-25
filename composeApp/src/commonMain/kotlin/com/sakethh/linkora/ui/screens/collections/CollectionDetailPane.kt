@@ -36,11 +36,13 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -142,6 +144,15 @@ fun CollectionDetailPane(
         collectionDetailPaneParams.collectionDetailPaneInfo!!
     } else {
         peekCollectionPaneHistory!!
+    }
+    val isRootArchiveFoldersListAtTheEnd = retain {
+        derivedStateOf {
+            (rootArchiveFoldersListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index
+                ?: 0) >= (rootArchiveFoldersListState.layoutInfo.totalItemsCount - Constants.TRIGGER_THRESHOLD_AT_THE_END)
+        }
+    }
+    LaunchedEffect(isRootArchiveFoldersListAtTheEnd.value) {
+        collectionDetailPaneParams.performAction(CollectionsAction.RetrieveNextRootArchivedFolderPage)
     }
 
     DisposableEffect(Unit) {
@@ -448,13 +459,6 @@ fun CollectionDetailPane(
                                             it.toLong()
                                         )
                                     )
-                                }
-                            }
-
-                            LaunchedEffect(rootArchiveFoldersListState.canScrollForward) {
-                                if (!rootArchiveFoldersListState.canScrollForward && !rootArchiveFoldersState.pagesCompleted && !rootArchiveFoldersState.isRetrieving) {
-                                    linkoraLog("CollectionsAction.RetrieveNextRootArchivedFolderPage")
-                                    collectionDetailPaneParams.performAction(CollectionsAction.RetrieveNextRootArchivedFolderPage)
                                 }
                             }
                         }

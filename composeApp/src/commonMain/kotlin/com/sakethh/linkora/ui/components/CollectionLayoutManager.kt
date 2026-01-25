@@ -30,6 +30,7 @@ import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,6 +60,7 @@ import com.sakethh.linkora.ui.domain.model.LinkComponentParam
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
 import com.sakethh.linkora.ui.screens.DataEmptyScreen
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM
+import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
@@ -261,6 +263,34 @@ fun CollectionLayoutManager(
         )
     }
 
+
+    val isAtTheEnd = retain {
+        derivedStateOf {
+            when (AppPreferences.selectedLinkLayout.value) {
+                Layout.TITLE_ONLY_LIST_VIEW.name, Layout.REGULAR_LIST_VIEW.name -> {
+                    val lastVisibleItem = listLayoutState.layoutInfo.visibleItemsInfo.lastOrNull()
+                    (lastVisibleItem?.index
+                        ?: 0) >= listLayoutState.layoutInfo.totalItemsCount - Constants.TRIGGER_THRESHOLD_AT_THE_END
+                }
+
+                Layout.GRID_VIEW.name -> {
+                    val lastVisibleItem = gridLayoutState.layoutInfo.visibleItemsInfo.lastOrNull()
+                    (lastVisibleItem?.index
+                        ?: 0) >= gridLayoutState.layoutInfo.totalItemsCount - Constants.TRIGGER_THRESHOLD_AT_THE_END
+                }
+
+                else -> {
+                    val lastVisibleItem =
+                        staggeredGridLayoutState.layoutInfo.visibleItemsInfo.lastOrNull()
+                    (lastVisibleItem?.index
+                        ?: 0) >= staggeredGridLayoutState.layoutInfo.totalItemsCount - Constants.TRIGGER_THRESHOLD_AT_THE_END
+                }
+            }
+        }
+    }
+    LaunchedEffect(isAtTheEnd.value) {
+        onRetrieveNextPage()
+    }
     when (AppPreferences.selectedLinkLayout.value) {
         Layout.TITLE_ONLY_LIST_VIEW.name, Layout.REGULAR_LIST_VIEW.name -> {
 
@@ -364,12 +394,6 @@ fun CollectionLayoutManager(
                     listLayoutState.firstVisibleItemIndex
                 }.debounce(500).distinctUntilChanged().collectLatest {
                     onFirstVisibleItemIndexChange(it.toLong())
-                }
-            }
-
-            LaunchedEffect(listLayoutState.canScrollForward) {
-                if (!listLayoutState.canScrollForward) {
-                    onRetrieveNextPage()
                 }
             }
         }
@@ -505,13 +529,6 @@ fun CollectionLayoutManager(
                     onFirstVisibleItemIndexChange(it.toLong())
                 }
             }
-
-            LaunchedEffect(gridLayoutState.canScrollForward) {
-                if (!gridLayoutState.canScrollForward) {
-                    onRetrieveNextPage()
-                }
-            }
-
         }
 
         Layout.STAGGERED_VIEW.name -> {
@@ -632,12 +649,6 @@ fun CollectionLayoutManager(
                     staggeredGridLayoutState.firstVisibleItemIndex
                 }.debounce(500).distinctUntilChanged().collectLatest {
                     onFirstVisibleItemIndexChange(it.toLong())
-                }
-            }
-
-            LaunchedEffect(staggeredGridLayoutState.canScrollForward) {
-                if (!staggeredGridLayoutState.canScrollForward) {
-                    onRetrieveNextPage()
                 }
             }
         }
