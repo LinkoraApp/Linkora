@@ -435,7 +435,10 @@ fun CollectionDetailPane(
                                                             rootArchiveFolder
                                                         )
                                                     }
-                                                })
+                                                },
+                                                path = null,
+                                                showPath = false,
+                                                onPathItemClick = {},)
                                         )
                                     }
                                 }

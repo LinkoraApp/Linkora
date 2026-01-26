@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.MediaType
+import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.utils.epochToReadableDateTime
 import com.sakethh.linkora.utils.getSystemEpochSeconds
@@ -40,10 +41,9 @@ data class Link(
     @Transient
     val date: String? = epochToReadableDateTime(lastModified)
 
-
     @Ignore
     @Transient
-    val path: String? = null
+    var path: List<Folder>? = null
 
     class Invalid(message: String = Localization.getLocalizedString(Localization.Key.InvalidLink)) :
         Throwable(message)

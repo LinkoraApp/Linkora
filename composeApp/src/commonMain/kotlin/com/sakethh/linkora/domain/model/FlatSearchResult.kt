@@ -1,5 +1,6 @@
 package com.sakethh.linkora.domain.model
 
+import androidx.room.Ignore
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.MediaType
 import com.sakethh.linkora.domain.model.link.Link
@@ -38,6 +39,12 @@ data class FlatSearchResult(
 
     val linkTagsJson: String? = null
 ) {
+
+    @Ignore
+    @Transient
+    var path: List<Folder>? = null
+
+
     val asTag: Tag by lazy {
         Tag(
             localId = tagLocalId!!, remoteId = tagRemoteId,
@@ -50,19 +57,31 @@ data class FlatSearchResult(
             name = folderName!!, note = folderNote!!, parentFolderId = folderParentId,
             localId = folderLocalId!!, remoteId = folderRemoteId,
             isArchived = folderIsArchived!!, lastModified = folderLastModified!!
-        )
+        ).also {
+            it.path = path
+        }
     }
 
     val asLinkTagsPair: LinkTagsPair by lazy {
         val link = Link(
-            linkType = linkType!!, localId = linkLocalId!!, remoteId = linkRemoteId,
-            title = linkTitle!!, url = linkUrl!!, host = linkHost!!, imgURL = linkImgUrl!!,
-            note = linkNote!!, idOfLinkedFolder = linkIdOfLinkedFolder,
-            userAgent = linkUserAgent, mediaType = linkMediaType!!, lastModified = linkLastModified!!
+            linkType = linkType!!,
+            localId = linkLocalId!!,
+            remoteId = linkRemoteId,
+            title = linkTitle!!,
+            url = linkUrl!!,
+            host = linkHost!!,
+            imgURL = linkImgUrl!!,
+            note = linkNote!!,
+            idOfLinkedFolder = linkIdOfLinkedFolder,
+            userAgent = linkUserAgent,
+            mediaType = linkMediaType!!,
+            lastModified = linkLastModified!!
         )
         val tags = if (linkTagsJson.isNullOrBlank() || linkTagsJson == "[]") emptyList()
-                   else Json.decodeFromString<List<Tag>>(linkTagsJson)
+        else Json.decodeFromString<List<Tag>>(linkTagsJson)
 
-        LinkTagsPair(link = link, tags = tags)
+        LinkTagsPair(link = link.also {
+            it.path = path
+        }, tags = tags)
     }
 }

@@ -22,8 +22,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.outlined.ContentCopy
@@ -38,6 +41,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.retain.retain
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,6 +55,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.domain.Platform
+import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.LocalPlatform
@@ -66,7 +71,7 @@ fun ListViewLinkComponent(
     titleOnlyView: Boolean,
     modifier: Modifier = Modifier,
     imageAlignment: Alignment = Alignment.Center,
-    onShare: (url: String) -> Unit
+    onShare: (url: String) -> Unit,
 ) {
     val localClipBoardManager = LocalClipboardManager.current
     val platform = LocalPlatform.current
@@ -194,6 +199,26 @@ fun ListViewLinkComponent(
         } else {
             Spacer(modifier = Modifier.height(10.dp))
         }
+
+        val foldersPath = retain {
+            linkComponentParam.link.path
+        }
+
+        if (!foldersPath.isNullOrEmpty() && linkComponentParam.showPath) {
+            Text(
+                text = "Folder Path",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.padding(top = 15.dp)
+            )
+            FoldersRow(
+                modifier = Modifier.fillMaxWidth().padding(
+                    bottom = if (linkComponentParam.isSelectionModeEnabled.value) 15.dp else 0.dp
+                ),
+                folders = foldersPath,
+                onFolderClick = { linkComponentParam.onFolderClick(it) })
+        }
+
         Row(
             modifier = Modifier.fillMaxWidth().wrapContentHeight(),
             verticalAlignment = Alignment.CenterVertically
@@ -285,6 +310,52 @@ fun TagsRow(
                     )
                 }, modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
             )
+        }
+    }
+}
+
+@Composable
+fun FoldersRow(
+    modifier: Modifier,
+    folders: List<Folder>, // this can be changed to a persistent list since we guarantee that the path doesn't change once the list is built.
+    onFolderClick: (Folder) -> Unit,
+    chipColorOpacity: Float = 0.5f
+) {
+    LazyRow(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        itemsIndexed(folders) { index, folder ->
+            AssistChip(
+                colors = AssistChipDefaults.assistChipColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(
+                        chipColorOpacity
+                    )
+                ), border = AssistChipDefaults.assistChipBorder(
+                    enabled = true,
+                    borderColor = MaterialTheme.colorScheme.secondaryContainer.copy(chipColorOpacity)
+                ), onClick = {
+                    onFolderClick(folder)
+                }, label = {
+                    Text(
+                        text = folder.name,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }, leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Folder,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }, modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+            )
+            if (index < folders.size - 1) {
+                Icon(imageVector = Icons.Default.ChevronRight, contentDescription = null)
+            }
+        }
+        item {
+            Spacer(modifier = Modifier.width(15.dp))
         }
     }
 }

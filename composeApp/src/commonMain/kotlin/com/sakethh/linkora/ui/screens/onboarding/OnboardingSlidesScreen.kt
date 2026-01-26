@@ -280,7 +280,10 @@ fun Slide2() {
                     showCheckBox = rememberSaveable {
                         mutableStateOf(false)
                     },
-                    onCheckBoxChanged = {})
+                    onCheckBoxChanged = {},
+                    path = null,
+                    showPath = false,
+                    onPathItemClick = {},)
             )
             ListViewLinkComponent(
                 linkComponentParam = LinkComponentParam(
@@ -310,7 +313,7 @@ fun Slide2() {
                 tags = listOf(
                     Tag(name = "Tahiti"), Tag(name = "AndaquarterDONTFORGETTHEQUARTRR")
                 ),
-                onTagClick = {}), titleOnlyView = false, onShare = {
+                onTagClick = {}, showPath = false, onFolderClick = {}), titleOnlyView = false, onShare = {
                 LinkoraSDK.getInstance().nativeUtils.onShare(it)
             })
             ListViewLinkComponent(
@@ -339,7 +342,7 @@ fun Slide2() {
                     localUriHandler.openUri("https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q")
                 },
                 tags = listOf(Tag(name = "half man half amazing")),
-                onTagClick = {}),
+                onTagClick = {}, showPath = false, onFolderClick = {}),
                 titleOnlyView = false,
                 imageAlignment = Alignment.TopCenter,
                 onShare = {
@@ -443,7 +446,10 @@ fun Slide3() {
                                 showCheckBox = rememberSaveable {
                                     mutableStateOf(false)
                                 },
-                                onCheckBoxChanged = {})
+                                onCheckBoxChanged = {},
+                                path = null,
+                                showPath = false,
+                                onPathItemClick = {},)
                         )
                         ListViewLinkComponent(
                             linkComponentParam = LinkComponentParam(
@@ -467,7 +473,7 @@ fun Slide3() {
                             isItemSelected = rememberSaveable { mutableStateOf(false) },
                             onLongClick = { -> },
                             tags = listOf(Tag(name = "Linkora")),
-                            onTagClick = {}), titleOnlyView = false, onShare = {
+                            onTagClick = {}, showPath = false, onFolderClick = {}), titleOnlyView = false, onShare = {
                             LinkoraSDK.getInstance().nativeUtils.onShare(it)
                         })
                     }
@@ -492,7 +498,10 @@ fun Slide3() {
                                 showCheckBox = rememberSaveable {
                                     mutableStateOf(false)
                                 },
-                                onCheckBoxChanged = {})
+                                onCheckBoxChanged = {},
+                                path = null,
+                                showPath = false,
+                                onPathItemClick = {},)
                         )
                         ListViewLinkComponent(
                             linkComponentParam = LinkComponentParam(
@@ -518,7 +527,7 @@ fun Slide3() {
                                 },
                                 onLongClick = { -> },
                                 tags = listOf(Tag(name = "Linkora")),
-                                onTagClick = {}),
+                                onTagClick = {}, showPath = false, onFolderClick = {}),
                             titleOnlyView = false,
                             imageAlignment = Alignment.TopCenter,
                             onShare = {

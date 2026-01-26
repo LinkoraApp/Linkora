@@ -558,7 +558,10 @@ fun CollectionsScreen(
                                                                 folder
                                                             )
                                                         }
-                                                    })
+                                                    },
+                                                    path = null,
+                                                    showPath = false,
+                                                    onPathItemClick = {},)
                                             )
                                         }
                                     }
@@ -643,7 +646,10 @@ fun CollectionsScreen(
                                                     showCheckBox = rememberSaveable {
                                                         mutableStateOf(false)
                                                     },
-                                                    onCheckBoxChanged = {})
+                                                    onCheckBoxChanged = {},
+                                                    path = null,
+                                                    showPath = false,
+                                                    onPathItemClick = {},)
                                             )
                                         }
                                     }

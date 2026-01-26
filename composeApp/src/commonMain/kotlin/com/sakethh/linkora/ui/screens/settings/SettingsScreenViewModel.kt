@@ -238,7 +238,7 @@ open class SettingsScreenViewModel(
                 isItemSelected = mutableStateOf(false),
                 onLongClick = { },
                 tags = listOf(Tag(name = "TGWCT")),
-                onTagClick = {}),
+                onTagClick = {}, showPath = false, onFolderClick = {}),
             LinkComponentParam(
                 link = Link(
                 title = "Red Dead Redemption 2 - Rockstar Games",
@@ -260,7 +260,7 @@ open class SettingsScreenViewModel(
                 isItemSelected = mutableStateOf(false),
                 onLongClick = { },
                 tags = listOf(Tag(name = "oh arthur")),
-                onTagClick = {}),
+                onTagClick = {}, showPath = false, onFolderClick = {}),
             LinkComponentParam(
                 link = Link(
                 title = "A Plague Tale: Requiem | Download and Buy Today - Epic Games Store",
@@ -293,7 +293,7 @@ open class SettingsScreenViewModel(
                 isItemSelected = mutableStateOf(false),
                 onLongClick = { },
                 tags = null,
-                onTagClick = {}),
+                onTagClick = {}, showPath = false, onFolderClick = {}),
             LinkComponentParam(
                 link = Link(
                 title = "Shadow of the Tomb Raider",
@@ -314,7 +314,7 @@ open class SettingsScreenViewModel(
                 isItemSelected = mutableStateOf(false),
                 onLongClick = { },
                 tags = null,
-                onTagClick = {}),
+                onTagClick = {}, showPath = false, onFolderClick = {}),
             LinkComponentParam(
                 link = Link(
                     title = "Nas | Spotify",
@@ -336,7 +336,7 @@ open class SettingsScreenViewModel(
                     localUriHandler.openUri("https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q")
                 },
                 tags = listOf(Tag(name = "half man, half amazing.")),
-                onTagClick = {}),
+                onTagClick = {}, showPath = false, onFolderClick = {}),
             LinkComponentParam(
                 link = Link(
                     title = "Listen Gentle - YouTube Music",
@@ -358,7 +358,7 @@ open class SettingsScreenViewModel(
                     localUriHandler.openUri("https://music.youtube.com/watch?v=Q5jl_fmMd8M")
                 },
                 tags = null,
-                onTagClick = {}),
+                onTagClick = {}, showPath = false, onFolderClick = {}),
             LinkComponentParam(
                 link = Link(
                     title = "Hacker (small type)",
@@ -380,7 +380,7 @@ open class SettingsScreenViewModel(
                     localUriHandler.openUri("https://twitter.com/CatWorkers/status/1819121250226127061")
                 },
                 tags = listOf(Tag(name = "\uD83D\uDE97")),
-                onTagClick = {}),
+                onTagClick = {}, showPath = false, onFolderClick = {}),
             LinkComponentParam(
                 link = Link(
                     title = "Nas - You're da Man (from Made You Look: God's Son Live)",
@@ -403,7 +403,7 @@ open class SettingsScreenViewModel(
                     localUriHandler.openUri("https://www.youtube.com/watch?v=3vlqI5TPVjQ")
                 },
                 tags = null,
-                onTagClick = {}),
+                onTagClick = {}, showPath = false, onFolderClick = {}),
             LinkComponentParam(
                 link = Link(
                     title = "Clipse, Nas, Pusha T, Malice - Let God Sort Em Out/Chandeliers - YouTube Music",
@@ -426,7 +426,7 @@ open class SettingsScreenViewModel(
                     localUriHandler.openUri("https://music.youtube.com/watch?v=78YNulckDng")
                 },
                 tags = null,
-                onTagClick = {}),
+                onTagClick = {}, showPath = false, onFolderClick = {}),
             LinkComponentParam(
                 link = Link(
                     title = "Nas - Rare (Official Video)",
@@ -449,7 +449,7 @@ open class SettingsScreenViewModel(
                     localUriHandler.openUri("https://www.youtube.com/watch?v=66OFYWBrg3o")
                 },
                 tags = listOf(Tag(name = "KD"), Tag(name = "Kings Disease")),
-                onTagClick = {}),
+                onTagClick = {}, showPath = false, onFolderClick = {}),
         ).sortedBy {
             it.link.title
         }

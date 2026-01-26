@@ -25,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.retain.retain
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,19 +37,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.platform.platform
+import com.sakethh.linkora.ui.components.link.FoldersRow
 import com.sakethh.linkora.ui.domain.model.FolderComponentParam
-import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.ui.screens.collections.components.ItemDivider
+import com.sakethh.linkora.ui.utils.pressScaleEffect
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FolderComponent(folderComponentParam: FolderComponentParam) {
     Column(
-        modifier = Modifier.fillMaxWidth().then(
-            if (folderComponentParam.isSelectedForSelection.value) Modifier.background(
-                MaterialTheme.colorScheme.primary.copy(0.25f)
-            ) else Modifier
-        ).then(
+        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+            .combinedClickable(interactionSource = remember {
+                MutableInteractionSource()
+            }, indication = null, onClick = {
+                folderComponentParam.onClick()
+            }, onLongClick = {
+                folderComponentParam.onLongClick()
+            }).pressScaleEffect().fillMaxWidth().then(
+                if (folderComponentParam.isSelectedForSelection.value) Modifier.background(
+                    MaterialTheme.colorScheme.primary.copy(0.25f)
+                ) else Modifier
+            ).then(
                 if (platform() is Platform.Android.Mobile) Modifier else Modifier.background(
                     if (folderComponentParam.isCurrentlyInDetailsView.value) MaterialTheme.colorScheme.primary.copy(
                         0.25f
@@ -57,13 +66,7 @@ fun FolderComponent(folderComponentParam: FolderComponentParam) {
             ).animateContentSize()
     ) {
         Row(
-            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).combinedClickable(interactionSource = remember {
-                    MutableInteractionSource()
-                }, indication = null, onClick = {
-                    folderComponentParam.onClick()
-                }, onLongClick = {
-                    folderComponentParam.onLongClick()
-                }).pressScaleEffect().fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
         ) {
             if (folderComponentParam.showCheckBox.value) {
                 Checkbox(
@@ -112,7 +115,9 @@ fun FolderComponent(folderComponentParam: FolderComponentParam) {
                 contentAlignment = Alignment.CenterEnd
             ) {
                 if (folderComponentParam.showMoreIcon.value && folderComponentParam.showCheckBox.value.not()) {
-                    IconButton(modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand), onClick = { folderComponentParam.onMoreIconClick() }) {
+                    IconButton(
+                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                        onClick = { folderComponentParam.onMoreIconClick() }) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert, contentDescription = null
                         )
@@ -120,8 +125,28 @@ fun FolderComponent(folderComponentParam: FolderComponentParam) {
                 }
             }
         }
+
+        val foldersPath = retain {
+            folderComponentParam.path
+        }
+
+        if (!foldersPath.isNullOrEmpty() && folderComponentParam.showPath) {
+            Text(
+                text = "Folder Path",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.padding(start = 15.dp)
+            )
+            FoldersRow(
+                modifier = Modifier.fillMaxWidth().padding(
+                    start = 15.dp,
+                    bottom = if (folderComponentParam.showCheckBox.value) 15.dp else 10.dp
+                ),
+                folders = foldersPath,
+                onFolderClick = { folderComponentParam.onPathItemClick(it) })
+        }
         AnimatedVisibility(
-            visible = folderComponentParam.showCheckBox.value.not(),
+            visible = !folderComponentParam.showCheckBox.value,
             enter = fadeIn(),
             exit = fadeOut()
         ) {
