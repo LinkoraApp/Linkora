@@ -2,6 +2,7 @@ package com.sakethh.linkora.ui.domain.model
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
+import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.domain.model.link.Link
 
@@ -15,5 +16,7 @@ data class LinkComponentParam(
     val onForceOpenInExternalBrowserClicked: () -> Unit,
     val isItemSelected: MutableState<Boolean>,
     val onLongClick: () -> Unit,
-    val onTagClick: (tag: Tag) -> Unit
+    val onTagClick: (tag: Tag) -> Unit,
+    val onFolderClick: (folder: Folder) -> Unit,
+    val showPath: Boolean
 )

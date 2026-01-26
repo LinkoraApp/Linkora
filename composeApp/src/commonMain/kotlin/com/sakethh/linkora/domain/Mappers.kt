@@ -17,6 +17,7 @@ import com.sakethh.linkora.domain.model.tag.LinkTagDTO
 import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.catchAsThrowableAndEmitFailure
+import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -57,6 +58,16 @@ fun LinkType.asLocalizedString(): String {
         LinkType.HISTORY_LINK -> Localization.Key.HistoryLinks.rememberLocalizedString()
         LinkType.IMPORTANT_LINK -> Localization.Key.ImportantLinks.rememberLocalizedString()
         LinkType.ARCHIVE_LINK -> Localization.Key.ArchiveLinks.rememberLocalizedString()
+    }
+}
+
+fun LinkType.getLocalizedString(): String {
+    return when (this) {
+        LinkType.SAVED_LINK -> Localization.Key.SavedLinks.getLocalizedString()
+        LinkType.FOLDER_LINK -> Localization.Key.FolderLinks.getLocalizedString()
+        LinkType.HISTORY_LINK -> Localization.Key.HistoryLinks.getLocalizedString()
+        LinkType.IMPORTANT_LINK -> Localization.Key.ImportantLinks.getLocalizedString()
+        LinkType.ARCHIVE_LINK -> Localization.Key.ArchiveLinks.getLocalizedString()
     }
 }
 

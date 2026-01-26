@@ -30,6 +30,7 @@ interface LocalDatabaseUtilsRepo {
         includeRegularFolders: Boolean,
         shouldShowLinks: Boolean,
         isLinkTypeFilterActive: Boolean,
-        activeLinkTypeFilters: List<String>
+        activeLinkTypeFilters: List<String>,
+        assignPath: Boolean
     ): Flow<Result<List<FlatSearchResult>>>
 }

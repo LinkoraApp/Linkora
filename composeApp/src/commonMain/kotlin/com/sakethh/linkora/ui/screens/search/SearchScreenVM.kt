@@ -130,6 +130,7 @@ class SearchScreenVM(
                 shouldShowLinks = shouldShowLinks,
                 isLinkTypeFilterActive = isLinkTypeFilterActive,
                 activeLinkTypeFilters = activeLinkTypeFilters,
+                assignPath = true
             ).run {
                 if (AppPreferences.forceShuffleLinks.value) shuffleLinks() else this
             }

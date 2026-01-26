@@ -60,7 +60,6 @@ import com.sakethh.linkora.ui.domain.model.LinkComponentParam
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
 import com.sakethh.linkora.ui.screens.DataEmptyScreen
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM
-import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
@@ -92,9 +91,12 @@ fun CollectionLayoutManager(
 
     val gridLayoutState = rememberLazyGridState()
     val staggeredGridLayoutState = rememberLazyStaggeredGridState()
-
+    val showPath = rememberSaveable {
+        screenType == ScreenType.TAGS_FOLDERS_LINKS
+    }
     val linkComponentParam: (linkTagsPair: LinkTagsPair) -> LinkComponentParam = { linkTagsPair ->
         LinkComponentParam(
+            showPath = showPath,
             link = linkTagsPair.link,
             isSelectionModeEnabled = CollectionsScreenVM.isSelectionEnabled,
             onMoreIconClick = {
@@ -128,6 +130,8 @@ fun CollectionLayoutManager(
             tags = linkTagsPair.tags,
             onTagClick = {
                 onAttachedTagClick(it)
+            }, onFolderClick = {
+                onFolderClick(it)
             })
     }
     val bottomSpacing = remember {
@@ -241,7 +245,11 @@ fun CollectionLayoutManager(
                         it
                     )
                 }
-            })
+            },
+            path = it.path,
+            showPath = showPath,
+            onPathItemClick = { onFolderClick(it) },
+        )
     }
     val tagComponentParam: (tag: Tag) -> FolderComponentParam = {
         FolderComponentParam(
@@ -259,7 +267,10 @@ fun CollectionLayoutManager(
             isSelectedForSelection = mutableStateOf(false),
             showCheckBox = mutableStateOf(false),
             onCheckBoxChanged = {},
-            leadingIcon = Icons.Default.Tag
+            leadingIcon = Icons.Default.Tag,
+            path = null,
+            showPath = false,
+            onPathItemClick = {},
         )
     }
 
