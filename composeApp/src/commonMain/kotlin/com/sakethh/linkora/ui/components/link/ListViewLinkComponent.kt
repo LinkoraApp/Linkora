@@ -144,7 +144,7 @@ fun ListViewLinkComponent(
                 }
             }
         }
-        if (linkComponentParam.link.note.isNotBlank() && AppPreferences.showNoteInListViewLayout.value) {
+        if (linkComponentParam.link.note.isNotBlank() && AppPreferences.showNoteInLinkView.value) {
             Text(
                 modifier = Modifier.padding(
                     end = 15.dp, top = 10.dp
@@ -158,7 +158,7 @@ fun ListViewLinkComponent(
                 color = MaterialTheme.colorScheme.onSurface.copy(0.75f)
             )
         }
-        if (linkComponentParam.link.date != null) {
+        if (AppPreferences.showDateInLinkView && linkComponentParam.link.date != null) {
             Text(
                 modifier = Modifier.padding(
                     end = 15.dp, top = 10.dp
@@ -172,7 +172,8 @@ fun ListViewLinkComponent(
                 color = MaterialTheme.colorScheme.onSurface.copy(0.65f)
             )
         }
-        if (linkComponentParam.tags != null) {
+
+        if (AppPreferences.showTagsInLinkView && linkComponentParam.tags != null) {
             TagsRow(tags = linkComponentParam.tags, onTagClick = {
                 linkComponentParam.onTagClick(it)
             })

@@ -7,7 +7,6 @@ import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.PublicOff
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.TextFormat
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.UriHandler
 import androidx.datastore.preferences.core.Preferences
@@ -219,16 +218,16 @@ open class SettingsScreenViewModel(
         return listOf(
             LinkComponentParam(
                 link = Link(
-                title = "This Could Be A Dream - YouTube Music",
-                host = "music.youtube.com",
-                imgURL = "https://lh3.googleusercontent.com/KMdNxgppeQ_CEAv3mcwYde9s6ehw-r9MWnE4wC2T0Yhax1aOwYvfRLfHCbLBbW-UVQQEdYniiXThgso",
-                url = "https://music.youtube.com/watch?v=DbiB1AtCA9k",
-                userAgent = AppPreferences.primaryJsoupUserAgent.value,
-                linkType = LinkType.SAVED_LINK,
-                localId = 0L,
-                note = "",
-                idOfLinkedFolder = null
-            ),
+                    title = "This Could Be A Dream - YouTube Music",
+                    host = "music.youtube.com",
+                    imgURL = "https://lh3.googleusercontent.com/KMdNxgppeQ_CEAv3mcwYde9s6ehw-r9MWnE4wC2T0Yhax1aOwYvfRLfHCbLBbW-UVQQEdYniiXThgso",
+                    url = "https://music.youtube.com/watch?v=DbiB1AtCA9k",
+                    userAgent = AppPreferences.primaryJsoupUserAgent.value,
+                    linkType = LinkType.SAVED_LINK,
+                    localId = 0L,
+                    note = "",
+                    idOfLinkedFolder = null
+                ),
                 onMoreIconClick = { },
                 onLinkClick = {
                     localUriHandler.openUri("https://music.youtube.com/watch?v=DbiB1AtCA9k")
@@ -241,16 +240,16 @@ open class SettingsScreenViewModel(
                 onTagClick = {}, showPath = false, onFolderClick = {}),
             LinkComponentParam(
                 link = Link(
-                title = "Red Dead Redemption 2 - Rockstar Games",
-                host = "rockstargames.com",
-                imgURL = "https://media-rockstargames-com.akamaized.net/rockstargames-newsite/img/global/games/fob/640/reddeadredemption2.jpg",
-                url = "https://www.rockstargames.com/reddeadredemption2",
-                userAgent = AppPreferences.primaryJsoupUserAgent.value,
-                linkType = LinkType.SAVED_LINK,
-                localId = 0L,
-                note = "RDR2 is the epic tale of outlaw Arthur Morgan and the infamous Van der Linde gang, on the run across America at the dawn of the modern age.",
-                idOfLinkedFolder = null
-            ),
+                    title = "Red Dead Redemption 2 - Rockstar Games",
+                    host = "rockstargames.com",
+                    imgURL = "https://media-rockstargames-com.akamaized.net/rockstargames-newsite/img/global/games/fob/640/reddeadredemption2.jpg",
+                    url = "https://www.rockstargames.com/reddeadredemption2",
+                    userAgent = AppPreferences.primaryJsoupUserAgent.value,
+                    linkType = LinkType.SAVED_LINK,
+                    localId = 0L,
+                    note = "RDR2 is the epic tale of outlaw Arthur Morgan and the infamous Van der Linde gang, on the run across America at the dawn of the modern age.",
+                    idOfLinkedFolder = null
+                ),
                 onMoreIconClick = { },
                 onLinkClick = {
                     localUriHandler.openUri("https://www.rockstargames.com/reddeadredemption2")
@@ -263,27 +262,27 @@ open class SettingsScreenViewModel(
                 onTagClick = {}, showPath = false, onFolderClick = {}),
             LinkComponentParam(
                 link = Link(
-                title = "A Plague Tale: Requiem | Download and Buy Today - Epic Games Store",
-                host = "store.epicgames.com",
-                imgURL = listOf(
-                    "https://pbs.twimg.com/media/FUPM2TrWYAAQsXm?format=jpg",
-                    "https://pbs.twimg.com/media/FLJx9epWYAADM0O?format=jpg",
-                    "https://pbs.twimg.com/media/FAdLIY8WUAEgLRM?format=jpg",
-                    "https://pbs.twimg.com/media/ETUI-RDWsAE2UYR?format=jpg",
-                    "https://pbs.twimg.com/media/ET9J7vTWsAYVtvG?format=jpg",
-                    "https://pbs.twimg.com/media/GRo2CKkWUAEsdEl?format=jpg",
-                    "https://pbs.twimg.com/media/FezZxQYWQAQ4K3f?format=jpg",
-                    "https://pbs.twimg.com/media/FezaHWkX0AIWvvU?format=jpg",
-                    "https://i.redd.it/qoa6gk4ii8571.jpg",
-                    "https://i.redd.it/8psapajhi8571.jpg"
-                ).random(),
-                url = "https://store.epicgames.com/en-US/p/a-plague-tale-requiem",
-                userAgent = AppPreferences.primaryJsoupUserAgent.value,
-                linkType = LinkType.SAVED_LINK,
-                localId = 0L,
-                note = "The plague ravages the Kingdom of France. Amicia and her younger brother Hugo are pursued by the Inquisition through villages devastated by the disease.",
-                idOfLinkedFolder = null
-            ),
+                    title = "A Plague Tale: Requiem | Download and Buy Today - Epic Games Store",
+                    host = "store.epicgames.com",
+                    imgURL = listOf(
+                        "https://pbs.twimg.com/media/FUPM2TrWYAAQsXm?format=jpg",
+                        "https://pbs.twimg.com/media/FLJx9epWYAADM0O?format=jpg",
+                        "https://pbs.twimg.com/media/FAdLIY8WUAEgLRM?format=jpg",
+                        "https://pbs.twimg.com/media/ETUI-RDWsAE2UYR?format=jpg",
+                        "https://pbs.twimg.com/media/ET9J7vTWsAYVtvG?format=jpg",
+                        "https://pbs.twimg.com/media/GRo2CKkWUAEsdEl?format=jpg",
+                        "https://pbs.twimg.com/media/FezZxQYWQAQ4K3f?format=jpg",
+                        "https://pbs.twimg.com/media/FezaHWkX0AIWvvU?format=jpg",
+                        "https://i.redd.it/qoa6gk4ii8571.jpg",
+                        "https://i.redd.it/8psapajhi8571.jpg"
+                    ).random(),
+                    url = "https://store.epicgames.com/en-US/p/a-plague-tale-requiem",
+                    userAgent = AppPreferences.primaryJsoupUserAgent.value,
+                    linkType = LinkType.SAVED_LINK,
+                    localId = 0L,
+                    note = "The plague ravages the Kingdom of France. Amicia and her younger brother Hugo are pursued by the Inquisition through villages devastated by the disease.",
+                    idOfLinkedFolder = null
+                ),
                 onMoreIconClick = { },
                 onLinkClick = {
                     localUriHandler.openUri("https://store.epicgames.com/en-US/p/a-plague-tale-requiem")
@@ -296,15 +295,15 @@ open class SettingsScreenViewModel(
                 onTagClick = {}, showPath = false, onFolderClick = {}),
             LinkComponentParam(
                 link = Link(
-                title = "Shadow of the Tomb Raider",
-                imgURL = "https://images.ctfassets.net/x77ixfmkpoiv/4UnPNfdN8Yq2aZvOhIdBx9/1b641d296ebb37bfa3eca8873c25a321/SOTTR_Product_Image.jpg",
-                url = "https://www.tombraider.com/products/games/shadow-of-the-tomb-raider",
-                userAgent = AppPreferences.primaryJsoupUserAgent.value,
-                linkType = LinkType.SAVED_LINK,
-                localId = 0L,
-                note = "As Lara Croft races to save the world from a Maya apocalypse, she must become the Tomb Raider she is destined to be.",
-                idOfLinkedFolder = null
-            ),
+                    title = "Shadow of the Tomb Raider",
+                    imgURL = "https://images.ctfassets.net/x77ixfmkpoiv/4UnPNfdN8Yq2aZvOhIdBx9/1b641d296ebb37bfa3eca8873c25a321/SOTTR_Product_Image.jpg",
+                    url = "https://www.tombraider.com/products/games/shadow-of-the-tomb-raider",
+                    userAgent = AppPreferences.primaryJsoupUserAgent.value,
+                    linkType = LinkType.SAVED_LINK,
+                    localId = 0L,
+                    note = "As Lara Croft races to save the world from a Maya apocalypse, she must become the Tomb Raider she is destined to be.",
+                    idOfLinkedFolder = null
+                ),
                 onMoreIconClick = { },
                 onLinkClick = {
                     localUriHandler.openUri("https://www.tombraider.com/products/games/shadow-of-the-tomb-raider")
@@ -458,45 +457,78 @@ open class SettingsScreenViewModel(
     val gridViewPref = listOf(
         LinkPref(
             onClick = {
-            AppPreferences.showTitleInLinkGridView.value =
-                !AppPreferences.showTitleInLinkGridView.value
-            changeSettingPreferenceValue(
-                preferenceKey = booleanPreferencesKey(AppPreferenceType.TITLE_VISIBILITY_FOR_NON_LIST_VIEWS.name),
-                newValue = AppPreferences.showTitleInLinkGridView.value
-            )
-        },
+                AppPreferences.showTitleInLinkGridView.value =
+                    !AppPreferences.showTitleInLinkGridView.value
+                changeSettingPreferenceValue(
+                    preferenceKey = booleanPreferencesKey(AppPreferenceType.TITLE_VISIBILITY_FOR_NON_LIST_VIEWS.name),
+                    newValue = AppPreferences.showTitleInLinkGridView.value
+                )
+            },
             title = Localization.Key.ShowTitle.getLocalizedString(),
             isSwitchChecked = { AppPreferences.showTitleInLinkGridView.value }),
         LinkPref(
             onClick = {
-            AppPreferences.showHostInLinkListView.value =
-                !AppPreferences.showHostInLinkListView.value
-            changeSettingPreferenceValue(
-                preferenceKey = booleanPreferencesKey(AppPreferenceType.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS.name),
-                newValue = AppPreferences.showHostInLinkListView.value
-            )
-        },
+                AppPreferences.showNoteInLinkView.value =
+                    !AppPreferences.showNoteInLinkView.value
+                changeSettingPreferenceValue(
+                    preferenceKey = booleanPreferencesKey(AppPreferenceType.NOTE_VISIBILITY_IN_LIST_VIEWS.name),
+                    newValue = AppPreferences.showNoteInLinkView.value
+                )
+            },
+            title = Localization.Key.ShowNote.getLocalizedString(),
+            isSwitchChecked = { AppPreferences.showNoteInLinkView.value }),
+        LinkPref(
+            onClick = {
+                AppPreferences.showHostInLinkListView.value =
+                    !AppPreferences.showHostInLinkListView.value
+                changeSettingPreferenceValue(
+                    preferenceKey = booleanPreferencesKey(AppPreferenceType.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS.name),
+                    newValue = AppPreferences.showHostInLinkListView.value
+                )
+            },
             title = Localization.Key.ShowHostAddress.getLocalizedString(),
             isSwitchChecked = { AppPreferences.showHostInLinkListView.value }),
         LinkPref(
             onClick = {
-            AppPreferences.enableFadedEdgeForNonListViews.value =
-                !AppPreferences.enableFadedEdgeForNonListViews.value
-            changeSettingPreferenceValue(
-                preferenceKey = booleanPreferencesKey(AppPreferenceType.FADED_EDGE_VISIBILITY_FOR_NON_LIST_VIEWS.name),
-                newValue = AppPreferences.enableFadedEdgeForNonListViews.value
-            )
-        },
+                AppPreferences.showTagsInLinkView =
+                    !AppPreferences.showTagsInLinkView
+                changeSettingPreferenceValue(
+                    preferenceKey = booleanPreferencesKey(AppPreferenceType.SHOW_TAGS_IN_LINK_VIEW.name),
+                    newValue = AppPreferences.showTagsInLinkView
+                )
+            },
+            title = "Show Tags",
+            isSwitchChecked = { AppPreferences.showTagsInLinkView }),
+        LinkPref(
+            onClick = {
+                AppPreferences.showDateInLinkView =
+                    !AppPreferences.showDateInLinkView
+                changeSettingPreferenceValue(
+                    preferenceKey = booleanPreferencesKey(AppPreferenceType.SHOW_DATE_IN_LINK_VIEW.name),
+                    newValue = AppPreferences.showDateInLinkView
+                )
+            },
+            title = "Show Date",
+            isSwitchChecked = { AppPreferences.showDateInLinkView }),
+        LinkPref(
+            onClick = {
+                AppPreferences.enableFadedEdgeForNonListViews.value =
+                    !AppPreferences.enableFadedEdgeForNonListViews.value
+                changeSettingPreferenceValue(
+                    preferenceKey = booleanPreferencesKey(AppPreferenceType.FADED_EDGE_VISIBILITY_FOR_NON_LIST_VIEWS.name),
+                    newValue = AppPreferences.enableFadedEdgeForNonListViews.value
+                )
+            },
             title = Localization.Key.ShowBottomFadedEdge.getLocalizedString(),
             isSwitchChecked = { AppPreferences.enableFadedEdgeForNonListViews.value }),
         LinkPref(
             onClick = {
-            AppPreferences.showMenuOnGridLinkClick = !AppPreferences.showMenuOnGridLinkClick
-            changeSettingPreferenceValue(
-                preferenceKey = booleanPreferencesKey(AppPreferenceType.SHOW_MENU_ON_GRID_LINK_CLICK.name),
-                newValue = AppPreferences.showMenuOnGridLinkClick
-            )
-        },
+                AppPreferences.showMenuOnGridLinkClick = !AppPreferences.showMenuOnGridLinkClick
+                changeSettingPreferenceValue(
+                    preferenceKey = booleanPreferencesKey(AppPreferenceType.SHOW_MENU_ON_GRID_LINK_CLICK.name),
+                    newValue = AppPreferences.showMenuOnGridLinkClick
+                )
+            },
             title = "Click to Open Menu",
             isSwitchChecked = { AppPreferences.showMenuOnGridLinkClick }),
     )

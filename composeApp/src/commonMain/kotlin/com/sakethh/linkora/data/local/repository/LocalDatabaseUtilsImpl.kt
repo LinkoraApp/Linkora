@@ -18,8 +18,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.transform
 
-class LocalDatabaseUtilsImpl(private val localDatabase: LocalDatabase) :
-    LocalDatabaseUtilsRepo {
+class LocalDatabaseUtilsImpl(private val localDatabase: LocalDatabase) : LocalDatabaseUtilsRepo {
 
     /*
     Initial implementation was to drop everything and create it again,
@@ -72,10 +71,7 @@ class LocalDatabaseUtilsImpl(private val localDatabase: LocalDatabase) :
         startIndex: Long
     ): Flow<Result<List<FlatChildFolderData>>> {
         return localDatabase.localDatabaseUtilsDao.getFlatChildFolderData(
-            parentFolderId, linkType,
-            sortOption,
-            pageSize,
-            startIndex
+            parentFolderId, linkType, sortOption, pageSize, startIndex
         ).mapToResultFlow()
     }
 
@@ -95,7 +91,10 @@ class LocalDatabaseUtilsImpl(private val localDatabase: LocalDatabase) :
         assignPath: Boolean
     ): Flow<Result<List<FlatSearchResult>>> {
         return localDatabase.localDatabaseUtilsDao.search(
-            query, sortOption, pageSize, startIndex = startIndex,
+            query,
+            sortOption,
+            pageSize,
+            startIndex = startIndex,
             shouldShowTags = shouldShowTags,
             shouldShowFolders = shouldShowFolders,
             includeArchivedFolders = includeArchivedFolders,
@@ -116,6 +115,8 @@ class LocalDatabaseUtilsImpl(private val localDatabase: LocalDatabase) :
                         }?.let { searchResultItemType ->
                             searchResultItem.apply {
                                 this.path = mutableListOf<Folder>().apply {
+                                    if (searchResultItemType == Constants.LINK && searchResultItem.linkType != LinkType.FOLDER_LINK) return@apply
+
                                     val parentFolderId =
                                         if (searchResultItemType == Constants.LINK) searchResultItem.linkIdOfLinkedFolder
                                         else searchResultItem.folderParentId
@@ -142,8 +143,7 @@ class LocalDatabaseUtilsImpl(private val localDatabase: LocalDatabase) :
                     emit(this)
                 }
             }
-        }
-            .mapToResultFlow()
+        }.mapToResultFlow()
     }
 
 }

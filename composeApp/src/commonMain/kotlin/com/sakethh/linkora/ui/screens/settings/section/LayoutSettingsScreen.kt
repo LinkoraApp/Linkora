@@ -45,7 +45,6 @@ import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.preferences.AppPreferenceType
 import com.sakethh.linkora.preferences.AppPreferences
-import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.components.link.GridViewLinkComponent
 import com.sakethh.linkora.ui.components.link.ListViewLinkComponent
 import com.sakethh.linkora.ui.domain.Layout
@@ -60,7 +59,7 @@ import com.sakethh.linkora.utils.rememberLocalizedString
 fun LayoutSettingsScreen() {
     val settingsScreenViewModel: SettingsScreenViewModel = linkoraViewModel()
     val localUriHandler = LocalUriHandler.current
-    val sampleList = retain {
+    val sampleLinksList = retain {
         settingsScreenViewModel.sampleLinks(localUriHandler)
     }
     SettingsSectionScaffold(
@@ -119,19 +118,54 @@ fun LayoutSettingsScreen() {
                         ) {
                             LinkViewPreferenceSwitch(
                                 onClick = {
-                                    AppPreferences.showNoteInListViewLayout.value =
-                                        !AppPreferences.showNoteInListViewLayout.value
+                                    AppPreferences.showNoteInLinkView.value =
+                                        !AppPreferences.showNoteInLinkView.value
                                     settingsScreenViewModel.changeSettingPreferenceValue(
                                         preferenceKey = booleanPreferencesKey(AppPreferenceType.NOTE_VISIBILITY_IN_LIST_VIEWS.name),
-                                        newValue = AppPreferences.showNoteInListViewLayout.value
+                                        newValue = AppPreferences.showNoteInLinkView.value
                                     )
                                 },
                                 title = Localization.Key.ShowNote.getLocalizedString(),
-                                isSwitchChecked = AppPreferences.showNoteInListViewLayout.value
+                                isSwitchChecked = AppPreferences.showNoteInLinkView.value
                             )
                         }
                     }
-
+                    item {
+                        Box(
+                            modifier = Modifier.padding(start = 10.dp, end = 10.dp)
+                        ) {
+                            LinkViewPreferenceSwitch(
+                                onClick = {
+                                    AppPreferences.showTagsInLinkView =
+                                        !AppPreferences.showTagsInLinkView
+                                    settingsScreenViewModel.changeSettingPreferenceValue(
+                                        preferenceKey = booleanPreferencesKey(AppPreferenceType.SHOW_TAGS_IN_LINK_VIEW.name),
+                                        newValue = AppPreferences.showTagsInLinkView
+                                    )
+                                },
+                                title = "Show Tags",
+                                isSwitchChecked = AppPreferences.showTagsInLinkView
+                            )
+                        }
+                    }
+                    item {
+                        Box(
+                            modifier = Modifier.padding(start = 10.dp, end = 10.dp)
+                        ) {
+                            LinkViewPreferenceSwitch(
+                                onClick = {
+                                    AppPreferences.showDateInLinkView =
+                                        !AppPreferences.showDateInLinkView
+                                    settingsScreenViewModel.changeSettingPreferenceValue(
+                                        preferenceKey = booleanPreferencesKey(AppPreferenceType.SHOW_DATE_IN_LINK_VIEW.name),
+                                        newValue = AppPreferences.showDateInLinkView
+                                    )
+                                },
+                                title = "Show Date",
+                                isSwitchChecked = AppPreferences.showDateInLinkView
+                            )
+                        }
+                    }
                     item {
                         HorizontalDivider(
                             Modifier.padding(
@@ -148,7 +182,8 @@ fun LayoutSettingsScreen() {
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
-                    items(sampleList) {
+
+                    items(sampleLinksList) {
                         ListViewLinkComponent(
                             linkComponentParam = it,
                             onShare = {
@@ -224,7 +259,7 @@ fun LayoutSettingsScreen() {
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
-                    items(sampleList) {
+                    items(sampleLinksList) {
                         GridViewLinkComponent(it, forStaggeredView = false)
                     }
                     item(span = {
@@ -293,7 +328,7 @@ fun LayoutSettingsScreen() {
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
-                    items(sampleList) {
+                    items(sampleLinksList) {
                         GridViewLinkComponent(
                             linkComponentParam = it, forStaggeredView = true
                         )

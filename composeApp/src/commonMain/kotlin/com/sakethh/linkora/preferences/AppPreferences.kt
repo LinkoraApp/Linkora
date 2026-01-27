@@ -56,7 +56,9 @@ object AppPreferences {
     val refreshLinksWorkerTag = mutableStateOf("52ae3f4a-d37f-4fdb-a6b6-4397b99ef1bd")
     val showVideoTagOnUIIfApplicable = mutableStateOf(false)
     val forceShuffleLinks = mutableStateOf(false)
-    val showNoteInListViewLayout = mutableStateOf(true)
+    val showNoteInLinkView = mutableStateOf(true)
+    var showDateInLinkView by mutableStateOf(true)
+    var showTagsInLinkView by mutableStateOf(true)
     val areSnapshotsEnabled = mutableStateOf(false)
 
     // String because snapshot types previously existed as raw strings, and we don't want to break that
@@ -203,8 +205,15 @@ object AppPreferences {
                 }, launch {
                     selectedLinkLayout.value = preferencesRepository.readPreferenceValue(
                         preferenceKey = stringPreferencesKey(AppPreferenceType.CURRENTLY_SELECTED_LINK_VIEW.name),
-
                         ) ?: selectedLinkLayout.value
+                }, launch {
+                    showTagsInLinkView = preferencesRepository.readPreferenceValue(
+                        preferenceKey = booleanPreferencesKey(AppPreferenceType.SHOW_TAGS_IN_LINK_VIEW.name),
+                        ) ?: showTagsInLinkView
+                }, launch {
+                    showDateInLinkView = preferencesRepository.readPreferenceValue(
+                        preferenceKey = booleanPreferencesKey(AppPreferenceType.SHOW_DATE_IN_LINK_VIEW.name),
+                        ) ?: showDateInLinkView
                 }, launch {
                     useLinkoraTopDecoratorOnDesktop.value =
                         preferencesRepository.readPreferenceValue(
@@ -234,7 +243,7 @@ object AppPreferences {
                         )
                     ) == true
                 }, launch {
-                    showNoteInListViewLayout.value = preferencesRepository.readPreferenceValue(
+                    showNoteInLinkView.value = preferencesRepository.readPreferenceValue(
                         booleanPreferencesKey(
                             AppPreferenceType.NOTE_VISIBILITY_IN_LIST_VIEWS.name
                         )
