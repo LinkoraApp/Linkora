@@ -6,6 +6,7 @@ import com.sakethh.linkora.data.local.dao.TagsDao
 import com.sakethh.linkora.domain.LinkSaveConfig
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.MediaType
+import com.sakethh.linkora.domain.RefreshLinkType
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.SyncServerRoute
 import com.sakethh.linkora.domain.asAddLinkDTO
@@ -605,7 +606,10 @@ class LocalLinksRepoImpl(
         }
     }
 
-    override suspend fun refreshLinkMetadata(link: Link): Flow<Result<Unit>> {
+    override suspend fun refreshLinkMetadata(
+        link: Link,
+        refreshLinkType: RefreshLinkType
+    ): Flow<Result<Unit>> {
         val remoteId = getRemoteIdOfLink(link.localId)
         val eventTimestamp = getSystemEpochSeconds()
         val remoteLinkTagDTOs = if (link.remoteId != null) {
@@ -656,8 +660,16 @@ class LocalLinksRepoImpl(
             }.let { scrapedLinkInfo ->
                 linksDao.updateALink(
                     link.copy(
-                        title = scrapedLinkInfo.title,
-                        imgURL = scrapedLinkInfo.imgUrl,
+                        title = if (refreshLinkType in listOf(
+                                RefreshLinkType.Title,
+                                RefreshLinkType.Both
+                            )
+                        ) scrapedLinkInfo.title else link.title,
+                        imgURL = if (refreshLinkType in listOf(
+                                RefreshLinkType.Image,
+                                RefreshLinkType.Both
+                            )
+                        ) scrapedLinkInfo.imgUrl else link.imgURL,
                         mediaType = scrapedLinkInfo.mediaType,
                         lastModified = getSystemEpochSeconds()
                     )

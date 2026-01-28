@@ -1,6 +1,8 @@
 package com.sakethh.linkora.ui.components.menu
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -26,6 +29,9 @@ import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material.icons.outlined.Unarchive
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -33,10 +39,12 @@ import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
@@ -44,11 +52,14 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.ComposableContent
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Platform
+import com.sakethh.linkora.domain.RefreshLinkType
 import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.domain.Layout
@@ -101,17 +112,23 @@ fun MenuBtmSheet(
             QuickActionItem(
                 shape = RoundedCornerShape(
                     topStart = 20.dp, topEnd = 8.dp, bottomStart = 20.dp, bottomEnd = 8.dp
-                ), modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f).pressScaleEffect(), onClick = {
+                ),
+                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f)
+                    .pressScaleEffect(),
+                onClick = {
                     menuBtmSheetParam.onForceLaunchInAnExternalBrowser()
                     hideContent()
-                }, text = Localization.Key.Open.rememberLocalizedString(), icon = Icons.Default.OpenInNew
+                },
+                text = Localization.Key.Open.rememberLocalizedString(),
+                icon = Icons.Default.OpenInNew
             )
             val lastItemShape = RoundedCornerShape(
                 topStart = 8.dp, topEnd = 20.dp, bottomStart = 8.dp, bottomEnd = 20.dp
             )
             QuickActionItem(
                 shape = if (platform is Platform.Android.Mobile) RoundedCornerShape(8.dp) else lastItemShape,
-                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f).pressScaleEffect(),
+                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f)
+                    .pressScaleEffect(),
                 onClick = {
                     localClipboard.setText(
                         AnnotatedString(
@@ -127,7 +144,8 @@ fun MenuBtmSheet(
             if (platform is Platform.Android.Mobile) {
                 QuickActionItem(
                     shape = lastItemShape,
-                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f).pressScaleEffect(),
+                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f)
+                        .pressScaleEffect(),
                     onClick = {
                         menuBtmSheetParam.onShare(menuBtmSheetParam.linkTagsPair!!.link.url)
                         hideContent()
@@ -137,6 +155,10 @@ fun MenuBtmSheet(
                 )
             }
         }
+    }
+
+    var showRefreshOptions by rememberSaveable {
+        mutableStateOf(false)
     }
 
     val commonContent: ComposableContent = {
@@ -167,17 +189,76 @@ fun MenuBtmSheet(
                 onClick = {
                     hideContent()
                     menuBtmSheetParam.onRename()
-                }, elementName = Localization.Key.Edit.rememberLocalizedString(), elementImageVector = Icons.Outlined.Edit
+                },
+                elementName = Localization.Key.Edit.rememberLocalizedString(),
+                elementImageVector = Icons.Outlined.Edit
             )
             if (menuBtmSheetLinkEntries().contains(menuBtmSheetParam.menuBtmSheetFor)) {
-                IndividualMenuComponent(
-                    onClick = {
-                        menuBtmSheetParam.onRefreshClick()
-                        hideContent()
-                    },
-                    elementName = Localization.Key.RefreshImageAndTitle.rememberLocalizedString(),
-                    elementImageVector = Icons.Outlined.Refresh
-                )
+                Row(
+                    modifier = Modifier
+                        .pointerHoverIcon(icon = PointerIcon.Hand)
+                        .combinedClickable(
+                            interactionSource = null, indication = null,
+                            onClick = {
+                                showRefreshOptions = !showRefreshOptions
+                            })
+                        .pressScaleEffect()
+                        .padding(end = 10.dp)
+                        .wrapContentHeight()
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    IconButton(
+                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .padding(10.dp),
+                        onClick = {
+                            showRefreshOptions = !showRefreshOptions
+                        },
+                        colors = IconButtonDefaults.filledTonalIconButtonColors()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Refresh,
+                            contentDescription = null
+                        )
+                    }
+                    Text(
+                        text = "Refresh",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontSize = 16.sp,
+                        modifier = Modifier.fillMaxWidth(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                AnimatedVisibility(
+                    visible = showRefreshOptions,
+                    modifier = Modifier.padding(start = 30.dp).fillMaxWidth()
+                ) {
+                    Column {
+                        RefreshMenuComponent(
+                            label = "Refresh Title",
+                            onClick = {
+                                menuBtmSheetParam.onRefresh(RefreshLinkType.Title)
+                                hideContent()
+                            }
+                        )
+                        RefreshMenuComponent(
+                            label = "Refresh Image",
+                            onClick = {
+                                menuBtmSheetParam.onRefresh(RefreshLinkType.Image)
+                                hideContent()
+                            }
+                        )
+                        RefreshMenuComponent(
+                            label = Localization.Key.RefreshImageAndTitle.rememberLocalizedString(),
+                            onClick = {
+                                menuBtmSheetParam.onRefresh(RefreshLinkType.Both)
+                                hideContent()
+                            }
+                        )
+                    }
+                }
             }
 
             if (menuBtmSheetLinkEntries().contains(menuBtmSheetParam.menuBtmSheetFor)) {

@@ -66,6 +66,8 @@ class RefreshAllLinksWorker(appContext: Context, workerParameters: WorkerParamet
 
     private var processedLinksCount: Long = -1
 
+    private val maxConcurrentRefreshCount = AppPreferences.maxConcurrentRefreshCount
+
     override suspend fun doWork(): Result = coroutineScope {
 
         processedLinksCount = DependencyContainer.preferencesRepo.readPreferenceValue(
@@ -120,9 +122,12 @@ class RefreshAllLinksWorker(appContext: Context, workerParameters: WorkerParamet
             if (linksToBeRefreshed.isEmpty()) return@coroutineScope Result.success()
 
             linksToBeRefreshed.asFlow()
-                .flatMapMerge(concurrency = 15) { link ->
+                .flatMapMerge(concurrency = maxConcurrentRefreshCount) { link ->
                     channelFlow {
-                        DependencyContainer.localLinksRepo.refreshLinkMetadata(link)
+                        DependencyContainer.localLinksRepo.refreshLinkMetadata(
+                            link,
+                            refreshLinkType = AppPreferences.selectedLinkRefreshType
+                        )
                             .collectLatest {
                                 it.onSuccess {
                                     send(link.localId)

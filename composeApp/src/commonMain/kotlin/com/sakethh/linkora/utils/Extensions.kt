@@ -20,6 +20,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.domain.Platform
+import com.sakethh.linkora.domain.RefreshLinkType
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.dto.server.Correlation
 import com.sakethh.linkora.domain.model.FlatChildFolderData
@@ -370,3 +371,6 @@ fun Flow<Result<List<FlatSearchResult>>>.shuffleLinks(): Flow<Result<List<FlatSe
         }
     }
 }
+
+@Composable
+fun RefreshLinkType.asLocalizedString() = name

@@ -16,6 +16,7 @@ import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.model.FlatChildFolderData
 import com.sakethh.linkora.domain.model.Folder
+import com.sakethh.linkora.domain.RefreshLinkType
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.domain.onFailure
@@ -890,9 +891,13 @@ class CollectionsScreenVM(
         }
     }
 
-    fun refreshLinkMetadata(link: Link, onCompletion: () -> Unit) {
+    fun refreshLinkMetadata(
+        refreshLinkType: RefreshLinkType,
+        link: Link,
+        onCompletion: () -> Unit
+    ) {
         viewModelScope.launch {
-            localLinksRepo.refreshLinkMetadata(link).collectLatest {
+            localLinksRepo.refreshLinkMetadata(link, refreshLinkType).collectLatest {
                 it.onSuccess {
                     pushUIEvent(UIEvent.Type.ShowSnackbar(message = Localization.Key.LinkRefreshedSuccessfully.getLocalizedString() + it.getRemoteOnlyFailureMsg()))
                 }.pushSnackbarOnFailure()

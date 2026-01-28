@@ -3,6 +3,7 @@ package com.sakethh.linkora.domain.repository.local
 import com.sakethh.linkora.domain.LinkSaveConfig
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Result
+import com.sakethh.linkora.domain.RefreshLinkType
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
 import kotlinx.coroutines.flow.Flow
@@ -76,7 +77,7 @@ interface LocalLinksRepo {
         viaSocket: Boolean = false
     ): Flow<Result<Unit>>
 
-    suspend fun refreshLinkMetadata(link: Link): Flow<Result<Unit>>
+    suspend fun refreshLinkMetadata(link: Link,refreshLinkType: RefreshLinkType): Flow<Result<Unit>>
 
     suspend fun getLocalLinkId(remoteID: Long): Long?
     suspend fun getRemoteLinkId(localId: Long): Long?

@@ -181,8 +181,8 @@ fun App(
                     if (CollectionsScreenVM.isSelectionEnabled.value) {
                         BottomNavOnSelection(
                             showLoadingProgressBarOnTransferAction = {
-                            showLoadingProgressBarOnTransferAction = true
-                        },
+                                showLoadingProgressBarOnTransferAction = true
+                            },
                             hideLoadingProgressBarOnTransferAction = {
                                 showLoadingProgressBarOnTransferAction = false
                             },
@@ -439,16 +439,6 @@ fun App(
                                     })
                             }
                         },
-                        onRefreshClick = {
-                            ifServerConfigured {
-                                showProgressBarDuringRemoteSave.value = true
-                            }
-                            collectionsScreenVM.refreshLinkMetadata(
-                                appVM.selectedLinkTagsForMenuBtmSheet.link, onCompletion = {
-                                    showProgressBarDuringRemoteSave.value = false
-                                    hideMenuSheet()
-                                })
-                        },
                         onForceLaunchInAnExternalBrowser = {
                             collectionsScreenVM.addANewLink(
                                 link = appVM.selectedLinkTagsForMenuBtmSheet.link.copy(
@@ -503,7 +493,19 @@ fun App(
                                 Navigation.Collection.MobileCollectionDetailScreen
                             )
                             hideMenuSheet()
-                        })
+                        },
+                        onRefresh = { refreshLinkType ->
+                            ifServerConfigured {
+                                showProgressBarDuringRemoteSave.value = true
+                            }
+                            collectionsScreenVM.refreshLinkMetadata(
+                                refreshLinkType = refreshLinkType,
+                                appVM.selectedLinkTagsForMenuBtmSheet.link, onCompletion = {
+                                    showProgressBarDuringRemoteSave.value = false
+                                    hideMenuSheet()
+                                })
+                        }
+                    )
                 )
             }
             if (appVM.showDeleteDialogBox) {
@@ -593,8 +595,8 @@ fun App(
                 SortingBottomSheet(
                     SortingBottomSheetParam(
                         onDismiss = {
-                        appVM.showSortingBtmSheet = false
-                    },
+                            appVM.showSortingBtmSheet = false
+                        },
                         onSelected = { sortingPreferences, _, _ -> },
                         bottomModalSheetState = appVM.sortingBtmSheetState,
                         sortingBtmSheetType = SortingBtmSheetType.COLLECTIONS_SCREEN,

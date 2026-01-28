@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.domain.RefreshLinkType
 import com.sakethh.linkora.domain.SnapshotFormat
 import com.sakethh.linkora.domain.SyncType
 import com.sakethh.linkora.domain.dto.server.Correlation
@@ -79,6 +80,11 @@ object AppPreferences {
     val autoSaveOnShareIntent = mutableStateOf(false)
     val forceSaveIfRetrievalFails = mutableStateOf(true)
     var selectedFont by mutableStateOf(Font.POPPINS)
+
+    var selectedLinkRefreshType by mutableStateOf(RefreshLinkType.Both)
+
+    var maxConcurrentRefreshCount by mutableIntStateOf(15)
+
 
     suspend fun lastSyncedLocally(preferencesRepository: PreferencesRepository): Long {
         return preferencesRepository.readPreferenceValue(
@@ -355,6 +361,12 @@ object AppPreferences {
                             AppPreferenceType.FORCE_SAVE_LINKS.name
                         )
                     ) ?: forceSaveIfRetrievalFails.value
+                },launch {
+                    maxConcurrentRefreshCount = preferencesRepository.readPreferenceValue(
+                        preferenceKey = intPreferencesKey(
+                            AppPreferenceType.MAX_CONCURRENT_REFRESH_COUNT.name
+                        )
+                    ) ?: maxConcurrentRefreshCount
                 }, launch {
                     selectedFont = preferencesRepository.readPreferenceValue(
                         preferenceKey = stringPreferencesKey(
@@ -363,6 +375,14 @@ object AppPreferences {
                     )?.run {
                         Font.valueOf(this)
                     } ?: selectedFont
+                },launch {
+                    selectedLinkRefreshType = preferencesRepository.readPreferenceValue(
+                        preferenceKey = stringPreferencesKey(
+                            AppPreferenceType.REFRESH_LINK_TYPE.name
+                        )
+                    )?.run {
+                        RefreshLinkType.valueOf(this)
+                    } ?: selectedLinkRefreshType
                 }).joinAll()
             }
         }

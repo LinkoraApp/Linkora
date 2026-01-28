@@ -1,8 +1,11 @@
 package com.sakethh.linkora.ui.screens.settings.section.data
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +20,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BackupTable
 import androidx.compose.material.icons.filled.BrokenImage
@@ -48,12 +53,14 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -65,9 +72,13 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import coil3.ImageLoader
 import coil3.compose.LocalPlatformContext
 import com.sakethh.linkora.Localization
@@ -76,9 +87,11 @@ import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.ImportFileType
 import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.domain.Platform
+import com.sakethh.linkora.domain.RefreshLinkType
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.platform.PlatformSpecificBackHandler
 import com.sakethh.linkora.platform.platform
+import com.sakethh.linkora.preferences.AppPreferenceType
 import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.components.DeleteDialogBoxType
@@ -95,6 +108,7 @@ import com.sakethh.linkora.ui.screens.settings.section.data.sync.ServerManagemen
 import com.sakethh.linkora.ui.screens.settings.section.data.sync.ServerManagementViewModel
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
+import com.sakethh.linkora.utils.asLocalizedString
 import com.sakethh.linkora.utils.currentSavedServerConfig
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.rememberLocalizedString
@@ -139,6 +153,19 @@ fun DataSettingsScreen() {
 
     val exportLocation = rememberSaveable(AppPreferences.currentExportLocation.value) {
         mutableStateOf(AppPreferences.currentExportLocation.value)
+    }
+
+    val localFocusManager = LocalFocusManager.current
+
+    var maxConcurrentRefreshCount by rememberSaveable(AppPreferences.maxConcurrentRefreshCount) {
+        mutableIntStateOf(AppPreferences.maxConcurrentRefreshCount)
+    }
+
+    val refreshesInProgress = rememberSaveable(
+        !DataSettingsScreenVM.refreshLinksState.value.isInRefreshingState,
+        !(platform is Platform.Android && dataSettingsScreenVM.isAnyRefreshingScheduledOnAndroid.value)
+    ) {
+        !DataSettingsScreenVM.refreshLinksState.value.isInRefreshingState && !(platform is Platform.Android && dataSettingsScreenVM.isAnyRefreshingScheduledOnAndroid.value)
     }
 
     SettingsSectionScaffold(
@@ -396,7 +423,7 @@ fun DataSettingsScreen() {
             }
 
             item {
-                if (AppPreferences.isServerConfigured().not()) {
+                if (!AppPreferences.isServerConfigured()) {
                     SettingComponent(
                         SettingComponentParam(
                             isIconNeeded = rememberSaveable { mutableStateOf(true) },
@@ -549,122 +576,239 @@ fun DataSettingsScreen() {
                     Modifier.padding(
                         start = 15.dp,
                         end = 15.dp,
-                        bottom = if (DataSettingsScreenVM.refreshLinksState.value.isInRefreshingState || dataSettingsScreenVM.isAnyRefreshingScheduledOnAndroid.value) 0.dp else 30.dp
                     ), color = DividerDefaults.color.copy(0.5f)
                 )
-                Box(
-                    modifier = Modifier.fillMaxWidth().wrapContentHeight().animateContentSize()
-                ) {
-                    if (DataSettingsScreenVM.refreshLinksState.value.isInRefreshingState.not()) {
-                        if (platform is Platform.Android && dataSettingsScreenVM.isAnyRefreshingScheduledOnAndroid.value) return@Box
-                        SettingComponent(
-                            SettingComponentParam(
-                                title = Localization.rememberLocalizedString(Localization.Key.RefreshAllLinksTitlesAndImages),
-                                doesDescriptionExists = true,
-                                description = Localization.rememberLocalizedString(Localization.Key.RefreshAllLinksTitlesAndImagesDesc),
-                                isSwitchNeeded = false,
-                                isIconNeeded = rememberSaveable {
-                                    mutableStateOf(true)
-                                },
-                                icon = Icons.Default.Refresh,
-                                isSwitchEnabled = rememberSaveable {
-                                    mutableStateOf(false)
-                                },
-                                onSwitchStateChange = {
-                                    dataSettingsScreenVM.refreshAllLinks()
-                                },
-                                shouldFilledIconBeUsed = rememberSaveable {
-                                    mutableStateOf(true)
-                                })
-                        )
-                    }
-                }
-            }
-            item {
-                Box(
-                    modifier = Modifier.fillMaxWidth().wrapContentHeight().animateContentSize()
-                ) {
-                    if (dataSettingsScreenVM.isAnyRefreshingScheduledOnAndroid.value) {
-                        InfoCard(
-                            info = Localization.Key.WorkManagerDesc.rememberLocalizedString(),
-                            paddingValues = PaddingValues(start = 20.dp, end = 20.dp)
-                        )
-                    }
-                    if (DataSettingsScreenVM.refreshLinksState.value.isInRefreshingState) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth().wrapContentHeight()
-                        ) {
-                            Text(
-                                text = Localization.rememberLocalizedString(Localization.Key.RefreshingLinks),
-                                style = MaterialTheme.typography.titleMedium,
+                Text(
+                    text = "Refresh",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontSize = 16.sp,
+                    lineHeight = 20.sp,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier.padding(
+                        top = 15.dp,
+                        start = 15.dp, end = 15.dp,
+                        bottom = if (DataSettingsScreenVM.refreshLinksState.value.isInRefreshingState || dataSettingsScreenVM.isAnyRefreshingScheduledOnAndroid.value) 0.dp else 15.dp
+                    ),
+                )
+                AnimatedContent(
+                    targetState = refreshesInProgress
+                ) { refreshesInProgress ->
+                    if (refreshesInProgress) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Column(
                                 modifier = Modifier.padding(
-                                    start = 15.dp, end = 15.dp
+                                    start = 15.dp,
+                                    end = 15.dp,
+                                    bottom = 20.dp
                                 )
-                            )
-                            if (DataSettingsScreenVM.refreshLinksState.value.currentIteration != 0) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(start = 15.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    LinearProgressIndicator(
-                                        modifier = Modifier.fillMaxWidth(0.85f), progress = {
-                                            DataSettingsScreenVM.refreshLinksState.value.currentIteration.toFloat() / DataSettingsScreenVM.totalLinksForRefresh.value
-                                        })
-                                    IconButton(
-                                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-                                        onClick = {
-                                            dataSettingsScreenVM.cancelRefreshingAllLinks()
-                                        }) {
-                                        Icon(
-                                            imageVector = Icons.Default.Cancel,
-                                            contentDescription = ""
+                                    .fillMaxWidth()
+                                    .border(
+                                        width = 1.dp,
+                                        color = MaterialTheme.colorScheme.outline.copy(0.5f),
+                                        shape = RoundedCornerShape(15.dp)
+                                    )
+                            ) {
+                                Text(
+                                    text = "Refresh Type",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    lineHeight = 20.sp,
+                                    textAlign = TextAlign.Start,
+                                    modifier = Modifier.padding(start = 15.dp, top = 15.dp)
+                                )
+                                for (refreshLinkType in RefreshLinkType.entries) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().clickable(onClick = {
+                                            AppPreferences.selectedLinkRefreshType = refreshLinkType
+                                            dataSettingsScreenVM.changeSettingPreferenceValue(
+                                                preferenceKey = stringPreferencesKey(
+                                                    AppPreferenceType.REFRESH_LINK_TYPE.name
+                                                ),
+                                                newValue = AppPreferences.selectedLinkRefreshType.name
+                                            )
+                                        }, indication = null, interactionSource = null)
+                                            .pressScaleEffect(),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        RadioButton(
+                                            selected = refreshLinkType.name == AppPreferences.selectedLinkRefreshType.name,
+                                            onClick = {
+                                                AppPreferences.selectedLinkRefreshType =
+                                                    refreshLinkType
+                                                dataSettingsScreenVM.changeSettingPreferenceValue(
+                                                    preferenceKey = stringPreferencesKey(
+                                                        AppPreferenceType.REFRESH_LINK_TYPE.name
+                                                    ),
+                                                    newValue = AppPreferences.selectedLinkRefreshType.name
+                                                )
+                                            })
+                                        Text(
+                                            text = refreshLinkType.asLocalizedString(),
+                                            style = MaterialTheme.typography.titleSmall
                                         )
                                     }
                                 }
-                            }
-                            Text(
-                                text = Localization.Key.NoOfLinksRefreshed.rememberLocalizedString()
-                                    .replace(
-                                        LinkoraPlaceHolder.First.value,
-                                        DataSettingsScreenVM.refreshLinksState.value.currentIteration.toString()
-                                    ).replace(
-                                        LinkoraPlaceHolder.Second.value,
-                                        DataSettingsScreenVM.totalLinksForRefresh.value.toString()
-                                    ),
-                                style = MaterialTheme.typography.titleSmall,
-                                modifier = Modifier.padding(
-                                    start = 15.dp, end = 15.dp
-                                ),
-                                lineHeight = 18.sp
-                            )
-                            Card(
-                                border = BorderStroke(
-                                    1.dp, contentColorFor(MaterialTheme.colorScheme.surface)
-                                ),
-                                colors = CardDefaults.cardColors(containerColor = AlertDialogDefaults.containerColor),
-                                modifier = Modifier.fillMaxWidth().padding(
-                                    start = 15.dp, end = 15.dp, top = 20.dp
+
+                                TextField(
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    textStyle = MaterialTheme.typography.titleSmall,
+                                    trailingIcon = {
+                                        FilledTonalIconButton(
+                                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                                .pressScaleEffect().padding(end = 5.dp), onClick = {
+                                                AppPreferences.maxConcurrentRefreshCount =
+                                                    maxConcurrentRefreshCount
+                                                dataSettingsScreenVM.changeSettingPreferenceValue(
+                                                    preferenceKey = intPreferencesKey(
+                                                        AppPreferenceType.MAX_CONCURRENT_REFRESH_COUNT.name
+                                                    ),
+                                                    newValue = AppPreferences.maxConcurrentRefreshCount
+                                                )
+                                                localFocusManager.clearFocus(force = true)
+                                            }) {
+                                            Icon(
+                                                imageVector = Icons.Default.Save,
+                                                contentDescription = null
+                                            )
+                                        }
+                                    },
+                                    label = {
+                                        Text(
+                                            text = "Refreshing links concurrently count",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            textAlign = TextAlign.Start,
+                                        )
+                                    },
+                                    value = maxConcurrentRefreshCount.toString(),
+                                    onValueChange = {
+                                        maxConcurrentRefreshCount = try {
+                                            it.toInt()
+                                        } catch (_: Exception) {
+                                            0
+                                        } catch (_: Error) {
+                                            0
+                                        }.coerceAtLeast(minimumValue = 1)
+                                    },
+                                    modifier = Modifier.padding(
+                                        start = 15.dp,
+                                        end = 15.dp,
+                                        bottom = 15.dp
+                                    )
+                                        .fillMaxWidth()
                                 )
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(
-                                        top = 10.dp, bottom = 10.dp
-                                    ), verticalAlignment = Alignment.CenterVertically
+                            }
+
+                            SettingComponent(
+                                SettingComponentParam(
+                                    title = "Refresh links as per above preferences",
+                                    doesDescriptionExists = true,
+                                    description = "Using a high number of concurrent refreshes may significantly impact your resources and consume more than usual.",
+                                    isSwitchNeeded = false,
+                                    isIconNeeded = rememberSaveable {
+                                        mutableStateOf(true)
+                                    },
+                                    icon = Icons.Default.Refresh,
+                                    isSwitchEnabled = rememberSaveable {
+                                        mutableStateOf(false)
+                                    },
+                                    onSwitchStateChange = {
+                                        dataSettingsScreenVM.refreshAllLinks()
+                                    },
+                                    shouldFilledIconBeUsed = rememberSaveable {
+                                        mutableStateOf(true)
+                                    })
+                            )
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight()
+                                .animateContentSize()
+                        ) {
+                            if (dataSettingsScreenVM.isAnyRefreshingScheduledOnAndroid.value) {
+                                InfoCard(
+                                    info = Localization.Key.WorkManagerDesc.rememberLocalizedString(),
+                                    paddingValues = PaddingValues(start = 20.dp, end = 20.dp)
+                                )
+                            }
+                            if (DataSettingsScreenVM.refreshLinksState.value.isInRefreshingState) {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth().wrapContentHeight()
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Info,
-                                        contentDescription = null,
+                                    Text(
+                                        text = Localization.rememberLocalizedString(Localization.Key.RefreshingLinks),
+                                        style = MaterialTheme.typography.titleMedium,
                                         modifier = Modifier.padding(
-                                            start = 10.dp, end = 10.dp
+                                            start = 15.dp, end = 15.dp
                                         )
                                     )
+                                    if (DataSettingsScreenVM.refreshLinksState.value.currentIteration != 0) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth()
+                                                .padding(start = 15.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            LinearProgressIndicator(
+                                                modifier = Modifier.fillMaxWidth(0.85f),
+                                                progress = {
+                                                    DataSettingsScreenVM.refreshLinksState.value.currentIteration.toFloat() / DataSettingsScreenVM.totalLinksForRefresh.value
+                                                })
+                                            IconButton(
+                                                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                                                onClick = {
+                                                    dataSettingsScreenVM.cancelRefreshingAllLinks()
+                                                }) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Cancel,
+                                                    contentDescription = ""
+                                                )
+                                            }
+                                        }
+                                    }
                                     Text(
-                                        text = if (platform is Platform.Android) Localization.Key.RefreshingLinksAndroidDesc.rememberLocalizedString() else Localization.Key.RefreshingLinksDesktopDesc.rememberLocalizedString(),
+                                        text = Localization.Key.NoOfLinksRefreshed.rememberLocalizedString()
+                                            .replace(
+                                                LinkoraPlaceHolder.First.value,
+                                                DataSettingsScreenVM.refreshLinksState.value.currentIteration.toString()
+                                            ).replace(
+                                                LinkoraPlaceHolder.Second.value,
+                                                DataSettingsScreenVM.totalLinksForRefresh.value.toString()
+                                            ),
                                         style = MaterialTheme.typography.titleSmall,
-                                        lineHeight = 18.sp,
-                                        modifier = Modifier.padding(end = 15.dp)
+                                        modifier = Modifier.padding(
+                                            start = 15.dp, end = 15.dp
+                                        ),
+                                        lineHeight = 18.sp
                                     )
+                                    Card(
+                                        border = BorderStroke(
+                                            1.dp, contentColorFor(MaterialTheme.colorScheme.surface)
+                                        ),
+                                        colors = CardDefaults.cardColors(containerColor = AlertDialogDefaults.containerColor),
+                                        modifier = Modifier.fillMaxWidth().padding(
+                                            start = 15.dp, end = 15.dp, top = 20.dp
+                                        )
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth().wrapContentHeight()
+                                                .padding(
+                                                    top = 10.dp, bottom = 10.dp
+                                                ), verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Outlined.Info,
+                                                contentDescription = null,
+                                                modifier = Modifier.padding(
+                                                    start = 10.dp, end = 10.dp
+                                                )
+                                            )
+                                            Text(
+                                                text = if (platform is Platform.Android) Localization.Key.RefreshingLinksAndroidDesc.rememberLocalizedString() else Localization.Key.RefreshingLinksDesktopDesc.rememberLocalizedString(),
+                                                style = MaterialTheme.typography.titleSmall,
+                                                lineHeight = 18.sp,
+                                                modifier = Modifier.padding(end = 15.dp)
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -688,8 +832,8 @@ fun DataSettingsScreen() {
                 onClick = {
                     dataSettingsScreenVM.importDataFromAFile(
                         importFileType = ImportFileType.valueOf(
-                        selectedImportFormat.value
-                    ),
+                            selectedImportFormat.value
+                        ),
                         onStart = {
                             showFileLocationPickerDialog.value = false
                             isImportExportProgressUIVisible = true
@@ -720,12 +864,12 @@ fun DataSettingsScreen() {
         }, text = {
             OutlinedTextField(
                 label = {
-                Text(
-                    text = Localization.Key.FileLocationLabel.rememberLocalizedString(),
-                    style = MaterialTheme.typography.titleSmall,
-                    maxLines = 1
-                )
-            },
+                    Text(
+                        text = Localization.Key.FileLocationLabel.rememberLocalizedString(),
+                        style = MaterialTheme.typography.titleSmall,
+                        maxLines = 1
+                    )
+                },
                 value = fileLocation.value,
                 onValueChange = {
                     fileLocation.value = it
@@ -770,8 +914,8 @@ fun DataSettingsScreen() {
         DeleteFolderOrLinkDialog(
             deleteFolderOrLinkDialogParam = DeleteFolderOrLinkDialogParam(
                 onDismiss = {
-                shouldDeleteEntireDialogBoxAppear.value = false
-            },
+                    shouldDeleteEntireDialogBoxAppear.value = false
+                },
                 deleteDialogBoxType = DeleteDialogBoxType.REMOVE_ENTIRE_DATA,
                 onDeleteClick = { onCompletion, deleteEverythingFromRemote ->
                     dataSettingsScreenVM.deleteEntireDatabase(
