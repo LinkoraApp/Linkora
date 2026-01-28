@@ -77,6 +77,7 @@ object AppPreferences {
     var showTagsInAddNewLinkDialogBox by mutableStateOf(false)
     var showMenuOnGridLinkClick by mutableStateOf(true)
     val autoSaveOnShareIntent = mutableStateOf(false)
+    val forceSaveIfRetrievalFails = mutableStateOf(true)
     var selectedFont by mutableStateOf(Font.POPPINS)
 
     suspend fun lastSyncedLocally(preferencesRepository: PreferencesRepository): Long {
@@ -205,15 +206,15 @@ object AppPreferences {
                 }, launch {
                     selectedLinkLayout.value = preferencesRepository.readPreferenceValue(
                         preferenceKey = stringPreferencesKey(AppPreferenceType.CURRENTLY_SELECTED_LINK_VIEW.name),
-                        ) ?: selectedLinkLayout.value
+                    ) ?: selectedLinkLayout.value
                 }, launch {
                     showTagsInLinkView = preferencesRepository.readPreferenceValue(
                         preferenceKey = booleanPreferencesKey(AppPreferenceType.SHOW_TAGS_IN_LINK_VIEW.name),
-                        ) ?: showTagsInLinkView
+                    ) ?: showTagsInLinkView
                 }, launch {
                     showDateInLinkView = preferencesRepository.readPreferenceValue(
                         preferenceKey = booleanPreferencesKey(AppPreferenceType.SHOW_DATE_IN_LINK_VIEW.name),
-                        ) ?: showDateInLinkView
+                    ) ?: showDateInLinkView
                 }, launch {
                     useLinkoraTopDecoratorOnDesktop.value =
                         preferencesRepository.readPreferenceValue(
@@ -348,6 +349,12 @@ object AppPreferences {
                             AppPreferenceType.AUTO_SAVE_ON_SHARE_INTENT.name
                         )
                     ) ?: autoSaveOnShareIntent.value
+                }, launch {
+                    forceSaveIfRetrievalFails.value = preferencesRepository.readPreferenceValue(
+                        preferenceKey = booleanPreferencesKey(
+                            AppPreferenceType.FORCE_SAVE_LINKS.name
+                        )
+                    ) ?: forceSaveIfRetrievalFails.value
                 }, launch {
                     selectedFont = preferencesRepository.readPreferenceValue(
                         preferenceKey = stringPreferencesKey(

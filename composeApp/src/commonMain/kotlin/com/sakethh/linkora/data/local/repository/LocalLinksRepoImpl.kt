@@ -6,8 +6,8 @@ import com.sakethh.linkora.data.local.dao.TagsDao
 import com.sakethh.linkora.domain.LinkSaveConfig
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.MediaType
-import com.sakethh.linkora.domain.SyncServerRoute
 import com.sakethh.linkora.domain.Result
+import com.sakethh.linkora.domain.SyncServerRoute
 import com.sakethh.linkora.domain.asAddLinkDTO
 import com.sakethh.linkora.domain.asLinkDTO
 import com.sakethh.linkora.domain.dto.server.IDBasedDTO
@@ -165,12 +165,20 @@ class LocalLinksRepoImpl(
 
                 linksDao.addANewLink(link.copy(lastModified = eventTimestamp, localId = 0))
             } else {
-                if (link.url.isATwitterUrl()) {
-                    retrieveFromVxTwitterApi(link.url)
-                } else {
-                    scrapeLinkData(
-                        link.url, link.userAgent ?: primaryUserAgent()
-                    )
+                try {
+                    if (link.url.isATwitterUrl()) {
+                        retrieveFromVxTwitterApi(link.url)
+                    } else {
+                        scrapeLinkData(
+                            link.url, link.userAgent ?: primaryUserAgent()
+                        )
+                    }
+                } catch (e: Exception) {
+                    if (linkSaveConfig.forceSaveIfRetrievalFails) {
+                        ScrapedLinkInfo(title = "", imgUrl = "")
+                    } else {
+                        throw e
+                    }
                 }.let { scrapedLinkInfo ->
                     linksDao.addANewLink(
                         link.copy(

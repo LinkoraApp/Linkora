@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoMode
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.PriorityHigh
 import androidx.compose.material.icons.filled.PublicOff
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.rounded.Home
@@ -59,22 +60,20 @@ open class SettingsScreenViewModel(
                         isIconNeeded = mutableStateOf(true),
                         icon = Icons.Default.Search,
                         onSwitchStateChange = {
-                            viewModelScope.launch {
+                            changeSettingPreferenceValue(
+                                preferenceKey = booleanPreferencesKey(
+                                    AppPreferenceType.AUTO_DETECT_TITLE_FOR_LINK.name
+                                ), newValue = it
+                            )
+                            AppPreferences.isAutoDetectTitleForLinksEnabled.value = it
+
+                            if (it) {
                                 changeSettingPreferenceValue(
                                     preferenceKey = booleanPreferencesKey(
-                                        AppPreferenceType.AUTO_DETECT_TITLE_FOR_LINK.name
-                                    ), newValue = it
+                                        AppPreferenceType.FORCE_SAVE_WITHOUT_FETCHING_META_DATA.name
+                                    ), newValue = false
                                 )
-                                AppPreferences.isAutoDetectTitleForLinksEnabled.value = it
-
-                                if (it) {
-                                    changeSettingPreferenceValue(
-                                        preferenceKey = booleanPreferencesKey(
-                                            AppPreferenceType.FORCE_SAVE_WITHOUT_FETCHING_META_DATA.name
-                                        ), newValue = false
-                                    )
-                                    AppPreferences.forceSaveWithoutFetchingAnyMetaData.value = false
-                                }
+                                AppPreferences.forceSaveWithoutFetchingAnyMetaData.value = false
                             }
                         }), SettingComponentParam(
                         title = Localization.getLocalizedString(Localization.Key.ForceSaveWithoutRetrievingMetadata),
@@ -85,22 +84,20 @@ open class SettingsScreenViewModel(
                         isIconNeeded = mutableStateOf(true),
                         icon = Icons.Default.PublicOff,
                         onSwitchStateChange = {
-                            viewModelScope.launch {
+                            changeSettingPreferenceValue(
+                                preferenceKey = booleanPreferencesKey(
+                                    AppPreferenceType.FORCE_SAVE_WITHOUT_FETCHING_META_DATA.name
+                                ), newValue = it
+                            )
+                            AppPreferences.forceSaveWithoutFetchingAnyMetaData.value = it
+
+                            if (it) {
                                 changeSettingPreferenceValue(
                                     preferenceKey = booleanPreferencesKey(
-                                        AppPreferenceType.FORCE_SAVE_WITHOUT_FETCHING_META_DATA.name
-                                    ), newValue = it
+                                        AppPreferenceType.AUTO_DETECT_TITLE_FOR_LINK.name
+                                    ), newValue = false
                                 )
-                                AppPreferences.forceSaveWithoutFetchingAnyMetaData.value = it
-
-                                if (it) {
-                                    changeSettingPreferenceValue(
-                                        preferenceKey = booleanPreferencesKey(
-                                            AppPreferenceType.AUTO_DETECT_TITLE_FOR_LINK.name
-                                        ), newValue = false
-                                    )
-                                    AppPreferences.isAutoDetectTitleForLinksEnabled.value = false
-                                }
+                                AppPreferences.isAutoDetectTitleForLinksEnabled.value = false
                             }
                         },
                     ), SettingComponentParam(
@@ -112,14 +109,12 @@ open class SettingsScreenViewModel(
                         isIconNeeded = mutableStateOf(true),
                         icon = Icons.Default.Block,
                         onSwitchStateChange = {
-                            viewModelScope.launch {
-                                changeSettingPreferenceValue(
-                                    preferenceKey = booleanPreferencesKey(
-                                        AppPreferenceType.SKIP_SAVING_EXISTING_LINK.name
-                                    ), newValue = it
-                                )
-                                AppPreferences.skipSavingExistingLink.value = it
-                            }
+                            changeSettingPreferenceValue(
+                                preferenceKey = booleanPreferencesKey(
+                                    AppPreferenceType.SKIP_SAVING_EXISTING_LINK.name
+                                ), newValue = it
+                            )
+                            AppPreferences.skipSavingExistingLink.value = it
                         },
                     )
                 )
@@ -136,17 +131,37 @@ open class SettingsScreenViewModel(
                         isIconNeeded = mutableStateOf(true),
                         icon = Icons.Default.Image,
                         onSwitchStateChange = {
-                            viewModelScope.launch {
-                                changeSettingPreferenceValue(
-                                    preferenceKey = booleanPreferencesKey(
-                                        AppPreferenceType.ASSOCIATED_IMAGES_IN_LINK_MENU_VISIBILITY.name
-                                    ), newValue = it
-                                )
-                                AppPreferences.showAssociatedImageInLinkMenu.value = it
-                            }
+                            changeSettingPreferenceValue(
+                                preferenceKey = booleanPreferencesKey(
+                                    AppPreferenceType.ASSOCIATED_IMAGES_IN_LINK_MENU_VISIBILITY.name
+                                ), newValue = it
+                            )
+                            AppPreferences.showAssociatedImageInLinkMenu.value = it
                         })
                 )
+            }
 
+            add(
+                SettingComponentParam(
+                    title = "Force Save links",
+                    doesDescriptionExists = true,
+                    description = "Even if failed to retrieve the link data, link will be force saved.",
+                    isSwitchNeeded = true,
+                    isSwitchEnabled = AppPreferences.forceSaveIfRetrievalFails,
+                    onSwitchStateChange = {
+                        changeSettingPreferenceValue(
+                            preferenceKey = booleanPreferencesKey(
+                                AppPreferenceType.FORCE_SAVE_LINKS.name
+                            ), newValue = it
+                        )
+                        AppPreferences.forceSaveIfRetrievalFails.value = it
+                    },
+                    isIconNeeded = mutableStateOf(true),
+                    icon = Icons.Default.PriorityHigh
+                )
+            )
+
+            if (platform == Platform.Android.Mobile) {
                 add(
                     SettingComponentParam(
                         title = "Auto-save links when shared from other apps",
@@ -173,6 +188,7 @@ open class SettingsScreenViewModel(
                     )
                 )
             }
+
             add(
                 SettingComponentParam(
                     title = Localization.Key.EnableHomeScreen.getLocalizedString(),

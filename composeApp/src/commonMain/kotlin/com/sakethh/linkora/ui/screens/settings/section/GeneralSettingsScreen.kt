@@ -93,7 +93,9 @@ fun GeneralSettingsScreen() {
         mutableStateOf(false)
     }
     val platform = platform()
-    val generalSectionData = settingsScreenViewModel.generalSection(platform)
+    val generalSectionData = retain {
+        settingsScreenViewModel.generalSection(platform)
+    }
     val isLinkoraTopAppBarEnabled = rememberSaveable {
         mutableStateOf(AppPreferences.useLinkoraTopDecoratorOnDesktop.value)
     }
