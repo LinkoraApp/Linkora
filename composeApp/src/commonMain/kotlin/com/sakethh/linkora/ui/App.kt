@@ -89,6 +89,7 @@ import com.sakethh.linkora.ui.screens.collections.components.TagMenu
 import com.sakethh.linkora.ui.utils.rememberDeserializableObject
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.currentSavedServerConfig
+import com.sakethh.linkora.utils.host
 import com.sakethh.linkora.utils.ifServerConfigured
 import com.sakethh.linkora.utils.inRootScreen
 import kotlinx.coroutines.launch
@@ -500,12 +501,12 @@ fun App(
                             }
                             collectionsScreenVM.refreshLinkMetadata(
                                 refreshLinkType = refreshLinkType,
-                                appVM.selectedLinkTagsForMenuBtmSheet.link, onCompletion = {
+                                appVM.selectedLinkTagsForMenuBtmSheet.link,
+                                onCompletion = {
                                     showProgressBarDuringRemoteSave.value = false
                                     hideMenuSheet()
                                 })
-                        }
-                    )
+                        })
                 )
             }
             if (appVM.showDeleteDialogBox) {
@@ -556,12 +557,16 @@ fun App(
                 renameFolderOrLinkDialogParam = RenameFolderOrLinkDialogParam(
                     selectedTags = appVM.selectedLinkTagsForMenuBtmSheet.tags,
                     allTags = allTags,
-                    onSave = { newTitle: String, newNote: String, newImageUrl: String, selectedTags: List<Tag>, onCompletion: () -> Unit ->
+                    onSave = { newTitle: String, newNote: String, newImageUrl: String, newUrl: String, selectedTags: List<Tag>, onCompletion: () -> Unit ->
                         if (appVM.menuBtmSheetFor is MenuBtmSheetType.Link) {
                             collectionsScreenVM.updateLink(updatedLinkTagsPair = appVM.selectedLinkTagsForMenuBtmSheet.run {
                                 copy(
                                     link = link.copy(
-                                        title = newTitle, imgURL = newImageUrl, note = newNote
+                                        url = newUrl.trim(),
+                                        title = newTitle.trim(),
+                                        imgURL = newImageUrl.trim(),
+                                        note = newNote.trim(),
+                                        host = newUrl.host(throwOnException = false)
                                     ), tags = selectedTags
                                 )
                             }, onCompletion = {
@@ -583,6 +588,7 @@ fun App(
                     existingTitle = if (menuBtmSheetFolderEntries().contains(appVM.menuBtmSheetFor)) appVM.selectedFolderForMenuBtmSheet.name else appVM.selectedLinkTagsForMenuBtmSheet.link.title,
                     existingNote = if (menuBtmSheetFolderEntries().contains(appVM.menuBtmSheetFor)) appVM.selectedFolderForMenuBtmSheet.note else appVM.selectedLinkTagsForMenuBtmSheet.link.note,
                     existingImageUrl = appVM.selectedLinkTagsForMenuBtmSheet.link.imgURL,
+                    existingUrl = appVM.selectedLinkTagsForMenuBtmSheet.link.url,
                     onHide = slideDownAndHideRenameSheet,
                     sheetState = renameDialogSheetState,
                     dialogBoxFor = appVM.menuBtmSheetFor,
