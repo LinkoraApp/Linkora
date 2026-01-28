@@ -181,8 +181,8 @@ fun App(
                     if (CollectionsScreenVM.isSelectionEnabled.value) {
                         BottomNavOnSelection(
                             showLoadingProgressBarOnTransferAction = {
-                                showLoadingProgressBarOnTransferAction = true
-                            },
+                            showLoadingProgressBarOnTransferAction = true
+                        },
                             hideLoadingProgressBarOnTransferAction = {
                                 showLoadingProgressBarOnTransferAction = false
                             },
@@ -554,12 +554,13 @@ fun App(
                 renameFolderOrLinkDialogParam = RenameFolderOrLinkDialogParam(
                     selectedTags = appVM.selectedLinkTagsForMenuBtmSheet.tags,
                     allTags = allTags,
-                    onSave = { newTitle: String, newNote: String, selectedTags: List<Tag>, onCompletion: () -> Unit ->
+                    onSave = { newTitle: String, newNote: String, newImageUrl: String, selectedTags: List<Tag>, onCompletion: () -> Unit ->
                         if (appVM.menuBtmSheetFor is MenuBtmSheetType.Link) {
                             collectionsScreenVM.updateLink(updatedLinkTagsPair = appVM.selectedLinkTagsForMenuBtmSheet.run {
                                 copy(
-                                    link = link.copy(title = newTitle, note = newNote),
-                                    tags = selectedTags
+                                    link = link.copy(
+                                        title = newTitle, imgURL = newImageUrl, note = newNote
+                                    ), tags = selectedTags
                                 )
                             }, onCompletion = {
                                 slideDownAndHideRenameSheet()
@@ -579,6 +580,7 @@ fun App(
                     existingFolderName = appVM.selectedFolderForMenuBtmSheet.name,
                     existingTitle = if (menuBtmSheetFolderEntries().contains(appVM.menuBtmSheetFor)) appVM.selectedFolderForMenuBtmSheet.name else appVM.selectedLinkTagsForMenuBtmSheet.link.title,
                     existingNote = if (menuBtmSheetFolderEntries().contains(appVM.menuBtmSheetFor)) appVM.selectedFolderForMenuBtmSheet.note else appVM.selectedLinkTagsForMenuBtmSheet.link.note,
+                    existingImageUrl = appVM.selectedLinkTagsForMenuBtmSheet.link.imgURL,
                     onHide = slideDownAndHideRenameSheet,
                     sheetState = renameDialogSheetState,
                     dialogBoxFor = appVM.menuBtmSheetFor,
@@ -591,8 +593,8 @@ fun App(
                 SortingBottomSheet(
                     SortingBottomSheetParam(
                         onDismiss = {
-                            appVM.showSortingBtmSheet = false
-                        },
+                        appVM.showSortingBtmSheet = false
+                    },
                         onSelected = { sortingPreferences, _, _ -> },
                         bottomModalSheetState = appVM.sortingBtmSheetState,
                         sortingBtmSheetType = SortingBtmSheetType.COLLECTIONS_SCREEN,

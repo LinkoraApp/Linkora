@@ -26,6 +26,7 @@ import com.sakethh.linkora.domain.repository.local.PendingSyncQueueRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.remote.RemoteLinksRepo
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
+import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.defaultFolderIds
 import com.sakethh.linkora.utils.getSystemEpochSeconds
 import com.sakethh.linkora.utils.host
@@ -158,39 +159,42 @@ class LocalLinksRepoImpl(
                 }
             }
 
-            newLinkId = if (linkSaveConfig.forceSaveWithoutRetrievingData) {
-                link.url.isAValidLink().ifNot {
-                    throw Link.Invalid()
-                }
-
-                linksDao.addANewLink(link.copy(lastModified = eventTimestamp, localId = 0))
-            } else {
-                try {
-                    if (link.url.isATwitterUrl()) {
-                        retrieveFromVxTwitterApi(link.url)
-                    } else {
-                        scrapeLinkData(
-                            link.url, link.userAgent ?: primaryUserAgent()
+            newLinkId =
+                if (linkSaveConfig.forceSaveWithoutRetrievingData || (!linkSaveConfig.forceAutoDetectTitle && link.imgURL.isNotBlank())) {
+                    link.url.isAValidLink().ifNot {
+                        throw Link.Invalid()
+                    }
+                    linkoraLog("not retrieving")
+                    linksDao.addANewLink(link.copy(lastModified = eventTimestamp, localId = 0))
+                } else {
+                    try {
+                        linkoraLog("retrieving")
+                        if (link.url.isATwitterUrl()) {
+                            retrieveFromVxTwitterApi(link.url)
+                        } else {
+                            scrapeLinkData(
+                                link.url, link.userAgent ?: primaryUserAgent()
+                            )
+                        }
+                    } catch (e: Exception) {
+                        if (linkSaveConfig.forceSaveIfRetrievalFails) {
+                            ScrapedLinkInfo(title = "", imgUrl = "")
+                        } else {
+                            linkoraLog("retrieve failed")
+                            throw e
+                        }
+                    }.let { scrapedLinkInfo ->
+                        linksDao.addANewLink(
+                            link.copy(
+                                title = if (linkSaveConfig.forceAutoDetectTitle) scrapedLinkInfo.title else link.title,
+                                imgURL = link.imgURL.ifBlank { scrapedLinkInfo.imgUrl },
+                                localId = 0,
+                                mediaType = scrapedLinkInfo.mediaType,
+                                lastModified = eventTimestamp
+                            )
                         )
                     }
-                } catch (e: Exception) {
-                    if (linkSaveConfig.forceSaveIfRetrievalFails) {
-                        ScrapedLinkInfo(title = "", imgUrl = "")
-                    } else {
-                        throw e
-                    }
-                }.let { scrapedLinkInfo ->
-                    linksDao.addANewLink(
-                        link.copy(
-                            title = if (linkSaveConfig.forceAutoDetectTitle) scrapedLinkInfo.title else link.title,
-                            imgURL = scrapedLinkInfo.imgUrl,
-                            localId = 0,
-                            mediaType = scrapedLinkInfo.mediaType,
-                            lastModified = eventTimestamp
-                        )
-                    )
                 }
-            }
 
             selectedTagIds?.let { selectedTagIds ->
                 tagsDao.createLinkTags(

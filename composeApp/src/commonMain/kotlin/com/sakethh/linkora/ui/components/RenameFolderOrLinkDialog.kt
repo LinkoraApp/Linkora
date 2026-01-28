@@ -69,10 +69,11 @@ data class RenameFolderOrLinkDialogParam @OptIn(ExperimentalMaterial3Api::class)
     val sheetState: SheetState,
     val onHide: () -> Unit,
     val dialogBoxFor: MenuBtmSheetType = MenuBtmSheetType.Folder.RegularFolder,
-    val onSave: (newTitle: String, newNote: String, selectedTags: List<Tag>, onCompletion: () -> Unit) -> Unit,
+    val onSave: (newTitle: String, newNote: String, newImageUrl: String, selectedTags: List<Tag>, onCompletion: () -> Unit) -> Unit,
     val existingFolderName: String?,
     val existingTitle: String,
     val existingNote: String,
+    val existingImageUrl: String,
     val allTags: State<PaginationState<Map<PageKey, List<Tag>>>>,
     val selectedTags: List<Tag>,
     val onRetrieveNextTagsPage: () -> Unit,
@@ -94,6 +95,9 @@ fun RenameFolderOrLinkDialog(
         }
         var newNote by rememberSaveable(renameFolderOrLinkDialogParam.existingNote) {
             mutableStateOf(renameFolderOrLinkDialogParam.existingNote)
+        }
+        var newImageURL by rememberSaveable(renameFolderOrLinkDialogParam.existingImageUrl) {
+            mutableStateOf(renameFolderOrLinkDialogParam.existingImageUrl)
         }
         var showProgressBar by rememberSaveable {
             mutableStateOf(false)
@@ -182,7 +186,28 @@ fun RenameFolderOrLinkDialog(
                     ),
                     readOnly = showProgressBar
                 )
-
+                if (renameFolderOrLinkDialogParam.dialogBoxFor is MenuBtmSheetType.Link) {
+                    Spacer(modifier = Modifier.height(5.dp))
+                    OutlinedTextField(
+                        label = {
+                            Text(
+                                text = "New Image URL",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontSize = 12.sp
+                            )
+                        },
+                        textStyle = MaterialTheme.typography.titleSmall,
+                        value = newImageURL,
+                        onValueChange = {
+                            newImageURL = it
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(
+                            start = 15.dp,
+                            end = 15.dp
+                        ),
+                        readOnly = showProgressBar
+                    )
+                }
 
                 if (renameFolderOrLinkDialogParam.dialogBoxFor is MenuBtmSheetType.Link && !showProgressBar) {
                     Text(
@@ -233,7 +258,7 @@ fun RenameFolderOrLinkDialog(
                         .pressScaleEffect(), onClick = {
                         showProgressBar = true
                         renameFolderOrLinkDialogParam.onSave(
-                            newFolderOrTitleName, newNote, selectedTags, {
+                            newFolderOrTitleName, newNote, newImageURL, selectedTags, {
                                 showProgressBar = true
                             })
                     }) {

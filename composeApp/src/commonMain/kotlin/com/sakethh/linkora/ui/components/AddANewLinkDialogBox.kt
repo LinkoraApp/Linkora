@@ -186,6 +186,9 @@ fun AddANewLinkDialogBox(
     val noteTextFieldValue = rememberSaveable {
         mutableStateOf("")
     }
+    val imgUrlTextFieldValue = rememberSaveable {
+        mutableStateOf("")
+    }
 
     val allTags = addNewLinkDialogParams.allTags.collectAsStateWithLifecycle().value
 
@@ -206,7 +209,8 @@ fun AddANewLinkDialogBox(
                         noteTextFieldValue = noteTextFieldValue,
                         isAutoDetectTitleEnabled = isAutoDetectTitleEnabled,
                         isForceSaveWithoutFetchingMetaDataEnabled = isForceSaveWithoutFetchingMetaDataEnabled,
-                        addNewLinkDialogParams.currentFolder
+                        imgUrlTextFieldValue = imgUrlTextFieldValue,
+                        currentFolder = addNewLinkDialogParams.currentFolder
                     )
                     BottomPartOfAddANewLinkDialogBox(
                         onDismiss = addNewLinkDialogParams.onDismiss,
@@ -228,6 +232,7 @@ fun AddANewLinkDialogBox(
                         foldersSearchQueryResult = addNewLinkDialogParams.foldersSearchQueryResult,
                         performAction = addNewLinkDialogParams.performAction,
                         rootRegularFolders = addNewLinkDialogParams.rootRegularFolders,
+                        imgUrlTextFieldValue = imgUrlTextFieldValue
                     )
                     Spacer(Modifier.height(50.dp))
                 }
@@ -244,7 +249,8 @@ fun AddANewLinkDialogBox(
                             noteTextFieldValue = noteTextFieldValue,
                             isAutoDetectTitleEnabled = isAutoDetectTitleEnabled,
                             isForceSaveWithoutFetchingMetaDataEnabled = isForceSaveWithoutFetchingMetaDataEnabled,
-                            addNewLinkDialogParams.currentFolder
+                            currentFolder = addNewLinkDialogParams.currentFolder,
+                            imgUrlTextFieldValue = imgUrlTextFieldValue
                         )
                         VerticalDivider(
                             modifier = Modifier.padding(
@@ -270,7 +276,8 @@ fun AddANewLinkDialogBox(
                             foldersSearchQuery = addNewLinkDialogParams.foldersSearchQuery,
                             foldersSearchQueryResult = addNewLinkDialogParams.foldersSearchQueryResult,
                             performAction = addNewLinkDialogParams.performAction,
-                            rootRegularFolders = addNewLinkDialogParams.rootRegularFolders
+                            rootRegularFolders = addNewLinkDialogParams.rootRegularFolders,
+                            imgUrlTextFieldValue = imgUrlTextFieldValue
                         )
                     }
                     if (!isDataExtractingForTheLink.value) {
@@ -332,6 +339,7 @@ private fun TopPartOfAddANewLinkDialogBox(
     linkTextFieldValue: MutableState<String>,
     titleTextFieldValue: MutableState<String>,
     noteTextFieldValue: MutableState<String>,
+    imgUrlTextFieldValue: MutableState<String>,
     isAutoDetectTitleEnabled: MutableState<Boolean>,
     isForceSaveWithoutFetchingMetaDataEnabled: MutableState<Boolean>,
     currentFolder: Folder?
@@ -427,6 +435,33 @@ private fun TopPartOfAddANewLinkDialogBox(
             onValueChange = {
                 noteTextFieldValue.value = it
             })
+        OutlinedTextField(
+            readOnly = isDataExtractingForTheLink,
+            modifier = Modifier.padding(
+                start = 20.dp, end = 20.dp, top = 15.dp
+            ).fillMaxWidth(),
+            label = {
+                Text(
+                    text = "Image URL for Link",
+                    color = AlertDialogDefaults.textContentColor,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontSize = 12.sp
+                )
+            },
+            supportingText = {
+                Text(
+                    text = "Leave this field empty to automatically retrieve the image URL.",
+                    color = AlertDialogDefaults.textContentColor,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontSize = 12.sp
+                )
+            },
+            textStyle = MaterialTheme.typography.titleSmall,
+            singleLine = true,
+            value = imgUrlTextFieldValue.value,
+            onValueChange = {
+                imgUrlTextFieldValue.value = it
+            })
         if (AppPreferences.isAutoDetectTitleForLinksEnabled.value || AppPreferences.forceSaveWithoutFetchingAnyMetaData.value) {
             InfoCard(
                 if (AppPreferences.isAutoDetectTitleForLinksEnabled.value) Localization.rememberLocalizedString(
@@ -516,6 +551,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
     linkTextFieldValue: MutableState<String>,
     titleTextFieldValue: MutableState<String>,
     noteTextFieldValue: MutableState<String>,
+    imgUrlTextFieldValue: MutableState<String>,
     isAutoDetectTitleEnabled: MutableState<Boolean>,
     isForceSaveWithoutFetchingMetaDataEnabled: MutableState<Boolean>,
     isDropDownMenuIconClicked: MutableState<Boolean>,
@@ -857,9 +893,9 @@ private fun BottomPartOfAddANewLinkDialogBox(
                     AddANewLinkDialogBoxAction.AddANewLink(
                         link = Link(
                             linkType = linkType,
-                            title = titleTextFieldValue.value,
-                            url = linkTextFieldValue.value,
-                            imgURL = "",
+                            title = titleTextFieldValue.value.trim(),
+                            url = linkTextFieldValue.value.trim(),
+                            imgURL = imgUrlTextFieldValue.value.trim(),
                             note = noteTextFieldValue.value,
                             idOfLinkedFolder = currentFolder?.localId
                                 ?: selectedFolderForSavingTheLink.value.localId,
