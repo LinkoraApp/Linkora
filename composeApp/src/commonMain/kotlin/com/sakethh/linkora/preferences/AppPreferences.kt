@@ -136,6 +136,10 @@ object AppPreferences {
                         preferenceKey = booleanPreferencesKey(AppPreferenceType.FOLLOW_SYSTEM_THEME.name),
                     ) ?: showFollowSystemThemeOption
                 }, launch {
+                    useAmoledTheme.value = preferencesRepository.readPreferenceValue(
+                        preferenceKey = booleanPreferencesKey(AppPreferenceType.AMOLED_THEME_STATE.name),
+                    ) ?: useAmoledTheme.value
+                }, launch {
                     startDestination.value = preferencesRepository.readPreferenceValue(
                         preferenceKey = stringPreferencesKey(AppPreferenceType.INITIAL_ROUTE.name),
 
@@ -361,7 +365,7 @@ object AppPreferences {
                             AppPreferenceType.FORCE_SAVE_LINKS.name
                         )
                     ) ?: forceSaveIfRetrievalFails.value
-                },launch {
+                }, launch {
                     maxConcurrentRefreshCount = preferencesRepository.readPreferenceValue(
                         preferenceKey = intPreferencesKey(
                             AppPreferenceType.MAX_CONCURRENT_REFRESH_COUNT.name
@@ -375,7 +379,7 @@ object AppPreferences {
                     )?.run {
                         Font.valueOf(this)
                     } ?: selectedFont
-                },launch {
+                }, launch {
                     selectedLinkRefreshType = preferencesRepository.readPreferenceValue(
                         preferenceKey = stringPreferencesKey(
                             AppPreferenceType.REFRESH_LINK_TYPE.name
