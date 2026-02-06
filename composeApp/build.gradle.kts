@@ -95,8 +95,8 @@ android {
         applicationId = "com.sakethh.linkora"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 46
-        versionName = "0.15.1"
+        versionCode = 47
+        versionName = "0.15.2"
     }
     packaging {
         resources {

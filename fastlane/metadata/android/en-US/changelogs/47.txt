@@ -1,0 +1,3 @@
+- Sets AMOLED theme based on preference as expected
+
+See https://github.com/LinkoraApp/Linkora/releases/tag/release-v0.15.0 for v0.15.0 release notes
