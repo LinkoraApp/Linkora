@@ -1,6 +1,6 @@
 package com.sakethh.linkora.data.local
 
-import androidx.room.TypeConverter
+import androidx.room3.TypeConverter
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.MediaType
 import com.sakethh.linkora.domain.model.tag.LinkTag

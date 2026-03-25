@@ -1,10 +1,10 @@
 package com.sakethh.linkora.data.local.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Transaction
-import androidx.room.Update
+import androidx.room3.Dao
+import androidx.room3.Insert
+import androidx.room3.Query
+import androidx.room3.Transaction
+import androidx.room3.Update
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.LinkType
@@ -283,7 +283,7 @@ interface LinksDao {
     suspend fun unarchiveLinks(linksIds: List<Long>, eventTimestamp: Long)
 
     @Query("SELECT remoteId FROM links WHERE localId IN (:localIds)")
-    suspend fun getRemoteIds(localIds: List<Long>): List<Long>?
+    suspend fun getRemoteIds(localIds: List<Long>): List<Long>
 
 
     @Query("""

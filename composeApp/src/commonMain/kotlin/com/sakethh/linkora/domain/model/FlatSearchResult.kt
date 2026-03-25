@@ -1,6 +1,6 @@
 package com.sakethh.linkora.domain.model
 
-import androidx.room.Ignore
+import androidx.room3.Ignore
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.MediaType
 import com.sakethh.linkora.domain.model.link.Link

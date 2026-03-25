@@ -1,7 +1,7 @@
 package com.sakethh.linkora.domain.model.panel
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room3.Entity
+import androidx.room3.PrimaryKey
 import com.sakethh.linkora.utils.getSystemEpochSeconds
 import kotlinx.serialization.Serializable
 import java.time.Instant

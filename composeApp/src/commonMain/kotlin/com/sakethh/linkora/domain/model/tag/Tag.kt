@@ -1,9 +1,9 @@
 package com.sakethh.linkora.domain.model.tag
 
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Index
-import androidx.room.PrimaryKey
+import androidx.room3.Entity
+import androidx.room3.ForeignKey
+import androidx.room3.Index
+import androidx.room3.PrimaryKey
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.utils.getSystemEpochSeconds
 import kotlinx.serialization.Serializable

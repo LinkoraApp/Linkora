@@ -1,9 +1,9 @@
 package com.sakethh.linkora.data.local
 
-import androidx.room.Database
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
-import androidx.room.migration.Migration
+import androidx.room3.Database
+import androidx.room3.RoomDatabase
+import androidx.room3.TypeConverters
+import androidx.room3.migration.Migration
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.execSQL
 import com.sakethh.linkora.data.local.dao.FoldersDao
@@ -45,7 +45,7 @@ abstract class LocalDatabase : RoomDatabase() {
 
 
         val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(connection: SQLiteConnection) {
+            override suspend fun migrate(connection: SQLiteConnection) {
 
                 connection.execSQL("DROP TABLE IF EXISTS new_folders_table;")
                 connection.execSQL("CREATE TABLE IF NOT EXISTS new_folders_table (folderName TEXT NOT NULL, infoForSaving TEXT NOT NULL, id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL);")
@@ -82,7 +82,7 @@ abstract class LocalDatabase : RoomDatabase() {
         }
 
         val MIGRATION_2_3 = object : Migration(2, 3) {
-            override fun migrate(connection: SQLiteConnection) {
+            override suspend fun migrate(connection: SQLiteConnection) {
 
                 connection.execSQL("DROP TABLE IF EXISTS folders_table_new")
                 connection.execSQL(
@@ -108,25 +108,25 @@ abstract class LocalDatabase : RoomDatabase() {
         }
 
         val MIGRATION_3_4 = object : Migration(3, 4) {
-            override fun migrate(connection: SQLiteConnection) {
+            override suspend fun migrate(connection: SQLiteConnection) {
                 connection.execSQL("CREATE TABLE IF NOT EXISTS `home_screen_list_table` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `position` INTEGER NOT NULL, `folderName` TEXT NOT NULL, `shouldSavedLinksTabVisible` INTEGER NOT NULL, `shouldImpLinksTabVisible` INTEGER NOT NULL)")
             }
         }
         val MIGRATION_4_5 = object : Migration(4, 5) {
-            override fun migrate(connection: SQLiteConnection) {
+            override suspend fun migrate(connection: SQLiteConnection) {
                 connection.execSQL("DROP TABLE IF EXISTS home_screen_list_table")
                 connection.execSQL("CREATE TABLE IF NOT EXISTS `shelf` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `shelfName` TEXT NOT NULL, `shelfIconName` TEXT NOT NULL, `folderIds` TEXT NOT NULL)")
                 connection.execSQL("CREATE TABLE IF NOT EXISTS `home_screen_list_table` (`primaryKey` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` INTEGER NOT NULL, `position` INTEGER NOT NULL, `folderName` TEXT NOT NULL, `parentShelfID` INTEGER NOT NULL)")
             }
         }
         val MIGRATION_5_6 = object : Migration(5, 6) {
-            override fun migrate(connection: SQLiteConnection) {
+            override suspend fun migrate(connection: SQLiteConnection) {
                 connection.execSQL("CREATE TABLE IF NOT EXISTS `language` (`languageCode` TEXT NOT NULL, `languageName` TEXT NOT NULL, `localizedStringsCount` INTEGER NOT NULL, `contributionLink` TEXT NOT NULL, PRIMARY KEY(`languageCode`))")
                 connection.execSQL("CREATE TABLE IF NOT EXISTS `translation` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `languageCode` TEXT NOT NULL, `stringName` TEXT NOT NULL, `stringValue` TEXT NOT NULL)")
             }
         }
         val MIGRATION_6_7 = object : Migration(6, 7) {
-            override fun migrate(connection: SQLiteConnection) {
+            override suspend fun migrate(connection: SQLiteConnection) {
                 connection.execSQL("CREATE TABLE IF NOT EXISTS `site_specific_user_agent` (`domain` TEXT NOT NULL, `userAgent` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)")
                 connection.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_site_specific_user_agent_domain` ON `site_specific_user_agent` (`domain`)")
                 connection.execSQL("ALTER TABLE links_table ADD COLUMN userAgent TEXT DEFAULT NULL")
@@ -137,7 +137,7 @@ abstract class LocalDatabase : RoomDatabase() {
         }
 
         val MIGRATION_7_8 = object : Migration(7, 8) {
-            override fun migrate(connection: SQLiteConnection) {
+            override suspend fun migrate(connection: SQLiteConnection) {
 
                 connection.execSQL("CREATE TABLE IF NOT EXISTS `panel` (`panelId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `panelName` TEXT NOT NULL)")
 
@@ -165,7 +165,7 @@ abstract class LocalDatabase : RoomDatabase() {
         }
 
         val MIGRATION_8_9 = object : Migration(8, 9) {
-            override fun migrate(connection: SQLiteConnection) {
+            override suspend fun migrate(connection: SQLiteConnection) {
                 val timestamp = getSystemEpochSeconds()
 
                 connection.execSQL("CREATE TABLE IF NOT EXISTS `pending_sync_queue` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `operation` TEXT NOT NULL, `payload` TEXT NOT NULL)")
@@ -348,13 +348,13 @@ abstract class LocalDatabase : RoomDatabase() {
         }
 
         val MIGRATION_9_10 = object : Migration(9, 10) {
-            override fun migrate(connection: SQLiteConnection) {
+            override suspend fun migrate(connection: SQLiteConnection) {
                 connection.execSQL("CREATE TABLE IF NOT EXISTS `snapshot` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `content` TEXT NOT NULL)")
             }
         }
 
         val MIGRATION_10_11 = object : Migration(10, 11) {
-            override fun migrate(connection: SQLiteConnection) {
+            override suspend fun migrate(connection: SQLiteConnection) {
 
                 connection.execSQL(
                     """
@@ -411,20 +411,20 @@ abstract class LocalDatabase : RoomDatabase() {
             }
         }
         val MIGRATION_11_12 = object : Migration(11, 12) {
-            override fun migrate(connection: SQLiteConnection) {
+            override suspend fun migrate(connection: SQLiteConnection) {
                 connection.execSQL("CREATE TABLE IF NOT EXISTS `tags` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `remoteId` INTEGER, `lastModified` INTEGER NOT NULL, `name` TEXT NOT NULL)")
                 connection.execSQL("CREATE TABLE IF NOT EXISTS `link_tags` (`remoteId` INTEGER, `linkId` INTEGER NOT NULL, `tagId` INTEGER NOT NULL, `lastModified` INTEGER NOT NULL, PRIMARY KEY(`linkId`, `tagId`), FOREIGN KEY(`linkId`) REFERENCES `links`(`localId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`tagId`) REFERENCES `tags`(`localId`) ON UPDATE NO ACTION ON DELETE CASCADE )")
             }
         }
 
         val MIGRATION_12_13 = object : Migration(12, 13) {
-            override fun migrate(connection: SQLiteConnection) {
+            override suspend fun migrate(connection: SQLiteConnection) {
                 connection.execSQL("CREATE TABLE IF NOT EXISTS `RefreshLink` (`refreshedLinkId` INTEGER NOT NULL, PRIMARY KEY(`refreshedLinkId`))")
             }
         }
 
         val MIGRATION_13_14 = object : Migration(13, 14) {
-            override fun migrate(connection: SQLiteConnection) {
+            override suspend fun migrate(connection: SQLiteConnection) {
                 connection.execSQL("CREATE INDEX IF NOT EXISTS idx_folders_name ON folders(name)")
                 connection.execSQL("CREATE INDEX IF NOT EXISTS idx_links_title ON links(title)")
                 connection.execSQL("CREATE INDEX IF NOT EXISTS idx_tags_name ON tags(name)")

@@ -26,8 +26,8 @@ lifecycleViewmodelCompose = "2.8.2"
 material3Version = "1.11.0-alpha01"
 navigationCompose = "2.9.0"
 ksp = "2.2.20-2.0.4"
+roomVersion = "3.0.0-alpha01"
 sqlite = "2.6.2"
-androidx-room = "2.8.4"
 workRuntime = "2.10.0"
 documentfile = "1.1.0"
 aboutLibraries = "13.1.0"
@@ -35,6 +35,8 @@ assertk = "0.28.1"
 
 [libraries]
 androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastorePreferencesCore" }
+androidx-room3-compiler = { module = "androidx.room3:room3-compiler", version.ref = "roomVersion" }
+androidx-room3-runtime = { module = "androidx.room3:room3-runtime", version.ref = "roomVersion" }
 androidx-work-runtime = { module = "androidx.work:work-runtime", version.ref = "workRuntime" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coilCompose" }
@@ -63,8 +65,6 @@ ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "k
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorVersion" }
 lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
-androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "androidx-room" }
-androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidx-room" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 androidx-documentfile = { group = "androidx.documentfile", name = "documentfile", version.ref = "documentfile" }
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }
@@ -78,5 +78,4 @@ composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose-mu
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-room = { id = "androidx.room", version.ref = "androidx-room" }
 stability-analyzer = { id = "com.github.skydoves.compose.stability.analyzer", version = "0.6.5" }

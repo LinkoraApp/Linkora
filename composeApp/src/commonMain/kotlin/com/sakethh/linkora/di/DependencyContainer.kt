@@ -1,6 +1,6 @@
 package com.sakethh.linkora.di
 
-import androidx.room.useWriterConnection
+import androidx.room3.useWriterConnection
 import com.sakethh.linkora.data.ExportDataRepoImpl
 import com.sakethh.linkora.data.ImportDataRepoImpl
 import com.sakethh.linkora.data.LocalizationRepoImpl

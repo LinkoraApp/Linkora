@@ -1,7 +1,7 @@
 package com.sakethh.linkora.domain.model.localization
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room3.Entity
+import androidx.room3.PrimaryKey
 
 @Entity("localized_strings")
 data class LocalizedString(

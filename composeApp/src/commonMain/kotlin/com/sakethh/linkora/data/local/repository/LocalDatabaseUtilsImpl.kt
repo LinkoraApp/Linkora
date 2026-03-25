@@ -1,8 +1,8 @@
 package com.sakethh.linkora.data.local.repository
 
-import androidx.room.execSQL
-import androidx.room.immediateTransaction
-import androidx.room.useWriterConnection
+import androidx.room3.executeSQL
+import androidx.room3.immediateTransaction
+import androidx.room3.useWriterConnection
 import com.sakethh.linkora.data.local.LocalDatabase
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Result
@@ -24,21 +24,21 @@ class LocalDatabaseUtilsImpl(private val localDatabase: LocalDatabase) : LocalDa
     override suspend fun resetDatabase() {
         localDatabase.useWriterConnection { transactor ->
             transactor.immediateTransaction {
-                execSQL("DELETE FROM `link_tags`")
-                execSQL("DELETE FROM `panel_folder`")
-                execSQL("DELETE FROM `links`")
-                execSQL("DELETE FROM `tags`")
-                execSQL("DELETE FROM `panel`")
-                execSQL("DELETE FROM `folders`")
-                execSQL("DELETE FROM `localized_strings`")
-                execSQL("DELETE FROM `localized_languages`")
-                execSQL("DELETE FROM `pending_sync_queue`")
-                execSQL("DELETE FROM `snapshot`")
+                executeSQL("DELETE FROM `link_tags`")
+                executeSQL("DELETE FROM `panel_folder`")
+                executeSQL("DELETE FROM `links`")
+                executeSQL("DELETE FROM `tags`")
+                executeSQL("DELETE FROM `panel`")
+                executeSQL("DELETE FROM `folders`")
+                executeSQL("DELETE FROM `localized_strings`")
+                executeSQL("DELETE FROM `localized_languages`")
+                executeSQL("DELETE FROM `pending_sync_queue`")
+                executeSQL("DELETE FROM `snapshot`")
 
-                execSQL("DELETE FROM sqlite_sequence WHERE name IN ('links', 'folders', 'localized_strings', 'panel', 'panel_folder', 'pending_sync_queue', 'snapshot', 'tags')")
+                executeSQL("DELETE FROM sqlite_sequence WHERE name IN ('links', 'folders', 'localized_strings', 'panel', 'panel_folder', 'pending_sync_queue', 'snapshot', 'tags')")
             }
 
-            transactor.execSQL("PRAGMA wal_checkpoint(TRUNCATE)")
+            transactor.executeSQL("PRAGMA wal_checkpoint(TRUNCATE)")
         }
     }
 

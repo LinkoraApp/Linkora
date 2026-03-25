@@ -3,7 +3,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -12,7 +11,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     kotlin("plugin.serialization") version "2.0.20"
     alias(libs.plugins.ksp)
-    alias(libs.plugins.room)
+    id("androidx.room3")
     id("com.mikepenz.aboutlibraries.plugin")
     id("com.mikepenz.aboutlibraries.plugin.android")
     alias(libs.plugins.stability.analyzer)
@@ -56,7 +55,7 @@ kotlin {
             implementation(libs.navigation.compose)
             implementation(libs.androidx.datastore.preferences.core)
             implementation(libs.lifecycle.viewmodel.compose)
-            implementation(libs.androidx.room.runtime)
+            implementation(libs.androidx.room3.runtime)
             implementation(libs.sqlite.bundled)
 
             implementation(libs.ktor.client.core)
@@ -84,7 +83,7 @@ kotlin {
     }
 }
 
-room {
+room3 {
     schemaDirectory("$projectDir/schemas")
 }
 
@@ -144,7 +143,7 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
-    ksp(libs.androidx.room.compiler)
+    ksp(libs.androidx.room3.compiler)
 }
 
 compose.desktop {

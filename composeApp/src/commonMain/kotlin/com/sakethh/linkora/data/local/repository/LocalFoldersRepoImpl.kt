@@ -1,7 +1,7 @@
 package com.sakethh.linkora.data.local.repository
 
-import androidx.room.Transactor
-import androidx.room.immediateTransaction
+import androidx.room3.Transactor
+import androidx.room3.immediateTransaction
 import com.sakethh.linkora.data.local.dao.FoldersDao
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.SyncServerRoute

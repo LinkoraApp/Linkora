@@ -5,8 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.room.Room
-import androidx.sqlite.driver.AndroidSQLiteDriver
+import androidx.room3.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.NativeUtils
@@ -29,9 +28,8 @@ class LinkoraApp : Application() {
             permissionManager = PermissionManager(applicationContext),
             localDatabase = run {
                 val dbFile = applicationContext.getDatabasePath(LocalDatabase.NAME)
-                Room.databaseBuilder(
+                Room.databaseBuilder<LocalDatabase>(
                     applicationContext,
-                    LocalDatabase::class.java,
                     name = dbFile.absolutePath
                 ).setDriver(BundledSQLiteDriver()).setQueryCoroutineContext(Dispatchers.IO).addMigrations(
                     LocalDatabase.MIGRATION_1_2,

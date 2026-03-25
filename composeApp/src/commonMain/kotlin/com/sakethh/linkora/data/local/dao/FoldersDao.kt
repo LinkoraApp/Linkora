@@ -1,9 +1,9 @@
 package com.sakethh.linkora.data.local.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Update
+import androidx.room3.Dao
+import androidx.room3.Insert
+import androidx.room3.Query
+import androidx.room3.Update
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.utils.Sorting
 import kotlinx.coroutines.flow.Flow
@@ -211,7 +211,7 @@ interface FoldersDao {
     suspend fun getRemoteFolderId(localId: Long): Long?
 
     @Query("SELECT remoteId FROM folders WHERE localId IN (:localIds)")
-    suspend fun getRemoteIds(localIds: List<Long>): List<Long>?
+    suspend fun getRemoteIds(localIds: List<Long>): List<Long>
 
     @Query("SELECT localId FROM folders WHERE remoteId = :remoteId")
     suspend fun getLocalIdOfAFolder(remoteId: Long): Long?

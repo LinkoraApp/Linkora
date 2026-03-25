@@ -1,7 +1,7 @@
 package com.sakethh.linkora.data
 
-import androidx.room.Transactor
-import androidx.room.immediateTransaction
+import androidx.room3.Transactor
+import androidx.room3.immediateTransaction
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.asJSONExportSchema

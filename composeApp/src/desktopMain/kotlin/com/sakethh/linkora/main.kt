@@ -34,7 +34,7 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.navigation.compose.rememberNavController
-import androidx.room.Room
+import androidx.room3.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.sakethh.linkora.data.local.LocalDatabase
 import com.sakethh.linkora.di.DependencyContainer
