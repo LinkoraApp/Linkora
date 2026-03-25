@@ -10,9 +10,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.UriHandler
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.Localization
@@ -20,6 +17,7 @@ import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.MediaType
 import com.sakethh.linkora.domain.PermissionStatus
 import com.sakethh.linkora.domain.Platform
+import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.domain.model.tag.Tag
@@ -38,7 +36,9 @@ import com.sakethh.linkora.ui.screens.onboarding.Slide2
 import com.sakethh.linkora.ui.screens.onboarding.Slide3
 import com.sakethh.linkora.ui.screens.onboarding.Slide4
 import com.sakethh.linkora.ui.utils.UIEvent
+import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.stringPreferencesKey
 import kotlinx.coroutines.launch
 
 open class SettingsScreenViewModel(
@@ -47,7 +47,7 @@ open class SettingsScreenViewModel(
     private val permissionManager: PermissionManager
 ) : ViewModel() {
 
-    fun generalSection(platform: Platform): List<SettingComponentParam> {
+    fun generalSection(onAndroidMobile: Boolean): List<SettingComponentParam> {
         return buildList {
             this.addAll(
                 listOf(
@@ -120,7 +120,7 @@ open class SettingsScreenViewModel(
                 )
             )
 
-            if (platform == Platform.Android.Mobile) {
+            if (onAndroidMobile) {
                 add(
                     SettingComponentParam(
                         title = Localization.getLocalizedString(Localization.Key.ShowAssociatedImageInLinkMenu),
@@ -161,7 +161,7 @@ open class SettingsScreenViewModel(
                 )
             )
 
-            if (platform == Platform.Android.Mobile) {
+            if (onAndroidMobile) {
                 add(
                     SettingComponentParam(
                         title = Localization.Key.AutoSaveLinksLabel.getLocalizedString(),
@@ -212,7 +212,7 @@ open class SettingsScreenViewModel(
     }
 
     fun <T> changeSettingPreferenceValue(
-        preferenceKey: Preferences.Key<T>, newValue: T, onCompletion: () -> Unit = {}
+        preferenceKey: PreferenceKey<T>, newValue: T, onCompletion: () -> Unit = {}
     ) {
         viewModelScope.launch {
             preferencesRepository.changePreferenceValue(preferenceKey, newValue)

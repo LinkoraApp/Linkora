@@ -1,22 +1,57 @@
 package com.sakethh.linkora.platform
 
 import androidx.compose.runtime.Composable
-import com.sakethh.linkora.RefreshAllLinksService
-import com.sakethh.linkora.data.local.dao.RefreshLinkDao
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import com.sakethh.linkora.Localization
+import RefreshAllLinksService
 import com.sakethh.linkora.domain.PermissionStatus
 import com.sakethh.linkora.domain.Platform
+import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.RefreshLinksRepo
+import com.sakethh.linkora.linkoraSpecificFolder
+import com.sakethh.linkora.ui.utils.UIEvent
+import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
+import com.sakethh.linkora.ui.utils.linkoraLog
+import com.sakethh.linkora.utils.Constants
+import com.sakethh.linkora.utils.getLocalizedString
+import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.cio.CIOEngineConfig
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
+import okio.Path.Companion.toPath
+import java.security.cert.CertificateException
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
+import javax.net.ssl.X509TrustManager
+import kotlin.io.inputStream
+import kotlin.io.println
+import kotlin.io.resolve
+import kotlin.use
 
 
 actual val showFollowSystemThemeOption: Boolean = false
-actual val BUILD_FLAVOUR: String = "desktop"
-actual val platform: @Composable () -> Platform = {
-    Platform.Desktop
-}
+actual val platform: Platform = Platform.Desktop
 
 actual val showDynamicThemingOption: Boolean = false
 
@@ -39,7 +74,9 @@ actual class NativeUtils {
     actual fun onShare(url: String) = Unit
 
     actual suspend fun onRefreshAllLinks(
-        localLinksRepo: LocalLinksRepo, preferencesRepository: PreferencesRepository, refreshLinksRepo: RefreshLinksRepo
+        localLinksRepo: LocalLinksRepo,
+        preferencesRepository: PreferencesRepository,
+        refreshLinksRepo: RefreshLinksRepo
     ) {
         RefreshAllLinksService.invoke(localLinksRepo)
     }
@@ -58,8 +95,189 @@ actual class NativeUtils {
     }
 
     actual fun onIconChange(
-        allIconCodes: List<String>,
-        newIconCode: String,
-        onCompletion: () -> Unit
+        allIconCodes: List<String>, newIconCode: String, onCompletion: () -> Unit
     ) = Unit
+
+    actual fun <T> platformRunBlocking(block: suspend () -> T): T? = runBlocking {
+        block()
+    }
+}
+
+actual val PlatformIODispatcher: CoroutineDispatcher = Dispatchers.IO
+
+actual object Network {
+
+    private fun HttpClientConfig<CIOEngineConfig>.installLogger() {
+        install(Logging) {
+            logger = object : Logger {
+                override fun log(message: String) {
+                    linkoraLog("HTTP CLIENT:\n$message")
+                }
+            }
+            level = LogLevel.ALL
+        }
+    }
+
+    private fun HttpClientConfig<CIOEngineConfig>.installContentNegotiation() {
+        val jsonConfig = Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+            encodeDefaults = true
+        }
+        install(ContentNegotiation) {
+            json(jsonConfig)
+        }
+    }
+
+    actual val standardClient = HttpClient(CIO) {
+        installContentNegotiation()
+        installLogger()
+    }
+
+    private var syncServerClient: HttpClient? = null
+
+    actual fun getSyncServerClient(): HttpClient {
+        return syncServerClient
+            ?: error(Localization.Key.SyncServerConfigurationError.getLocalizedString())
+    }
+
+    actual fun closeSyncServerClient() {
+        syncServerClient?.close()
+        syncServerClient = null
+    }
+
+    actual suspend fun configureSyncServerClient(bypassCertCheck: Boolean) {
+        if (syncServerClient != null) return
+
+        val certificateFactory = CertificateFactory.getInstance("X.509")
+        var signedCertificate: X509Certificate? = null
+        val syncServerCert = linkoraSpecificFolder.resolve("sync-server-cert.cer")
+
+        if (syncServerCert.exists() && !bypassCertCheck) {
+            syncServerCert.inputStream().use {
+                try {
+                    signedCertificate =
+                        certificateFactory.generateCertificate(it) as X509Certificate
+                } catch (e: Exception) {
+                    pushUIEvent(UIEvent.Type.ShowSnackbar(e.message.toString()))
+                    null
+                }
+            }
+        }
+
+        if (!syncServerCert.exists() && !bypassCertCheck) {
+            error(Localization.Key.SyncServerConfigurationError.getLocalizedString())
+        }
+
+        syncServerClient = HttpClient(CIO) {
+            install(HttpTimeout) {
+                this.socketTimeoutMillis = 240_000
+                this.connectTimeoutMillis = 240_000
+                this.requestTimeoutMillis = 240_000
+            }
+            engine {
+                https {
+                    trustManager = object : X509TrustManager {
+                        override fun checkClientTrusted(
+                            chain: Array<out X509Certificate?>?, authType: String?
+                        ) {
+                        }
+
+                        override fun checkServerTrusted(
+                            chain: Array<out X509Certificate?>?, authType: String?
+                        ) {
+                            if (bypassCertCheck) {
+                                linkoraLog("Bypassing checkServerTrusted")
+                                return
+                            }
+
+                            if (chain?.isEmpty() == true) {
+                                throw CertificateException("Certificate chain is empty") as Throwable
+                            }
+
+                            val serverCert = chain?.get(0)
+                            signedCertificate?.let {
+                                serverCert?.verify(it.publicKey)
+                            }
+                            serverCert?.checkValidity()
+                        }
+
+                        override fun getAcceptedIssuers(): Array<out X509Certificate?> {
+                            return if (bypassCertCheck) arrayOf() else arrayOf(signedCertificate)
+                        }
+
+                    }
+                }
+            }
+
+            installContentNegotiation()
+            installLogger()
+
+            install(WebSockets) {
+                pingIntervalMillis = 20_000
+            }
+        }
+    }
+}
+
+actual object PlatformPreference {
+
+    private val dataStore = PreferenceDataStoreFactory.createWithPath(
+        produceFile = { "${linkoraSpecificFolder.absolutePath}/${Constants.DATA_STORE_NAME}".toPath() },
+    )
+
+    actual suspend fun <T> writePreferenceValue(preferenceKey: PreferenceKey<T>, newValue: T) {
+        dataStore.edit {
+            when (preferenceKey) {
+                is PreferenceKey.BooleanPreferencesKey -> {
+                    it[booleanPreferencesKey(preferenceKey.key)] = newValue as Boolean
+                }
+
+                is PreferenceKey.LongPreferencesKey -> {
+                    it[longPreferencesKey(preferenceKey.key)] = newValue as Long
+                }
+
+                is PreferenceKey.IntPreferencesKey -> {
+                    it[intPreferencesKey(preferenceKey.key)] = newValue as Int
+                }
+
+                is PreferenceKey.StringPreferencesKey -> {
+                    it[stringPreferencesKey(preferenceKey.key)] = newValue as String
+                }
+            }
+        }
+    }
+
+    actual suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T? =
+        when (preferenceKey) {
+            is PreferenceKey.BooleanPreferencesKey -> {
+                dataStore.data.first()[
+                    booleanPreferencesKey(
+                        preferenceKey.key,
+                    ),
+                ]
+            }
+
+            is PreferenceKey.LongPreferencesKey -> {
+                dataStore.data.first()[
+                    longPreferencesKey(
+                        preferenceKey.key,
+                    ),
+                ]
+            }
+
+            is PreferenceKey.StringPreferencesKey -> {
+                dataStore.data.first()[
+                    stringPreferencesKey(
+                        preferenceKey.key,
+                    ),
+                ]
+            }
+
+            is PreferenceKey.IntPreferencesKey -> dataStore.data.first()[
+                intPreferencesKey(
+                    preferenceKey.key,
+                ),
+            ]
+        } as T?
 }

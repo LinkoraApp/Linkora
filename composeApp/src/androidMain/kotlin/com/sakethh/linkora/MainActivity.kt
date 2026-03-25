@@ -38,7 +38,6 @@ import com.sakethh.linkora.ui.theme.LightColors
 import com.sakethh.linkora.ui.theme.LinkoraTheme
 import com.sakethh.linkora.utils.AndroidUIEvent
 import com.sakethh.linkora.utils.AndroidUIEvent.pushUIEvent
-import com.sakethh.linkora.utils.isTablet
 
 class MainActivity : ComponentActivity() {
 
@@ -130,10 +129,9 @@ class MainActivity : ComponentActivity() {
                     })
                 }
             })
-            val localConfiguration = LocalConfiguration.current
             CompositionLocalProvider(
                 LocalNavController provides navController,
-                LocalPlatform provides if (isTablet(localConfiguration)) Platform.Android.Tablet else Platform.Android.Mobile
+                LocalPlatform provides Platform.Android
             ) {
                 val context = LocalContext.current
                 val darkColors = DarkColors.copy(

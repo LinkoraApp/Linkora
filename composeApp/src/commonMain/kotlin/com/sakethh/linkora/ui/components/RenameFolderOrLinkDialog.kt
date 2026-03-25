@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
@@ -53,7 +52,6 @@ import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.ComposableContent
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.tag.Tag
-import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.ui.LastSeenId
 import com.sakethh.linkora.ui.LastSeenString
 import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
@@ -111,7 +109,7 @@ fun RenameFolderOrLinkDialog(
             Column(
                 Modifier.wrapContentSize().animateContentSize().padding(
                     bottom = 15.dp,
-                    top = if (platform() == Platform.Android.Mobile) 0.dp else 15.dp
+                    top = if (Platform.Android.onMobile()) 0.dp else 15.dp
                 )
                     .fillMaxWidth().verticalScroll(rememberScrollState())
             ) {
@@ -133,10 +131,10 @@ fun RenameFolderOrLinkDialog(
                         fontSize = 22.sp,
                         lineHeight = 27.sp,
                         textAlign = TextAlign.Start,
-                        modifier = Modifier.fillMaxWidth(if (platform() != Platform.Android.Mobile) 0.85f else 1f)
+                        modifier = Modifier.fillMaxWidth(if (!Platform.Android.onMobile()) 0.85f else 1f)
                     )
 
-                    if (platform() != Platform.Android.Mobile && !showProgressBar) {
+                    if (!Platform.Android.onMobile() && !showProgressBar) {
                         IconButton(
                             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
                             onClick = renameFolderOrLinkDialogParam.onHide
@@ -196,7 +194,7 @@ fun RenameFolderOrLinkDialog(
                     OutlinedTextField(
                         label = {
                             Text(
-                                text = Localization.Key.NewImgURLLabel.rememberLocalizedString() ,
+                                text = Localization.Key.NewImgURLLabel.rememberLocalizedString(),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontSize = 12.sp
                             )
@@ -216,7 +214,7 @@ fun RenameFolderOrLinkDialog(
                     OutlinedTextField(
                         label = {
                             Text(
-                                text = Localization.Key.NewURLLabel.rememberLocalizedString() ,
+                                text = Localization.Key.NewURLLabel.rememberLocalizedString(),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontSize = 12.sp
                             )
@@ -310,7 +308,7 @@ fun RenameFolderOrLinkDialog(
                 }
             }
         }
-        if (platform() == Platform.Android.Mobile) {
+        if (Platform.Android.onMobile()) {
             ModalBottomSheet(
                 sheetState = renameFolderOrLinkDialogParam.sheetState,
                 modifier = Modifier.imePadding(),
@@ -324,9 +322,8 @@ fun RenameFolderOrLinkDialog(
             }
         } else {
             BasicAlertDialog(
-                modifier = Modifier.then(
-                    if (platform() == Platform.Android.Mobile) Modifier.fillMaxSize() else Modifier.wrapContentSize()
-                ).clip(RoundedCornerShape(10.dp)).background(AlertDialogDefaults.containerColor),
+                modifier = Modifier.wrapContentSize().clip(RoundedCornerShape(10.dp))
+                    .background(AlertDialogDefaults.containerColor),
                 properties = DialogProperties(usePlatformDefaultWidth = false),
                 onDismissRequest = {
                     if (!showProgressBar) {

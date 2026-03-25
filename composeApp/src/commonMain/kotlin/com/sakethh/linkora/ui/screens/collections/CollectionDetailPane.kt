@@ -53,16 +53,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavDestination.Companion.hasRoute
+import com.composables.core.ScrollArea
+import com.composables.core.rememberScrollAreaState
 import com.sakethh.linkora.Localization
-import com.sakethh.linkora.di.CollectionScreenVMAssistedFactory
+import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.domain.LinkSaveConfig
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.asLocalizedString
 import com.sakethh.linkora.domain.asMenuBtmSheetType
 import com.sakethh.linkora.domain.asUnifiedLazyState
-import com.sakethh.linkora.platform.PlatformSpecificBackHandler
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.components.CollectionLayoutManager
 import com.sakethh.linkora.ui.components.PerformAtTheEndOfTheList
@@ -81,101 +84,77 @@ import com.sakethh.linkora.ui.screens.search.FilterChip
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.utils.Constants
+import com.sakethh.linkora.utils.VerticalScrollbar
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.rememberLocalizedString
+import com.sakethh.linkora.utils.supportsWideDisplay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
-
-@Composable
-fun MobileCollectionDetailScreen(currentFABContext: (CurrentFABContext) -> Unit) {
-    val collectionsScreenVM: CollectionsScreenVM = viewModel(
-        factory = CollectionScreenVMAssistedFactory.createForCollectionDetailPane(
-            Platform.Android.Mobile, LocalNavController.current
-        )
-    )
-    CollectionDetailPane(
-        platform = Platform.Android.Mobile,
-        currentFABContext = currentFABContext,
-        collectionDetailPaneParams = CollectionDetailPaneParams(
-            linkTagsPairs = collectionsScreenVM.linkTagsPairsState,
-            childFoldersFlat = collectionsScreenVM.childFoldersFlat,
-            rootArchiveFolders = collectionsScreenVM.rootArchiveFolders,
-            collectionDetailPaneInfo = collectionsScreenVM.collectionDetailPaneInfo,
-            peekPaneHistory = collectionsScreenVM.peekPaneHistory,
-            appliedFiltersForAllLinks = collectionsScreenVM.appliedFiltersForAllLinks,
-            performAction = collectionsScreenVM::performAction
-        )
-    )
-}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CollectionDetailPane(
-    platform: Platform,
     currentFABContext: (CurrentFABContext) -> Unit,
-    collectionDetailPaneParams: CollectionDetailPaneParams
+    onNavigate: (CollectionDetailPaneInfo) -> Unit,
+    collectionDetailPaneInfo: CollectionDetailPaneInfo,
+    navigateUp: () -> Unit
 ) {
-    val linkTagsPairs by collectionDetailPaneParams.linkTagsPairs.collectAsStateWithLifecycle()
+    val collectionDetailPaneVM: CollectionDetailPaneVM = viewModel(factory = viewModelFactory {
+        initializer {
+            CollectionDetailPaneVM(
+                localFoldersRepo = DependencyContainer.localFoldersRepo,
+                localLinksRepo = DependencyContainer.localLinksRepo,
+                localTagsRepo = DependencyContainer.localTagsRepo,
+                localDatabaseUtilsRepo = DependencyContainer.localDatabaseUtilsImpl,
+                collectionDetailPaneInfo = collectionDetailPaneInfo,
+            )
+        }
+    })
+    val linkTagsPairs by collectionDetailPaneVM.linkTagsPairsState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { 2 })
-    val rootArchiveFoldersState by
-    collectionDetailPaneParams.rootArchiveFolders.collectAsStateWithLifecycle()
+    val rootArchiveFoldersState by collectionDetailPaneVM.rootArchiveFolders.collectAsStateWithLifecycle()
     val rootArchiveFoldersListState = rememberLazyListState()
     val rootArchiveFoldersUnifiedListState = retain {
         rootArchiveFoldersListState.asUnifiedLazyState()
     }
-    val peekCollectionPaneHistory by
-    collectionDetailPaneParams.peekPaneHistory.collectAsStateWithLifecycle()
-    val currentFolder =
-        if (collectionDetailPaneParams.collectionDetailPaneInfo != null) collectionDetailPaneParams.collectionDetailPaneInfo.currentFolder else peekCollectionPaneHistory?.currentFolder
-    val currentTag =
-        if (collectionDetailPaneParams.collectionDetailPaneInfo != null) collectionDetailPaneParams.collectionDetailPaneInfo.currentTag else peekCollectionPaneHistory?.currentTag
-    val navController = LocalNavController.current
     val localUriHandler = LocalUriHandler.current
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    val showArchiveCollection =
-        if (collectionDetailPaneParams.collectionDetailPaneInfo != null) collectionDetailPaneParams.collectionDetailPaneInfo.currentFolder?.localId == Constants.ARCHIVE_ID else peekCollectionPaneHistory?.currentFolder?.localId == Constants.ARCHIVE_ID
-    val showAllLinksCollection =
-        if (collectionDetailPaneParams.collectionDetailPaneInfo != null) collectionDetailPaneParams.collectionDetailPaneInfo.currentFolder?.localId == Constants.ALL_LINKS_ID else peekCollectionPaneHistory?.currentFolder?.localId == Constants.ALL_LINKS_ID
     val flatChildFolderDataState =
-        collectionDetailPaneParams.childFoldersFlat.collectAsStateWithLifecycle().value
-    val collectionDetailPaneInfo = if (platform is Platform.Android.Mobile) {
-        collectionDetailPaneParams.collectionDetailPaneInfo!!
-    } else {
-        peekCollectionPaneHistory!!
-    }
-
+        collectionDetailPaneVM.childFoldersFlat.collectAsStateWithLifecycle().value
     PerformAtTheEndOfTheList(
-        unifiedLazyState = rootArchiveFoldersUnifiedListState,
-        actionOnReachingEnd = {
-            collectionDetailPaneParams.performAction(CollectionsAction.RetrieveNextRootArchivedFolderPage)
+        unifiedLazyState = rootArchiveFoldersUnifiedListState, actionOnReachingEnd = {
+            collectionDetailPaneVM.performAction(CollectionPaneAction.RetrieveNextRootArchivedFolderPage)
         })
-
+    val collectionDetailPaneInfo = collectionDetailPaneVM.collectionDetailPaneInfo
+    val onAndroidMobile = Platform.Android.onMobile() || !supportsWideDisplay()
+    val navController = LocalNavController.current
     DisposableEffect(Unit) {
         onDispose {
-            if (platform is Platform.Android.Mobile && navController.currentBackStackEntry?.destination?.hasRoute<Navigation.Root.CollectionsScreen>() == true) {
+            if (onAndroidMobile && navController.currentBackStackEntry?.destination?.hasRoute<Navigation.Root.CollectionsScreen>() == true) {
                 currentFABContext(CurrentFABContext.ROOT)
             }
         }
     }
 
-    LaunchedEffect(currentFolder) {
-        if (currentTag != null || (currentFolder != null && (currentFolder.localId == Constants.ALL_LINKS_ID || currentFolder.localId >= 0))) {
+    LaunchedEffect(collectionDetailPaneInfo.currentFolder) {
+        if (collectionDetailPaneInfo.currentTag != null || (collectionDetailPaneInfo.currentFolder != null && (collectionDetailPaneInfo.currentFolder.localId == Constants.ALL_LINKS_ID || collectionDetailPaneInfo.currentFolder.localId >= 0))) {
             currentFABContext(
                 CurrentFABContext(
-                    fabContext = FABContext.REGULAR, currentFolder = currentFolder
+                    fabContext = FABContext.REGULAR,
+                    currentFolder = collectionDetailPaneInfo.currentFolder
                 )
             )
             return@LaunchedEffect
         }
-        if (currentFolder != null && (currentFolder.localId == Constants.SAVED_LINKS_ID || currentFolder.localId == Constants.IMPORTANT_LINKS_ID)) {
+        if (collectionDetailPaneInfo.currentFolder != null && (collectionDetailPaneInfo.currentFolder.localId == Constants.SAVED_LINKS_ID || collectionDetailPaneInfo.currentFolder.localId == Constants.IMPORTANT_LINKS_ID)) {
             currentFABContext(
                 CurrentFABContext(
-                    fabContext = FABContext.ADD_LINK_IN_FOLDER, currentFolder = currentFolder
+                    fabContext = FABContext.ADD_LINK_IN_FOLDER,
+                    currentFolder = collectionDetailPaneInfo.currentFolder
                 )
             )
             return@LaunchedEffect
@@ -191,41 +170,35 @@ fun CollectionDetailPane(
                 SortingIconButton()
             }, navigationIcon = {
                 IconButton(
-                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-                    onClick = {
-                        if (collectionDetailPaneParams.collectionDetailPaneInfo != null) {
-                            navController.navigateUp()
-                        } else {
-                            collectionDetailPaneParams.performAction(CollectionsAction.PopFromDetailPane)
-                        }
+                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand), onClick = {
+                        navigateUp()
                     }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null
                     )
                 }
             }, title = {
-                val isTag =
-                    if (collectionDetailPaneParams.collectionDetailPaneInfo != null) collectionDetailPaneParams.collectionDetailPaneInfo.collectionType == CollectionType.TAG
-                    else collectionDetailPaneParams.peekPaneHistory.collectAsStateWithLifecycle().value?.collectionType == CollectionType.TAG
+                val isTag = collectionDetailPaneInfo.collectionType == CollectionType.TAG
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (isTag) {
                         Icon(imageVector = Icons.Default.Tag, contentDescription = null)
                         Spacer(modifier = Modifier.width(5.dp))
                     }
                     Text(
-                        text = if (isTag) currentTag?.name ?: "" else currentFolder?.name ?: "",
+                        text = if (isTag) collectionDetailPaneInfo.currentTag?.name
+                            ?: "" else collectionDetailPaneInfo.currentFolder?.name ?: "",
                         color = MaterialTheme.colorScheme.onSurface,
                         style = MaterialTheme.typography.titleMedium,
                         fontSize = 18.sp
                     )
                 }
             })
-            if (platform !is Platform.Android.Mobile) {
+            if (!onAndroidMobile) {
                 HorizontalDivider()
             }
         }
     }) { paddingValues ->
-        if (showArchiveCollection) {
+        if (collectionDetailPaneInfo.currentFolder?.localId == Constants.ARCHIVE_ID) {
             Column(modifier = Modifier.addEdgeToEdgeScaffoldPadding(paddingValues).fillMaxSize()) {
                 TabRow(selectedTabIndex = pagerState.currentPage) {
                     listOf(
@@ -272,8 +245,8 @@ fun CollectionDetailPane(
                                 folderMoreIconClick = {},
                                 onFolderClick = {},
                                 onLinkClick = {
-                                    collectionDetailPaneParams.performAction(
-                                        CollectionsAction.AddANewLink(
+                                    collectionDetailPaneVM.performAction(
+                                        CollectionPaneAction.AddANewLink(
                                             link = it.link.copy(
                                                 linkType = LinkType.HISTORY_LINK, localId = 0
                                             ),
@@ -289,12 +262,12 @@ fun CollectionDetailPane(
                                     localUriHandler.openUri(it.link.url)
                                 },
                                 isCurrentlyInDetailsView = {
-                                    peekCollectionPaneHistory?.currentFolder?.localId == it.localId
+                                    collectionDetailPaneInfo.currentFolder.localId == it.localId
                                 },
                                 emptyDataText = Localization.Key.NoArchiveLinksFound.getLocalizedString(),
                                 nestedScrollConnection = topAppBarScrollBehavior.nestedScrollConnection,
                                 onAttachedTagClick = {
-                                    if (currentTag?.localId == it.localId) {
+                                    if (collectionDetailPaneInfo.currentTag?.localId == it.localId) {
                                         return@CollectionLayoutManager
                                     }
                                     val collectionDetailPaneInfo = CollectionDetailPaneInfo(
@@ -302,32 +275,16 @@ fun CollectionDetailPane(
                                         currentTag = it,
                                         collectionType = CollectionType.TAG,
                                     )
-                                    if (platform is Platform.Android.Mobile) {
-                                        navController.currentBackStackEntry?.savedStateHandle?.set(
-                                            key = Constants.COLLECTION_INFO_SAVED_STATE_HANDLE_KEY,
-                                            value = Json.encodeToString(
-                                                collectionDetailPaneInfo
-                                            )
-                                        )
-                                        navController.navigate(
-                                            Navigation.Collection.MobileCollectionDetailScreen
-                                        )
-                                    } else {
-                                        collectionDetailPaneParams.performAction(
-                                            CollectionsAction.PushToDetailPane(
-                                                collectionDetailPaneInfo
-                                            )
-                                        )
-                                    }
+                                    onNavigate(collectionDetailPaneInfo)
                                 },
                                 tagMoreIconClick = {},
                                 onTagClick = {},
                                 onRetrieveNextPage = {
-                                    collectionDetailPaneParams.performAction(CollectionsAction.RetrieveNextLinksPage)
+                                    collectionDetailPaneVM.performAction(CollectionPaneAction.RetrieveNextLinksPage)
                                 },
                                 onFirstVisibleItemIndexChange = {
-                                    collectionDetailPaneParams.performAction(
-                                        CollectionsAction.OnFirstVisibleItemIndexChangeOfLinkTagsPair(
+                                    collectionDetailPaneVM.performAction(
+                                        CollectionPaneAction.OnFirstVisibleItemIndexChangeOfLinkTagsPair(
                                             it
                                         )
                                     )
@@ -337,129 +294,120 @@ fun CollectionDetailPane(
                         }
 
                         1 -> {
-                            LazyColumn(
-                                state = rootArchiveFoldersListState,
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                if (!rootArchiveFoldersState.isRetrieving && (rootArchiveFoldersState.data.isEmpty() || rootArchiveFoldersState.data.values.first()
-                                        .isEmpty())
+                            val state =
+                                rememberScrollAreaState(lazyListState = rootArchiveFoldersListState)
+                            ScrollArea(state = state) {
+                                LazyColumn(
+                                    state = rootArchiveFoldersListState,
+                                    modifier = Modifier.fillMaxSize()
                                 ) {
-                                    item {
-                                        DataEmptyScreen(text = Localization.Key.NoFoldersFoundInArchive.getLocalizedString())
+                                    if (!rootArchiveFoldersState.isRetrieving && (rootArchiveFoldersState.data.isEmpty() || rootArchiveFoldersState.data.values.first()
+                                            .isEmpty())
+                                    ) {
+                                        item {
+                                            DataEmptyScreen(text = Localization.Key.NoFoldersFoundInArchive.getLocalizedString())
+                                        }
+                                        return@LazyColumn
                                     }
-                                    return@LazyColumn
-                                }
-                                rootArchiveFoldersState.data.forEach { (pageKey, rootArchiveFolders) ->
-                                    items(rootArchiveFolders, key = {
-                                        "LazyColumn-rootArchiveFolders-P$pageKey" + it.localId
-                                    }) { rootArchiveFolder ->
-                                        FolderComponent(
-                                            FolderComponentParam(
-                                                name = rootArchiveFolder.name,
-                                                note = rootArchiveFolder.note,
-                                                onClick = {
-                                                    if (CollectionsScreenVM.selectedFoldersViaLongClick.contains(
+                                    rootArchiveFoldersState.data.forEach { (pageKey, rootArchiveFolders) ->
+                                        items(rootArchiveFolders, key = {
+                                            "LazyColumn-rootArchiveFolders-P$pageKey" + it.localId
+                                        }) { rootArchiveFolder ->
+                                            FolderComponent(
+                                                FolderComponentParam(
+                                                    name = rootArchiveFolder.name,
+                                                    note = rootArchiveFolder.note,
+                                                    onClick = {
+                                                        if (CollectionsScreenVM.selectedFoldersViaLongClick.contains(
+                                                                rootArchiveFolder
+                                                            )
+                                                        ) {
+                                                            return@FolderComponentParam
+                                                        }
+                                                        val collectionDetailPaneInfo =
+                                                            CollectionDetailPaneInfo(
+                                                                currentFolder = rootArchiveFolder,
+                                                                collectionType = CollectionType.FOLDER,
+                                                                currentTag = null
+                                                            )
+                                                        onNavigate(collectionDetailPaneInfo)
+                                                    },
+                                                    onLongClick = {
+                                                        if (CollectionsScreenVM.isSelectionEnabled.value.not()) {
+                                                            CollectionsScreenVM.isSelectionEnabled.value =
+                                                                true
+                                                            CollectionsScreenVM.selectedFoldersViaLongClick.add(
+                                                                rootArchiveFolder
+                                                            )
+                                                        }
+                                                    },
+                                                    onMoreIconClick = {
+                                                        coroutineScope.pushUIEvent(
+                                                            UIEvent.Type.ShowMenuBtmSheet(
+                                                                menuBtmSheetFor = MenuBtmSheetType.Folder.RegularFolder,
+                                                                selectedLinkForMenuBtmSheet = null,
+                                                                selectedFolderForMenuBtmSheet = rootArchiveFolder
+                                                            )
+                                                        )
+                                                    },
+                                                    isCurrentlyInDetailsView = remember(
+                                                        collectionDetailPaneInfo.currentFolder?.localId
+                                                    ) {
+                                                        mutableStateOf(collectionDetailPaneInfo.currentFolder?.localId == rootArchiveFolder.localId)
+                                                    },
+                                                    showMoreIcon = rememberSaveable {
+                                                        mutableStateOf(true)
+                                                    },
+                                                    isSelectedForSelection = rememberSaveable(
+                                                        CollectionsScreenVM.isSelectionEnabled.value,
+                                                        CollectionsScreenVM.selectedFoldersViaLongClick.contains(
                                                             rootArchiveFolder
                                                         )
                                                     ) {
-                                                        return@FolderComponentParam
-                                                    }
-                                                    val collectionDetailPaneInfo =
-                                                        CollectionDetailPaneInfo(
-                                                            currentFolder = rootArchiveFolder,
-                                                            collectionType = CollectionType.FOLDER,
-                                                            currentTag = null
-                                                        )
-                                                    if (platform is Platform.Android.Mobile) {
-                                                        navController.currentBackStackEntry?.savedStateHandle?.set(
-                                                            key = Constants.COLLECTION_INFO_SAVED_STATE_HANDLE_KEY,
-                                                            value = Json.encodeToString(
-                                                                collectionDetailPaneInfo
+                                                        mutableStateOf(
+                                                            CollectionsScreenVM.isSelectionEnabled.value && CollectionsScreenVM.selectedFoldersViaLongClick.contains(
+                                                                rootArchiveFolder
                                                             )
                                                         )
-                                                        navController.navigate(Navigation.Collection.MobileCollectionDetailScreen)
-                                                    } else {
-                                                        collectionDetailPaneParams.performAction(
-                                                            CollectionsAction.PushToDetailPane(
-                                                                collectionDetailPaneInfo
+                                                    },
+                                                    showCheckBox = CollectionsScreenVM.isSelectionEnabled,
+                                                    onCheckBoxChanged = { bool ->
+                                                        if (bool) {
+                                                            CollectionsScreenVM.selectedFoldersViaLongClick.add(
+                                                                rootArchiveFolder
                                                             )
-                                                        )
-                                                    }
-                                                },
-                                                onLongClick = {
-                                                    if (CollectionsScreenVM.isSelectionEnabled.value.not()) {
-                                                        CollectionsScreenVM.isSelectionEnabled.value =
-                                                            true
-                                                        CollectionsScreenVM.selectedFoldersViaLongClick.add(
-                                                            rootArchiveFolder
-                                                        )
-                                                    }
-                                                },
-                                                onMoreIconClick = {
-                                                    coroutineScope.pushUIEvent(
-                                                        UIEvent.Type.ShowMenuBtmSheet(
-                                                            menuBtmSheetFor = MenuBtmSheetType.Folder.RegularFolder,
-                                                            selectedLinkForMenuBtmSheet = null,
-                                                            selectedFolderForMenuBtmSheet = rootArchiveFolder
-                                                        )
-                                                    )
-                                                },
-                                                isCurrentlyInDetailsView = remember(
-                                                    peekCollectionPaneHistory?.currentFolder?.localId
-                                                ) {
-                                                    mutableStateOf(peekCollectionPaneHistory?.currentFolder?.localId == rootArchiveFolder.localId)
-                                                },
-                                                showMoreIcon = rememberSaveable {
-                                                    mutableStateOf(true)
-                                                },
-                                                isSelectedForSelection = rememberSaveable(
-                                                    CollectionsScreenVM.isSelectionEnabled.value,
-                                                    CollectionsScreenVM.selectedFoldersViaLongClick.contains(
-                                                        rootArchiveFolder
-                                                    )
-                                                ) {
-                                                    mutableStateOf(
-                                                        CollectionsScreenVM.isSelectionEnabled.value && CollectionsScreenVM.selectedFoldersViaLongClick.contains(
-                                                            rootArchiveFolder
-                                                        )
-                                                    )
-                                                },
-                                                showCheckBox = CollectionsScreenVM.isSelectionEnabled,
-                                                onCheckBoxChanged = { bool ->
-                                                    if (bool) {
-                                                        CollectionsScreenVM.selectedFoldersViaLongClick.add(
-                                                            rootArchiveFolder
-                                                        )
-                                                    } else {
-                                                        CollectionsScreenVM.selectedFoldersViaLongClick.remove(
-                                                            rootArchiveFolder
-                                                        )
-                                                    }
-                                                },
-                                                path = null,
-                                                showPath = false,
-                                                onPathItemClick = {},
+                                                        } else {
+                                                            CollectionsScreenVM.selectedFoldersViaLongClick.remove(
+                                                                rootArchiveFolder
+                                                            )
+                                                        }
+                                                    },
+                                                    path = null,
+                                                    showPath = false,
+                                                    onPathItemClick = {},
+                                                )
                                             )
-                                        )
+                                        }
                                     }
-                                }
-                                if (!rootArchiveFoldersState.pagesCompleted) {
-                                    item {
-                                        Box(
-                                            modifier = Modifier.fillMaxWidth().padding(15.dp),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            ContainedLoadingIndicator()
+                                    if (!rootArchiveFoldersState.pagesCompleted) {
+                                        item {
+                                            Box(
+                                                modifier = Modifier.fillMaxWidth().padding(15.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                ContainedLoadingIndicator()
+                                            }
                                         }
                                     }
                                 }
+                                VerticalScrollbar()
                             }
                             LaunchedEffect(Unit) {
                                 snapshotFlow {
                                     rootArchiveFoldersListState.firstVisibleItemIndex
                                 }.debounce(500).distinctUntilChanged().collectLatest {
-                                    collectionDetailPaneParams.performAction(
-                                        CollectionsAction.OnFirstVisibleItemIndexChangeOfRootArchivedFolders(
+                                    collectionDetailPaneVM.performAction(
+                                        CollectionPaneAction.OnFirstVisibleItemIndexChangeOfRootArchivedFolders(
                                             it.toLong()
                                         )
                                     )
@@ -472,18 +420,18 @@ fun CollectionDetailPane(
             return@Scaffold
         }
         Column(modifier = Modifier.addEdgeToEdgeScaffoldPadding(paddingValues).fillMaxSize()) {
-            if (showAllLinksCollection) {
+            if (collectionDetailPaneInfo.currentFolder?.localId == Constants.ALL_LINKS_ID) {
                 Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())) {
                     LinkType.entries.forEach {
                         key(it.name) {
                             FilterChip(
                                 text = it.asLocalizedString(),
-                                isSelected = collectionDetailPaneParams.appliedFiltersForAllLinks.contains(
+                                isSelected = collectionDetailPaneVM.appliedFiltersForAllLinks.contains(
                                     it
                                 ),
                                 onClick = {
-                                    collectionDetailPaneParams.performAction(
-                                        CollectionsAction.ToggleAllLinksFilter(
+                                    collectionDetailPaneVM.performAction(
+                                        CollectionPaneAction.ToggleAllLinksFilter(
                                             filter = it
                                         )
                                     )
@@ -522,26 +470,11 @@ fun CollectionDetailPane(
                         collectionType = CollectionType.FOLDER,
                         currentTag = null
                     )
-
-                    if (collectionDetailPaneParams.collectionDetailPaneInfo != null) {
-                        navController.currentBackStackEntry?.savedStateHandle?.set(
-                            key = Constants.COLLECTION_INFO_SAVED_STATE_HANDLE_KEY,
-                            value = Json.encodeToString(
-                                collectionDetailPaneInfo
-                            )
-                        )
-                        navController.navigate(Navigation.Collection.MobileCollectionDetailScreen)
-                    } else {
-                        collectionDetailPaneParams.performAction(
-                            CollectionsAction.PushToDetailPane(
-                                collectionDetailPaneInfo
-                            )
-                        )
-                    }
+                    onNavigate(collectionDetailPaneInfo)
                 },
                 onLinkClick = {
-                    collectionDetailPaneParams.performAction(
-                        CollectionsAction.AddANewLink(
+                    collectionDetailPaneVM.performAction(
+                        CollectionPaneAction.AddANewLink(
                             link = it.link.copy(linkType = LinkType.HISTORY_LINK, localId = 0),
                             linkSaveConfig = LinkSaveConfig(
                                 forceAutoDetectTitle = false, forceSaveWithoutRetrievingData = true
@@ -554,12 +487,12 @@ fun CollectionDetailPane(
                     localUriHandler.openUri(it.link.url)
                 },
                 isCurrentlyInDetailsView = {
-                    peekCollectionPaneHistory?.currentFolder?.localId == it.localId
+                    collectionDetailPaneInfo.currentFolder?.localId == it.localId
                 },
                 nestedScrollConnection = topAppBarScrollBehavior.nestedScrollConnection,
-                emptyDataText = if (currentTag != null) Localization.Key.NoAttachmentsToTags.rememberLocalizedString() else Localization.Key.NoLinksFound.rememberLocalizedString(),
+                emptyDataText = if (collectionDetailPaneInfo.currentTag != null) Localization.Key.NoAttachmentsToTags.rememberLocalizedString() else Localization.Key.NoLinksFound.rememberLocalizedString(),
                 onAttachedTagClick = {
-                    if (currentTag?.localId == it.localId) {
+                    if (collectionDetailPaneInfo.currentTag?.localId == it.localId) {
                         return@CollectionLayoutManager
                     }
                     val collectionDetailPaneInfo = CollectionDetailPaneInfo(
@@ -567,45 +500,22 @@ fun CollectionDetailPane(
                         currentTag = it,
                         collectionType = CollectionType.TAG,
                     )
-                    if (collectionDetailPaneParams.collectionDetailPaneInfo != null) {
-                        navController.currentBackStackEntry?.savedStateHandle?.set(
-                            key = Constants.COLLECTION_INFO_SAVED_STATE_HANDLE_KEY,
-                            value = Json.encodeToString(
-                                collectionDetailPaneInfo
-                            )
-                        )
-                        navController.navigate(
-                            Navigation.Collection.MobileCollectionDetailScreen
-                        )
-                    } else {
-                        collectionDetailPaneParams.performAction(
-                            CollectionsAction.PushToDetailPane(
-                                collectionDetailPaneInfo
-                            )
-                        )
-                    }
+                    onNavigate(collectionDetailPaneInfo)
                 },
                 tagMoreIconClick = {},
                 onTagClick = {},
                 onRetrieveNextPage = {
-                    collectionDetailPaneParams.performAction(CollectionsAction.RetrieveNextLinksPage)
+                    collectionDetailPaneVM.performAction(CollectionPaneAction.RetrieveNextLinksPage)
                 },
                 onFirstVisibleItemIndexChange = {
-                    collectionDetailPaneParams.performAction(
-                        CollectionsAction.OnFirstVisibleItemIndexChangeOfLinkTagsPair(
+                    collectionDetailPaneVM.performAction(
+                        CollectionPaneAction.OnFirstVisibleItemIndexChangeOfLinkTagsPair(
                             it
                         )
                     )
                 },
                 flatSearchResultState = null
             )
-        }
-    }
-    PlatformSpecificBackHandler {
-        if (platform is Platform.Android.Mobile) {
-            navController.navigateUp()
-        } else {
-            collectionDetailPaneParams.performAction(CollectionsAction.PopFromDetailPane)
         }
     }
 }

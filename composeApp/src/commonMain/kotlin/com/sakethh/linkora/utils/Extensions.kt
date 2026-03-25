@@ -1,22 +1,32 @@
 package com.sakethh.linkora.utils
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.retain.retain
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.composables.core.ScrollAreaScope
+import com.composables.core.Thumb
+import com.composables.core.VerticalScrollbar
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.domain.Platform
@@ -36,12 +46,10 @@ import com.sakethh.linkora.ui.domain.PaginationState
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
-import com.sakethh.linkora.ui.utils.rememberDeserializableObject
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -50,8 +58,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.withContext
-import java.io.File
+import kotlin.jvm.JvmName
 
 fun String.addZeroAtPrefixOnInt() =
     try {
@@ -92,7 +99,7 @@ fun Modifier.fillMaxWidthWithPadding(
 
 @Composable
 fun Modifier.bottomNavPaddingAcrossPlatforms(): Modifier {
-    return if (platform() is Platform.Android.Mobile) {
+    return if (Platform.Android.onMobile()) {
         this.navigationBarsPadding()
     } else {
         this.padding(bottom = 10.dp)
@@ -213,7 +220,7 @@ suspend fun <T : Any> T.then(init: suspend () -> Unit): T {
 
 @Composable
 fun NavHostController.inRootScreen(includeSettingsScreen: Boolean): Boolean? {
-    val rootRoutesList = rememberDeserializableObject {
+    val rootRoutesList = retain {
         listOf(
             Navigation.Root.HomeScreen,
             Navigation.Root.SearchScreen,
@@ -251,21 +258,6 @@ suspend fun PreferencesRepository.updateLastSyncedWithServerTimeStamp(newValue: 
             preferenceKey = preferenceKey,
             newValue = newValue
         )
-    }
-}
-
-suspend fun File.duplicate(): File? = withContext(Dispatchers.IO) {
-    try {
-        val tempFile = File.createTempFile("temp_${nameWithoutExtension}", ".${extension}")
-        this@duplicate.inputStream().use { input ->
-            tempFile.outputStream().use { output ->
-                input.copyTo(output)
-            }
-        }
-        tempFile
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
     }
 }
 
@@ -388,4 +380,18 @@ fun RefreshLinkType.asLocalizedString() = when (this) {
     RefreshLinkType.Title -> Localization.Key.Title.rememberLocalizedString()
     RefreshLinkType.Image -> Localization.Key.Image.rememberLocalizedString()
     RefreshLinkType.Both -> Localization.Key.Both.rememberLocalizedString()
+}
+
+@Composable
+fun ScrollAreaScope.VerticalScrollbar(){
+    VerticalScrollbar(
+        modifier = Modifier.align(Alignment.TopEnd)
+            .fillMaxHeight()
+            .width(4.dp)
+    ) {
+        Thumb(
+            Modifier.clip(RoundedCornerShape(50.dp))
+                .background(MaterialTheme.colorScheme.secondary.copy(0.65f))
+        )
+    }
 }

@@ -7,13 +7,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.sakethh.linkora.di.SpecificPanelManagerVMFactory
 import com.sakethh.linkora.di.linkoraViewModel
-import com.sakethh.linkora.platform.platform
+import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.domain.CurrentFABContext
 import com.sakethh.linkora.ui.screens.collections.CollectionDetailPaneParams
 import com.sakethh.linkora.ui.screens.collections.CollectionScreenParams
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreen
-import com.sakethh.linkora.ui.screens.collections.MobileCollectionDetailScreen
 import com.sakethh.linkora.ui.screens.home.HomeScreen
 import com.sakethh.linkora.ui.screens.home.panels.PanelsManagerScreen
 import com.sakethh.linkora.ui.screens.home.panels.SpecificPanelManagerScreen
@@ -40,8 +39,6 @@ fun LinkoraNavHost(
     onOnboardingComplete: () -> Unit,
     currentFABContext: (CurrentFABContext) -> Unit,
     collectionScreenParams: CollectionScreenParams,
-    collectionDetailPaneParams: CollectionDetailPaneParams,
-
     // An event can be pushed to the UIEvent flow instead of hoisting like this, but fine
     forceSearchActive: Boolean,
     cancelForceSearchActive: () -> Unit
@@ -50,7 +47,7 @@ fun LinkoraNavHost(
 
     val specificPanelManagerScreenVM: SpecificPanelManagerScreenVM = linkoraViewModel(
         factory = SpecificPanelManagerVMFactory.create(
-            platform = platform(),
+            onAndroidMobile = Platform.Android.onMobile(),
             currentBackStackEntryFlow = localNavController.currentBackStackEntryFlow
         )
     )
@@ -75,7 +72,6 @@ fun LinkoraNavHost(
         composable<Navigation.Root.CollectionsScreen> {
             CollectionsScreen(
                 collectionScreenParams = collectionScreenParams,
-                collectionDetailPaneParams = collectionDetailPaneParams,
                 currentFABContext = currentFABContext
             )
         }
@@ -99,9 +95,6 @@ fun LinkoraNavHost(
         }
         composable<Navigation.Settings.LanguageSettingsScreen> {
             LanguageSettingsScreen()
-        }
-        composable<Navigation.Collection.MobileCollectionDetailScreen> {
-            MobileCollectionDetailScreen(currentFABContext)
         }
         composable<Navigation.Home.PanelsManagerScreen> {
             PanelsManagerScreen(

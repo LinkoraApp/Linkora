@@ -2,13 +2,12 @@ package com.sakethh.linkora.data
 
 import androidx.room3.Transactor
 import androidx.room3.immediateTransaction
+import com.fleeksoft.ksoup.Ksoup
+import com.fleeksoft.ksoup.nodes.Element
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Result
-import com.sakethh.linkora.domain.asJSONExportSchema
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.JSONExportSchema
-import com.sakethh.linkora.domain.model.PanelForJSONExportSchema
-import com.sakethh.linkora.domain.model.legacy.LegacyExportSchema
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.model.panel.PanelFolder
 import com.sakethh.linkora.domain.model.tag.LinkTag
@@ -18,7 +17,7 @@ import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.LocalPanelsRepo
 import com.sakethh.linkora.domain.repository.local.LocalTagsRepo
 import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
-import com.sakethh.linkora.ui.utils.linkoraLog
+import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.LinkoraExports
 import com.sakethh.linkora.utils.catchAsThrowableAndEmitFailure
@@ -26,12 +25,6 @@ import com.sakethh.linkora.utils.getSystemEpochSeconds
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.decodeFromStream
-import kotlinx.serialization.json.jsonObject
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Element
-import java.io.File
 
 typealias NewFolderIdOfParent = Long?
 
@@ -44,87 +37,36 @@ class ImportDataRepoImpl(
     private val withWriterConnection: suspend (suspend (Transactor) -> Unit) -> Unit,
     private val canPushToServer: () -> Boolean,
 ) : ImportDataRepo {
-    private val json = Json {
-        ignoreUnknownKeys = true
-    }
-
-    override suspend fun importDataFromAJSONFile(importFile: File): Flow<Result<Unit>> {
+    override suspend fun importDataFromObj(jsonExportSchema: JSONExportSchema): Flow<Result<Unit>> {
         return channelFlow<Result<Unit>> {
             withWriterConnection { transactor ->
                 transactor.immediateTransaction {
-                    send(Result.Loading(message = "Starting data import from JSON file: ${importFile.name}"))
+                    send(Result.Loading(message = "Starting data import from JSON file"))
 
-                    send(Result.Loading(message = "Reading and deserializing JSON file: ${importFile.name}"))
-                    val currentSystemEpochSeconds = getSystemEpochSeconds()
+                    send(Result.Loading(message = "Reading and deserializing JSON file"))
 
-                    val basedOnNewExportSchema = try {
-                        importFile.inputStream().use { fileInputStream ->
-                            json.decodeFromStream<JsonObject>(fileInputStream).jsonObject["schemaVersion"].toString()
-                                .toLong().let {
-                                    it > 11
-                                }
-                        }
-                    } catch (_: Exception) {
-                        false
-                    }
+                    send(Result.Loading(message = "Deserialization completed: Links=${jsonExportSchema.links.size}, Folders=${jsonExportSchema.folders.size}, Panels=${jsonExportSchema.panels.panels.size}, PanelFolders=${jsonExportSchema.panels.panelFolders.size}"))
 
-                    val deserializedData = importFile.inputStream().use { fileInputStream ->
-                        if (!basedOnNewExportSchema) {
-                            Json.decodeFromStream<LegacyExportSchema>(fileInputStream)
-                                .asJSONExportSchema()
-                        } else json.decodeFromStream<JSONExportSchema>(fileInputStream).run {
-                            JSONExportSchema(schemaVersion = schemaVersion, links = links.map {
-                                it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
-                            }, folders = folders.map {
-                                it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
-                            }, panels = PanelForJSONExportSchema(panels = panels.panels.map {
-                                it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
-                            }, panelFolders = panels.panelFolders.map {
-                                it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
-                            }), tags = tags.map {
-                                it.copy(
-                                    remoteId = null, lastModified = currentSystemEpochSeconds
-                                )
-                            }, linkTags = linkTags.map {
-                                it.copy(
-                                    remoteId = null, lastModified = currentSystemEpochSeconds
-                                )
-                            })
-                        }
-                    }
-
-                    send(
-                        Result.Loading(
-                            message = if (!basedOnNewExportSchema) {
-                                "This JSON file is based on the legacy export schema (v${deserializedData.schemaVersion})."
-                            } else {
-                                "This JSON file is based on schema version ${deserializedData.schemaVersion}."
-                            }
-                        )
-                    )
-
-                    send(Result.Loading(message = "Deserialization completed: Links=${deserializedData.links.size}, Folders=${deserializedData.folders.size}, Panels=${deserializedData.panels.panels.size}, PanelFolders=${deserializedData.panels.panelFolders.size}"))
-
-                    val linksGroupedByParentIds = deserializedData.links.groupBy {
+                    val linksGroupedByParentIds = jsonExportSchema.links.groupBy {
                         it.idOfLinkedFolder
                     }
 
-                    val foldersGroupedByParentIds = deserializedData.folders.groupBy {
+                    val foldersGroupedByParentIds = jsonExportSchema.folders.groupBy {
                         it.parentFolderId
                     }
 
                     val panelFoldersGroupedByFolderIds =
-                        deserializedData.panels.panelFolders.groupBy {
+                        jsonExportSchema.panels.panelFolders.groupBy {
                             it.folderId
                         }
 
-                    val linksTagsGroupedByLinkId = deserializedData.linkTags.groupBy {
+                    val linksTagsGroupedByLinkId = jsonExportSchema.linkTags.groupBy {
                         it.linkId
                     }
 
                     send(Result.Loading(message = "Filtering non-folder linked links."))
 
-                    val linksGroupedByLinkType = deserializedData.links.groupBy {
+                    val linksGroupedByLinkType = jsonExportSchema.links.groupBy {
                         it.linkType
                     }
 
@@ -219,7 +161,7 @@ class ImportDataRepoImpl(
                         it.connectedPanelId
                     }
 
-                    deserializedData.panels.panels.forEach { currentPanel ->
+                    jsonExportSchema.panels.panels.forEach { currentPanel ->
                         ++latestPanelId
                         send(Result.Loading(message = "Assigned new ID=$latestPanelId to panel: ${currentPanel.panelName}"))
 
@@ -239,7 +181,7 @@ class ImportDataRepoImpl(
                         it.tagId
                     }
 
-                    deserializedData.tags.forEach { currentTag ->
+                    jsonExportSchema.tags.forEach { currentTag ->
                         localTagsRepo.createATagLocally(currentTag.copy(localId = 0))
                             .let { currTagNewId ->
                                 localTagsRepo.createLinkTags(tagsGroupedFilterByTagId[currentTag.localId]?.map {
@@ -261,14 +203,13 @@ class ImportDataRepoImpl(
         }.catchAsThrowableAndEmitFailure()
     }
 
-    override suspend fun importDataFromAHTMLFile(importFile: File): Flow<Result<Unit>> {
+    override suspend fun importDataFromHTML(html: String): Flow<Result<Unit>> {
         val eventTimestamp = getSystemEpochSeconds()
         return channelFlow<Result<Unit>> {
-            send(Result.Loading(message = "Starting to import data from HTML file: ${importFile.name}"))
 
             withWriterConnection { transactor ->
                 transactor.immediateTransaction {
-                    val rootElement = Jsoup.parse(importFile).body().select("dl").first()
+                    val rootElement = Ksoup.parse(html).body().select("dl").first()
 
                     if (rootElement == null) {
                         send(Result.Loading(message = "No HTML element to process"))
@@ -291,7 +232,8 @@ class ImportDataRepoImpl(
                                     when {
                                         filteredDtChildElement.`is`("a") -> {
                                             val linkAddress =
-                                                filteredDtChildElement.attribute("href").value
+                                                filteredDtChildElement.attribute("href")?.value ?: return@forEach
+
                                             val linkTitle = filteredDtChildElement.text()
 
                                             send(Result.Loading(message = "Found link: Title = $linkTitle, Address = $linkAddress, Parent Folder ID = $currentParentId"))

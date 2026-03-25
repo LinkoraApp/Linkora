@@ -1,12 +1,12 @@
 package com.sakethh.linkora.utils
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.retain.retain
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.unit.dp
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.domain.Result
-import com.sakethh.linkora.domain.UnifiedLazyState
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.Quadruple
 import com.sakethh.linkora.domain.onFailure
@@ -210,5 +210,21 @@ fun epochToReadableDateTime(
     } catch (e: Exception) {
         e.printStackTrace()
         null
+    }
+}
+
+fun longPreferencesKey(key: String) = PreferenceKey.LongPreferencesKey(key)
+
+fun intPreferencesKey(key: String) = PreferenceKey.IntPreferencesKey(key)
+
+fun stringPreferencesKey(key: String) = PreferenceKey.StringPreferencesKey(key)
+
+fun booleanPreferencesKey(key: String) = PreferenceKey.BooleanPreferencesKey(key)
+
+
+@Composable
+fun supportsWideDisplay(): Boolean {
+    return with(LocalDensity.current) {
+        LocalWindowInfo.current.containerSize.width.toDp() > 840.dp
     }
 }

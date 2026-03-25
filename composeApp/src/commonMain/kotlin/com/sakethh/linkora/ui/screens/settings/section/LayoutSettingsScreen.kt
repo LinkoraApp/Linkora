@@ -38,8 +38,6 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.di.linkoraViewModel
@@ -51,8 +49,10 @@ import com.sakethh.linkora.ui.domain.Layout
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
+import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.rememberLocalizedString
+import com.sakethh.linkora.utils.stringPreferencesKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

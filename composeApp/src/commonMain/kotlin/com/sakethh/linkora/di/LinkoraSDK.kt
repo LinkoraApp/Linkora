@@ -1,18 +1,19 @@
 package com.sakethh.linkora.di
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
 import com.sakethh.linkora.data.local.LocalDatabase
 import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.NativeUtils
+import com.sakethh.linkora.platform.Network
 import com.sakethh.linkora.platform.PermissionManager
+import com.sakethh.linkora.platform.PlatformPreference
 
 class LinkoraSDK(
     val nativeUtils: NativeUtils,
     val fileManager: FileManager,
     val permissionManager: PermissionManager,
     val localDatabase: LocalDatabase,
-    val dataStore: DataStore<Preferences>,
+    val platformPreference: PlatformPreference,
+    val network: Network,
     val dataSyncingNotificationService: NativeUtils.DataSyncingNotificationService
 ) {
     companion object {

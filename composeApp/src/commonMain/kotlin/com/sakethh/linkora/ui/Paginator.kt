@@ -1,5 +1,7 @@
 package com.sakethh.linkora.ui
 
+import co.touchlab.stately.collections.ConcurrentMutableList
+import co.touchlab.stately.collections.ConcurrentMutableMap
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onLoading
@@ -14,8 +16,8 @@ import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
-import java.util.Collections
-import java.util.concurrent.ConcurrentHashMap
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlin.concurrent.atomics.AtomicLong
 import kotlin.concurrent.atomics.AtomicReference
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
@@ -47,15 +49,14 @@ class Paginator<T>(
     private val lastSeenId = AtomicLong(Constants.EMPTY_LAST_SEEN_ID)
     private val lastSeenString = AtomicReference("")
 
-    private val orderedPageKeys =
-        Collections.synchronizedList(mutableListOf<Pair<LastSeenId, LastSeenString>>())
+    private val orderedPageKeys = ConcurrentMutableList<Pair<LastSeenId, LastSeenString>>()
 
     private val seenPageKeys = mutableSetOf<Pair<LastSeenId, LastSeenString>>()
 
     private val firstVisibleItemIndex: MutableStateFlow<Long> = MutableStateFlow(0)
     suspend fun updateFirstVisibleItemIndex(newIndex: Long) = firstVisibleItemIndex.emit(newIndex)
 
-    private val collectionJobs = ConcurrentHashMap<Pair<LastSeenId, LastSeenString>, Job>()
+    private val collectionJobs = ConcurrentMutableMap<Pair<LastSeenId, LastSeenString>, Job>()
 
     init {
         coroutineScope.launch {
@@ -82,7 +83,7 @@ class Paginator<T>(
 
                 linkoraLog("qualifiedForRestarting size = ${qualifiedForRestarting.size}:\n$qualifiedForRestarting")
 
-                collectionJobs.forEach { (pageKey, job) ->
+                collectionJobs.toList().forEach { (pageKey, job) ->
                     if (!job.isCancelled && pageKey !in qualifiedForRestarting) {
                         linkoraLog("cancelling the $pageKey job")
                         job.cancel()
@@ -111,7 +112,7 @@ class Paginator<T>(
                                 onRetrieve(restartId, pageKey.second)
                                     .restartCollectData(pageKey)
                             } finally {
-                                newJob?.let { collectionJobs.remove(pageKey, it) }
+                                newJob?.let { collectionJobs.remove(pageKey) }
                             }
                         }
                         collectionJobs[pageKey] = newJob
@@ -145,6 +146,8 @@ class Paginator<T>(
         )
     }
 
+    private val seenPagesMutex = Mutex()
+
     suspend fun retrieveNextBatch() {
         if ((isRetrieving || isPagesFinished || errorOccurred).also {
                 if (it) linkoraLog("isRetrieving=$isRetrieving, isPagesFinished=$isPagesFinished, errorOccurred=$errorOccurred")
@@ -156,7 +159,7 @@ class Paginator<T>(
         val currentString = lastSeenString.load()
         val pageKeyPair = currentId to currentString
 
-        synchronized(orderedPageKeys) {
+        seenPagesMutex.withLock {
             if (!seenPageKeys.contains(pageKeyPair)) {
                 orderedPageKeys.add(pageKeyPair)
                 seenPageKeys.add(pageKeyPair)
@@ -171,19 +174,16 @@ class Paginator<T>(
         collectionJobs.computeIfAbsent(pageKeyPair) {
             didLaunch = true
 
-            var appendJob: Job? = null
-
-            appendJob = coroutineScope.launch {
+            coroutineScope.launch {
                 try {
                     dataFlow.collectData(pageKeyPair)
                 } finally {
-                    appendJob?.let { collectionJobs.remove(pageKeyPair, it) }
+                    collectionJobs.remove(pageKeyPair)
                     isRetrieving = false
                 }
             }.also {
                 linkoraLog("Seen pages:${seenPageKeys.count()}")
             }
-            appendJob
         }
 
         if (!didLaunch) {
@@ -234,7 +234,7 @@ class Paginator<T>(
     }
 
     suspend fun cancelAndReset() {
-        collectionJobs.values.forEach { it.cancel() }
+        collectionJobs.values.toList().forEach { it.cancel() }
         collectionJobs.clear()
         orderedPageKeys.clear()
         seenPageKeys.clear()

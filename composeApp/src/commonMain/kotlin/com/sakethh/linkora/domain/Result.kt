@@ -14,7 +14,11 @@ sealed interface Result<T> {
 
 suspend fun <T> Result<T>.onSuccess(init: suspend (Result.Success<T>) -> Unit): Result<T> {
     if (this is Result.Success) {
-        init(this)
+        try {
+            init(this)
+        } catch (e: Exception) {
+            return Result.Failure(e.message.toString())
+        }
     }
     return this
 }

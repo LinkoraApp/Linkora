@@ -88,7 +88,7 @@ fun MenuBtmSheet(
     val showNote = rememberSaveable(menuBtmSheetParam.showNote.value) {
         mutableStateOf(menuBtmSheetParam.showNote.value)
     }
-    val platform = platform()
+    platform
     val localClipboard = LocalClipboardManager.current
     val currentFolder = remember(menuBtmSheetParam.folder) {
         menuBtmSheetParam.folder
@@ -102,7 +102,7 @@ fun MenuBtmSheet(
             menuBtmSheetParam.onDismiss()
         }
     }
-
+    val onAndroidMobile = Platform.Android.onMobile()
     val quickActions: ComposableContent = {
         Row(
             modifier = Modifier.padding(start = 10.dp, end = 10.dp).fillMaxWidth(),
@@ -126,7 +126,7 @@ fun MenuBtmSheet(
                 topStart = 8.dp, topEnd = 20.dp, bottomStart = 8.dp, bottomEnd = 20.dp
             )
             QuickActionItem(
-                shape = if (platform is Platform.Android.Mobile) RoundedCornerShape(8.dp) else lastItemShape,
+                shape = if (onAndroidMobile) RoundedCornerShape(8.dp) else lastItemShape,
                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f)
                     .pressScaleEffect(),
                 onClick = {
@@ -141,7 +141,7 @@ fun MenuBtmSheet(
                 icon = Icons.Default.CopyAll
             )
 
-            if (platform is Platform.Android.Mobile) {
+            if (onAndroidMobile) {
                 QuickActionItem(
                     shape = lastItemShape,
                     modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f)
@@ -163,11 +163,11 @@ fun MenuBtmSheet(
 
     val commonContent: ComposableContent = {
         Column(
-            modifier = if (platform is Platform.Android.Mobile) Modifier else Modifier.verticalScroll(
+            modifier = if (onAndroidMobile) Modifier else Modifier.verticalScroll(
                 rememberScrollState()
             )
         ) {
-            if (platform is Platform.Android.Mobile) {
+            if (onAndroidMobile) {
                 IndividualMenuComponent(
                     onClick = {
                         coroutineScope.launch {
@@ -322,13 +322,13 @@ fun MenuBtmSheet(
                     elementImageVector = if (menuBtmSheetParam.menuBtmSheetFor == MenuBtmSheetType.Folder.RegularFolder) Icons.Outlined.FolderDelete else Icons.Outlined.DeleteForever
                 )
             }
-            if ((platform == Platform.Android.Mobile && AppPreferences.selectedLinkLayout.value in listOf(
+            if ((onAndroidMobile && AppPreferences.selectedLinkLayout.value in listOf(
                     Layout.STAGGERED_VIEW.name, Layout.GRID_VIEW.name
-                ) && menuBtmSheetParam.menuBtmSheetFor in menuBtmSheetLinkEntries()) || (platform !is Platform.Android.Mobile && menuBtmSheetParam.menuBtmSheetFor in menuBtmSheetLinkEntries())
+                ) && menuBtmSheetParam.menuBtmSheetFor in menuBtmSheetLinkEntries()) || (!onAndroidMobile && menuBtmSheetParam.menuBtmSheetFor in menuBtmSheetLinkEntries())
             ) {
                 quickActions()
             }
-            if (platform !is Platform.Android.Mobile) {
+            if (!onAndroidMobile) {
                 Spacer(Modifier.height(15.dp))
             }
         }
@@ -340,12 +340,12 @@ fun MenuBtmSheet(
             hideContent()
         },
         dragHandle = {
-            if (platform !is Platform.Android.Mobile) {
+            if (!onAndroidMobile) {
                 BottomSheetDefaults.DragHandle()
             }
         },
         sheetState = menuBtmSheetParam.btmModalSheetState,
-        shape = if (menuBtmSheetParam.showProgressBarDuringRemoteSave.value && platform() is Platform.Android.Mobile) RectangleShape else BottomSheetDefaults.ExpandedShape
+        shape = if (menuBtmSheetParam.showProgressBarDuringRemoteSave.value && onAndroidMobile) RectangleShape else BottomSheetDefaults.ExpandedShape
     ) {
         if (menuBtmSheetParam.showProgressBarDuringRemoteSave.value) {
             Column(
@@ -361,7 +361,7 @@ fun MenuBtmSheet(
             }
             return@ModalBottomSheet
         }
-        if (platform is Platform.Android.Mobile) {
+        if (onAndroidMobile) {
             MobileMenu(
                 menuBtmSheetParam,
                 menuBtmSheetParam.linkTagsPair!!,

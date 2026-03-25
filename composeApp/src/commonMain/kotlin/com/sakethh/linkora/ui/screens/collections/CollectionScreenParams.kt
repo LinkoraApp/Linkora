@@ -11,16 +11,12 @@ import kotlinx.coroutines.flow.StateFlow
 
 @Stable
 data class CollectionScreenParams(
-    val isPaneSelected: StateFlow<Boolean>,
     val rootRegularFolders: StateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<Folder>>>>,
     val allTags: StateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<Tag>>>>,
-    val peekPaneHistory: StateFlow<CollectionDetailPaneInfo?>,
     var currentCollectionSource: String,
-    val performAction: (CollectionsAction) -> Unit,
+    val performAction: (CollectionsScreenAction) -> Unit,
     val onRetrieveNextRegularRootFolderPage: () -> Unit,
     val onRetrieveNextTagsPage: () -> Unit,
     val onRegularRootFolderFirstVisibleItemIndexChange: (Long) -> Unit,
     val onTagsFirstVisibleItemIndexChange: (Long) -> Unit,
-    val onRetrieveNextArchivedRootFolderPage: () -> Unit,
-    val onArchivedRootFolderFirstVisibleItemIndexChange: (Long) -> Unit,
 )

@@ -1,12 +1,10 @@
-package com.sakethh.linkora
-
 import com.sakethh.linkora.domain.onSuccess
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
+import com.sakethh.linkora.platform.PlatformIODispatcher
 import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
 import com.sakethh.linkora.ui.screens.settings.section.data.RefreshLinksState
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -23,7 +21,7 @@ object RefreshAllLinksService {
     }
 
     fun invoke(localLinksRepo: LocalLinksRepo) {
-        linksRefreshJob = CoroutineScope(Dispatchers.IO).launch {
+        linksRefreshJob = CoroutineScope(PlatformIODispatcher).launch {
             localLinksRepo.getAllLinks().let { allLinks ->
                 DataSettingsScreenVM.totalLinksForRefresh.value = allLinks.size
                 DataSettingsScreenVM.refreshLinksState.value =

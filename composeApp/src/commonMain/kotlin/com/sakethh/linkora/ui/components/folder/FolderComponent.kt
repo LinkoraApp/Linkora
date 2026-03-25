@@ -60,7 +60,7 @@ fun FolderComponent(folderComponentParam: FolderComponentParam) {
                     MaterialTheme.colorScheme.primary.copy(0.25f)
                 ) else Modifier
             ).then(
-                if (platform() is Platform.Android.Mobile) Modifier else Modifier.background(
+                if (Platform.Android.onMobile()) Modifier else Modifier.background(
                     if (folderComponentParam.isCurrentlyInDetailsView.value) MaterialTheme.colorScheme.primary.copy(
                         0.25f
                     ) else Color.Transparent
@@ -113,7 +113,7 @@ fun FolderComponent(folderComponentParam: FolderComponentParam) {
             }
             Box(
                 modifier = Modifier.fillMaxWidth()
-                    .padding(end = if (platform() == Platform.Android.Mobile) 15.dp else 0.dp),
+                    .padding(end = if (Platform.Android.onMobile()) 15.dp else 0.dp),
                 contentAlignment = Alignment.CenterEnd
             ) {
                 if (folderComponentParam.showMoreIcon.value && folderComponentParam.showCheckBox.value.not()) {

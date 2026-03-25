@@ -42,8 +42,12 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
                 permissionManager = LinkoraSDK.getInstance().permissionManager
             )
 
-            LanguageSettingsScreenVM::class -> DependencyContainer.localizationRepo.let {
-                LanguageSettingsScreenVM(it, it)
+            LanguageSettingsScreenVM::class -> DependencyContainer.localizationRepo.let { localizationRepo ->
+                LanguageSettingsScreenVM(
+                    localizationRepo,
+                    localizationRepo,
+                    LinkoraSDK.getInstance().nativeUtils
+                )
             }
 
             AboutSettingsScreenVM::class -> AboutSettingsScreenVM(
@@ -57,6 +61,7 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
                 DependencyContainer.remoteSyncRepo,
                 fileManager = LinkoraSDK.getInstance().fileManager,
                 permissionManager = LinkoraSDK.getInstance().permissionManager,
+                network = LinkoraSDK.getInstance().network,
             )
 
             DataSettingsScreenVM::class -> DataSettingsScreenVM(

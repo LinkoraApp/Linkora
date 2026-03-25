@@ -1,15 +1,20 @@
 package com.sakethh.linkora.domain.repository.local
 
-import androidx.datastore.preferences.core.Preferences
+import com.sakethh.linkora.domain.PreferenceKey
 
 
+/* This looks like an additional layer since `PlatformPreference` already
+implements the logic. It's mainly helpful for tests so we can just swap in
+dummy data, but otherwise I don't see a useful use case for this extra
+`PreferencesRepository`. It's not required, but to keep things similar to
+other repos, I'm leaving it as-is.*/
 interface PreferencesRepository {
     suspend fun <T> changePreferenceValue(
-        preferenceKey: Preferences.Key<T>,
+        preferenceKey: PreferenceKey<T>,
         newValue: T,
     )
 
     suspend fun <T> readPreferenceValue(
-        preferenceKey: Preferences.Key<T>,
+        preferenceKey: PreferenceKey<T>,
     ): T?
 }

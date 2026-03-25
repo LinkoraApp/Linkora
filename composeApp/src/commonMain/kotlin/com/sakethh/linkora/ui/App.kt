@@ -6,6 +6,8 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -30,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -50,7 +53,6 @@ import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.tag.Tag
-import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.preferences.AppPreferences.serverBaseUrl
 import com.sakethh.linkora.ui.components.AddANewFolderDialogBox
 import com.sakethh.linkora.ui.components.AddANewLinkDialogBox
@@ -80,18 +82,17 @@ import com.sakethh.linkora.ui.domain.model.CollectionDetailPaneInfo
 import com.sakethh.linkora.ui.domain.model.CollectionType
 import com.sakethh.linkora.ui.navigation.LinkoraNavHost
 import com.sakethh.linkora.ui.navigation.Navigation
-import com.sakethh.linkora.ui.screens.collections.CollectionDetailPaneParams
 import com.sakethh.linkora.ui.screens.collections.CollectionScreenParams
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM
 import com.sakethh.linkora.ui.screens.collections.components.RenameTagComponent
 import com.sakethh.linkora.ui.screens.collections.components.TagDeletionConfirmation
 import com.sakethh.linkora.ui.screens.collections.components.TagMenu
-import com.sakethh.linkora.ui.utils.rememberDeserializableObject
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.currentSavedServerConfig
 import com.sakethh.linkora.utils.host
 import com.sakethh.linkora.utils.ifServerConfigured
 import com.sakethh.linkora.utils.inRootScreen
+import com.sakethh.linkora.utils.supportsWideDisplay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
@@ -101,6 +102,7 @@ import kotlinx.serialization.json.Json
 fun App(
     modifier: Modifier = Modifier
 ) {
+    val onAndroidMobile = Platform.Android.onMobile()
     val appVM: AppVM =
         linkoraViewModel(factory = APPVMAssistedFactory.createForApp(LocalDensity.current))
     val createTagBtmSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -113,8 +115,8 @@ fun App(
     val tagMenuBtmSheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val collectionsScreenVM: CollectionsScreenVM =
-        linkoraViewModel(factory = CollectionScreenVMAssistedFactory.createForApp(platform = platform()))
-    val rootRouteList = rememberDeserializableObject {
+        linkoraViewModel(factory = CollectionScreenVMAssistedFactory.createForApp())
+    val rootRouteList = retain {
         listOf(
             Navigation.Root.HomeScreen,
             Navigation.Root.SearchScreen,
@@ -153,14 +155,16 @@ fun App(
         mutableStateOf(false)
     }
     Row(modifier = Modifier.fillMaxSize().then(modifier)) {
-        if (appVM.onBoardingCompleted.value && (platform() == Platform.Desktop || platform() == Platform.Android.Tablet)) {
+        AnimatedVisibility(
+            visible = (appVM.onBoardingCompleted.value || platform == Platform.Web) && supportsWideDisplay(),
+            exit = slideOutHorizontally(targetOffsetX = { -it }),
+            enter = slideInHorizontally(initialOffsetX = { -it })
+        ) {
             DesktopNavigationRail(
                 rootRouteList = rootRouteList,
                 currentRoute = currentRoute,
                 isDataSyncingFromPullRefresh = isDataSyncingFromPullRefresh,
-                onNavigate = {
-                    collectionsScreenVM.clearDetailPaneHistory()
-                },
+                onNavigate = {},
                 isPerformingStartupSync = appVM.isPerformingStartupSync,
                 getLastSyncedTime = {
                     appVM.getLastSyncedTime()
@@ -272,7 +276,7 @@ fun App(
                     isRefreshing = isDataSyncingFromPullRefresh.value,
                     state = pullToRefreshState,
                     enabled = rememberSaveable(serverBaseUrl.value) {
-                        serverBaseUrl.value.isNotBlank() && platform == Platform.Android.Mobile
+                        serverBaseUrl.value.isNotBlank() && onAndroidMobile
                     },
                     onRefresh = {
                         appVM.saveServerConnectionAndSync(
@@ -299,27 +303,14 @@ fun App(
                         forceSearchActive = false
                     },
                     collectionScreenParams = CollectionScreenParams(
-                        isPaneSelected = collectionsScreenVM.isPaneSelected,
                         rootRegularFolders = collectionsScreenVM.rootRegularFolders,
                         allTags = collectionsScreenVM.allTags,
-                        peekPaneHistory = collectionsScreenVM.peekPaneHistory,
                         currentCollectionSource = collectionsScreenVM.currentCollectionSource,
                         performAction = collectionsScreenVM::performAction,
                         onRetrieveNextRegularRootFolderPage = collectionsScreenVM::retrieveNextBatchOfRegularRootFolders,
-                        onArchivedRootFolderFirstVisibleItemIndexChange = collectionsScreenVM::updateStartingIndexForArchivedRootFoldersPaginator,
                         onRegularRootFolderFirstVisibleItemIndexChange = collectionsScreenVM::updateStartingIndexForRegularRootFoldersPaginator,
-                        onRetrieveNextArchivedRootFolderPage = collectionsScreenVM::retrieveNextBatchOfArchivedRootFolders,
                         onRetrieveNextTagsPage = collectionsScreenVM::retrieveNextBatchOfTags,
                         onTagsFirstVisibleItemIndexChange = collectionsScreenVM::updateStartingIndexForTagsPaginator,
-                    ),
-                    collectionDetailPaneParams = CollectionDetailPaneParams(
-                        linkTagsPairs = collectionsScreenVM.linkTagsPairsState,
-                        childFoldersFlat = collectionsScreenVM.childFoldersFlat,
-                        rootArchiveFolders = collectionsScreenVM.rootArchiveFolders,
-                        collectionDetailPaneInfo = collectionsScreenVM.collectionDetailPaneInfo,
-                        peekPaneHistory = collectionsScreenVM.peekPaneHistory,
-                        appliedFiltersForAllLinks = collectionsScreenVM.appliedFiltersForAllLinks,
-                        performAction = collectionsScreenVM::performAction
                     )
                 )
                 Indicator(
@@ -343,7 +334,7 @@ fun App(
                         onDismiss = {
                             appVM.showAddLinkDialog = false
                         },
-                        currentFolder = if ((inRootScreen == true && platform is Platform.Android.Mobile) || currentFABContext.currentFolder?.localId == Constants.ALL_LINKS_ID) null else currentFABContext.currentFolder,
+                        currentFolder = if ((inRootScreen == true && onAndroidMobile) || currentFABContext.currentFolder?.localId == Constants.ALL_LINKS_ID) null else currentFABContext.currentFolder,
                         allTags = collectionsScreenVM.allTags,
                         selectedTags = collectionsScreenVM.selectedTags,
                         foldersSearchQuery = collectionsScreenVM.foldersSearchQuery,

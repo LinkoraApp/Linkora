@@ -42,7 +42,9 @@ import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.NativeUtils
+import com.sakethh.linkora.platform.Network
 import com.sakethh.linkora.platform.PermissionManager
+import com.sakethh.linkora.platform.PlatformPreference
 import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.App
 import com.sakethh.linkora.ui.LocalNavController
@@ -86,9 +88,8 @@ suspend fun main() {
                         LocalDatabase.MIGRATION_13_14
                     ).build()
             },
-            dataStore = PreferenceDataStoreFactory.createWithPath {
-                linkoraSpecificFolder.resolve(Constants.DATA_STORE_NAME).absolutePath.toPath()
-            },
+            platformPreference = PlatformPreference,
+            network = Network,
             dataSyncingNotificationService = NativeUtils.DataSyncingNotificationService()
         )
     )

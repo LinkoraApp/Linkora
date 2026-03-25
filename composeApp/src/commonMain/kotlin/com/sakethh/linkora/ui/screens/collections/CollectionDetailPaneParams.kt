@@ -17,8 +17,7 @@ data class CollectionDetailPaneParams(
     val linkTagsPairs: StateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<LinkTagsPair>>>>,
     val childFoldersFlat: StateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<FlatChildFolderData>>>>,
     val rootArchiveFolders: StateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<Folder>>>>,
-    val collectionDetailPaneInfo: CollectionDetailPaneInfo?,
-    val peekPaneHistory: StateFlow<CollectionDetailPaneInfo?>,
+    val selectedInfo: CollectionDetailPaneInfo,
     val appliedFiltersForAllLinks: SnapshotStateList<LinkType>,
-    val performAction: (CollectionsAction) -> Unit
+    val performAction: (CollectionsScreenAction) -> Unit
 )

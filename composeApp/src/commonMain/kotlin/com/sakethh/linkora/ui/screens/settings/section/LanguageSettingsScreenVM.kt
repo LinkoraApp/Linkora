@@ -5,34 +5,36 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.Localization
-import com.sakethh.linkora.utils.getLocalizedString
-import com.sakethh.linkora.utils.inDoubleQuotes
 import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.domain.model.localization.LocalizedLanguage
 import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onLoading
 import com.sakethh.linkora.domain.onSuccess
 import com.sakethh.linkora.domain.repository.LocalizationRepo
+import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
+import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.inDoubleQuotes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 class LanguageSettingsScreenVM(
     private val localizationRepoRemote: LocalizationRepo.Remote,
-    private val localizationRepoLocal: LocalizationRepo.Local
+    private val localizationRepoLocal: LocalizationRepo.Local,
+    private val nativeUtils: NativeUtils
 ) : ViewModel() {
     private val _availableLanguages = MutableStateFlow(
         emptyList<LocalizedLanguage>()
     )
     val availableLanguages = _availableLanguages.asStateFlow()
 
-    fun doesLanguagePackExists(exists: MutableState<Boolean>, languageCode: String) = runBlocking {
-        exists.value = localizationRepoLocal.doesStringsPackForThisLanguageExists(languageCode)
-    }
+    fun doesLanguagePackExists(exists: MutableState<Boolean>, languageCode: String) =
+        nativeUtils.platformRunBlocking {
+            exists.value = localizationRepoLocal.doesStringsPackForThisLanguageExists(languageCode)
+        }
 
     val languageSettingsState = mutableStateOf(
         LanguageSettingsState(
@@ -115,7 +117,7 @@ class LanguageSettingsScreenVM(
         }
     }
 
-    // REFACTOR: NESTED collectLatest
+    // TODO: NESTED collectLatest
     fun downloadALanguageStringsPack(language: LocalizedLanguage) {
         viewModelScope.launch {
             localizationRepoRemote.getLanguagePackFromServer(language.languageCode).collectLatest {

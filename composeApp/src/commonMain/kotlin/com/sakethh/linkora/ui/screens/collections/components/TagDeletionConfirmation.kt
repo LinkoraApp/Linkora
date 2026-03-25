@@ -93,7 +93,7 @@ fun TagDeletionConfirmation(
                         modifier = Modifier.fillMaxWidth().padding(
                             start = 15.dp,
                             end = 15.dp,
-                            bottom = if (platform() !is Platform.Android.Mobile) 15.dp else 0.dp
+                            bottom = if (!Platform.Android.onMobile()) 15.dp else 0.dp
                         )
                     )
                 }

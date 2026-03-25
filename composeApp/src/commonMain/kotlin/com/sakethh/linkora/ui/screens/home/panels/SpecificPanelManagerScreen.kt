@@ -125,7 +125,7 @@ fun SpecificPanelManagerScreen(
                     leadingIcon = {
                         Icon(imageVector = Icons.Default.Search, contentDescription = null)
                     })
-                if (platform() is Platform.Desktop) {
+                if (platform is Platform.Desktop || platform is Platform.Web) {
                     Spacer(Modifier.height(15.dp))
                 }
             }

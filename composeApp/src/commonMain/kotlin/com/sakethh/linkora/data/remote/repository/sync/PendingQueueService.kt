@@ -210,7 +210,7 @@ class PendingQueueService(
                         }
                     }
 
-                    // REFACTOR: NESTED collectLatest
+                    // TODO: NESTED collectLatest
                     SyncServerRoute.CREATE_FOLDER -> {
                         send(Loading(message = "[FOLDER] Creating folder from queue item (ID: ${queueItem.id})"))
                         val addFolderDTO =

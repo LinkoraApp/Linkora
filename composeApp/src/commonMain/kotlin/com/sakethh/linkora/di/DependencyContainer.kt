@@ -21,34 +21,35 @@ import com.sakethh.linkora.data.remote.repository.RemoteMultiActionRepoImpl
 import com.sakethh.linkora.data.remote.repository.RemotePanelsRepoImpl
 import com.sakethh.linkora.data.remote.repository.RemoteTagsRepoImpl
 import com.sakethh.linkora.data.remote.repository.sync.RemoteSyncRepoImpl
-import com.sakethh.linkora.network.Network
 import com.sakethh.linkora.network.repository.NetworkRepoImpl
 import com.sakethh.linkora.preferences.AppPreferences
 
 object DependencyContainer {
 
     val preferencesRepo by lazy {
-        PreferencesImpl(LinkoraSDK.getInstance().dataStore)
+        PreferencesImpl(LinkoraSDK.getInstance().platformPreference)
     }
 
     val localizationRepo by lazy {
         LocalizationRepoImpl(
-            standardClient = Network.standardClient, localizationServerURL = {
+            standardClient = LinkoraSDK.getInstance().network.standardClient,
+            localizationServerURL = {
                 AppPreferences.localizationServerURL.value
-            }, localizationDao = LinkoraSDK.getInstance().localDatabase.localizationDao
+            },
+            localizationDao = LinkoraSDK.getInstance().localDatabase.localizationDao
         )
     }
 
     val networkRepo by lazy {
         NetworkRepoImpl(syncServerClient = {
-            Network.getSyncServerClient()
+            LinkoraSDK.getInstance().network.getSyncServerClient()
         })
     }
 
     val remoteFoldersRepo by lazy {
         RemoteFoldersRepoImpl(
             syncServerClient = {
-                Network.getSyncServerClient()
+                LinkoraSDK.getInstance().network.getSyncServerClient()
             },
             baseUrl = { AppPreferences.serverBaseUrl.value },
             authToken = { AppPreferences.serverSecurityToken.value },
@@ -91,7 +92,8 @@ object DependencyContainer {
             localTagsRepo = localTagsRepo,
             remoteTagsRepo = remoteTagsRepo,
             tagsDao = LinkoraSDK.getInstance().localDatabase.tagsDao,
-            localDatabaseUtilsRepo = localDatabaseUtilsImpl
+            localDatabaseUtilsRepo = localDatabaseUtilsImpl,
+            network = LinkoraSDK.getInstance().network
         )
     }
 
@@ -108,8 +110,7 @@ object DependencyContainer {
             preferencesRepository = preferencesRepo,
             withWriterConnection = {
                 LinkoraSDK.getInstance().localDatabase.useWriterConnection(it)
-            }
-        )
+            })
     }
 
     val localLinksRepo by lazy {
@@ -122,7 +123,7 @@ object DependencyContainer {
             foldersDao = LinkoraSDK.getInstance().localDatabase.foldersDao,
             pendingSyncQueueRepo = pendingSyncQueueRepo,
             preferencesRepository = preferencesRepo,
-            standardClient = Network.standardClient,
+            standardClient = LinkoraSDK.getInstance().network.standardClient,
             tagsDao = LinkoraSDK.getInstance().localDatabase.tagsDao,
             proxyUrl = {
                 AppPreferences.proxyUrl
@@ -132,7 +133,7 @@ object DependencyContainer {
 
     val remoteTagsRepo by lazy {
         RemoteTagsRepoImpl(syncServerClient = {
-            Network.getSyncServerClient()
+            LinkoraSDK.getInstance().network.getSyncServerClient()
         }, baseUrl = {
             AppPreferences.serverBaseUrl.value
         }, authToken = {
@@ -150,23 +151,29 @@ object DependencyContainer {
     }
 
     val remoteLinksRepo by lazy {
-        RemoteLinksRepoImpl(syncServerClient = { Network.getSyncServerClient() }, baseUrl = {
-            AppPreferences.serverBaseUrl.value
-        }, authToken = {
-            AppPreferences.serverSecurityToken.value
-        })
+        RemoteLinksRepoImpl(
+            syncServerClient = { LinkoraSDK.getInstance().network.getSyncServerClient() },
+            baseUrl = {
+                AppPreferences.serverBaseUrl.value
+            },
+            authToken = {
+                AppPreferences.serverSecurityToken.value
+            })
     }
 
     val gitHubReleasesRepo by lazy {
-        GitHubReleasesRepoImpl(standardClient = Network.standardClient)
+        GitHubReleasesRepoImpl(standardClient = LinkoraSDK.getInstance().network.standardClient)
     }
 
     val remotePanelsRepo by lazy {
-        RemotePanelsRepoImpl(syncServerClient = { Network.getSyncServerClient() }, baseUrl = {
-            AppPreferences.serverBaseUrl.value
-        }, authToken = {
-            AppPreferences.serverSecurityToken.value
-        })
+        RemotePanelsRepoImpl(
+            syncServerClient = { LinkoraSDK.getInstance().network.getSyncServerClient() },
+            baseUrl = {
+                AppPreferences.serverBaseUrl.value
+            },
+            authToken = {
+                AppPreferences.serverSecurityToken.value
+            })
     }
 
     val localPanelsRepo by lazy {
@@ -185,21 +192,28 @@ object DependencyContainer {
 
     val importDataRepo by lazy {
         ImportDataRepoImpl(
-            localLinksRepo, localFoldersRepo, localPanelsRepo, canPushToServer = {
+            localLinksRepo,
+            localFoldersRepo,
+            localPanelsRepo,
+            canPushToServer = {
                 AppPreferences.canPushToServer()
-            }, remoteSyncRepo = remoteSyncRepo, localTagsRepo = localTagsRepo,
+            },
+            remoteSyncRepo = remoteSyncRepo,
+            localTagsRepo = localTagsRepo,
             withWriterConnection = {
                 LinkoraSDK.getInstance().localDatabase.useWriterConnection(it)
-            }
-        )
+            })
     }
 
     private val remoteMultiActionRepo by lazy {
-        RemoteMultiActionRepoImpl(syncServerClient = { Network.getSyncServerClient() }, baseUrl = {
-            AppPreferences.serverBaseUrl.value
-        }, authToken = {
-            AppPreferences.serverSecurityToken.value
-        })
+        RemoteMultiActionRepoImpl(
+            syncServerClient = { LinkoraSDK.getInstance().network.getSyncServerClient() },
+            baseUrl = {
+                AppPreferences.serverBaseUrl.value
+            },
+            authToken = {
+                AppPreferences.serverSecurityToken.value
+            })
     }
 
     val localMultiActionRepo by lazy {
@@ -213,8 +227,7 @@ object DependencyContainer {
             localTagsRepo = localTagsRepo,
             withWriterConnection = {
                 LinkoraSDK.getInstance().localDatabase.useWriterConnection(it)
-            }
-        )
+            })
     }
 
     val snapshotRepo by lazy {

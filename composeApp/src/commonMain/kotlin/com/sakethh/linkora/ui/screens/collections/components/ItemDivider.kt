@@ -19,7 +19,7 @@ fun ItemDivider(
     colorOpacity: Float = 0.35f,
     thickness: Dp = 1.5.dp,
     paddingValues: PaddingValues = PaddingValues(
-        top = 15.dp, start = 20.dp, end = if (platform() is Platform.Android.Mobile) 20.dp else 5.dp
+        top = 15.dp, start = 20.dp, end = if (Platform.Android.onMobile()) 20.dp else 5.dp
     ),
     color: Color = MaterialTheme.colorScheme.outline
 ) {

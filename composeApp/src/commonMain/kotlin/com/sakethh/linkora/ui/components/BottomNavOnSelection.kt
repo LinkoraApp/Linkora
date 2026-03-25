@@ -122,7 +122,7 @@ fun BottomNavOnSelection(
         }
         val currentFolder = currentFABContext.currentFolder
         val showPasteButton =
-            (if (platform is Platform.Android.Mobile) currentFolder != null else true) && (transferActionType != TransferActionType.NONE && (if (platform is Platform.Android.Mobile) !selectedAndInRoot.value else currentFolder != null)) && currentFolder?.localId != Constants.ALL_LINKS_ID
+            (if (Platform.Android.onMobile()) currentFolder != null else true) && (transferActionType != TransferActionType.NONE && (if (Platform.Android.onMobile()) !selectedAndInRoot.value else currentFolder != null)) && currentFolder?.localId != Constants.ALL_LINKS_ID
 
         if (!(CollectionsScreenVM.selectedFoldersViaLongClick.isNotEmpty() && currentFolder?.localId in defaultFolderIds().dropWhile {
                 it == Constants.ARCHIVE_ID

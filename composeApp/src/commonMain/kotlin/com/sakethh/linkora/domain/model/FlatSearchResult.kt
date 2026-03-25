@@ -7,6 +7,7 @@ import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
 import kotlinx.serialization.json.Json
+import kotlin.jvm.Transient
 
 data class FlatSearchResult(
     val itemType: String,

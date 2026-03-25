@@ -124,7 +124,7 @@ fun OnboardingSlidesScreen(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically, modifier = Modifier.then(
-                    if (platform() is Platform.Desktop) Modifier.padding(15.dp) else Modifier.padding(
+                    if (platform is Platform.Desktop || platform is Platform.Web) Modifier.padding(15.dp) else Modifier.padding(
                         end = 15.dp
                     )
                 )

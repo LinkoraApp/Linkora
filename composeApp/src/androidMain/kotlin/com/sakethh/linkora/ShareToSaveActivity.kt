@@ -42,7 +42,6 @@ import com.sakethh.linkora.ui.theme.LinkoraTheme
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.getLocalizedString
-import com.sakethh.linkora.utils.isTablet
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -99,7 +98,7 @@ class ShareToSaveActivity : ComponentActivity() {
             })
             CompositionLocalProvider(
                 LocalNavController provides navController,
-                LocalPlatform provides if (isTablet(localConfiguration)) Platform.Android.Tablet else Platform.Android.Mobile
+                LocalPlatform provides Platform.Android
             ) {
                 val darkColors = DarkColors.copy(
                     background = if (AppPreferences.useAmoledTheme.value) Color(0xFF000000) else DarkColors.background,

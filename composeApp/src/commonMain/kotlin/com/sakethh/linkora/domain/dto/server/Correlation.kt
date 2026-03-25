@@ -1,7 +1,8 @@
 package com.sakethh.linkora.domain.dto.server
 
 import kotlinx.serialization.Serializable
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 @Serializable
 data class Correlation(
@@ -114,9 +115,10 @@ data class Correlation(
             "Swan"
         )
 
+        @OptIn(ExperimentalUuidApi::class)
         fun generateRandomCorrelation(): Correlation {
             return Correlation(
-                id = UUID.randomUUID().toString(),
+                id = Uuid.random().toString(),
                 clientName = "${adjectives.random()} ${nouns.random()}"
             )
         }

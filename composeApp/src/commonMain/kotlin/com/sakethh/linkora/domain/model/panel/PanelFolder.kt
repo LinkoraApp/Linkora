@@ -4,7 +4,6 @@ import androidx.room3.Entity
 import androidx.room3.PrimaryKey
 import com.sakethh.linkora.utils.getSystemEpochSeconds
 import kotlinx.serialization.Serializable
-import java.time.Instant
 
 @Serializable
 @Entity(tableName = "panel_folder")

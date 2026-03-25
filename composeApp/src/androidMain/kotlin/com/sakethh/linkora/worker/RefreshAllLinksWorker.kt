@@ -2,7 +2,6 @@ package com.sakethh.linkora.worker
 
 import android.content.Context
 import androidx.core.app.NotificationCompat
-import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkManager
@@ -19,6 +18,7 @@ import com.sakethh.linkora.service.RefreshAllLinksNotificationService
 import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
 import com.sakethh.linkora.ui.screens.settings.section.data.RefreshLinksState
 import com.sakethh.linkora.ui.utils.linkoraLog
+import com.sakethh.linkora.utils.longPreferencesKey
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
@@ -128,6 +128,7 @@ class RefreshAllLinksWorker(appContext: Context, workerParameters: WorkerParamet
                             link,
                             refreshLinkType = AppPreferences.selectedLinkRefreshType
                         )
+                            // TODO: REMOVE `collectLatest` from here
                             .collectLatest {
                                 it.onSuccess {
                                     send(link.localId)

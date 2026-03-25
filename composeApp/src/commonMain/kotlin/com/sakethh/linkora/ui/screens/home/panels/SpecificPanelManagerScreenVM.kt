@@ -2,7 +2,6 @@ package com.sakethh.linkora.ui.screens.home.panels
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
-import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavBackStackEntry
@@ -24,6 +23,7 @@ import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.getRemoteOnlyFailureMsg
+import com.sakethh.linkora.utils.longPreferencesKey
 import com.sakethh.linkora.utils.pushSnackbarOnFailure
 import com.sakethh.linkora.utils.replaceFirstPlaceHolderWith
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -42,7 +42,7 @@ class SpecificPanelManagerScreenVM(
     private val localPanelsRepo: LocalPanelsRepo,
     private val preferencesRepository: PreferencesRepository,
     currentBackStackEntryFlow: Flow<NavBackStackEntry>,
-    platform: Platform
+    onAndroidMobile: Boolean
 ) : ViewModel() {
     private val _foldersToIncludeInPanel = MutableStateFlow(emptyList<Folder>())
     val foldersToIncludeInPanel = _foldersToIncludeInPanel.asStateFlow()
@@ -72,9 +72,9 @@ class SpecificPanelManagerScreenVM(
 
         viewModelScope.launch {
             currentBackStackEntryFlow.transform { navBackStackEntry ->
-                if ((platform is Platform.Android.Mobile && navBackStackEntry.destination.hasRoute(
+                if ((onAndroidMobile && navBackStackEntry.destination.hasRoute(
                         panelRoutes[1]::class
-                    )) || (platform !is Platform.Android.Mobile && panelRoutes.any {
+                    )) || (!onAndroidMobile && panelRoutes.any {
                         navBackStackEntry.destination.hasRoute(it::class)
                     })
                 ) {

@@ -106,7 +106,7 @@ fun DesktopNavigationRail(
             Box(
                 Modifier.fillMaxHeight(), contentAlignment = Alignment.BottomCenter
             ) {
-                if (platform() !is Platform.Android.Mobile && serverBaseUrl.value.isNotBlank()) {
+                if (!Platform.Android.onMobile() && serverBaseUrl.value.isNotBlank()) {
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 80.dp)
@@ -140,7 +140,7 @@ fun DesktopNavigationRail(
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
-                            .alpha(if (platform() !is Platform.Android.Mobile && isAnySnapshotOngoing) 1f else 0.25f)
+                            .alpha(if (!Platform.Android.onMobile() && isAnySnapshotOngoing) 1f else 0.25f)
                     ) {
                         Icon(
                             imageVector = Icons.Default.BackupTable, contentDescription = null

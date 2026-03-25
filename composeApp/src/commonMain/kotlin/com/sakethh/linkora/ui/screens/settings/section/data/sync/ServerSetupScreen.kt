@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -56,7 +57,6 @@ import com.sakethh.linkora.ui.screens.settings.common.composables.SettingCompone
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
 import com.sakethh.linkora.ui.screens.settings.section.data.LogsScreen
 import com.sakethh.linkora.ui.utils.pressScaleEffect
-import com.sakethh.linkora.ui.utils.rememberMutableEnum
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.fillMaxWidthWithPadding
 import com.sakethh.linkora.utils.rememberLocalizedString
@@ -73,7 +73,7 @@ fun ServerSetupScreen(
     val securityToken = rememberSaveable {
         mutableStateOf(AppPreferences.serverSecurityToken.value)
     }
-    val selectedSyncType = rememberMutableEnum(SyncType::class.java) {
+    val selectedSyncType = retain {
         mutableStateOf(AppPreferences.serverSyncType.value)
     }
     var showImportLogsFromServer by rememberSaveable {
@@ -198,7 +198,6 @@ fun ServerSetupScreen(
                                         serverManagementViewModel.importSignedCertificate(onStart = {
                                             isCertificateInProcessing.value = true
                                         }, onCompletion = {
-                                            importedCertFileName.value = it
                                             isCertificateInProcessing.value = false
                                         })
                                     }

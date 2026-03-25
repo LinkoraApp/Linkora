@@ -89,10 +89,10 @@ fun PanelsManagerScreen(
     val isRenameAPanelDialogBoxVisible = rememberSaveable {
         mutableStateOf(false)
     }
-    val platform = platform()
+    val onAndroidMobile = Platform.Android.onMobile()
     Scaffold(modifier = Modifier.fillMaxSize(), bottomBar = {
         BottomAppBar(
-            modifier = Modifier.fillMaxWidth(if (platform() is Platform.Android.Mobile) 1f else 0.5f)
+            modifier = Modifier.fillMaxWidth(if (onAndroidMobile) 1f else 0.5f)
         ) {
             Button(
                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(15.dp)
@@ -128,7 +128,7 @@ fun PanelsManagerScreen(
         Row(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
                 modifier = Modifier.padding(it)
-                    .fillMaxWidth(if (platform() is Platform.Android.Mobile) 1f else 0.5f)
+                    .fillMaxWidth(if (onAndroidMobile) 1f else 0.5f)
                     .animateContentSize().nestedScroll(topAppBarState.nestedScrollConnection)
             ) {
                 if (panels.value.drop(1).isEmpty()) {
@@ -141,7 +141,7 @@ fun PanelsManagerScreen(
                         onClick = {
                             SpecificPanelManagerScreenVM.updateSelectedPanel(panel)
                             selectedPanelForDetailView.value = panel
-                            if (platform is Platform.Android.Mobile) {
+                            if (onAndroidMobile) {
                                 navController.navigate(Navigation.Home.SpecificPanelManagerScreen)
                             }
                         },

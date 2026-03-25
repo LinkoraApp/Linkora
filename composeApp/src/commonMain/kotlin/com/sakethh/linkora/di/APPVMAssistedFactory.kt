@@ -17,12 +17,11 @@ object APPVMAssistedFactory {
                 foldersRepo = DependencyContainer.localFoldersRepo,
                 localMultiActionRepo = DependencyContainer.localMultiActionRepo,
                 localPanelsRepo = DependencyContainer.localPanelsRepo,
-                exportDataRepo = DependencyContainer.exportDataRepo,
                 permissionManager = LinkoraSDK.getInstance().permissionManager,
                 fileManager = LinkoraSDK.getInstance().fileManager,
                 dataSyncingNotificationService = LinkoraSDK.getInstance().dataSyncingNotificationService,
-                localTagsRepo = DependencyContainer.localTagsRepo,
-                snapshotRepo = DependencyContainer.snapshotRepo
+                snapshotRepo = DependencyContainer.snapshotRepo,
+                nativeUtils = LinkoraSDK.getInstance().nativeUtils
             )
         }
     }

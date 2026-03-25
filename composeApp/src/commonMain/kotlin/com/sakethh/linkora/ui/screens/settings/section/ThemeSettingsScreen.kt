@@ -13,28 +13,27 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
-import androidx.datastore.preferences.core.booleanPreferencesKey
 import com.sakethh.linkora.Localization
-import com.sakethh.linkora.preferences.AppPreferenceType
-import com.sakethh.linkora.preferences.AppPreferences
-import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
-import com.sakethh.linkora.utils.rememberLocalizedString
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
-import com.sakethh.linkora.ui.LocalNavController
-import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
-import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
-import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
 import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.platform.showDynamicThemingOption
 import com.sakethh.linkora.platform.showFollowSystemThemeOption
+import com.sakethh.linkora.preferences.AppPreferenceType
+import com.sakethh.linkora.preferences.AppPreferences
+import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
+import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
+import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
+import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
+import com.sakethh.linkora.utils.booleanPreferencesKey
+import com.sakethh.linkora.utils.rememberLocalizedString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ThemeSettingsScreen() {
     val settingsScreenViewModel: SettingsScreenViewModel = linkoraViewModel()
-    val platform = platform()
+    val platform = platform
     val isSystemInDarkTheme = isSystemInDarkTheme()
     SettingsSectionScaffold(
         topAppBarText = Localization.Key.Theme.rememberLocalizedString(),
@@ -67,7 +66,7 @@ fun ThemeSettingsScreen() {
                     )
                 }
             }
-            if (!AppPreferences.useSystemTheme.value || platform is Platform.Desktop) {
+            if (!AppPreferences.useSystemTheme.value || platform is Platform.Desktop || platform is Platform.Web) {
                 item(key = Localization.Key.UseDarkMode.defaultValue) {
                     SettingComponent(
                         SettingComponentParam(

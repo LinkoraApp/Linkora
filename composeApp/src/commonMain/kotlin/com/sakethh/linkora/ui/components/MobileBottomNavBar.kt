@@ -22,7 +22,6 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -32,14 +31,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM
-import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
+import com.sakethh.linkora.utils.supportsWideDisplay
+import kotlin.time.Clock
 
 @Composable
 fun MobileBottomNavBar(
@@ -49,19 +48,19 @@ fun MobileBottomNavBar(
     navDestination: NavDestination?,
     onDoubleTap: (Navigation.Root) -> Unit
 ) {
-    val platform = platform()
+    platform
     val localNavController = LocalNavController.current
 
     val mobileBottomNavBarVM: MobileBottomNavBarVM = viewModel(initializer = {
         MobileBottomNavBarVM()
     })
     AnimatedVisibility(
-        visible = platform == Platform.Android.Mobile && inRootScreen == true && !CollectionsScreenVM.isSelectionEnabled.value,
+        visible = !supportsWideDisplay() && inRootScreen == true && !CollectionsScreenVM.isSelectionEnabled.value,
         exit = slideOutVertically(targetOffsetY = { it }),
         enter = slideInVertically(initialOffsetY = { it })
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().animateContentSize()
+            modifier = Modifier.animateContentSize().fillMaxWidth()
         ) {
             if (isPerformingStartupSync) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
@@ -128,13 +127,13 @@ fun MobileBottomNavBar(
     }
 }
 
-class MobileBottomNavBarVM() : ViewModel() {
+class MobileBottomNavBarVM : ViewModel() {
 
     private var lastTapTime: Long = 0
     private var lastTappedRoute: Navigation.Root? = null
 
     fun incrementTapCount(currentRoute: Navigation.Root, onDoubleTapSucceeded: () -> Unit) {
-        val currentMilli = System.currentTimeMillis()
+        val currentMilli = Clock.System.now().epochSeconds
         if (currentMilli - lastTapTime <= Constants.DOUBLE_TAP_DELAY && lastTappedRoute == currentRoute) {
             onDoubleTapSucceeded()
             lastTapTime = 0

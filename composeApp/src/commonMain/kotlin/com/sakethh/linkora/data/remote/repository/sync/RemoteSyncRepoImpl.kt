@@ -1,11 +1,10 @@
 package com.sakethh.linkora.data.remote.repository.sync
 
-import androidx.datastore.preferences.core.longPreferencesKey
 import com.sakethh.linkora.data.local.dao.FoldersDao
 import com.sakethh.linkora.data.local.dao.LinksDao
 import com.sakethh.linkora.data.local.dao.TagsDao
-import com.sakethh.linkora.domain.SyncServerRoute
 import com.sakethh.linkora.domain.Result
+import com.sakethh.linkora.domain.SyncServerRoute
 import com.sakethh.linkora.domain.asAddFolderDTO
 import com.sakethh.linkora.domain.asAddLinkDTO
 import com.sakethh.linkora.domain.dto.server.Correlation
@@ -36,12 +35,13 @@ import com.sakethh.linkora.domain.repository.remote.RemoteMultiActionRepo
 import com.sakethh.linkora.domain.repository.remote.RemotePanelsRepo
 import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
 import com.sakethh.linkora.domain.repository.remote.RemoteTagsRepo
-import com.sakethh.linkora.network.Network
+import com.sakethh.linkora.platform.Network
 import com.sakethh.linkora.preferences.AppPreferenceType
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.Utils.json
 import com.sakethh.linkora.utils.catchAsThrowableAndEmitFailure
+import com.sakethh.linkora.utils.longPreferencesKey
 import com.sakethh.linkora.utils.performLocalOperationWithRemoteSyncFlow
 import com.sakethh.linkora.utils.postFlow
 import com.sakethh.linkora.utils.updateLastSyncedWithServerTimeStamp
@@ -64,7 +64,8 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 class RemoteSyncRepoImpl(
     private val localFoldersRepo: LocalFoldersRepo,
@@ -85,7 +86,8 @@ class RemoteSyncRepoImpl(
     localTagsRepo: LocalTagsRepo,
     remoteTagsRepo: RemoteTagsRepo,
     private val tagsDao: TagsDao,
-    private val localDatabaseUtilsRepo: LocalDatabaseUtilsRepo
+    private val localDatabaseUtilsRepo: LocalDatabaseUtilsRepo,
+    private val network: Network
 ) : RemoteSyncRepo {
 
 
@@ -117,7 +119,7 @@ class RemoteSyncRepoImpl(
 
     override suspend fun readSocketEvents(currentCorrelation: Correlation): Flow<Result<Unit>> {
         return wrappedResultFlow {
-            Network.getSyncServerClient().webSocket(urlString = run {
+            network.getSyncServerClient().webSocket(urlString = run {
                 websocketScheme() + baseUrl.invoke().run {
                     if (startsWith(prefix = "https")) {
                         substringAfter("https")
@@ -157,6 +159,7 @@ class RemoteSyncRepoImpl(
         }
     }
 
+    @OptIn(ExperimentalUuidApi::class)
     override suspend fun applyUpdatesFromRemote(timeStampAfter: Long): Flow<Result<Unit>> {
 
 
@@ -169,13 +172,13 @@ class RemoteSyncRepoImpl(
         and that's why `randomCorrelation` exists.
          **/
         val randomCorrelation = Correlation(
-            id = UUID.randomUUID().toString(), clientName = "🤨📸"
+            id = Uuid.random().toString(), clientName = "🤨📸"
         )
 
 
         return channelFlow {
             send(Result.Loading("Fetching updates from server..."))
-            Network.getSyncServerClient()
+            network.getSyncServerClient()
                 .get(baseUrl() + SyncServerRoute.GET_UPDATES.name) {
                     bearerAuth(authToken())
                     contentType(ContentType.Application.Json)
@@ -338,7 +341,7 @@ class RemoteSyncRepoImpl(
 
     override suspend fun applyUpdatesBasedOnRemoteTombstones(timeStampAfter: Long): Flow<Result<Unit>> {
         return wrappedResultFlow {
-            Network.getSyncServerClient()
+            network.getSyncServerClient()
                 .get(baseUrl() + SyncServerRoute.GET_TOMBSTONES.name) {
                     bearerAuth(authToken())
                     contentType(ContentType.Application.Json)
@@ -456,10 +459,11 @@ class RemoteSyncRepoImpl(
     }
 
     override suspend fun deleteEverything(deleteOnRemote: Boolean): Flow<Result<Unit>> {
-        return performLocalOperationWithRemoteSyncFlow<Unit, DeleteEverythingDTO>(performRemoteOperation = deleteOnRemote,
+        return performLocalOperationWithRemoteSyncFlow<Unit, DeleteEverythingDTO>(
+            performRemoteOperation = deleteOnRemote,
             remoteOperation = {
                 postFlow(
-                    syncServerClient = { Network.getSyncServerClient() },
+                    syncServerClient = { network.getSyncServerClient() },
                     baseUrl = baseUrl,
                     authToken = authToken,
                     endPoint = SyncServerRoute.DELETE_EVERYTHING.name,

@@ -44,7 +44,7 @@ fun IndividualMenuComponent(
     Row(
         modifier = Modifier
             .background(
-                if (isSelected && platform() !is Platform.Android.Mobile) MaterialTheme.colorScheme.primary.copy(
+                if (isSelected && !Platform.Android.onMobile()) MaterialTheme.colorScheme.primary.copy(
                     0.1f
                 ) else Color.Transparent
             )

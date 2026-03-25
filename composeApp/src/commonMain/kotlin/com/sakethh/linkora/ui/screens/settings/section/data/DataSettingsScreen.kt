@@ -79,8 +79,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
 import coil3.ImageLoader
 import coil3.compose.LocalPlatformContext
 import com.sakethh.linkora.Localization
@@ -113,7 +111,9 @@ import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.asLocalizedString
 import com.sakethh.linkora.utils.currentSavedServerConfig
 import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.intPreferencesKey
 import com.sakethh.linkora.utils.rememberLocalizedString
+import com.sakethh.linkora.utils.stringPreferencesKey
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -138,7 +138,7 @@ fun DataSettingsScreen() {
     }
     val serverInfoBtmSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val coroutineScope = rememberCoroutineScope()
-    val platform = platform()
+    val platform = platform
     val coilPlatformContext = LocalPlatformContext.current
     val importFileSelectionMethod = rememberSaveable {
         mutableStateOf(ImportFileSelectionMethod.FilePicker.name)
@@ -184,237 +184,245 @@ fun DataSettingsScreen() {
             item {
                 Spacer(modifier = Modifier)
             }
-            item {
-                Text(
-                    text = Localization.rememberLocalizedString(Localization.Key.ImportLabel),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontSize = 16.sp,
-                    lineHeight = 20.sp,
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.padding(start = 15.dp, end = 15.dp),
-                )
-                if (platform() is Platform.Desktop) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(start = 15.dp, end = 15.dp, top = 5.dp)
-                    ) {
-                        Text(
-                            text = Localization.Key.ImportMethodLabel.rememberLocalizedString(),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Spacer(modifier = Modifier.width(5.dp))
-                        Text(
-                            text = if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) Localization.Key.FileLocationLabel.rememberLocalizedString() else Localization.Key.FilePickerLabel.rememberLocalizedString(),
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                        Spacer(modifier = Modifier.width(5.dp))
-                        FilledTonalIconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                .size(24.dp), onClick = {
-                                if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) importFileSelectionMethod.value =
-                                    ImportFileSelectionMethod.FilePicker.name else importFileSelectionMethod.value =
-                                    ImportFileSelectionMethod.FileLocationString.name
-                            }) {
-                            Icon(
-                                imageVector = Icons.Default.SwitchLeft,
-                                contentDescription = null,
-                                modifier = Modifier.rotate(if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) 0f else 180f)
-                            )
-                        }
-                    }
-                }
-                if (AppPreferences.isServerConfigured()) {
+            if (platform != Platform.Web){
+                item {
                     Text(
-                        text = Localization.rememberLocalizedString(Localization.Key.ImportLabelDesc),
-                        style = MaterialTheme.typography.titleSmall,
+                        text = Localization.rememberLocalizedString(Localization.Key.ImportLabel),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontSize = 16.sp,
                         lineHeight = 20.sp,
                         textAlign = TextAlign.Start,
-                        modifier = Modifier.padding(start = 15.dp, end = 15.dp, top = 5.dp),
+                        modifier = Modifier.padding(start = 15.dp, end = 15.dp),
+                    )
+                    if (platform is Platform.Desktop) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(start = 15.dp, end = 15.dp, top = 5.dp)
+                        ) {
+                            Text(
+                                text = Localization.Key.ImportMethodLabel.rememberLocalizedString(),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) Localization.Key.FileLocationLabel.rememberLocalizedString() else Localization.Key.FilePickerLabel.rememberLocalizedString(),
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            FilledTonalIconButton(
+                                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .size(24.dp), onClick = {
+                                    if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) importFileSelectionMethod.value =
+                                        ImportFileSelectionMethod.FilePicker.name else importFileSelectionMethod.value =
+                                        ImportFileSelectionMethod.FileLocationString.name
+                                }) {
+                                Icon(
+                                    imageVector = Icons.Default.SwitchLeft,
+                                    contentDescription = null,
+                                    modifier = Modifier.rotate(if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) 0f else 180f)
+                                )
+                            }
+                        }
+                    }
+                    if (AppPreferences.isServerConfigured()) {
+                        Text(
+                            text = Localization.rememberLocalizedString(Localization.Key.ImportLabelDesc),
+                            style = MaterialTheme.typography.titleSmall,
+                            lineHeight = 20.sp,
+                            textAlign = TextAlign.Start,
+                            modifier = Modifier.padding(start = 15.dp, end = 15.dp, top = 5.dp),
+                        )
+                    }
+                }
+
+                item {
+                    SettingComponent(
+                        SettingComponentParam(
+                            isIconNeeded = rememberSaveable { mutableStateOf(true) },
+                            title = Localization.rememberLocalizedString(Localization.Key.ImportUsingJsonFile),
+                            doesDescriptionExists = true,
+                            description = Localization.rememberLocalizedString(Localization.Key.ImportUsingJsonFileDesc),
+                            isSwitchNeeded = false,
+                            isSwitchEnabled = rememberSaveable { mutableStateOf(false) },
+                            onSwitchStateChange = {
+                                if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) {
+                                    selectedImportFormat.value = ImportFileType.JSON.name
+                                    showFileLocationPickerDialog.value = true
+                                    return@SettingComponentParam
+                                }
+                                dataOperationTitle.value =
+                                    Localization.getLocalizedString(Localization.Key.ImportUsingJsonFile)
+                                dataSettingsScreenVM.importDataFromAFile(
+                                    importFileType = ImportFileType.JSON,
+                                    onStart = {
+                                        isImportExportProgressUIVisible = true
+                                    },
+                                    onCompletion = {
+                                        isImportExportProgressUIVisible = false
+                                    },
+                                    importFileSelectionMethod = ImportFileSelectionMethod.FilePicker to ""
+                                )
+                            },
+                            icon = Icons.Default.DataObject,
+                            shouldFilledIconBeUsed = rememberSaveable { mutableStateOf(true) })
+                    )
+                }
+
+                item {
+                    SettingComponent(
+                        SettingComponentParam(
+                            isIconNeeded = rememberSaveable { mutableStateOf(true) },
+                            title = Localization.rememberLocalizedString(Localization.Key.ImportDataFromHtmlFile),
+                            doesDescriptionExists = true,
+                            description = Localization.rememberLocalizedString(Localization.Key.ImportDataFromHtmlFileDesc),
+                            isSwitchNeeded = false,
+                            isSwitchEnabled = AppPreferences.useAmoledTheme,
+                            onSwitchStateChange = {
+                                if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) {
+                                    selectedImportFormat.value = ImportFileType.HTML.name
+                                    showFileLocationPickerDialog.value = true
+                                    return@SettingComponentParam
+                                }
+                                dataOperationTitle.value =
+                                    Localization.getLocalizedString(Localization.Key.ImportDataFromHtmlFile)
+                                dataSettingsScreenVM.importDataFromAFile(
+                                    importFileType = ImportFileType.HTML,
+                                    onStart = {
+                                        isImportExportProgressUIVisible = true
+                                    },
+                                    onCompletion = {
+                                        isImportExportProgressUIVisible = false
+                                    },
+                                    importFileSelectionMethod = ImportFileSelectionMethod.FilePicker to ""
+                                )
+                            },
+                            icon = Icons.Default.Html,
+                            shouldFilledIconBeUsed = rememberSaveable { mutableStateOf(true) })
+                    )
+                }
+
+                item {
+                    Text(
+                        text = Localization.rememberLocalizedString(Localization.Key.ExportLabel),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontSize = 16.sp,
+                        lineHeight = 20.sp,
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier.padding(start = 15.dp, end = 15.dp),
+                    )
+                    if (AppPreferences.isServerConfigured()) {
+                        Text(
+                            text = Localization.rememberLocalizedString(Localization.Key.ExportLabelDesc),
+                            style = MaterialTheme.typography.titleSmall,
+                            lineHeight = 20.sp,
+                            textAlign = TextAlign.Start,
+                            modifier = Modifier.padding(start = 15.dp, end = 15.dp, top = 5.dp),
+                        )
+                    }
+                }
+
+                item {
+                    TextField(supportingText = {
+                        if (platform is Platform.Android) {
+                            Text(
+                                text = Localization.Key.CurrentExportLocationSupportingText.rememberLocalizedString(),
+                                style = MaterialTheme.typography.titleSmall
+                            )
+                        }
+                    }, textStyle = MaterialTheme.typography.titleSmall, trailingIcon = {
+                        FilledTonalIconButton(
+                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .pressScaleEffect().padding(end = 5.dp), onClick = {
+                                dataSettingsScreenVM.changeExportLocation(
+                                    exportLocation = exportLocation.value,
+                                    platform = platform,
+                                    exportLocationType = ExportLocationType.EXPORT
+                                )
+                            }) {
+                            Icon(
+                                imageVector = if (platform is Platform.Android) Icons.Default.FolderOpen else Icons.Default.Save,
+                                contentDescription = null
+                            )
+                        }
+                    }, readOnly = platform is Platform.Android, label = {
+                        Text(
+                            text = Localization.Key.CurrentExportLocation.rememberLocalizedString(),
+                            style = MaterialTheme.typography.titleMedium,
+                            textAlign = TextAlign.Start,
+                        )
+                    }, value = exportLocation.value, onValueChange = {
+                        exportLocation.value = it
+                    }, modifier = Modifier.padding(start = 15.dp, end = 15.dp).fillMaxWidth())
+                }
+
+                item {
+                    SettingComponent(
+                        SettingComponentParam(
+                            isIconNeeded = rememberSaveable { mutableStateOf(true) },
+                            title = Localization.rememberLocalizedString(Localization.Key.ExportDataAsJson),
+                            doesDescriptionExists = true,
+                            description = Localization.rememberLocalizedString(Localization.Key.ExportDataAsJsonDesc),
+                            isSwitchNeeded = false,
+                            isSwitchEnabled = AppPreferences.useAmoledTheme,
+                            onSwitchStateChange = {
+                                dataOperationTitle.value =
+                                    Localization.Key.ExportingDataToJSON.getLocalizedString()
+                                dataSettingsScreenVM.exportDataToAFile(
+                                    platform = platform,
+                                    exportFileType = ExportFileType.JSON,
+                                    onStart = {
+                                        isImportExportProgressUIVisible = true
+                                    },
+                                    onCompletion = {
+                                        isImportExportProgressUIVisible = false
+                                    })
+                            },
+                            icon = Icons.Default.DataObject,
+                            shouldFilledIconBeUsed = rememberSaveable { mutableStateOf(true) })
+                    )
+                }
+
+                item {
+                    SettingComponent(
+                        SettingComponentParam(
+                            isIconNeeded = rememberSaveable { mutableStateOf(true) },
+                            title = Localization.rememberLocalizedString(Localization.Key.ExportDataAsHtml),
+                            doesDescriptionExists = true,
+                            description = Localization.rememberLocalizedString(Localization.Key.ExportDataAsHtmlDesc),
+                            isSwitchNeeded = false,
+                            isSwitchEnabled = AppPreferences.useAmoledTheme,
+                            onSwitchStateChange = {
+                                dataOperationTitle.value =
+                                    Localization.Key.ExportingDataToHTML.getLocalizedString()
+                                dataSettingsScreenVM.exportDataToAFile(
+                                    platform = platform,
+                                    exportFileType = ExportFileType.HTML,
+                                    onStart = {
+                                        isImportExportProgressUIVisible = true
+                                    },
+                                    onCompletion = {
+                                        isImportExportProgressUIVisible = false
+                                    })
+                            },
+                            icon = Icons.Default.Html,
+                            shouldFilledIconBeUsed = rememberSaveable { mutableStateOf(true) })
+                    )
+                    Spacer(modifier = Modifier.height(15.dp))
+                    SettingSectionComponent(
+                        SettingSectionComponentParam(
+                            onClick = {
+                                navController.navigate(Navigation.Settings.Data.SnapshotsScreen)
+                            },
+                            sectionTitle = Localization.Key.Snapshots.rememberLocalizedString(),
+                            sectionIcon = Icons.Default.BackupTable,
+                            shouldArrowIconAppear = true,
+                            fontSize = 16.sp,
+                            bottomSpacing = 0.dp
+                        )
                     )
                 }
             }
 
-            item {
-                SettingComponent(
-                    SettingComponentParam(
-                        isIconNeeded = rememberSaveable { mutableStateOf(true) },
-                        title = Localization.rememberLocalizedString(Localization.Key.ImportUsingJsonFile),
-                        doesDescriptionExists = true,
-                        description = Localization.rememberLocalizedString(Localization.Key.ImportUsingJsonFileDesc),
-                        isSwitchNeeded = false,
-                        isSwitchEnabled = rememberSaveable { mutableStateOf(false) },
-                        onSwitchStateChange = {
-                            if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) {
-                                selectedImportFormat.value = ImportFileType.JSON.name
-                                showFileLocationPickerDialog.value = true
-                                return@SettingComponentParam
-                            }
-                            dataOperationTitle.value =
-                                Localization.getLocalizedString(Localization.Key.ImportUsingJsonFile)
-                            dataSettingsScreenVM.importDataFromAFile(
-                                importFileType = ImportFileType.JSON,
-                                onStart = {
-                                    isImportExportProgressUIVisible = true
-                                },
-                                onCompletion = {
-                                    isImportExportProgressUIVisible = false
-                                },
-                                importFileSelectionMethod = ImportFileSelectionMethod.FilePicker to ""
-                            )
-                        },
-                        icon = Icons.Default.DataObject,
-                        shouldFilledIconBeUsed = rememberSaveable { mutableStateOf(true) })
-                )
-            }
-            item {
-                SettingComponent(
-                    SettingComponentParam(
-                        isIconNeeded = rememberSaveable { mutableStateOf(true) },
-                        title = Localization.rememberLocalizedString(Localization.Key.ImportDataFromHtmlFile),
-                        doesDescriptionExists = true,
-                        description = Localization.rememberLocalizedString(Localization.Key.ImportDataFromHtmlFileDesc),
-                        isSwitchNeeded = false,
-                        isSwitchEnabled = AppPreferences.useAmoledTheme,
-                        onSwitchStateChange = {
-                            if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) {
-                                selectedImportFormat.value = ImportFileType.HTML.name
-                                showFileLocationPickerDialog.value = true
-                                return@SettingComponentParam
-                            }
-                            dataOperationTitle.value =
-                                Localization.getLocalizedString(Localization.Key.ImportDataFromHtmlFile)
-                            dataSettingsScreenVM.importDataFromAFile(
-                                importFileType = ImportFileType.HTML,
-                                onStart = {
-                                    isImportExportProgressUIVisible = true
-                                },
-                                onCompletion = {
-                                    isImportExportProgressUIVisible = false
-                                },
-                                importFileSelectionMethod = ImportFileSelectionMethod.FilePicker to ""
-                            )
-                        },
-                        icon = Icons.Default.Html,
-                        shouldFilledIconBeUsed = rememberSaveable { mutableStateOf(true) })
-                )
-            }
-            item {
-                Text(
-                    text = Localization.rememberLocalizedString(Localization.Key.ExportLabel),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontSize = 16.sp,
-                    lineHeight = 20.sp,
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.padding(start = 15.dp, end = 15.dp),
-                )
-                if (AppPreferences.isServerConfigured()) {
-                    Text(
-                        text = Localization.rememberLocalizedString(Localization.Key.ExportLabelDesc),
-                        style = MaterialTheme.typography.titleSmall,
-                        lineHeight = 20.sp,
-                        textAlign = TextAlign.Start,
-                        modifier = Modifier.padding(start = 15.dp, end = 15.dp, top = 5.dp),
-                    )
-                }
-            }
-            item {
-                TextField(supportingText = {
-                    if (platform is Platform.Android) {
-                        Text(
-                            text = Localization.Key.CurrentExportLocationSupportingText.rememberLocalizedString(),
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                    }
-                }, textStyle = MaterialTheme.typography.titleSmall, trailingIcon = {
-                    FilledTonalIconButton(
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .pressScaleEffect().padding(end = 5.dp), onClick = {
-                            dataSettingsScreenVM.changeExportLocation(
-                                exportLocation = exportLocation.value,
-                                platform = platform,
-                                exportLocationType = ExportLocationType.EXPORT
-                            )
-                        }) {
-                        Icon(
-                            imageVector = if (platform is Platform.Android) Icons.Default.FolderOpen else Icons.Default.Save,
-                            contentDescription = null
-                        )
-                    }
-                }, readOnly = platform is Platform.Android, label = {
-                    Text(
-                        text = Localization.Key.CurrentExportLocation.rememberLocalizedString(),
-                        style = MaterialTheme.typography.titleMedium,
-                        textAlign = TextAlign.Start,
-                    )
-                }, value = exportLocation.value, onValueChange = {
-                    exportLocation.value = it
-                }, modifier = Modifier.padding(start = 15.dp, end = 15.dp).fillMaxWidth())
-            }
-            item {
-                SettingComponent(
-                    SettingComponentParam(
-                        isIconNeeded = rememberSaveable { mutableStateOf(true) },
-                        title = Localization.rememberLocalizedString(Localization.Key.ExportDataAsJson),
-                        doesDescriptionExists = true,
-                        description = Localization.rememberLocalizedString(Localization.Key.ExportDataAsJsonDesc),
-                        isSwitchNeeded = false,
-                        isSwitchEnabled = AppPreferences.useAmoledTheme,
-                        onSwitchStateChange = {
-                            dataOperationTitle.value =
-                                Localization.Key.ExportingDataToJSON.getLocalizedString()
-                            dataSettingsScreenVM.exportDataToAFile(
-                                platform = platform,
-                                exportFileType = ExportFileType.JSON,
-                                onStart = {
-                                    isImportExportProgressUIVisible = true
-                                },
-                                onCompletion = {
-                                    isImportExportProgressUIVisible = false
-                                })
-                        },
-                        icon = Icons.Default.DataObject,
-                        shouldFilledIconBeUsed = rememberSaveable { mutableStateOf(true) })
-                )
-            }
-            item {
-                SettingComponent(
-                    SettingComponentParam(
-                        isIconNeeded = rememberSaveable { mutableStateOf(true) },
-                        title = Localization.rememberLocalizedString(Localization.Key.ExportDataAsHtml),
-                        doesDescriptionExists = true,
-                        description = Localization.rememberLocalizedString(Localization.Key.ExportDataAsHtmlDesc),
-                        isSwitchNeeded = false,
-                        isSwitchEnabled = AppPreferences.useAmoledTheme,
-                        onSwitchStateChange = {
-                            dataOperationTitle.value =
-                                Localization.Key.ExportingDataToHTML.getLocalizedString()
-                            dataSettingsScreenVM.exportDataToAFile(
-                                platform = platform,
-                                exportFileType = ExportFileType.HTML,
-                                onStart = {
-                                    isImportExportProgressUIVisible = true
-                                },
-                                onCompletion = {
-                                    isImportExportProgressUIVisible = false
-                                })
-                        },
-                        icon = Icons.Default.Html,
-                        shouldFilledIconBeUsed = rememberSaveable { mutableStateOf(true) })
-                )
-                Spacer(modifier = Modifier.height(15.dp))
-                SettingSectionComponent(
-                    SettingSectionComponentParam(
-                        onClick = {
-                            navController.navigate(Navigation.Settings.Data.SnapshotsScreen)
-                        },
-                        sectionTitle = Localization.Key.Snapshots.rememberLocalizedString(),
-                        sectionIcon = Icons.Default.BackupTable,
-                        shouldArrowIconAppear = true,
-                        fontSize = 16.sp,
-                        bottomSpacing = 0.dp
-                    )
-                )
-            }
             item {
                 Text(
                     text = Localization.rememberLocalizedString(Localization.Key.Sync),
@@ -511,7 +519,8 @@ fun DataSettingsScreen() {
                         isSwitchEnabled = AppPreferences.useAmoledTheme,
                         onSwitchStateChange = {
                             dataSettingsScreenVM.forceSetDefaultFolderToInternalIds(onStart = {
-                                labelForAlertDialogWithProgress = Localization.Key.UpdatingInternalIDsLabel.getLocalizedString()
+                                labelForAlertDialogWithProgress =
+                                    Localization.Key.UpdatingInternalIDsLabel.getLocalizedString()
                                 showAlertDialogWithProgress.value = true
                             }, onCompletion = {
                                 showAlertDialogWithProgress.value = false

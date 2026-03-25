@@ -194,14 +194,13 @@ fun AddANewLinkDialogBox(
     }
 
     val allTags = addNewLinkDialogParams.allTags.collectAsStateWithLifecycle().value
-
     val lazyRowState = rememberLazyListState()
     val content: ComposableContent = {
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = if (platform() is Platform.Android.Mobile) BottomSheetDefaults.ContainerColor else MaterialTheme.colorScheme.surface
+            color = if (Platform.Android.onMobile()) BottomSheetDefaults.ContainerColor else MaterialTheme.colorScheme.surface
         ) {
-            if (platform() == Platform.Android.Mobile) {
+            if (Platform.Android.onMobile()) {
                 Column(
                     modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
                 ) {
@@ -303,7 +302,7 @@ fun AddANewLinkDialogBox(
             it != SheetValue.Hidden
         })
     val coroutineScope = rememberCoroutineScope()
-    if (platform() !is Platform.Android.Mobile) {
+    if (!Platform.Android.onMobile()) {
         BasicAlertDialog(
             onDismissRequest = {
                 if (!isDataExtractingForTheLink.value) {
@@ -351,8 +350,8 @@ private fun TopPartOfAddANewLinkDialogBox(
         FocusRequester()
     }
     Column(
-        modifier = Modifier.fillMaxWidth(if (platform() is Platform.Android.Mobile) 1f else 0.5f)
-            .then(if (platform() is Platform.Android.Mobile) Modifier else Modifier.fillMaxHeight()),
+        modifier = Modifier.fillMaxWidth(if (Platform.Android.onMobile()) 1f else 0.5f)
+            .then(if (Platform.Android.onMobile()) Modifier else Modifier.fillMaxHeight()),
         verticalArrangement = Arrangement.Center
     ) {
         Text(
@@ -534,9 +533,10 @@ private fun TopPartOfAddANewLinkDialogBox(
             }
         }
     }
-    val platform = platform()
+    val onAndroidMobile = Platform.Android.onMobile()
+
     LaunchedEffect(Unit) {
-        if (platform is Platform.Android.Mobile) {
+        if (onAndroidMobile) {
             delay(250)
         }
         focusRequester.requestFocus()
@@ -618,7 +618,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
         FocusRequester()
     }
     if (isDataExtractingForTheLink.value) {
-        if (platform() is Platform.Android.Mobile) {
+        if (Platform.Android.onMobile()) {
             Spacer(modifier = Modifier.height(30.dp))
             LinearProgressIndicator(
                 modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp)
@@ -630,11 +630,11 @@ private fun BottomPartOfAddANewLinkDialogBox(
     }
     Column(
         modifier = Modifier.fillMaxSize().then(
-            if (platform() is Platform.Android.Mobile) Modifier else Modifier.verticalScroll(
+            if (Platform.Android.onMobile()) Modifier else Modifier.verticalScroll(
                 rememberScrollState()
             )
         ),
-        verticalArrangement = if (platform() is Platform.Android.Mobile) Arrangement.Top else Arrangement.Center
+        verticalArrangement = if (Platform.Android.onMobile()) Arrangement.Top else Arrangement.Center
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

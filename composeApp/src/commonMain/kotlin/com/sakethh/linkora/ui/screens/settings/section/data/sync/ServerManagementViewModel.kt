@@ -2,19 +2,9 @@ package com.sakethh.linkora.ui.screens.settings.section.data.sync
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sakethh.linkora.platform.FileManager
-import com.sakethh.linkora.platform.PermissionManager
 import com.sakethh.linkora.Localization
-import com.sakethh.linkora.network.Network
-import com.sakethh.linkora.preferences.AppPreferenceType
-import com.sakethh.linkora.preferences.AppPreferences
-import com.sakethh.linkora.utils.getLocalizedString
-import com.sakethh.linkora.utils.pushSnackbarOnFailure
-import com.sakethh.linkora.domain.FileType
 import com.sakethh.linkora.domain.SyncType
 import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onLoading
@@ -22,20 +12,26 @@ import com.sakethh.linkora.domain.onSuccess
 import com.sakethh.linkora.domain.repository.NetworkRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
+import com.sakethh.linkora.platform.FileManager
+import com.sakethh.linkora.platform.Network
+import com.sakethh.linkora.platform.PermissionManager
+import com.sakethh.linkora.platform.PlatformIODispatcher
+import com.sakethh.linkora.preferences.AppPreferenceType
+import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.AppVM
 import com.sakethh.linkora.ui.domain.model.ServerConnection
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
-import kotlinx.coroutines.Dispatchers
+import com.sakethh.linkora.utils.booleanPreferencesKey
+import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.pushSnackbarOnFailure
+import com.sakethh.linkora.utils.stringPreferencesKey
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
 
 open class ServerManagementViewModel(
     private val networkRepo: NetworkRepo,
@@ -43,6 +39,7 @@ open class ServerManagementViewModel(
     private val remoteSyncRepo: RemoteSyncRepo,
     private val fileManager: FileManager,
     private val permissionManager: PermissionManager,
+    private val network: Network,
     loadExistingCertificateInfo: Boolean = true
 ) : ViewModel() {
     val serverSetupState = mutableStateOf(
@@ -51,30 +48,12 @@ open class ServerManagementViewModel(
         )
     )
 
-
-    fun resetState() {
-        serverSetupState.value = ServerSetupState(
-            isConnecting = false, isConnectedSuccessfully = false, isError = false
-        )
-    }
-
     fun testServerConnection(serverUrl: String, token: String) {
         viewModelScope.launch {
-            val certificateFactory = CertificateFactory.getInstance("X.509")
-            val signedCertificate: X509Certificate? =
-                _generatedServerCertificate?.inputStream().use {
-                    try {
-                        certificateFactory.generateCertificate(it) as X509Certificate
-                    } catch (e: Exception) {
-                        pushUIEvent(UIEvent.Type.ShowSnackbar(e.message.toString()))
-                        null
-                    }
-                }
             try {
 
-                Network.closeSyncServerClient()
-                Network.configureSyncServerClient(
-                    signedCertificate = signedCertificate,
+                network.closeSyncServerClient()
+                network.configureSyncServerClient(
                     bypassCertCheck = AppPreferences.skipCertCheckForSync.value
                 )
 
@@ -105,7 +84,7 @@ open class ServerManagementViewModel(
     private var saveServerConnectionAndSyncJob: Job? = null
 
     fun cancelServerConnectionAndSync(removeConnection: Boolean = true) {
-        Network.closeSyncServerClient()
+        network.closeSyncServerClient()
         saveServerConnectionAndSyncJob?.cancel()
         if (removeConnection.not()) {
             return
@@ -126,6 +105,7 @@ open class ServerManagementViewModel(
         }
     }
 
+    private var syncServerCertificate: ByteArray? = null
     fun saveServerConnectionAndSync(
         serverConnection: ServerConnection,
         timeStampAfter: suspend () -> Long = { 0 },
@@ -136,17 +116,18 @@ open class ServerManagementViewModel(
         saveServerConnectionAndSyncJob?.cancel()
         dataSyncLogs.clear()
         saveServerConnectionAndSyncJob = viewModelScope.launch {
-            _generatedServerCertificate?.let {
-                withContext(Dispatchers.IO) {
-                    fileManager.saveSyncServerCertificateInternally(file = it, onCompletion = {
-                        pushUIEvent(
-                            UIEvent.Type.ShowSnackbar(
-                                Localization.getLocalizedString(
-                                    Localization.Key.ServerCertificateSavedSuccessfully
+            withContext(PlatformIODispatcher) {
+                syncServerCertificate?.let { certificate ->
+                    fileManager.saveSyncServerCertificateInternally(
+                        certificate = certificate, onCompletion = {
+                            pushUIEvent(
+                                UIEvent.Type.ShowSnackbar(
+                                    Localization.getLocalizedString(
+                                        Localization.Key.ServerCertificateSavedSuccessfully
+                                    )
                                 )
                             )
-                        )
-                    })
+                        })
                 }
             }
             preferencesRepository.changePreferenceValue(
@@ -215,48 +196,6 @@ open class ServerManagementViewModel(
 
     val existingCertificateInfo = mutableStateOf("")
 
-    init {
-        if (loadExistingCertificateInfo && !AppPreferences.skipCertCheckForSync.value) {
-            viewModelScope.launch {
-                existingCertificateInfo.value = getExistingSyncServerCertificate(fileManager).run {
-                    if (this == null) {
-                        ""
-                    } else {
-                        "Certificate Authority:\n${this.issuerX500Principal.name}\nStatus: ${
-                            try {
-                                this.checkValidity()
-                                "Valid"
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                                "Invalid"
-                            }
-                        }".trim()
-                    }
-                }
-            }
-        }
-    }
-
-    companion object {
-        suspend fun getExistingSyncServerCertificate(fileManager: FileManager): X509Certificate? {
-            return if (AppPreferences.isServerConfigured()) {
-                withContext(Dispatchers.IO) {
-                    val certificateFactory = CertificateFactory.getInstance("X.509")
-                    try {
-                        fileManager.loadSyncServerCertificate().inputStream().use {
-                            certificateFactory.generateCertificate(it) as X509Certificate
-                        }
-                    } catch (e: Exception) {
-                        pushUIEvent(UIEvent.Type.ShowSnackbar(e.message.toString()))
-                        null
-                    }
-                }
-            } else {
-                null
-            }
-        }
-    }
-
     fun deleteTheConnection(onDeleted: () -> Unit) {
         viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
@@ -280,7 +219,7 @@ open class ServerManagementViewModel(
             AppPreferences.serverSyncType.value = SyncType.TwoWay
 
             AppVM.shutdownSocketConnection()
-            Network.closeSyncServerClient()
+            network.closeSyncServerClient()
 
             pushUIEvent(UIEvent.Type.ShowSnackbar(Localization.getLocalizedString(Localization.Key.DeletedTheServerConnectionSuccessfully)))
         }.invokeOnCompletion {
@@ -289,27 +228,16 @@ open class ServerManagementViewModel(
     }
 
     private var certImportJob: Job? = null
-    private var _generatedServerCertificate: File? = null
 
     fun importSignedCertificate(onStart: () -> Unit, onCompletion: (filename: String) -> Unit) {
-        certImportJob?.cancel()
+        syncServerCertificate = null
         onStart()
+        certImportJob?.cancel()
         certImportJob = viewModelScope.launch {
-            val generatedServerCertificate =
-                fileManager.pickAValidFileForImporting(FileType.CER, onStart = {
-                    onStart()
-                    dataSyncLogs.add(Localization.Key.ReadingFile.getLocalizedString())
+            syncServerCertificate = fileManager.getSyncServerCertificate(
+                onCompletion = {
+                    onCompletion("CER")
                 })
-            if (generatedServerCertificate == null) {
-                pushUIEvent(UIEvent.Type.ShowSnackbar(Localization.Key.CouldNotImportCert.getLocalizedString()))
-                return@launch
-            }
-            _generatedServerCertificate = generatedServerCertificate
-            onCompletion(generatedServerCertificate.name)
-        }
-
-        certImportJob?.invokeOnCompletion {
-            it?.printStackTrace()
         }
     }
 

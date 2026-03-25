@@ -39,17 +39,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
 import com.sakethh.linkora.Localization
-import com.sakethh.linkora.preferences.AppPreferenceType
-import com.sakethh.linkora.preferences.AppPreferences
-import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.SnapshotFormat
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
-import com.sakethh.linkora.ui.LocalNavController
+import com.sakethh.linkora.platform.platform
+import com.sakethh.linkora.preferences.AppPreferenceType
+import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
@@ -57,7 +54,9 @@ import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.ui.screens.settings.section.data.components.ToggleButton
 import com.sakethh.linkora.ui.utils.pressScaleEffect
-import com.sakethh.linkora.platform.platform
+import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
+import com.sakethh.linkora.utils.booleanPreferencesKey
+import com.sakethh.linkora.utils.stringPreferencesKey
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,7 +77,7 @@ fun SnapshotsScreen() {
         rememberSaveable(AppPreferences.backupAutoDeletionEnabled.value) {
             mutableStateOf(AppPreferences.backupAutoDeletionEnabled.value)
         }
-    val platform = platform()
+    val platform = platform
     val coroutineScope = rememberCoroutineScope()
     val dataSettingsScreenVM: DataSettingsScreenVM = linkoraViewModel()
     SettingsSectionScaffold(
@@ -126,39 +125,39 @@ fun SnapshotsScreen() {
                 item {
                     TextField(
                         supportingText = {
-                        if (platform is Platform.Android) {
-                            Text(
-                                text = Localization.rememberLocalizedString(Localization.Key.SnapshotsBackupLocationWarning),
-                                style = MaterialTheme.typography.titleSmall
-                            )
-                        }
-                    }, textStyle = MaterialTheme.typography.titleSmall, trailingIcon = {
-                        FilledTonalIconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                .pressScaleEffect().padding(end = 5.dp), onClick = {
-                                dataSettingsScreenVM.changeExportLocation(
-                                    exportLocation = backupLocation.value,
-                                    platform = platform,
-                                    exportLocationType = ExportLocationType.SNAPSHOT
+                            if (platform is Platform.Android) {
+                                Text(
+                                    text = Localization.rememberLocalizedString(Localization.Key.SnapshotsBackupLocationWarning),
+                                    style = MaterialTheme.typography.titleSmall
                                 )
-                            }) {
-                            Icon(
-                                imageVector = if (platform is Platform.Android) Icons.Default.FolderOpen else Icons.Default.Save,
-                                contentDescription = null
+                            }
+                        }, textStyle = MaterialTheme.typography.titleSmall, trailingIcon = {
+                            FilledTonalIconButton(
+                                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .pressScaleEffect().padding(end = 5.dp), onClick = {
+                                    dataSettingsScreenVM.changeExportLocation(
+                                        exportLocation = backupLocation.value,
+                                        platform = platform,
+                                        exportLocationType = ExportLocationType.SNAPSHOT
+                                    )
+                                }) {
+                                Icon(
+                                    imageVector = if (platform is Platform.Android) Icons.Default.FolderOpen else Icons.Default.Save,
+                                    contentDescription = null
+                                )
+                            }
+                        }, readOnly = platform is Platform.Android, label = {
+                            Text(
+                                text = Localization.rememberLocalizedString(Localization.Key.SnapshotsBackupLocation),
+                                style = MaterialTheme.typography.titleMedium,
+                                textAlign = TextAlign.Start,
                             )
-                        }
-                    }, readOnly = platform is Platform.Android, label = {
-                        Text(
-                            text = Localization.rememberLocalizedString(Localization.Key.SnapshotsBackupLocation),
-                            style = MaterialTheme.typography.titleMedium,
-                            textAlign = TextAlign.Start,
-                        )
-                    }, value = backupLocation.value, onValueChange = {
-                        backupLocation.value = it
-                    }, modifier = Modifier.padding(
-                        start = 15.dp,
-                        end = 15.dp,
-                    ).fillMaxWidth()
+                        }, value = backupLocation.value, onValueChange = {
+                            backupLocation.value = it
+                        }, modifier = Modifier.padding(
+                            start = 15.dp,
+                            end = 15.dp,
+                        ).fillMaxWidth()
                     )
                 }
                 item {

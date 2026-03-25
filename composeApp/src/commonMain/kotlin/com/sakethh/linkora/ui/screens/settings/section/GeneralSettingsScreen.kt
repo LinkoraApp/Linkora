@@ -56,8 +56,6 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.Platform
@@ -75,7 +73,9 @@ import com.sakethh.linkora.ui.screens.settings.common.composables.SettingCompone
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
+import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.rememberLocalizedString
+import com.sakethh.linkora.utils.stringPreferencesKey
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
@@ -92,9 +92,10 @@ fun GeneralSettingsScreen() {
     var showFontFamilySwitcherDialogBox by rememberSaveable {
         mutableStateOf(false)
     }
-    val platform = platform()
+    val platform = platform
+    val onAndroidMobile = Platform.Android.onMobile()
     val generalSectionData = retain {
-        settingsScreenViewModel.generalSection(platform)
+        settingsScreenViewModel.generalSection(onAndroidMobile)
     }
     val isLinkoraTopAppBarEnabled = rememberSaveable {
         mutableStateOf(AppPreferences.useLinkoraTopDecoratorOnDesktop.value)

@@ -9,11 +9,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.data.local.repository.SnapshotRepoImpl
+import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.SyncServerRoute
 import com.sakethh.linkora.domain.asLinkType
@@ -23,17 +22,14 @@ import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onLoading
 import com.sakethh.linkora.domain.onSuccess
-import com.sakethh.linkora.domain.repository.ExportDataRepo
 import com.sakethh.linkora.domain.repository.NetworkRepo
 import com.sakethh.linkora.domain.repository.local.LocalFoldersRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.LocalMultiActionRepo
 import com.sakethh.linkora.domain.repository.local.LocalPanelsRepo
-import com.sakethh.linkora.domain.repository.local.LocalTagsRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.SnapshotRepo
 import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
-import com.sakethh.linkora.network.Network
 import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.PermissionManager
@@ -54,8 +50,10 @@ import com.sakethh.linkora.ui.screens.settings.section.data.sync.ServerManagemen
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
+import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.getRemoteOnlyFailureMsg
+import com.sakethh.linkora.utils.longPreferencesKey
 import com.sakethh.linkora.utils.pushSnackbar
 import com.sakethh.linkora.utils.pushSnackbarOnFailure
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -68,7 +66,6 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 @OptIn(FlowPreview::class, ExperimentalMaterial3Api::class)
 class AppVM(
@@ -80,12 +77,11 @@ class AppVM(
     private val foldersRepo: LocalFoldersRepo,
     private val localMultiActionRepo: LocalMultiActionRepo,
     private val localPanelsRepo: LocalPanelsRepo,
-    private val exportDataRepo: ExportDataRepo,
-    private val localTagsRepo: LocalTagsRepo,
     permissionManager: PermissionManager,
-    private val fileManager: FileManager,
+    fileManager: FileManager,
     private val dataSyncingNotificationService: NativeUtils.DataSyncingNotificationService,
-    private val snapshotRepo: SnapshotRepo
+    private val snapshotRepo: SnapshotRepo,
+    nativeUtils: NativeUtils
 ) : ServerManagementViewModel(
     networkRepo = networkRepo,
     preferencesRepository = preferencesRepository,
@@ -93,6 +89,7 @@ class AppVM(
     loadExistingCertificateInfo = false,
     permissionManager = permissionManager,
     fileManager = fileManager,
+    network = LinkoraSDK.getInstance().network
 ) {
 
     var isPerformingStartupSync by mutableStateOf(false)
@@ -108,7 +105,7 @@ class AppVM(
 
     val onBoardingCompleted = mutableStateOf(false)
 
-    val startDestination = runBlocking {
+    val startDestination: Navigation.Root = nativeUtils.platformRunBlocking {
         val showOnboarding = preferencesRepository.readPreferenceValue(
             booleanPreferencesKey(
                 AppPreferenceType.SHOULD_SHOW_ONBOARDING.name
@@ -135,7 +132,7 @@ class AppVM(
                 else -> Navigation.Root.CollectionsScreen
             }
         }
-    }
+    } ?: Navigation.Root.CollectionsScreen
 
 
     fun performAppAction(appAction: AppAction) {
@@ -217,15 +214,14 @@ class AppVM(
         viewModelScope.launch {
             if (AppPreferences.isServerConfigured()) {
                 try {
-                    Network.configureSyncServerClient(
-                        signedCertificate = getExistingSyncServerCertificate(fileManager),
+                    LinkoraSDK.getInstance().network.configureSyncServerClient(
                         bypassCertCheck = AppPreferences.skipCertCheckForSync.value
                     )
                 } catch (e: Exception) {
                     pushUIEvent(UIEvent.Type.ShowSnackbar(e.message.toString()))
                 }
                 isPerformingStartupSync = true
-                // REFACTOR: NESTED collectLatest
+                // TODO: NESTED collectLatest
                 networkRepo.testServerConnection(
                     serverUrl = AppPreferences.serverBaseUrl.value + SyncServerRoute.TEST_BEARER.name,
                     token = AppPreferences.serverSecurityToken.value

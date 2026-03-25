@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import java.util.Collections
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -18,7 +17,7 @@ import kotlin.test.assertTrue
 
 class PaginatorTest {
 
-    private val activeConnections = Collections.synchronizedSet(mutableSetOf<Long>())
+    private val activeConnections = LinkedHashSet(mutableSetOf<Long>())
 
     private suspend fun onRetrieve(
         lastSeenId: LastSeenId?,

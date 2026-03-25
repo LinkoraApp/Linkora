@@ -95,6 +95,7 @@ kotlin {
             implementation(libs.adaptive.core)
             implementation(libs.adaptive.layout)
             implementation(libs.adaptive.navigation)
+            implementation("com.composables:composeunstyled:1.49.6")
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)

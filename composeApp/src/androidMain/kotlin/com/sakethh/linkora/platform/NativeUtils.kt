@@ -6,8 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.core.app.NotificationCompat
-import androidx.datastore.preferences.core.longPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
@@ -17,17 +15,19 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.R
-import com.sakethh.linkora.data.local.dao.RefreshLinkDao
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.RefreshLinksRepo
 import com.sakethh.linkora.preferences.AppPreferenceType
 import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.longPreferencesKey
+import com.sakethh.linkora.utils.stringPreferencesKey
 import com.sakethh.linkora.worker.RefreshAllLinksWorker
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.runBlocking
 import java.util.UUID
 
 actual class NativeUtils(private val context: Context) {
@@ -43,7 +43,9 @@ actual class NativeUtils(private val context: Context) {
     }
 
     actual suspend fun onRefreshAllLinks(
-        localLinksRepo: LocalLinksRepo, preferencesRepository: PreferencesRepository, refreshLinksRepo: RefreshLinksRepo
+        localLinksRepo: LocalLinksRepo,
+        preferencesRepository: PreferencesRepository,
+        refreshLinksRepo: RefreshLinksRepo
     ) {
         val workManager = WorkManager.getInstance(context)
         val request = OneTimeWorkRequestBuilder<RefreshAllLinksWorker>().setConstraints(
@@ -130,5 +132,9 @@ actual class NativeUtils(private val context: Context) {
         )
 
         onCompletion()
+    }
+
+    actual fun <T> platformRunBlocking(block: suspend () -> T): T? = runBlocking {
+        block()
     }
 }

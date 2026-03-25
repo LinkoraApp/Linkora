@@ -12,37 +12,43 @@ androidx-lifecycle = "2.8.3"
 androidx-material = "1.12.0"
 androidx-test-junit = "1.2.1"
 coilCompose = "3.0.4"
-compose-multiplatform = "1.9.3"
+coilNetworkKtor3 = "3.4.0"
+compose-multiplatform = "1.10.3"
 datastorePreferencesCore = "1.1.1"
-jsoup = "1.18.1"
 junit = "4.13.2"
-kotlin = "2.2.20"
+kotlin = "2.3.10"
 kotlinx-coroutines = "1.9.0"
+kotlinxBrowser = "0.5.0"
 kotlinxCoroutinesTest = "1.10.2"
 kotlinxDatetime = "0.7.1"
-kotlinxSerializationJson = "1.9.0"
-ktorVersion = "3.0.2"
+kotlinxSerializationJson = "1.10.0"
+ksoupVersion = "0.2.6"
+ktorClientJs = "3.4.2"
+ktorVersion = "3.4.1"
 lifecycleViewmodelCompose = "2.8.2"
 material3Version = "1.11.0-alpha01"
 mockk = "1.14.9"
 navigationCompose = "2.9.0"
 ksp = "2.2.20-2.0.4"
-roomVersion = "3.0.0-alpha01"
-sqlite = "2.6.2"
+room = "3.0.0-alpha01"
+sqlite = "2.7.0-alpha01"
+statelyConcurrency = "2.1.0"
 workRuntime = "2.10.0"
 documentfile = "1.1.0"
 aboutLibraries = "13.1.0"
 assertk = "0.28.1"
+composeHotReload = "1.0.0"
+adaptive = "1.2.0"
 
 [libraries]
 androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastorePreferencesCore" }
-androidx-room3-compiler = { module = "androidx.room3:room3-compiler", version.ref = "roomVersion" }
-androidx-room3-runtime = { module = "androidx.room3:room3-runtime", version.ref = "roomVersion" }
+androidx-room3-compiler = { module = "androidx.room3:room3-compiler", version.ref = "room" }
+androidx-room3-runtime = { module = "androidx.room3:room3-runtime", version.ref = "room" }
 androidx-work-runtime = { module = "androidx.work:work-runtime", version.ref = "workRuntime" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
-coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coilCompose" }
+coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coilNetworkKtor3" }
+fleeksoft-ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoupVersion" }
 jetbrains-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3Version" }
-jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -55,13 +61,18 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 androidx-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version.ref = "kotlinxBrowser" }
 kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+ksoup-network = { module = "com.fleeksoft.ksoup:ksoup-network", version.ref = "ksoupVersion" }
+ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktorVersion" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktorVersion" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktorVersion" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorVersion" }
+ktor-client-java = { module = "io.ktor:ktor-client-java", version.ref = "ktorVersion" }
+ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktorClientJs" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktorVersion" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorVersion" }
 lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
@@ -72,7 +83,12 @@ androidx-documentfile = { group = "androidx.documentfile", name = "documentfile"
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }
 aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutLibraries" }
 assertk = { module = "com.willowtreeapps.assertk:assertk", version.ref = "assertk" }
-
+androidx-sqlite-web = { module = "androidx.sqlite:sqlite-web", version.ref = "sqlite" }
+stately-concurrency = { module = "co.touchlab:stately-concurrency", version.ref = "statelyConcurrency" }
+stately-concurrent-collections = { module = "co.touchlab:stately-concurrent-collections", version.ref = "statelyConcurrency" }
+adaptive-core = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "adaptive" }
+adaptive-layout = { module = "org.jetbrains.compose.material3.adaptive:adaptive-layout", version.ref = "adaptive" }
+adaptive-navigation = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation", version.ref = "adaptive" }
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
@@ -81,3 +97,4 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 stability-analyzer = { id = "com.github.skydoves.compose.stability.analyzer", version = "0.6.5" }
+composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }

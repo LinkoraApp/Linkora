@@ -40,6 +40,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import com.composables.core.ScrollArea
+import com.composables.core.rememberScrollAreaState
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.asUnifiedLazyState
 import com.sakethh.linkora.domain.model.FlatChildFolderData
@@ -61,6 +63,7 @@ import com.sakethh.linkora.ui.domain.model.LinkTagsPair
 import com.sakethh.linkora.ui.screens.DataEmptyScreen
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM
 import com.sakethh.linkora.utils.Constants
+import com.sakethh.linkora.utils.VerticalScrollbar
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -86,8 +89,7 @@ fun CollectionLayoutManager(
     onRetrieveNextPage: () -> Unit,
     onFirstVisibleItemIndexChange: (Long) -> Unit,
 ) {
-    val listLayoutState =
-        rememberLazyListState()
+    val listLayoutState = rememberLazyListState()
 
     val gridLayoutState = rememberLazyGridState()
     val staggeredGridLayoutState = rememberLazyStaggeredGridState()
@@ -130,7 +132,8 @@ fun CollectionLayoutManager(
             tags = linkTagsPair.tags,
             onTagClick = {
                 onAttachedTagClick(it)
-            }, onFolderClick = {
+            },
+            onFolderClick = {
                 onFolderClick(it)
             })
     }
@@ -166,13 +169,9 @@ fun CollectionLayoutManager(
     val showLoading = !pagesCompleted
 
     val loadingIndicatorModifier = retain(isDataEmpty) {
-        Modifier.padding(top = 25.dp)
-            .fillMaxWidth()
-            .then(
+        Modifier.padding(top = 25.dp).fillMaxWidth().then(
                 if (!isDataEmpty) Modifier.padding(
-                    start = 15.dp,
-                    end = 15.dp,
-                    bottom = 150.dp
+                    start = 15.dp, end = 15.dp, bottom = 150.dp
                 ) else Modifier.fillMaxHeight()
             )
     }
@@ -255,31 +254,55 @@ fun CollectionLayoutManager(
 
     when (AppPreferences.selectedLinkLayout.value) {
         Layout.TITLE_ONLY_LIST_VIEW.name, Layout.REGULAR_LIST_VIEW.name -> {
+            val state = rememberScrollAreaState(lazyListState = listLayoutState)
+            ScrollArea(state = state) {
+                LazyColumn(
+                    modifier = Modifier.then(
+                        if (nestedScrollConnection != null) Modifier.nestedScroll(
+                            nestedScrollConnection
+                        ) else Modifier
+                    ).padding(paddingValues).fillMaxSize(), state = listLayoutState
+                ) {
 
-            LazyColumn(
-                modifier = Modifier.then(
-                    if (nestedScrollConnection != null) Modifier.nestedScroll(
-                        nestedScrollConnection
-                    ) else Modifier
-                ).padding(paddingValues).fillMaxSize(),
-                state = listLayoutState
-            ) {
+                    if (screenType == ScreenType.TAGS_FOLDERS_LINKS) {
+                        flatSearchResultState?.data?.forEach { (pageKey, searchResults) ->
+                            items(searchResults, key = {
+                                "CollectionLayoutManager-LazyColumn-flatSearchResultState-P$pageKey-ID-L${it.linkLocalId}-F${it.folderLocalId}-T${it.tagLocalId}"
+                            }) {
+                                when (it.itemType) {
+                                    Constants.TAG -> {
+                                        FolderComponent(folderComponentParam = tagComponentParam(it.asTag))
+                                    }
 
-                if (screenType == ScreenType.TAGS_FOLDERS_LINKS) {
-                    flatSearchResultState?.data?.forEach { (pageKey, searchResults) ->
-                        items(searchResults, key = {
-                            "CollectionLayoutManager-LazyColumn-flatSearchResultState-P$pageKey-ID-L${it.linkLocalId}-F${it.folderLocalId}-T${it.tagLocalId}"
-                        }) {
-                            when (it.itemType) {
-                                Constants.TAG -> {
-                                    FolderComponent(folderComponentParam = tagComponentParam(it.asTag))
+                                    Constants.FOLDER -> {
+                                        FolderComponent(
+                                            folderComponentParam = folderComponentParam(
+                                                it.asFolder
+                                            )
+                                        )
+                                    }
+
+                                    else -> {
+                                        ListViewLinkComponent(
+                                            linkComponentParam = linkComponentParam(it.asLinkTagsPair),
+                                            titleOnlyView = AppPreferences.selectedLinkLayout.value == Layout.TITLE_ONLY_LIST_VIEW.name,
+                                            onShare = {
+                                                LinkoraSDK.getInstance().nativeUtils.onShare(it)
+                                            })
+                                    }
                                 }
+                            }
+                        }
+                    }
 
-                                Constants.FOLDER -> {
+                    if (screenType == ScreenType.FOLDERS_AND_LINKS) {
+                        flatChildFolderDataState?.data?.forEach { (pageKey, flatChildFolderData) ->
+                            items(flatChildFolderData, key = {
+                                "CollectionLayoutManager-LazyColumn-flatChildFolderDataState-P$pageKey-ID${it.linkLocalId}${it.folderLocalId}"
+                            }) {
+                                if (it.itemType == Constants.FOLDER) {
                                     FolderComponent(folderComponentParam = folderComponentParam(it.asFolder))
-                                }
-
-                                else -> {
+                                } else {
                                     ListViewLinkComponent(
                                         linkComponentParam = linkComponentParam(it.asLinkTagsPair),
                                         titleOnlyView = AppPreferences.selectedLinkLayout.value == Layout.TITLE_ONLY_LIST_VIEW.name,
@@ -290,18 +313,14 @@ fun CollectionLayoutManager(
                             }
                         }
                     }
-                }
 
-                if (screenType == ScreenType.FOLDERS_AND_LINKS) {
-                    flatChildFolderDataState?.data?.forEach { (pageKey, flatChildFolderData) ->
-                        items(flatChildFolderData, key = {
-                            "CollectionLayoutManager-LazyColumn-flatChildFolderDataState-P$pageKey-ID${it.linkLocalId}${it.folderLocalId}"
-                        }) {
-                            if (it.itemType == Constants.FOLDER) {
-                                FolderComponent(folderComponentParam = folderComponentParam(it.asFolder))
-                            } else {
+                    if (screenType == ScreenType.LINKS_ONLY) {
+                        linksTagsPairsState?.data?.forEach { (pageKey, linkTagsPair) ->
+                            items(items = linkTagsPair, key = {
+                                "CollectionLayoutManager-LazyColumn-linksTagsPairs-P$pageKey-ID" + it.link.localId
+                            }) {
                                 ListViewLinkComponent(
-                                    linkComponentParam = linkComponentParam(it.asLinkTagsPair),
+                                    linkComponentParam = linkComponentParam(it),
                                     titleOnlyView = AppPreferences.selectedLinkLayout.value == Layout.TITLE_ONLY_LIST_VIEW.name,
                                     onShare = {
                                         LinkoraSDK.getInstance().nativeUtils.onShare(it)
@@ -309,46 +328,36 @@ fun CollectionLayoutManager(
                             }
                         }
                     }
-                }
-
-                if (screenType == ScreenType.LINKS_ONLY) {
-                    linksTagsPairsState?.data?.forEach { (pageKey, linkTagsPair) ->
-                        items(items = linkTagsPair, key = {
-                            "CollectionLayoutManager-LazyColumn-linksTagsPairs-P$pageKey-ID" + it.link.localId
-                        }) {
-                            ListViewLinkComponent(
-                                linkComponentParam = linkComponentParam(it),
-                                titleOnlyView = AppPreferences.selectedLinkLayout.value == Layout.TITLE_ONLY_LIST_VIEW.name,
-                                onShare = {
-                                    LinkoraSDK.getInstance().nativeUtils.onShare(it)
-                                })
-                        }
-                    }
-                }
-                item {
-                    AnimatedVisibility(
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                        visible = !showLoading && isDataEmpty
-                    ) {
-                        DataEmptyScreen(text = emptyDataText)
-                    }
-                }
-                item {
-                    AnimatedVisibility(enter = fadeIn(), exit = fadeOut(), visible = showLoading) {
-                        Box(
-                            modifier = loadingIndicatorModifier,
-                            contentAlignment = Alignment.Center
+                    item {
+                        AnimatedVisibility(
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                            visible = !showLoading && isDataEmpty
                         ) {
-                            ContainedLoadingIndicator()
+                            DataEmptyScreen(text = emptyDataText)
+                        }
+                    }
+                    item {
+                        AnimatedVisibility(
+                            enter = fadeIn(), exit = fadeOut(), visible = showLoading
+                        ) {
+                            Box(
+                                modifier = loadingIndicatorModifier,
+                                contentAlignment = Alignment.Center
+                            ) {
+                                ContainedLoadingIndicator()
+                            }
+                        }
+                    }
+                    item {
+                        AnimatedVisibility(
+                            enter = fadeIn(), exit = fadeOut(), visible = !showLoading
+                        ) {
+                            Spacer(Modifier.height(bottomSpacing.value))
                         }
                     }
                 }
-                item {
-                    AnimatedVisibility(enter = fadeIn(), exit = fadeOut(), visible = !showLoading) {
-                        Spacer(Modifier.height(bottomSpacing.value))
-                    }
-                }
+                VerticalScrollbar()
             }
 
             LaunchedEffect(Unit) {
@@ -361,128 +370,132 @@ fun CollectionLayoutManager(
         }
 
         Layout.GRID_VIEW.name -> {
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(150.dp),
-                modifier = Modifier.padding(paddingValues).fillMaxSize().then(
-                    if (nestedScrollConnection != null) Modifier.nestedScroll(
-                        nestedScrollConnection
-                    ) else Modifier
-                ),
-                state = gridLayoutState
-            ) {
-                if (screenType == ScreenType.TAGS_FOLDERS_LINKS) {
-                    flatSearchResultState?.data?.forEach { (pageKey, searchResults) ->
-                        items(items = searchResults, span = {
-                            if (it.itemType != Constants.LINK) GridItemSpan(
-                                this.maxLineSpan
-                            ) else GridItemSpan(
-                                1
-                            )
-                        }, key = {
-                            "CollectionLayoutManager-LazyVerticalGrid-flatSearchResultState-P$pageKey-ID-L${it.linkLocalId}-F${it.folderLocalId}-T${it.tagLocalId}"
-                        }) {
-                            when (it.itemType) {
-                                Constants.TAG -> {
-                                    FolderComponent(folderComponentParam = tagComponentParam(it.asTag))
-                                }
+            val state = rememberScrollAreaState(lazyGridState = gridLayoutState)
+            ScrollArea(state = state) {
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(150.dp),
+                    modifier = Modifier.padding(paddingValues).fillMaxSize().then(
+                        if (nestedScrollConnection != null) Modifier.nestedScroll(
+                            nestedScrollConnection
+                        ) else Modifier
+                    ),
+                    state = gridLayoutState
+                ) {
+                    if (screenType == ScreenType.TAGS_FOLDERS_LINKS) {
+                        flatSearchResultState?.data?.forEach { (pageKey, searchResults) ->
+                            items(items = searchResults, span = {
+                                if (it.itemType != Constants.LINK) GridItemSpan(
+                                    this.maxLineSpan
+                                ) else GridItemSpan(
+                                    1
+                                )
+                            }, key = {
+                                "CollectionLayoutManager-LazyVerticalGrid-flatSearchResultState-P$pageKey-ID-L${it.linkLocalId}-F${it.folderLocalId}-T${it.tagLocalId}"
+                            }) {
+                                when (it.itemType) {
+                                    Constants.TAG -> {
+                                        FolderComponent(folderComponentParam = tagComponentParam(it.asTag))
+                                    }
 
-                                Constants.FOLDER -> {
+                                    Constants.FOLDER -> {
+                                        FolderComponent(
+                                            folderComponentParam = folderComponentParam(
+                                                it.asFolder
+                                            )
+                                        )
+                                    }
+
+                                    else -> {
+                                        GridViewLinkComponent(
+                                            linkComponentParam = linkComponentParam(it.asLinkTagsPair),
+                                            forStaggeredView = false
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (screenType == ScreenType.FOLDERS_AND_LINKS) {
+                        flatChildFolderDataState?.data?.forEach { (pageIndex, folders) ->
+                            items(items = folders, span = {
+                                if (it.itemType == Constants.FOLDER) GridItemSpan(this.maxLineSpan) else GridItemSpan(
+                                    1
+                                )
+                            }, key = {
+                                "CollectionLayoutManager-LazyVerticalGrid-flatChildFolderDataState-P$pageIndex-ID${it.linkLocalId}${it.folderLocalId}"
+                            }) {
+                                if (it.itemType == Constants.FOLDER) {
                                     FolderComponent(folderComponentParam = folderComponentParam(it.asFolder))
-                                }
-
-                                else -> {
+                                } else {
                                     GridViewLinkComponent(
                                         linkComponentParam = linkComponentParam(it.asLinkTagsPair),
-                                        forStaggeredView = false
+                                        forStaggeredView = AppPreferences.selectedLinkLayout.value == Layout.STAGGERED_VIEW.name
                                     )
                                 }
                             }
                         }
                     }
-                }
 
-                if (screenType == ScreenType.FOLDERS_AND_LINKS) {
-                    flatChildFolderDataState?.data?.forEach { (pageIndex, folders) ->
-                        items(items = folders, span = {
-                            if (it.itemType == Constants.FOLDER) GridItemSpan(this.maxLineSpan) else GridItemSpan(
-                                1
-                            )
-                        }, key = {
-                            "CollectionLayoutManager-LazyVerticalGrid-flatChildFolderDataState-P$pageIndex-ID${it.linkLocalId}${it.folderLocalId}"
+                    if (isDataEmpty) {
+                        item(span = {
+                            GridItemSpan(this.maxLineSpan)
                         }) {
-                            if (it.itemType == Constants.FOLDER) {
-                                FolderComponent(folderComponentParam = folderComponentParam(it.asFolder))
-                            } else {
+                            Spacer(Modifier.height(10.dp))
+                        }
+                    }
+
+                    if (screenType == ScreenType.LINKS_ONLY) {
+                        linksTagsPairsState?.data?.forEach { (pageKey, linkTagsPairs) ->
+                            items(linkTagsPairs, key = {
+                                "LazyVerticalGrid-linksTagsPairs-P$pageKey-ID" + it.link.localId
+                            }) {
                                 GridViewLinkComponent(
-                                    linkComponentParam = linkComponentParam(it.asLinkTagsPair),
+                                    linkComponentParam = linkComponentParam(it),
                                     forStaggeredView = AppPreferences.selectedLinkLayout.value == Layout.STAGGERED_VIEW.name
                                 )
                             }
                         }
                     }
-                }
 
-                if (isDataEmpty) {
                     item(span = {
                         GridItemSpan(this.maxLineSpan)
                     }) {
-                        Spacer(Modifier.height(10.dp))
-                    }
-                }
-
-                if (screenType == ScreenType.LINKS_ONLY) {
-                    linksTagsPairsState?.data?.forEach { (pageKey, linkTagsPairs) ->
-                        items(linkTagsPairs, key = {
-                            "LazyVerticalGrid-linksTagsPairs-P$pageKey-ID" + it.link.localId
-                        }) {
-                            GridViewLinkComponent(
-                                linkComponentParam = linkComponentParam(it),
-                                forStaggeredView = AppPreferences.selectedLinkLayout.value == Layout.STAGGERED_VIEW.name
-                            )
-                        }
-                    }
-                }
-
-                item(span = {
-                    GridItemSpan(this.maxLineSpan)
-                }) {
-                    AnimatedVisibility(
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                        visible = showLoading
-                    ) {
-                        Box(
-                            modifier = loadingIndicatorModifier,
-                            contentAlignment = Alignment.Center
+                        AnimatedVisibility(
+                            enter = fadeIn(), exit = fadeOut(), visible = showLoading
                         ) {
-                            ContainedLoadingIndicator()
+                            Box(
+                                modifier = loadingIndicatorModifier,
+                                contentAlignment = Alignment.Center
+                            ) {
+                                ContainedLoadingIndicator()
+                            }
+                        }
+                    }
+
+                    item(span = {
+                        GridItemSpan(this.maxLineSpan)
+                    }) {
+                        AnimatedVisibility(
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                            visible = !showLoading && isDataEmpty
+                        ) {
+                            DataEmptyScreen(text = emptyDataText)
+                        }
+                    }
+
+                    item(span = {
+                        GridItemSpan(this.maxLineSpan)
+                    }) {
+                        AnimatedVisibility(
+                            enter = fadeIn(), exit = fadeOut(), visible = pagesCompleted
+                        ) {
+                            Spacer(Modifier.height(bottomSpacing.value))
                         }
                     }
                 }
-
-                item(span = {
-                    GridItemSpan(this.maxLineSpan)
-                }) {
-                    AnimatedVisibility(
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                        visible = !showLoading && isDataEmpty
-                    ) {
-                        DataEmptyScreen(text = emptyDataText)
-                    }
-                }
-
-                item(span = {
-                    GridItemSpan(this.maxLineSpan)
-                }) {
-                    AnimatedVisibility(
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                        visible = pagesCompleted
-                    ) {
-                        Spacer(Modifier.height(bottomSpacing.value))
-                    }
-                }
+                VerticalScrollbar()
             }
             LaunchedEffect(Unit) {
                 snapshotFlow {
@@ -497,7 +510,9 @@ fun CollectionLayoutManager(
             LazyVerticalStaggeredGrid(
                 columns = StaggeredGridCells.Adaptive(150.dp),
                 modifier = Modifier.padding(paddingValues).fillMaxSize().then(
-                    if (nestedScrollConnection != null) Modifier.nestedScroll(nestedScrollConnection) else Modifier
+                    if (nestedScrollConnection != null) Modifier.nestedScroll(
+                        nestedScrollConnection
+                    ) else Modifier
                 ),
                 state = staggeredGridLayoutState
             ) {
@@ -518,7 +533,11 @@ fun CollectionLayoutManager(
                                 }
 
                                 Constants.FOLDER -> {
-                                    FolderComponent(folderComponentParam = folderComponentParam(it.asFolder))
+                                    FolderComponent(
+                                        folderComponentParam = folderComponentParam(
+                                            it.asFolder
+                                        )
+                                    )
                                 }
 
                                 else -> {
@@ -579,10 +598,11 @@ fun CollectionLayoutManager(
                 }
 
                 item(span = StaggeredGridItemSpan.FullLine) {
-                    AnimatedVisibility(enter = fadeIn(), exit = fadeOut(), visible = showLoading) {
+                    AnimatedVisibility(
+                        enter = fadeIn(), exit = fadeOut(), visible = showLoading
+                    ) {
                         Box(
-                            modifier = loadingIndicatorModifier,
-                            contentAlignment = Alignment.Center
+                            modifier = loadingIndicatorModifier, contentAlignment = Alignment.Center
                         ) {
                             ContainedLoadingIndicator()
                         }
@@ -591,9 +611,7 @@ fun CollectionLayoutManager(
 
                 item(span = StaggeredGridItemSpan.FullLine) {
                     AnimatedVisibility(
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                        visible = !showLoading && isDataEmpty
+                        enter = fadeIn(), exit = fadeOut(), visible = !showLoading && isDataEmpty
                     ) {
                         DataEmptyScreen(text = emptyDataText)
                     }

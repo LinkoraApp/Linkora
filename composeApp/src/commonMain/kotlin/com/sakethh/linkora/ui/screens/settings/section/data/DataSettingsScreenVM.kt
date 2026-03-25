@@ -2,16 +2,14 @@ package com.sakethh.linkora.ui.screens.settings.section.data
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.ExportFileType
+import com.sakethh.linkora.domain.FileType
 import com.sakethh.linkora.domain.ImportFileType
-import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.domain.PermissionStatus
 import com.sakethh.linkora.domain.Platform
+import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onLoading
 import com.sakethh.linkora.domain.onSuccess
@@ -31,16 +29,22 @@ import com.sakethh.linkora.ui.domain.ImportFileSelectionMethod
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
-import com.sakethh.linkora.utils.duplicate
+import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.getRemoteOnlyFailureMsg
+import com.sakethh.linkora.utils.intPreferencesKey
+import com.sakethh.linkora.utils.pushSnackbar
 import com.sakethh.linkora.utils.pushSnackbarOnFailure
+import com.sakethh.linkora.utils.stringPreferencesKey
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
 
 class DataSettingsScreenVM(
     private val exportDataRepo: ExportDataRepo,
@@ -73,62 +77,60 @@ class DataSettingsScreenVM(
         onCompletion: () -> Unit,
         importFileSelectionMethod: Pair<ImportFileSelectionMethod, String>
     ) {
+        onStart()
         AppVM.pauseSnapshots = true
         importExportJob?.cancel()
-        importExportJob = viewModelScope.launch(Dispatchers.Default) {
-            val file =
-                if (importFileSelectionMethod.first == ImportFileSelectionMethod.FileLocationString) {
-                    File(importFileSelectionMethod.second).let {
-                        if (it.exists() && it.extension.equals(
-                                importFileType.name,
-                                ignoreCase = true
-                            )
-                        ) {
-                            onStart()
-                            it
-                        } else if (it.exists() && it.extension.lowercase() != importFileType.name.lowercase()) {
-                            UIEvent.pushUIEvent(
-                                UIEvent.Type.ShowSnackbar(
-                                    Localization.Key.FileTypeNotSupportedOnDesktopImport.getLocalizedString()
-                                        .replace(LinkoraPlaceHolder.First.value, it.extension)
-                                        .replace(
-                                            LinkoraPlaceHolder.Second.value, importFileType.name
-                                        )
-                                )
-                            )
-                            return@launch
-                        } else {
-                            null
-                        }
-                    }?.duplicate()
-                } else {
-                    fileManager.pickAValidFileForImporting(importFileType, onStart = {
-                        onStart()
-                        importExportProgressLogs.add(Localization.Key.ReadingFile.getLocalizedString())
-                    })
+        importExportJob =
+            viewModelScope.launch(Dispatchers.Default + CoroutineExceptionHandler { _, throwable ->
+                throwable.pushSnackbar(viewModelScope)
+            }) {
+                if (importFileType == FileType.JSON) {
+                    when (importFileSelectionMethod.first) {
+                        ImportFileSelectionMethod.FilePicker -> fileManager.importFromJSONObj()
+                        ImportFileSelectionMethod.FileLocationString -> fileManager.importFromJSONObj(
+                            fileLocation = importFileSelectionMethod.second
+                        )
+                    }.collectData { data ->
+                        importDataRepo.importDataFromObj(data)
+                    }
                 }
-            if (file == null) return@launch
-            if (importFileType == ImportFileType.JSON) {
-                importDataRepo.importDataFromAJSONFile(file)
-            } else {
-                importDataRepo.importDataFromAHTMLFile(file)
-            }.collectLatest {
-                it.onLoading { importLogItem ->
-                    importExportProgressLogs.add(importLogItem)
-                }.onSuccess {
-                    pushUIEvent(UIEvent.Type.ShowSnackbar(Localization.Key.SuccessfullyImportedTheData.getLocalizedString()))
-                    file.delete()
-                }.onFailure {
-                    file.delete()
-                }.pushSnackbarOnFailure()
+
+                if (importFileType == FileType.HTML) {
+                    when (importFileSelectionMethod.first) {
+                        ImportFileSelectionMethod.FilePicker -> fileManager.importFromHTMLString()
+                        ImportFileSelectionMethod.FileLocationString -> fileManager.importFromHTMLString(
+                            fileLocation =
+                                importFileSelectionMethod.second
+                        )
+                    }.collectData { data ->
+                        importDataRepo.importDataFromHTML(data)
+                    }
+                }
             }
-        }
         importExportJob?.invokeOnCompletion { cause ->
             AppVM.pauseSnapshots = false
             AppVM.forceSnapshot()
             onCompletion()
             cause?.printStackTrace()
             importExportProgressLogs.clear()
+        }
+    }
+
+    suspend fun <T, S> Flow<Result<T>>.collectData(onSuccess: suspend (T) -> Flow<Result<S>>) {
+        this.flatMapLatest { result ->
+            when (result) {
+                is Result.Failure -> flowOf(result)
+                is Result.Loading -> flowOf(result)
+                is Result.Success -> {
+                    onSuccess(result.data)
+                }
+            }
+        }.collectLatest {
+            it.onLoading { importLogItem ->
+                importExportProgressLogs.add(importLogItem)
+            }.onSuccess {
+                pushUIEvent(UIEvent.Type.ShowSnackbar(Localization.Key.SuccessfullyImportedTheData.getLocalizedString()))
+            }.pushSnackbarOnFailure()
         }
     }
 

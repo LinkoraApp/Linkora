@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 
 object SpecificPanelManagerVMFactory {
     fun create(
-        platform: Platform, currentBackStackEntryFlow: Flow<NavBackStackEntry>
+        onAndroidMobile: Boolean, currentBackStackEntryFlow: Flow<NavBackStackEntry>
     ) = viewModelFactory {
         initializer {
             SpecificPanelManagerScreenVM(
@@ -17,7 +17,7 @@ object SpecificPanelManagerVMFactory {
                 localPanelsRepo = DependencyContainer.localPanelsRepo,
                 preferencesRepository = DependencyContainer.preferencesRepo,
                 currentBackStackEntryFlow = currentBackStackEntryFlow,
-                platform = platform
+                onAndroidMobile = onAndroidMobile
             )
         }
     }

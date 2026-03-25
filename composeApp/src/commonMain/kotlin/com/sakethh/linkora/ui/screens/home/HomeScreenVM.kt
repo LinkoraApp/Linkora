@@ -4,7 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.Localization
@@ -28,6 +27,7 @@ import com.sakethh.linkora.ui.domain.PaginationState
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.asStateInWhileSubscribed
 import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.longPreferencesKey
 import com.sakethh.linkora.utils.shuffleLinks
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -43,10 +43,12 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import okhttp3.internal.toImmutableMap
-import java.util.Calendar
-import java.util.TreeMap
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 class HomeScreenVM(
     private val localLinksRepo: LocalLinksRepo,
     private val localDatabaseUtilsRepo: LocalDatabaseUtilsRepo,
@@ -139,7 +141,7 @@ class HomeScreenVM(
     var selectedPanelData by mutableStateOf<Panel?>(null)
 
     private suspend fun freeUpPanelFolderPaginators() {
-        _panelFoldersDataFlat.emit(TreeMap())
+        _panelFoldersDataFlat.emit(LinkedHashMap())
         for ((_, paginator) in panelFolderPaginators) {
             paginator.cancelAndReset()
         }
@@ -220,7 +222,7 @@ class HomeScreenVM(
                                 panelFoldersDataIterator.remove()
 
                                 _panelFoldersDataFlat.update {
-                                    val updated = TreeMap(it)
+                                    val updated = LinkedHashMap(it)
                                     updated.remove(id)
                                     updated
                                 }
@@ -343,19 +345,18 @@ class HomeScreenVM(
     }
 
     init {
-        currentPhaseOfTheDay.value = when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
+        val currentHour = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).hour
+
+        currentPhaseOfTheDay.value = when (currentHour) {
             in 0..11 -> {
                 Localization.Key.GoodMorning.getLocalizedString()
             }
-
             in 12..15 -> {
                 Localization.Key.GoodAfternoon.getLocalizedString()
             }
-
             in 16..23 -> {
                 Localization.Key.GoodEvening.getLocalizedString()
             }
-
             else -> {
                 Localization.Key.HeyHi.getLocalizedString()
             }

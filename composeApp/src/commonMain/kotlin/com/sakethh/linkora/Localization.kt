@@ -4,23 +4,41 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
-import androidx.datastore.preferences.core.stringPreferencesKey
 import com.sakethh.linkora.di.DependencyContainer
+import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.preferences.AppPreferenceType
 import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.utils.Constants
-import kotlinx.coroutines.runBlocking
+import com.sakethh.linkora.utils.stringPreferencesKey
 
 typealias LocalizedStringKey = String
 
 object Localization {
     private val localizedStrings = mutableStateMapOf<LocalizedStringKey, String>()
+    private val nativeUtils = LinkoraSDK.getInstance().nativeUtils
+
+    fun loadDefaultValues() {
+        nativeUtils.platformRunBlocking {
+            loadLocalizedStrings(
+                languageCode = "en",
+                forceLoadDefaultValues = true,
+            )
+        }
+    }
 
     fun loadLocalizedStrings(
+        languageCode: String
+    ) {
+        nativeUtils.platformRunBlocking {
+            loadLocalizedStrings(languageCode, forceLoadDefaultValues = false)
+        }
+    }
+
+    suspend fun loadLocalizedStrings(
         languageCode: String, forceLoadDefaultValues: Boolean = false
-    ) = runBlocking {
-        if (languageCode == Constants.DEFAULT_APP_LANGUAGE_CODE && forceLoadDefaultValues.not()) return@runBlocking
+    ) {
+        if (languageCode == Constants.DEFAULT_APP_LANGUAGE_CODE && forceLoadDefaultValues.not()) return
         if (AppPreferences.preferredAppLanguageCode.value != languageCode) {
             AppPreferences.preferredAppLanguageName.value =
                 if (languageCode == Constants.DEFAULT_APP_LANGUAGE_CODE) {
