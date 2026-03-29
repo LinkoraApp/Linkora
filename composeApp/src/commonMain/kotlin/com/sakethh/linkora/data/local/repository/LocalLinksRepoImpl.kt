@@ -1,5 +1,7 @@
 package com.sakethh.linkora.data.local.repository
 
+import com.fleeksoft.ksoup.Ksoup
+import com.fleeksoft.ksoup.network.parseGetRequest
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.data.local.dao.FoldersDao
 import com.sakethh.linkora.data.local.dao.LinksDao
@@ -13,6 +15,7 @@ import com.sakethh.linkora.domain.SyncServerRoute
 import com.sakethh.linkora.domain.asAddLinkDTO
 import com.sakethh.linkora.domain.asLinkDTO
 import com.sakethh.linkora.domain.dto.server.IDBasedDTO
+import com.sakethh.linkora.domain.dto.server.ProxyInfoDTO
 import com.sakethh.linkora.domain.dto.server.link.DeleteDuplicateLinksDTO
 import com.sakethh.linkora.domain.dto.server.link.UpdateNoteOfALinkDTO
 import com.sakethh.linkora.domain.dto.server.link.UpdateTitleOfTheLinkDTO
@@ -27,7 +30,10 @@ import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PendingSyncQueueRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.remote.RemoteLinksRepo
+import com.sakethh.linkora.platform.PlatformIODispatcher
+import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
+import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Sorting
 import com.sakethh.linkora.utils.defaultFolderIds
 import com.sakethh.linkora.utils.getLocalizedString
@@ -43,7 +49,9 @@ import com.sakethh.linkora.utils.wrappedResultFlow
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import kotlinx.coroutines.Dispatchers
+import io.ktor.client.request.header
+import io.ktor.client.request.parameter
+import io.ktor.http.userAgent
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -51,11 +59,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import org.jsoup.Jsoup
 
 class LocalLinksRepoImpl(
     private val linksDao: LinksDao,
     private val primaryUserAgent: () -> String,
+    private val proxyUrl: () -> String,
     private val standardClient: HttpClient,
     private val remoteLinksRepo: RemoteLinksRepo,
     private val foldersDao: FoldersDao,
@@ -113,8 +121,7 @@ class LocalLinksRepoImpl(
                 if (newLinkId == null) return@performLocalOperationWithRemoteSyncFlow emptyFlow()
 
                 if (link.idOfLinkedFolder != null && link.idOfLinkedFolder !in defaultFolderIds()) {
-                    val remoteIdOfLinkedFolder =
-                        foldersDao.getRemoteFolderId(link.idOfLinkedFolder)
+                    val remoteIdOfLinkedFolder = foldersDao.getRemoteFolderId(link.idOfLinkedFolder)
                     remoteLinksRepo.addANewLink(
                         linksDao.getLink(newLinkId!!).copy(
                             idOfLinkedFolder = remoteIdOfLinkedFolder, lastModified = eventTimestamp
@@ -159,7 +166,6 @@ class LocalLinksRepoImpl(
                                 LinkType.HISTORY_LINK -> Localization.Key.LinkExistsInHistoryMsg.getLocalizedString()
                                 LinkType.IMPORTANT_LINK -> Localization.Key.LinkExistsInImportantLinksMsg.getLocalizedString()
                                 LinkType.ARCHIVE_LINK -> Localization.Key.LinkExistsInArchivedLinksMsg.getLocalizedString()
-                                else -> Localization.Key.LinkExistsMsg.getLocalizedString()
                             }
                         }
                     }
@@ -173,13 +179,17 @@ class LocalLinksRepoImpl(
                     }
                     linksDao.addANewLink(link.copy(lastModified = eventTimestamp, localId = 0))
                 } else {
-                    try {
-                        if (link.url.isATwitterUrl()) {
-                            retrieveFromVxTwitterApi(link.url)
+                    val scrapedLinkInfo = try {
+                        if (linkSaveConfig.useProxy) {
+                            retrieveFromProxy(link.url)
                         } else {
-                            scrapeLinkData(
-                                link.url, link.userAgent ?: primaryUserAgent()
-                            )
+                            if (link.url.isATwitterUrl()) {
+                                retrieveFromVxTwitterApi(link.url)
+                            } else {
+                                scrapeLinkData(
+                                    link.url, link.userAgent ?: primaryUserAgent()
+                                )
+                            }
                         }
                     } catch (e: Exception) {
                         if (linkSaveConfig.forceSaveIfRetrievalFails) {
@@ -187,17 +197,16 @@ class LocalLinksRepoImpl(
                         } else {
                             throw e
                         }
-                    }.let { scrapedLinkInfo ->
-                        linksDao.addANewLink(
-                            link.copy(
-                                title = if (linkSaveConfig.forceAutoDetectTitle) scrapedLinkInfo.title else link.title,
-                                imgURL = link.imgURL.ifBlank { scrapedLinkInfo.imgUrl },
-                                localId = 0,
-                                mediaType = scrapedLinkInfo.mediaType,
-                                lastModified = eventTimestamp
-                            )
-                        )
                     }
+                    linksDao.addANewLink(
+                        link.copy(
+                            title = if (linkSaveConfig.forceAutoDetectTitle) scrapedLinkInfo.title else link.title,
+                            imgURL = link.imgURL.ifBlank { scrapedLinkInfo.imgUrl },
+                            localId = 0,
+                            mediaType = scrapedLinkInfo.mediaType,
+                            lastModified = eventTimestamp
+                        )
+                    )
                 }
 
             selectedTagIds?.let { selectedTagIds ->
@@ -242,10 +251,7 @@ class LocalLinksRepoImpl(
     }
 
     override suspend fun getLinks(
-        tagId: Long, sortOption: String,
-        pageSize: Int,
-        lastSeenTitle: String?,
-        lastSeenId: Long?
+        tagId: Long, sortOption: String, pageSize: Int, lastSeenTitle: String?, lastSeenId: Long?
     ): Flow<Result<List<Link>>> {
         return when (sortOption) {
             Sorting.A_TO_Z, Sorting.Z_TO_A -> linksDao.getLinksSortedByTitle(
@@ -274,7 +280,9 @@ class LocalLinksRepoImpl(
     override suspend fun getLinks(
         linkType: LinkType,
         sortOption: String,
-        pageSize: Int, lastSeenTitle: String?, lastSeenId: Long?
+        pageSize: Int,
+        lastSeenTitle: String?,
+        lastSeenId: Long?
     ): Flow<Result<List<Link>>> {
         return when (sortOption) {
             Sorting.A_TO_Z, Sorting.Z_TO_A -> linksDao.getLinksSortedByTitle(
@@ -304,6 +312,19 @@ class LocalLinksRepoImpl(
         return linksDao.getAllLinks(sortOption).mapToResultFlow()
     }
 
+    private suspend fun retrieveFromProxy(url: String): ScrapedLinkInfo {
+        val proxyResponse = standardClient.get(proxyUrl().run {
+            if (endsWith("/")) this + "metadata" else "$this/metadata"
+        }) {
+            parameter("url", url)
+            userAgent(primaryUserAgent())
+        }.body<ProxyInfoDTO>()
+        return ScrapedLinkInfo(
+            title = proxyResponse.title ?: "",
+            imgUrl = proxyResponse.image ?: "",
+            mediaType = MediaType.IMAGE
+        )
+    }
 
     private suspend fun retrieveFromVxTwitterApi(tweetURL: String): ScrapedLinkInfo {
         val vxTwitterResponseBody =
@@ -318,25 +339,32 @@ class LocalLinksRepoImpl(
             mediaType = if (vxTwitterResponseBody.media.isNotEmpty() && vxTwitterResponseBody.media.first().type == "video") MediaType.VIDEO else MediaType.IMAGE)
     }
 
-    private suspend fun scrapeLinkData(
+    override suspend fun scrapeLinkData(
         linkUrl: String, userAgent: String
     ): ScrapedLinkInfo {
         val baseUrl: String
         try {
             baseUrl = linkUrl.host()
         } catch (e: Exception) {
+            e.printStackTrace()
             throw Link.Invalid()
         }
-        val rawHTML = withContext(Dispatchers.IO) {
-            Jsoup.connect(
-                "http" + linkUrl.substringAfter("http").substringBefore(" ").trim()
-            ).userAgent(userAgent).followRedirects(true).header("Accept", "text/html")
-                .header("Accept-Encoding", "gzip,deflate").header("Accept-Language", "en;q=1.0")
-                .header("Connection", "keep-alive").ignoreContentType(true).maxBodySize(0)
-                .ignoreHttpErrors(true).get()
+
+        val rawHTML = withContext(PlatformIODispatcher) {
+            Ksoup.parseGetRequest(
+                ("http" + linkUrl.substringAfter("http").substringBefore(" ")
+                    .trim()).also { linkUrl ->
+                    linkoraLog("scrapeLinkData for $linkUrl")
+                }
+            ) {
+                this.userAgent(userAgent)
+                this.header("Accept", "text/html")
+                this.header("Accept-Language", "en;q=1.0")
+                this.header("Connection", "keep-alive")
+            }.head()
         }.toString()
 
-        val document = Jsoup.parse(rawHTML)
+        val document = Ksoup.parse(rawHTML)
         val ogImage = document.select("meta[property=og:image]").attr("content")
         val twitterImage = document.select("meta[name=twitter:image]").attr("content")
         val favicon = document.select("link[rel=icon]").attr("href")
@@ -352,7 +380,7 @@ class LocalLinksRepoImpl(
                 }
             }
 
-            ogImage.isNullOrBlank() && twitterImage.isNotNullOrNotBlank() -> if (twitterImage.startsWith(
+            ogImage.isBlank() && twitterImage.isNotNullOrNotBlank() -> if (twitterImage.startsWith(
                     "/"
                 )
             ) {
@@ -361,7 +389,7 @@ class LocalLinksRepoImpl(
                 twitterImage
             }
 
-            ogImage.isNullOrBlank() && twitterImage.isNullOrBlank() && favicon.isNotNullOrNotBlank() -> {
+            ogImage.isBlank() && twitterImage.isBlank() && favicon.isNotNullOrNotBlank() -> {
                 if (favicon.startsWith("/")) {
                     "https://$baseUrl$favicon"
                 } else {
@@ -611,8 +639,7 @@ class LocalLinksRepoImpl(
             onRemoteOperationFailure = {
                 pendingSyncQueueRepo.addInQueue(
                     PendingSyncQueue(
-                        operation = SyncServerRoute.UPDATE_LINK.name,
-                        payload = Json.encodeToString(
+                        operation = SyncServerRoute.UPDATE_LINK.name, payload = Json.encodeToString(
                             link.asLinkDTO(
                                 id = link.localId, remoteLinkTags = remoteLinkTagDTOs ?: emptyList()
                             ).copy(eventTimestamp = eventTimestamp)
@@ -652,8 +679,7 @@ class LocalLinksRepoImpl(
     }
 
     override suspend fun refreshLinkMetadata(
-        link: Link,
-        refreshLinkType: RefreshLinkType
+        link: Link, refreshLinkType: RefreshLinkType
     ): Flow<Result<Unit>> {
         val remoteId = getRemoteIdOfLink(link.localId)
         val eventTimestamp = getSystemEpochSeconds()
@@ -686,40 +712,39 @@ class LocalLinksRepoImpl(
             onRemoteOperationFailure = {
                 pendingSyncQueueRepo.addInQueue(
                     PendingSyncQueue(
-                        operation = SyncServerRoute.UPDATE_LINK.name,
-                        payload = Json.encodeToString(
+                        operation = SyncServerRoute.UPDATE_LINK.name, payload = Json.encodeToString(
                             linksDao.getLink(link.localId).asLinkDTO(
-                                id = link.localId,
-                                remoteLinkTags = remoteLinkTagDTOs ?: emptyList()
+                                id = link.localId, remoteLinkTags = remoteLinkTagDTOs ?: emptyList()
                             ).copy(eventTimestamp = eventTimestamp)
                         )
                     )
                 )
             }) {
-            if (link.url.isATwitterUrl()) {
-                retrieveFromVxTwitterApi(link.url)
+            val scrapedLinkInfo = if (AppPreferences.useProxy) {
+                retrieveFromProxy(link.url)
             } else {
-                scrapeLinkData(
-                    linkUrl = link.url, userAgent = link.userAgent ?: primaryUserAgent()
-                )
-            }.let { scrapedLinkInfo ->
-                linksDao.updateALink(
-                    link.copy(
-                        title = if (refreshLinkType in listOf(
-                                RefreshLinkType.Title,
-                                RefreshLinkType.Both
-                            )
-                        ) scrapedLinkInfo.title else link.title,
-                        imgURL = if (refreshLinkType in listOf(
-                                RefreshLinkType.Image,
-                                RefreshLinkType.Both
-                            )
-                        ) scrapedLinkInfo.imgUrl else link.imgURL,
-                        mediaType = scrapedLinkInfo.mediaType,
-                        lastModified = getSystemEpochSeconds()
+                if (link.url.isATwitterUrl()) {
+                    retrieveFromVxTwitterApi(link.url)
+                } else {
+                    scrapeLinkData(
+                        link.url, link.userAgent ?: primaryUserAgent()
                     )
-                )
+                }
             }
+            linksDao.updateALink(
+                link.copy(
+                    title = if (refreshLinkType in listOf(
+                            RefreshLinkType.Title, RefreshLinkType.Both
+                        )
+                    ) scrapedLinkInfo.title else link.title,
+                    imgURL = if (refreshLinkType in listOf(
+                            RefreshLinkType.Image, RefreshLinkType.Both
+                        )
+                    ) scrapedLinkInfo.imgUrl else link.imgURL,
+                    mediaType = scrapedLinkInfo.mediaType,
+                    lastModified = getSystemEpochSeconds()
+                )
+            )
         }
     }
 
@@ -907,7 +932,6 @@ class LocalLinksRepoImpl(
                 linksDao.forceSetDefaultFolderToInternalIds(
                     eventTimestamp = eventTimestamp
                 )
-            }
-        )
+            })
     }
 }

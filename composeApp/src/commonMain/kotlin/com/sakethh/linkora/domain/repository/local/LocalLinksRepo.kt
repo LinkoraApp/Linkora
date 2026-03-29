@@ -4,6 +4,7 @@ import com.sakethh.linkora.domain.LinkSaveConfig
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.RefreshLinkType
 import com.sakethh.linkora.domain.Result
+import com.sakethh.linkora.domain.model.ScrapedLinkInfo
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
 import kotlinx.coroutines.flow.Flow
@@ -116,4 +117,8 @@ interface LocalLinksRepo {
 
     suspend fun isLinksTableEmpty(): Boolean
     suspend fun forceSetDefaultFolderToInternalIds(viaSocket: Boolean = false): Flow<Result<Unit>>
+
+    suspend fun scrapeLinkData(
+        linkUrl: String, userAgent: String
+    ): ScrapedLinkInfo
 }

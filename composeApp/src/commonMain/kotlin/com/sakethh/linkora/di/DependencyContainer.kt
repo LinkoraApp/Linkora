@@ -124,6 +124,9 @@ object DependencyContainer {
             preferencesRepository = preferencesRepo,
             standardClient = Network.standardClient,
             tagsDao = LinkoraSDK.getInstance().localDatabase.tagsDao,
+            proxyUrl = {
+                AppPreferences.proxyUrl
+            }
         )
     }
 

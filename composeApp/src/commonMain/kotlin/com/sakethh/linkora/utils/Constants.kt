@@ -3,6 +3,7 @@ package com.sakethh.linkora.utils
 object Constants {
     const val APP_VERSION_NAME = "v0.16.0"
     const val LOCALIZATION_SERVER_URL = "https://linkoralocalizationserver.onrender.com/"
+    const val PROXY_SERVER_URL = "https://linkora-proxy.onrender.com"
 
     const val ALL_LINKS_ID: Long = -1
     const val SAVED_LINKS_ID: Long = -2
