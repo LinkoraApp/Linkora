@@ -2,14 +2,16 @@
 
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
+    kotlin("multiplatform") version "2.3.10"
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
+    alias(libs.plugins.composeHotReload)
     alias(libs.plugins.composeCompiler)
-    kotlin("plugin.serialization") version "2.0.20"
+    kotlin("plugin.serialization") version "2.3.10"
     alias(libs.plugins.ksp)
     id("androidx.room3")
     id("com.mikepenz.aboutlibraries.plugin")
@@ -31,14 +33,36 @@ kotlin {
 
     jvm("desktop")
 
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        browser {
+            outputModuleName = "composeApp"
+            commonWebpackConfig {
+                outputFileName = "composeApp.js"
+            }
+        }
+        binaries.executable()
+    }
+
     sourceSets {
         val desktopMain by getting
+        val desktopTest by getting
+
+        val desktopWebMain by creating {
+            dependsOn(commonMain.get())
+        }
+
+        desktopMain.dependsOn(desktopWebMain)
+        wasmJsMain.get().dependsOn(desktopWebMain)
 
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.work.runtime)
+            implementation(libs.sqlite.bundled)
             implementation(libs.androidx.documentfile)
+            implementation(libs.ktor.client.android)
+            implementation(libs.androidx.datastore.preferences.core)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -50,35 +74,49 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(compose.materialIconsExtended)
             implementation(libs.coil.compose)
-            implementation(libs.coil.network.okhttp)
+            implementation(libs.coil.network.ktor3)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.navigation.compose)
-            implementation(libs.androidx.datastore.preferences.core)
             implementation(libs.lifecycle.viewmodel.compose)
             implementation(libs.androidx.room3.runtime)
-            implementation(libs.sqlite.bundled)
 
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.cio)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
-            implementation(libs.jsoup)
-
+            implementation(libs.fleeksoft.ksoup)
+            implementation(libs.ksoup.network)
             implementation(libs.aboutlibraries.core)
             implementation(libs.aboutlibraries.compose.m3)
             implementation(libs.ktor.client.logging)
             implementation(libs.kotlinx.datetime)
+            implementation(libs.stately.concurrency)
+            implementation(libs.stately.concurrent.collections)
+            implementation(libs.adaptive.core)
+            implementation(libs.adaptive.layout)
+            implementation(libs.adaptive.navigation)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
+            implementation(libs.sqlite.bundled)
+            implementation(libs.ktor.client.java)
+            implementation(libs.androidx.datastore.preferences.core)
         }
-
+        wasmJsMain.dependencies {
+            implementation(libs.ktor.client.js)
+            implementation(libs.kotlinx.serialization.json)
+            api(libs.androidx.sqlite.web)
+            implementation(npm("sqlite-wasm-worker", layout.projectDirectory.dir("worker").asFile))
+            implementation(libs.kotlinx.browser)
+        }
         commonTest.dependencies {
-            implementation("io.mockk:mockk:1.14.5")
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.assertk)
+        }
+        desktopTest.dependencies {
+            implementation(libs.mockk)
         }
     }
 }
@@ -144,6 +182,7 @@ android {
 dependencies {
     debugImplementation(compose.uiTooling)
     ksp(libs.androidx.room3.compiler)
+    add("kspWasmJs", libs.androidx.room3.compiler)
 }
 
 compose.desktop {

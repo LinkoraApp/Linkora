@@ -24,6 +24,7 @@ kotlinxSerializationJson = "1.9.0"
 ktorVersion = "3.0.2"
 lifecycleViewmodelCompose = "2.8.2"
 material3Version = "1.11.0-alpha01"
+mockk = "1.14.9"
 navigationCompose = "2.9.0"
 ksp = "2.2.20-2.0.4"
 roomVersion = "3.0.0-alpha01"
@@ -64,6 +65,7 @@ ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorVer
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktorVersion" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorVersion" }
 lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 androidx-documentfile = { group = "androidx.documentfile", name = "documentfile", version.ref = "documentfile" }
