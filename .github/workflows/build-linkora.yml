@@ -1,0 +1,195 @@
+name: Build and Release Binaries
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to upload assets to'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-desktop:
+    name: Build Desktop Platforms
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+          - os: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Make Gradlew executable
+        if: runner.os != 'Windows'
+        run: chmod +x ./gradlew
+
+      - name: Build Windows
+        if: matrix.os == 'windows-latest'
+        run: ./gradlew :composeApp:packageMsi :composeApp:packageExe
+
+      - name: Build Ubuntu
+        if: matrix.os == 'ubuntu-latest'
+        run: ./gradlew :composeApp:packageDeb :composeApp:packageUberJarForCurrentOS
+
+      - name: Build AppImage
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          mkdir -p AppDir/usr/bin
+          cp composeApp/build/compose/jars/Linkora-linux-x64-*.jar AppDir/usr/bin/
+
+          cat << 'EOF' > AppDir/AppRun
+          #!/bin/bash
+          JAR_FILE=$(ls "$APPDIR/usr/bin/"*.jar | head -n 1)
+          exec java -jar "$JAR_FILE"
+          EOF
+          chmod +x AppDir/AppRun
+
+          cat << 'EOF' > AppDir/linkora.desktop
+          [Desktop Entry]
+          Categories=Utility;
+          Exec=AppRun
+          Icon=linkora
+          Name=Linkora
+          Terminal=false
+          Type=Application
+          EOF
+
+          cp fastlane/metadata/android/en-US/images/icon.png AppDir/linkora.png
+
+          wget -qO appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool
+
+          UPDATE_INFO="gh-releases-zsync|${{ github.repository_owner }}|${{ github.event.repository.name }}|latest|Linkora.AppImage.zsync"
+
+          ARCH=x86_64 ./appimagetool --appimage-extract-and-run -u "$UPDATE_INFO" AppDir Linkora.AppImage
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag }}
+          draft: true
+          files: |
+            composeApp/build/compose/binaries/main/exe/*.exe
+            composeApp/build/compose/binaries/main/msi/*.msi
+            composeApp/build/compose/binaries/main/deb/*.deb
+            composeApp/build/compose/jars/*.jar
+            Linkora.AppImage
+            Linkora.AppImage.zsync
+
+  build-android:
+    name: Build Android APKs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Make Gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Decode Keystores
+        run: |
+          echo "${{ secrets.PREVIEW_KEYSTORE_BASE64 }}" | base64 --decode > $GITHUB_WORKSPACE/preview_keystore.jks
+          echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 --decode > $GITHUB_WORKSPACE/release_keystore.jks
+
+      - name: Build and Sign Preview APK
+        env:
+          STORE_PASSWORD: ${{ secrets.PREVIEW_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.PREVIEW_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.PREVIEW_KEY_PASSWORD }}
+        run: |
+          ./gradlew :composeApp:assemblePreview \
+          -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/preview_keystore.jks \
+          -Pandroid.injected.signing.store.password="$STORE_PASSWORD" \
+          -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+          -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
+          
+          mv composeApp/build/outputs/apk/preview/*.apk composeApp-preview.apk
+
+      - name: Build and Sign Release APK
+        env:
+          STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: |
+          ./gradlew :composeApp:assembleRelease \
+          -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/release_keystore.jks \
+          -Pandroid.injected.signing.store.password="$STORE_PASSWORD" \
+          -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+          -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
+          
+          mv composeApp/build/outputs/apk/release/*.apk composeApp-release.apk
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag }}
+          draft: true
+          files: |
+            composeApp-preview.apk
+            composeApp-release.apk
+
+  build-wasm:
+    name: Build WasmJs Distribution
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Make Gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build WasmJs Extension Zip
+        run: |
+          ./gradlew :composeApp:wasmJsBrowserDistribution
+          cd composeApp/build/dist/wasmJs/productionExecutable
+          zip -r $GITHUB_WORKSPACE/Linkora-web-wasm.zip .
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag }}
+          draft: true
+          files: |
+            Linkora-web-wasm.zip
+
+      - name: Deploy to Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          npx netlify-cli deploy \
+          --dir=composeApp/build/dist/wasmJs/productionExecutable \
+          --prod \
+          --message "Production deploy for tag ${{ inputs.tag }}"
