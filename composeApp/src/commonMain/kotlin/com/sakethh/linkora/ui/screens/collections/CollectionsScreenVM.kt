@@ -8,6 +8,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkSaveConfig
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.RefreshLinkType
@@ -20,8 +21,6 @@ import com.sakethh.linkora.domain.repository.local.LocalFoldersRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.LocalTagsRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
-import com.sakethh.linkora.preferences.AppPreferenceType
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.LastSeenId
 import com.sakethh.linkora.ui.LastSeenString
 import com.sakethh.linkora.ui.Paginator
@@ -49,17 +48,19 @@ import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class CollectionsScreenVM(
     private val localFoldersRepo: LocalFoldersRepo,
     private val localLinksRepo: LocalLinksRepo,
     private val localTagsRepo: LocalTagsRepo,
-    preferencesRepo: PreferencesRepository? = null
+    private val preferencesRepo: PreferencesRepository
 ) : ViewModel() {
-    val sortingType get() = AppPreferences.selectedSortingType.value
-
-    private val _currentCollectionSource get() = if (AppPreferences.selectedCollectionSourceId == 0) Localization.Key.Folders.getLocalizedString() else Localization.Key.Tags.getLocalizedString()
+    val sortingType get() = preferencesRepo.getPreferences().selectedSortingType
+    val shuffleLinks get() = preferencesRepo.getPreferences().forceShuffleLinks
+    val preferencesAsFlow = preferencesRepo.preferencesAsFlow
+    private val _currentCollectionSource get() = if (preferencesRepo.getPreferences().selectedCollectionSourceId == 0) Localization.Key.Folders.getLocalizedString() else Localization.Key.Tags.getLocalizedString()
     var currentCollectionSource by mutableStateOf(_currentCollectionSource)
 
     companion object {
@@ -83,8 +84,8 @@ class CollectionsScreenVM(
         viewModelScope.launch {
             combine(snapshotFlow {
                 foldersSearchQuery
-            }, snapshotFlow {
-                AppPreferences.selectedSortingType.value
+            }, preferencesAsFlow.map {
+                it.selectedSortingType
             }) { query, sortingType ->
                 Pair(query, sortingType)
             }.cancellable().collectLatest { (query, sortingType) ->
@@ -167,7 +168,6 @@ class CollectionsScreenVM(
     )
 
 
-
     private val _allTags = MutableStateFlow(
         value = PaginationState(
             isRetrieving = true,
@@ -202,7 +202,7 @@ class CollectionsScreenVM(
             _rootRegularFolders.onRetrieved(
                 currentKey = currentKey,
                 data = retrievedData,
-                shouldShuffle = AppPreferences.forceShuffleLinks.value,
+                shouldShuffle = shuffleLinks,
                 idSelector = { it.localId },
                 stringSelector = { it.name })
         },
@@ -226,7 +226,7 @@ class CollectionsScreenVM(
             _allTags.onRetrieved(
                 currentKey = currentKey,
                 data = retrievedData,
-                shouldShuffle = AppPreferences.forceShuffleLinks.value,
+                shouldShuffle = shuffleLinks,
                 idSelector = { it.localId },
                 stringSelector = { it.name })
         },
@@ -281,39 +281,33 @@ class CollectionsScreenVM(
         }
     }
 
-    private val appPreferencesCombined = combine(snapshotFlow {
-        AppPreferences.forceShuffleLinks.value
-    }, snapshotFlow {
-        AppPreferences.selectedSortingType.value
-    }) { shuffleLinks, sortingType ->
-        Pair(shuffleLinks, sortingType)
+    private val appPreferencesCombined = preferencesAsFlow.map {
+        Pair(it.forceShuffleLinks, it.selectedSortingType)
     }
 
     init {
-        if (preferencesRepo != null) {
-            viewModelScope.launch {
-                snapshotFlow {
-                    AppPreferences.selectedCollectionSourceId
-                }.cancellable().collectLatest {
-                    currentCollectionSource = _currentCollectionSource
-                    preferencesRepo.changePreferenceValue(
-                        preferenceKey = intPreferencesKey(
-                            AppPreferenceType.COLLECTION_SOURCE_ID.name
-                        ), newValue = it
-                    )
-                }
+        viewModelScope.launch {
+            preferencesAsFlow.map {
+                it.selectedCollectionSourceId
+            }.cancellable().collectLatest {
+                currentCollectionSource = _currentCollectionSource
+                preferencesRepo.changePreferenceValue(
+                    preferenceKey = intPreferencesKey(
+                        AppPreferences.COLLECTION_SOURCE_ID.key
+                    ), newValue = it
+                )
             }
+        }
 
-            viewModelScope.launch {
-                snapshotFlow {
-                    AppPreferences.showTagsInAddNewLinkDialogBox
-                }.cancellable().collectLatest {
-                    preferencesRepo.changePreferenceValue(
-                        preferenceKey = booleanPreferencesKey(
-                            AppPreferenceType.SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK.name
-                        ), newValue = it
-                    )
-                }
+        viewModelScope.launch {
+            preferencesAsFlow.map {
+                it.showTagsInAddNewLinkDialogBox
+            }.cancellable().collectLatest {
+                preferencesRepo.changePreferenceValue(
+                    preferenceKey = booleanPreferencesKey(
+                        AppPreferences.SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK.key
+                    ), newValue = it
+                )
             }
         }
 
@@ -334,7 +328,7 @@ class CollectionsScreenVM(
         // ==== RESET THE STATE OF PAGINATORS (+HANDLE DESKTOP COLLECTION-DETAIL-PANE) =====
 
         viewModelScope.launch {
-            var lastSortingType = AppPreferences.selectedSortingType.value
+            var lastSortingType = sortingType
             appPreferencesCombined.collectLatest { (shuffleLinks, sortingType) ->
                 val isSortingTypeChanged = if (sortingType == lastSortingType) {
                     false

@@ -22,9 +22,9 @@ import com.sakethh.linkora.domain.repository.local.LocalFoldersRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.LocalPanelsRepo
 import com.sakethh.linkora.domain.repository.local.LocalTagsRepo
+import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.SnapshotRepo
 import com.sakethh.linkora.platform.FileManager
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.AppVM.Companion.pauseSnapshots
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.pushSnackbar
@@ -37,20 +37,19 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 class SnapshotRepoImpl(
     private val snapshotDao: SnapshotDao,
-    private val isSnapshotsEnabled: State<Boolean>,
-    private val autoDeleteSnapshots: () -> Boolean,
-    private val snapshotExportFormatId: () -> Int,
     private val linksRepo: LocalLinksRepo,
     private val foldersRepo: LocalFoldersRepo,
     private val localPanelsRepo: LocalPanelsRepo,
     private val exportDataRepo: ExportDataRepo,
     private val localTagsRepo: LocalTagsRepo,
     private val fileManager: FileManager,
+    private val preferencesRepository: PreferencesRepository
 ) : SnapshotRepo {
 
     private var snapshotsJob: Job? = null
@@ -80,11 +79,12 @@ class SnapshotRepoImpl(
     }
 
     // TODO: NESTED collectLatest
-    override context(coroutineScope: CoroutineScope) fun collectLatestAndExport() {
+    override context(coroutineScope: CoroutineScope)
+    fun collectLatestAndExport() {
         snapshotsJob?.cancel()
         coroutineScope.launch {
-            snapshotFlow {
-                isSnapshotsEnabled.value
+            preferencesRepository.preferencesAsFlow.map {
+                it.areSnapshotsEnabled
             }.debounce(1000).collectLatest {
                 if (it) {
                     snapshotsJob = this.launch(Dispatchers.Default) {
@@ -97,7 +97,9 @@ class SnapshotRepoImpl(
                             snapshotFlow {
                                 forceSnapshot.value
                             },
-                            localTagsRepo.getAllTags(AppPreferences.selectedSortingType.value),
+                            localTagsRepo.getAllTags(
+                                preferencesRepository.getPreferences().selectedSortingType
+                            ),
                             localTagsRepo.getAllLinkTags()
                         ) { links, folders, panels, panelFolders, _, tags, linkTags ->
                             AllTablesDTO(
@@ -145,18 +147,19 @@ class SnapshotRepoImpl(
         allLinkTagsPairs: List<LinkTag>,
         onCompletion: () -> Unit
     ) {
-        if (autoDeleteSnapshots()) {
+        val preferences = preferencesRepository.getPreferences()
+        if (preferences.backupAutoDeletionEnabled) {
             fileManager.deleteAutoBackups(
-                backupLocation = AppPreferences.currentBackupLocation.value,
-                threshold = AppPreferences.backupAutoDeleteThreshold.intValue,
+                backupLocation = preferences.currentBackupLocation,
+                threshold = preferences.backupAutoDeleteThreshold,
                 onCompletion = {
                     linkoraLog(
-                        "Deleted $it snapshot files as the threshold was ${AppPreferences.backupAutoDeleteThreshold.intValue}"
+                        "Deleted $it snapshot files as the threshold was ${preferences.backupAutoDeleteThreshold}"
                     )
                 })
         }
 
-        if (snapshotExportFormatId() == SnapshotFormat.JSON.id || snapshotExportFormatId() == SnapshotFormat.BOTH.id) {
+        if (preferences.snapshotExportFormatID.toInt() == SnapshotFormat.JSON.id || preferences.snapshotExportFormatID.toInt() == SnapshotFormat.BOTH.id) {
 
             val serializedJsonExportString =
                 JSONExportSchema(schemaVersion = JSONExportSchema.VERSION, links = allLinks.map {
@@ -184,19 +187,19 @@ class SnapshotRepoImpl(
                 }
 
             fileManager.exportSnapshotData(
-                exportLocation = AppPreferences.currentBackupLocation.value,
+                exportLocation = preferences.currentBackupLocation,
                 rawExportString = serializedJsonExportString,
                 fileType = FileType.JSON
             )
         }
 
-        if (snapshotExportFormatId() == SnapshotFormat.HTML.id || snapshotExportFormatId() == SnapshotFormat.BOTH.id) {
+        if (preferences.snapshotExportFormatID.toInt() == SnapshotFormat.HTML.id || preferences.snapshotExportFormatID.toInt() == SnapshotFormat.BOTH.id) {
             fileManager.exportSnapshotData(
                 rawExportString = exportDataRepo.rawExportDataAsHTML(
                     links = allLinks, folders = allFolders
                 ),
                 fileType = ExportFileType.HTML,
-                exportLocation = AppPreferences.currentBackupLocation.value,
+                exportLocation = preferences.currentBackupLocation
             )
         }
         onCompletion()

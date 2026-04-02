@@ -45,7 +45,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.sakethh.linkora.di.APPVMAssistedFactory
-import com.sakethh.linkora.di.CollectionScreenVMAssistedFactory
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.LinkSaveConfig
@@ -53,7 +52,6 @@ import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.tag.Tag
-import com.sakethh.linkora.preferences.AppPreferences.serverBaseUrl
 import com.sakethh.linkora.ui.components.AddANewFolderDialogBox
 import com.sakethh.linkora.ui.components.AddANewLinkDialogBox
 import com.sakethh.linkora.ui.components.AddItemFABParam
@@ -92,6 +90,7 @@ import com.sakethh.linkora.utils.currentSavedServerConfig
 import com.sakethh.linkora.utils.host
 import com.sakethh.linkora.utils.ifServerConfigured
 import com.sakethh.linkora.utils.inRootScreen
+import com.sakethh.linkora.utils.isServerConfigured
 import com.sakethh.linkora.utils.supportsWideDisplay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -105,6 +104,7 @@ fun App(
     val onAndroidMobile = Platform.Android.onMobile()
     val appVM: AppVM =
         linkoraViewModel(factory = APPVMAssistedFactory.createForApp(LocalDensity.current))
+    val preferences by appVM.preferencesAsFlow.collectAsStateWithLifecycle()
     val createTagBtmSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showTagDeletionConfirmation by rememberSaveable {
         mutableStateOf(false)
@@ -115,7 +115,7 @@ fun App(
     val tagMenuBtmSheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val collectionsScreenVM: CollectionsScreenVM =
-        linkoraViewModel(factory = CollectionScreenVMAssistedFactory.createForApp())
+        linkoraViewModel()
     val rootRouteList = retain {
         listOf(
             Navigation.Root.HomeScreen,
@@ -138,7 +138,7 @@ fun App(
     val coroutineScope = rememberCoroutineScope()
     val platform = LocalPlatform.current
 
-    val isDataSyncingFromPullRefresh = rememberSaveable {
+    var isDataSyncingFromPullRefresh = rememberSaveable {
         mutableStateOf(false)
     }
     val pullToRefreshState = rememberPullToRefreshState()
@@ -170,6 +170,7 @@ fun App(
                     appVM.getLastSyncedTime()
                 },
                 isAnySnapshotOngoing = appVM.isAnySnapshotOngoing,
+                preferences = preferences,
                 performAction = appVM::performAppAction
             )
         }
@@ -208,6 +209,7 @@ fun App(
                     isPerformingStartupSync = appVM.isPerformingStartupSync,
                     inRootScreen = inRootScreen,
                     navDestination = currentRoute,
+                    preferences = preferences,
                     onDoubleTap = { navigationRoot ->
                         forceSearchActive = navigationRoot is Navigation.Root.SearchScreen
                     })
@@ -272,25 +274,27 @@ fun App(
             modifier = Modifier.fillMaxSize(),
         ) {
             Box(
-                modifier = Modifier.pullToRefresh(
-                    isRefreshing = isDataSyncingFromPullRefresh.value,
-                    state = pullToRefreshState,
-                    enabled = rememberSaveable(serverBaseUrl.value) {
-                        serverBaseUrl.value.isNotBlank() && onAndroidMobile
-                    },
-                    onRefresh = {
-                        appVM.saveServerConnectionAndSync(
-                            serverConnection = currentSavedServerConfig(),
-                            timeStampAfter = {
-                                appVM.getLastSyncedTime()
-                            },
-                            onSyncStart = {
-                                isDataSyncingFromPullRefresh.value = true
-                            },
-                            onCompletion = {
-                                isDataSyncingFromPullRefresh.value = false
-                            })
-                    })
+                modifier = if (preferences.isServerConfigured()) {
+                    Modifier.pullToRefresh(
+                        isRefreshing = isDataSyncingFromPullRefresh.value,
+                        state = pullToRefreshState,
+                        enabled = rememberSaveable(preferences.serverBaseUrl) {
+                            preferences.serverBaseUrl.isNotBlank() && onAndroidMobile
+                        },
+                        onRefresh = {
+                            appVM.saveServerConnectionAndSync(
+                                serverConnection = preferences.currentSavedServerConfig(),
+                                timeStampAfter = {
+                                    appVM.getLastSyncedTime()
+                                },
+                                onSyncStart = {
+                                    isDataSyncingFromPullRefresh.value = true
+                                },
+                                onCompletion = {
+                                    isDataSyncingFromPullRefresh.value = false
+                                })
+                        })
+                } else Modifier
             ) {
                 LinkoraNavHost(
                     startDestination = appVM.startDestination,
@@ -302,6 +306,7 @@ fun App(
                     cancelForceSearchActive = {
                         forceSearchActive = false
                     },
+                    preferences = preferences,
                     collectionScreenParams = CollectionScreenParams(
                         rootRegularFolders = collectionsScreenVM.rootRegularFolders,
                         allTags = collectionsScreenVM.allTags,
@@ -313,11 +318,13 @@ fun App(
                         onTagsFirstVisibleItemIndexChange = collectionsScreenVM::updateStartingIndexForTagsPaginator,
                     )
                 )
-                Indicator(
-                    state = pullToRefreshState,
-                    isRefreshing = isDataSyncingFromPullRefresh.value,
-                    modifier = Modifier.align(Alignment.TopCenter)
-                )
+                if (preferences.isServerConfigured()) {
+                    Indicator(
+                        state = pullToRefreshState,
+                        isRefreshing = isDataSyncingFromPullRefresh.value,
+                        modifier = Modifier.align(Alignment.TopCenter)
+                    )
+                }
             }
             AnimatedVisibility(
                 visible = isReducedTransparencyBoxVisible.value, enter = fadeIn(), exit = fadeOut()
@@ -330,6 +337,7 @@ fun App(
             }
             if (appVM.showAddLinkDialog) {
                 AddANewLinkDialogBox(
+                    preferences = preferences,
                     addNewLinkDialogParams = AddNewLinkDialogParams(
                         onDismiss = {
                             appVM.showAddLinkDialog = false
@@ -383,6 +391,7 @@ fun App(
             }
             if (appVM.showMenuSheet) {
                 MenuBtmSheet(
+                    preferences = preferences,
                     menuBtmSheetParam = MenuBtmSheetParam(
                         onDismiss = {
                             appVM.showMenuSheet = false
@@ -396,7 +405,7 @@ fun App(
                             appVM.showRenameDialogBox = true
                         },
                         onArchive = {
-                            ifServerConfigured {
+                            preferences.ifServerConfigured {
                                 showProgressBarDuringRemoteSave.value = true
                             }
                             if (menuBtmSheetFolderEntries().contains(appVM.menuBtmSheetFor)) {
@@ -414,7 +423,7 @@ fun App(
                             }
                         },
                         onDeleteNote = {
-                            ifServerConfigured {
+                            preferences.ifServerConfigured {
                                 showProgressBarDuringRemoteSave.value = true
                             }
                             if (menuBtmSheetFolderEntries().contains(appVM.menuBtmSheetFor)) {
@@ -438,7 +447,10 @@ fun App(
                                 ),
                                 linkSaveConfig = LinkSaveConfig(
                                     forceAutoDetectTitle = false,
-                                    forceSaveWithoutRetrievingData = true
+                                    forceSaveWithoutRetrievingData = true,
+                                    useProxy = preferences.useProxy,
+                                    skipSavingIfExists = preferences.skipSavingExistingLink,
+                                    forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails
                                 ),
                                 onCompletion = {},
                                 pushSnackbarOnSuccess = false,
@@ -454,7 +466,7 @@ fun App(
                         linkTagsPair = appVM.selectedLinkTagsForMenuBtmSheet,
                         folder = appVM.selectedFolderForMenuBtmSheet,
                         onAddToImportantLinks = {
-                            ifServerConfigured {
+                            preferences.ifServerConfigured {
                                 showProgressBarDuringRemoteSave.value = true
                             }
                             collectionsScreenVM.markALinkAsImp(
@@ -487,7 +499,7 @@ fun App(
                             hideMenuSheet()
                         },
                         onRefresh = { refreshLinkType ->
-                            ifServerConfigured {
+                            preferences.ifServerConfigured {
                                 showProgressBarDuringRemoteSave.value = true
                             }
                             collectionsScreenVM.refreshLinkMetadata(
@@ -502,7 +514,8 @@ fun App(
             }
             if (appVM.showDeleteDialogBox) {
                 DeleteFolderOrLinkDialog(
-                    DeleteFolderOrLinkDialogParam(
+                    preferences = preferences,
+                    deleteFolderOrLinkDialogParam = DeleteFolderOrLinkDialogParam(
                         onDismiss = {
                             appVM.showDeleteDialogBox = false
                         },

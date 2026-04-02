@@ -13,12 +13,12 @@ import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.sakethh.linkora.preferences.AppPreferences
+import com.sakethh.linkora.domain.AppPreferences
 import io.ktor.http.encodeURLParameter
-import io.ktor.http.encodeURLPath
 
 @Composable
 fun CoilImage(
+    preferences: AppPreferences,
     modifier: Modifier,
     imgURL: String,
     userAgent: String,
@@ -27,10 +27,10 @@ fun CoilImage(
     alignment: Alignment = Alignment.Center
 ) {
 
-    val imgURL by rememberSaveable(AppPreferences.useProxy) {
+    val imgURL by rememberSaveable(preferences.useProxy) {
         mutableStateOf(
-            if (AppPreferences.useProxy) {
-                AppPreferences.proxyUrl.run {
+            if (preferences.useProxy) {
+                preferences.proxyUrl.run {
                     if (endsWith("/")) this else "$this/"
                 } + "image?url=${imgURL.encodeURLParameter()}"
             } else {

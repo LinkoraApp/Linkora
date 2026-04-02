@@ -8,20 +8,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.linkoraViewModel
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.platform.showDynamicThemingOption
 import com.sakethh.linkora.platform.showFollowSystemThemeOption
-import com.sakethh.linkora.preferences.AppPreferenceType
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
@@ -33,6 +32,7 @@ import com.sakethh.linkora.utils.rememberLocalizedString
 @Composable
 fun ThemeSettingsScreen() {
     val settingsScreenViewModel: SettingsScreenViewModel = linkoraViewModel()
+    val preferences by settingsScreenViewModel.preferencesAsFlow.collectAsStateWithLifecycle()
     val platform = platform
     val isSystemInDarkTheme = isSystemInDarkTheme()
     SettingsSectionScaffold(
@@ -43,7 +43,7 @@ fun ThemeSettingsScreen() {
                 .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
             verticalArrangement = Arrangement.spacedBy(30.dp)
         ) {
-            if (platform is Platform.Android && showFollowSystemThemeOption && !AppPreferences.useDarkTheme.value) {
+            if (platform is Platform.Android && showFollowSystemThemeOption && !preferences.useDarkTheme) {
                 item(key = Localization.Key.FollowSystemTheme.defaultValue) {
                     SettingComponent(
                         SettingComponentParam(
@@ -51,22 +51,19 @@ fun ThemeSettingsScreen() {
                             doesDescriptionExists = false,
                             isSwitchNeeded = true,
                             description = null,
-                            isSwitchEnabled = AppPreferences.useSystemTheme,
+                            isSwitchEnabled = preferences.useSystemTheme,
                             onSwitchStateChange = {
-                                AppPreferences.useSystemTheme.value =
-                                    !AppPreferences.useSystemTheme.value
                                 settingsScreenViewModel.changeSettingPreferenceValue(
-                                    booleanPreferencesKey(AppPreferenceType.FOLLOW_SYSTEM_THEME.name),
+                                    booleanPreferencesKey(AppPreferences.FOLLOW_SYSTEM_THEME.key),
                                     it
                                 )
                             },
-                            isIconNeeded = remember {
-                                mutableStateOf(false)
-                            })
+                            isIconNeeded = false
+                        )
                     )
                 }
             }
-            if (!AppPreferences.useSystemTheme.value || platform is Platform.Desktop || platform is Platform.Web) {
+            if (!preferences.useSystemTheme || platform is Platform.Desktop || platform is Platform.Web) {
                 item(key = Localization.Key.UseDarkMode.defaultValue) {
                     SettingComponent(
                         SettingComponentParam(
@@ -74,21 +71,18 @@ fun ThemeSettingsScreen() {
                             doesDescriptionExists = false,
                             description = null,
                             isSwitchNeeded = true,
-                            isSwitchEnabled = AppPreferences.useDarkTheme,
+                            isSwitchEnabled = preferences.useDarkTheme,
                             onSwitchStateChange = {
-                                AppPreferences.useDarkTheme.value =
-                                    !AppPreferences.useDarkTheme.value
                                 settingsScreenViewModel.changeSettingPreferenceValue(
-                                    booleanPreferencesKey(AppPreferenceType.DARK_THEME.name), it
+                                    booleanPreferencesKey(AppPreferences.DARK_THEME.key), it
                                 )
                             },
-                            isIconNeeded = remember {
-                                mutableStateOf(false)
-                            })
+                            isIconNeeded = false
+                        )
                     )
                 }
             }
-            if (platform is Platform.Android && (AppPreferences.useDarkTheme.value || (isSystemInDarkTheme && AppPreferences.useSystemTheme.value))) {
+            if (platform is Platform.Android && (preferences.useDarkTheme || (isSystemInDarkTheme && preferences.useSystemTheme))) {
                 item {
                     SettingComponent(
                         SettingComponentParam(
@@ -96,18 +90,15 @@ fun ThemeSettingsScreen() {
                             doesDescriptionExists = false,
                             description = "",
                             isSwitchNeeded = true,
-                            isSwitchEnabled = AppPreferences.useAmoledTheme,
+                            isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
-                                AppPreferences.useAmoledTheme.value =
-                                    !AppPreferences.useAmoledTheme.value
                                 settingsScreenViewModel.changeSettingPreferenceValue(
-                                    booleanPreferencesKey(AppPreferenceType.AMOLED_THEME_STATE.name),
+                                    booleanPreferencesKey(AppPreferences.AMOLED_THEME_STATE.key),
                                     it
                                 )
                             },
-                            isIconNeeded = remember {
-                                mutableStateOf(false)
-                            })
+                            isIconNeeded = false
+                        )
                     )
                 }
             }
@@ -119,18 +110,15 @@ fun ThemeSettingsScreen() {
                             doesDescriptionExists = true,
                             description = Localization.Key.UseDynamicThemingDesc.rememberLocalizedString(),
                             isSwitchNeeded = true,
-                            isSwitchEnabled = AppPreferences.useDynamicTheming,
+                            isSwitchEnabled = preferences.useDynamicTheming,
                             onSwitchStateChange = {
-                                AppPreferences.useDynamicTheming.value =
-                                    !AppPreferences.useDynamicTheming.value
                                 settingsScreenViewModel.changeSettingPreferenceValue(
-                                    booleanPreferencesKey(AppPreferenceType.DYNAMIC_THEMING.name),
+                                    booleanPreferencesKey(AppPreferences.DYNAMIC_THEMING.key),
                                     it
                                 )
                             },
-                            isIconNeeded = remember {
-                                mutableStateOf(false)
-                            })
+                            isIconNeeded = false
+                        )
                     )
                 }
             }

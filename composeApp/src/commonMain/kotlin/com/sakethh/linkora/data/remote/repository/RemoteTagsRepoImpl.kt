@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.Flow
 
 class RemoteTagsRepoImpl(
     private val syncServerClient: () -> HttpClient,
-    private val baseUrl: () -> String,
-    private val authToken: () -> String
+    private val baseUrl: suspend () -> String,
+    private val authToken: suspend () -> String
 ) : RemoteTagsRepo {
     override suspend fun createATag(createTagDTO: CreateTagDTO): Flow<Result<NewItemResponseDTO>> {
         return postFlow(

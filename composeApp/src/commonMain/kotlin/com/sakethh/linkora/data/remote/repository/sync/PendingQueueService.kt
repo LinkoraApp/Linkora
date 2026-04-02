@@ -297,7 +297,8 @@ class PendingQueueService(
                         if (localFolder.remoteId != null) {
                             val remoteFolderDTO = localFolder.asFolderDTO(
                                 remoteId = localFolder.remoteId,
-                                remoteParentFolderId = remoteParentFolderId
+                                remoteParentFolderId = remoteParentFolderId,
+                                correlation = preferencesRepository.getPreferences().correlation
                             )
                             remoteFoldersRepo.updateFolder(remoteFolderDTO)
                                 .removeQueueItemAndSyncTimestamp(queueItem.id)

@@ -16,8 +16,8 @@ import kotlinx.coroutines.flow.Flow
 
 class RemoteMultiActionRepoImpl(
     private val syncServerClient:()-> HttpClient,
-    private val baseUrl: () -> String,
-    private val authToken: () -> String
+    private val baseUrl: suspend () -> String,
+    private val authToken: suspend () -> String
 ) : RemoteMultiActionRepo {
     override suspend fun archiveMultipleItems(archiveMultipleItemsDTO: ArchiveMultipleItemsDTO): Flow<Result<TimeStampBasedResponse>> {
         return postFlow(

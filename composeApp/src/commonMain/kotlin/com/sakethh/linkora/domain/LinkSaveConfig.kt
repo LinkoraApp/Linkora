@@ -1,18 +1,19 @@
 package com.sakethh.linkora.domain
 
-import com.sakethh.linkora.preferences.AppPreferences
-
 data class LinkSaveConfig(
     val forceAutoDetectTitle: Boolean,
     val forceSaveWithoutRetrievingData: Boolean,
-    val useProxy: Boolean = AppPreferences.useProxy,
-    val skipSavingIfExists: Boolean = AppPreferences.skipSavingExistingLink.value,
-    val forceSaveIfRetrievalFails: Boolean = AppPreferences.forceSaveIfRetrievalFails.value
+    val useProxy: Boolean,
+    val skipSavingIfExists: Boolean,
+    val forceSaveIfRetrievalFails: Boolean
 ) {
     companion object {
         fun forceSaveWithoutRetrieving(): LinkSaveConfig {
             return LinkSaveConfig(
-                forceAutoDetectTitle = false, forceSaveWithoutRetrievingData = true
+                forceAutoDetectTitle = false, forceSaveWithoutRetrievingData = true,
+                useProxy = false,
+                skipSavingIfExists = true,
+                forceSaveIfRetrievalFails = true
             )
         }
     }

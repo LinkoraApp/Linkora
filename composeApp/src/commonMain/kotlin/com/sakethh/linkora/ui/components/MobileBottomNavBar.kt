@@ -32,7 +32,7 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.sakethh.linkora.platform.platform
-import com.sakethh.linkora.preferences.AppPreferences
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM
@@ -42,6 +42,7 @@ import kotlin.time.Clock
 
 @Composable
 fun MobileBottomNavBar(
+    preferences: AppPreferences,
     rootRouteList: List<Navigation.Root>,
     isPerformingStartupSync: Boolean,
     inRootScreen: Boolean?,
@@ -67,7 +68,7 @@ fun MobileBottomNavBar(
             }
             NavigationBar {
                 rootRouteList.forEach { navRouteItem ->
-                    if (!AppPreferences.isHomeScreenEnabled.value && navRouteItem.toString() == Navigation.Root.HomeScreen.toString()) return@forEach
+                    if (!preferences.isHomeScreenEnabled && navRouteItem.toString() == Navigation.Root.HomeScreen.toString()) return@forEach
 
                     val isSelected = navDestination?.hasRoute(navRouteItem::class) == true
                     NavigationBarItem(

@@ -34,10 +34,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.platform.platform
-import com.sakethh.linkora.preferences.AppPreferences
-import com.sakethh.linkora.preferences.AppPreferences.serverBaseUrl
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.domain.AppAction
 import com.sakethh.linkora.ui.navigation.Navigation
@@ -45,6 +44,7 @@ import com.sakethh.linkora.utils.currentSavedServerConfig
 
 @Composable
 fun DesktopNavigationRail(
+    preferences: AppPreferences,
     rootRouteList: List<Navigation.Root>,
     currentRoute: NavDestination?,
     isDataSyncingFromPullRefresh: MutableState<Boolean>,
@@ -62,7 +62,7 @@ fun DesktopNavigationRail(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 rootRouteList.forEach { navRouteItem ->
-                    if (AppPreferences.isHomeScreenEnabled.value.not() && navRouteItem.toString() == Navigation.Root.HomeScreen.toString()) return@forEach
+                    if (!preferences.isHomeScreenEnabled && navRouteItem.toString() == Navigation.Root.HomeScreen.toString()) return@forEach
 
                     val isSelected = currentRoute?.hasRoute(navRouteItem::class) == true
                     NavigationRailItem(
@@ -106,7 +106,7 @@ fun DesktopNavigationRail(
             Box(
                 Modifier.fillMaxHeight(), contentAlignment = Alignment.BottomCenter
             ) {
-                if (!Platform.Android.onMobile() && serverBaseUrl.value.isNotBlank()) {
+                if (!Platform.Android.onMobile() && preferences.serverBaseUrl.isNotBlank()) {
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 80.dp)
@@ -115,7 +115,7 @@ fun DesktopNavigationRail(
                             if (!isPerformingStartupSync && !isDataSyncingFromPullRefresh.value) {
                                 performAction(
                                     AppAction.SaveServerConnectionAndSync(
-                                        serverConnection = currentSavedServerConfig(),
+                                        serverConnection = preferences.currentSavedServerConfig(),
                                         timeStampAfter = getLastSyncedTime,
                                         onSyncStart = {
                                             isDataSyncingFromPullRefresh.value = true
@@ -136,7 +136,7 @@ fun DesktopNavigationRail(
                     }
                 }
 
-                if (AppPreferences.areSnapshotsEnabled.value && platform == Platform.Desktop) {
+                if (preferences.areSnapshotsEnabled && platform == Platform.Desktop) {
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)

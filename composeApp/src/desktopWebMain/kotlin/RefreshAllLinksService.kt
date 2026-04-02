@@ -1,7 +1,7 @@
+import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.domain.onSuccess
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.platform.PlatformIODispatcher
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
 import com.sakethh.linkora.ui.screens.settings.section.data.RefreshLinksState
 import kotlinx.coroutines.CoroutineScope
@@ -33,7 +33,7 @@ object RefreshAllLinksService {
                     launch {
                         localLinksRepo.refreshLinkMetadata(
                             link,
-                            AppPreferences.selectedLinkRefreshType
+                            DependencyContainer.preferencesRepo.getPreferences().selectedLinkRefreshType
                         ).collectLatest {
                             it.onSuccess {
                                 DataSettingsScreenVM.refreshLinksState.value =

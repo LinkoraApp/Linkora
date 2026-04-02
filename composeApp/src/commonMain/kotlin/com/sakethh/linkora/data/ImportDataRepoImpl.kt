@@ -4,6 +4,7 @@ import androidx.room3.Transactor
 import androidx.room3.immediateTransaction
 import com.fleeksoft.ksoup.Ksoup
 import com.fleeksoft.ksoup.nodes.Element
+import com.sakethh.linkora.di.DependencyContainer.preferencesRepo
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.model.Folder
@@ -35,7 +36,7 @@ class ImportDataRepoImpl(
     private val localTagsRepo: LocalTagsRepo,
     private val remoteSyncRepo: RemoteSyncRepo,
     private val withWriterConnection: suspend (suspend (Transactor) -> Unit) -> Unit,
-    private val canPushToServer: () -> Boolean,
+    private val canPushToServer: suspend () -> Boolean,
 ) : ImportDataRepo {
     override suspend fun importDataFromObj(jsonExportSchema: JSONExportSchema): Flow<Result<Unit>> {
         return channelFlow<Result<Unit>> {
@@ -260,7 +261,8 @@ class ImportDataRepoImpl(
                                                         LinkType.HISTORY_LINK -> Constants.HISTORY_ID
                                                         else -> currentParentId
                                                     },
-                                                    lastModified = eventTimestamp
+                                                    lastModified = eventTimestamp,
+                                                    userAgent = preferencesRepo.getPreferences().primaryJsoupUserAgent
                                                 )
                                             )
                                         }

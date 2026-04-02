@@ -6,7 +6,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.domain.Font
 import linkora.composeapp.generated.resources.Res
 import linkora.composeapp.generated.resources.googleSansFlex
@@ -22,24 +21,21 @@ private val googleSansFlexFontFamily
             Res.font.googleSansFlex,
             weight = FontWeight.Normal,
             variationSettings = FontVariation.Settings(
-                FontVariation.weight(460),
-                FontVariation.width(102f)
+                FontVariation.weight(460), FontVariation.width(102f)
             )
         ),
         Font(
             Res.font.googleSansFlex,
             weight = FontWeight.Medium,
             variationSettings = FontVariation.Settings(
-                FontVariation.weight(560),
-                FontVariation.width(102f)
+                FontVariation.weight(560), FontVariation.width(102f)
             )
         ),
         Font(
             Res.font.googleSansFlex,
             weight = FontWeight.SemiBold,
             variationSettings = FontVariation.Settings(
-                FontVariation.weight(660),
-                FontVariation.width(102f)
+                FontVariation.weight(660), FontVariation.width(102f)
             )
         ),
     )
@@ -47,8 +43,7 @@ private val googleSansFlexFontFamily
 private val playWriteFontFamily
     @Composable get() = FontFamily(
         Font(
-            resource = Res.font.momo_signature,
-            weight = FontWeight.Normal
+            resource = Res.font.momo_signature, weight = FontWeight.Normal
         )
     )
 
@@ -59,14 +54,16 @@ private val poppinsFontFamily
         Font(resource = Res.font.semibold, weight = FontWeight.SemiBold)
     )
 
-private val currentFontFamily
-    @Composable get() = if (AppPreferences.selectedFont == Font.GOOGLE_SANS_FLEX) googleSansFlexFontFamily else poppinsFontFamily
-
-val LinkoraTypography
-    @Composable get() = Typography(
+@Suppress("ComposableNaming")
+@Composable
+fun LinkoraTypography(preferredFont: Font): Typography {
+    val currentFontFamily =
+        if (preferredFont == Font.GOOGLE_SANS_FLEX) googleSansFlexFontFamily else poppinsFontFamily
+    return Typography(
         titleLarge = TextStyle(fontFamily = currentFontFamily, fontWeight = FontWeight.SemiBold),
         titleMedium = TextStyle(fontFamily = currentFontFamily, fontWeight = FontWeight.Medium),
         titleSmall = TextStyle(fontFamily = currentFontFamily, fontWeight = FontWeight.Normal),
         bodyMedium = TextStyle(fontFamily = currentFontFamily, fontWeight = FontWeight.Normal),
         labelSmall = TextStyle(fontFamily = playWriteFontFamily, fontWeight = FontWeight.Normal)
     )
+}

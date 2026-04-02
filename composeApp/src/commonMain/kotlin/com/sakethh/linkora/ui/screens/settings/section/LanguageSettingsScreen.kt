@@ -1,7 +1,6 @@
 package com.sakethh.linkora.ui.screens.settings.section
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -26,8 +24,6 @@ import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.DownloadForOffline
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
@@ -39,8 +35,8 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -49,7 +45,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -57,7 +52,6 @@ import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.domain.model.localization.LocalizedLanguage
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.components.LoadingDialog
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.DataEmptyScreen
@@ -73,6 +67,7 @@ import com.sakethh.linkora.utils.rememberLocalizedString
 @Composable
 fun LanguageSettingsScreen() {
     val languageSettingsScreenVM: LanguageSettingsScreenVM = linkoraViewModel()
+    val preferences by languageSettingsScreenVM.preferencesAsFlow.collectAsStateWithLifecycle()
     val availableLanguages =
         languageSettingsScreenVM.availableLanguages.collectAsStateWithLifecycle()
     val isLanguageSelectionBtmSheetVisible = rememberSaveable {
@@ -126,43 +121,10 @@ fun LanguageSettingsScreen() {
             }
             item {
                 Text(
-                    text = AppPreferences.preferredAppLanguageName.value,
+                    text = preferences.preferredAppLanguageName,
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 18.sp
                 )
-            }
-            item {
-                Card(
-                    border = BorderStroke(
-                        1.dp, contentColorFor(MaterialTheme.colorScheme.surface)
-                    ), modifier = Modifier.fillMaxWidth().padding(top = 15.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(
-                            top = 10.dp, bottom = 10.dp
-                        ), verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.CenterStart
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Info,
-                                contentDescription = null,
-                                modifier = Modifier.padding(
-                                    start = 10.dp, end = 10.dp
-                                )
-                            )
-                        }
-                        Text(
-                            text = if (AppPreferences.useRemoteStrings.value) Localization.Key.DisplayingRemoteStrings.rememberLocalizedString() else Localization.Key.DisplayingCompiledStrings.rememberLocalizedString(),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontSize = 14.sp,
-                            lineHeight = 18.sp,
-                            textAlign = TextAlign.Start,
-                            modifier = Modifier.padding(end = 10.dp)
-                        )
-                    }
-                }
             }
             item {
                 HorizontalDivider(
@@ -173,13 +135,13 @@ fun LanguageSettingsScreen() {
                 Box(
                     modifier = Modifier.fillMaxWidth().animateContentSize()
                 ) {
-                    if (AppPreferences.preferredAppLanguageCode.value != Constants.DEFAULT_APP_LANGUAGE_CODE) {
+                    if (preferences.preferredAppLanguageCode != Constants.DEFAULT_APP_LANGUAGE_CODE) {
                         FilledTonalButton(
                             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                                 .fillMaxWidth().padding(top = 15.dp, bottom = 15.dp)
                                 .pressScaleEffect(), onClick = {
                                 isLanguageSelectionBtmSheetVisible.value = false
-                                Localization.loadDefaultValues()
+                                Localization.loadDefaultValues(preferences)
                             }) {
                             Text(
                                 text = Localization.Key.ResetAppLanguage.rememberLocalizedString(),
@@ -263,7 +225,8 @@ fun LanguageSettingsScreen() {
                             .clickable(onClick = {
                                 isLanguageSelectionBtmSheetVisible.value = false
                                 Localization.loadLocalizedStrings(
-                                    selectedLanguage.value.languageCode,
+                                    languageCode = selectedLanguage.value.languageCode,
+                                    preferences = preferences
                                 )
                             }, indication = null, interactionSource = remember {
                                 MutableInteractionSource()
@@ -275,7 +238,8 @@ fun LanguageSettingsScreen() {
                                 .pressScaleEffect(), onClick = {
                                 isLanguageSelectionBtmSheetVisible.value = false
                                 Localization.loadLocalizedStrings(
-                                    selectedLanguage.value.languageCode,
+                                    languageCode = selectedLanguage.value.languageCode,
+                                    preferences = preferences
                                 )
                             }) {
                             Icon(imageVector = Icons.Default.Cloud, contentDescription = "")

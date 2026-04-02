@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.Localization
-import com.sakethh.linkora.domain.SyncType
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onLoading
 import com.sakethh.linkora.domain.onSuccess
@@ -16,13 +16,13 @@ import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.Network
 import com.sakethh.linkora.platform.PermissionManager
 import com.sakethh.linkora.platform.PlatformIODispatcher
-import com.sakethh.linkora.preferences.AppPreferenceType
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.AppVM
 import com.sakethh.linkora.ui.domain.model.ServerConnection
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.utils.booleanPreferencesKey
+import com.sakethh.linkora.utils.canPushToServer
+import com.sakethh.linkora.utils.canReadFromServer
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.pushSnackbarOnFailure
 import com.sakethh.linkora.utils.stringPreferencesKey
@@ -40,8 +40,8 @@ open class ServerManagementViewModel(
     private val fileManager: FileManager,
     private val permissionManager: PermissionManager,
     private val network: Network,
-    loadExistingCertificateInfo: Boolean = true
 ) : ViewModel() {
+    val preferencesAsFlow = preferencesRepository.preferencesAsFlow
     val serverSetupState = mutableStateOf(
         ServerSetupState(
             isConnecting = false, isConnectedSuccessfully = false, isError = false
@@ -54,7 +54,7 @@ open class ServerManagementViewModel(
 
                 network.closeSyncServerClient()
                 network.configureSyncServerClient(
-                    bypassCertCheck = AppPreferences.skipCertCheckForSync.value
+                    bypassCertCheck = preferencesRepository.getPreferences().skipCertCheckForSync
                 )
 
                 networkRepo.testServerConnection(serverUrl, token).collectLatest {
@@ -86,22 +86,20 @@ open class ServerManagementViewModel(
     fun cancelServerConnectionAndSync(removeConnection: Boolean = true) {
         network.closeSyncServerClient()
         saveServerConnectionAndSyncJob?.cancel()
-        if (removeConnection.not()) {
+        if (!removeConnection) {
             return
         }
         viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
                 preferenceKey = stringPreferencesKey(
-                    AppPreferenceType.SERVER_URL.name
+                    AppPreferences.SERVER_URL.key
                 ), newValue = ""
             )
             preferencesRepository.changePreferenceValue(
                 preferenceKey = stringPreferencesKey(
-                    AppPreferenceType.SERVER_AUTH_TOKEN.name
+                    AppPreferences.SERVER_AUTH_TOKEN.key
                 ), newValue = ""
             )
-            AppPreferences.serverBaseUrl.value = ""
-            AppPreferences.serverSecurityToken.value = ""
         }
     }
 
@@ -132,38 +130,36 @@ open class ServerManagementViewModel(
             }
             preferencesRepository.changePreferenceValue(
                 preferenceKey = stringPreferencesKey(
-                    AppPreferenceType.SERVER_URL.name
+                    AppPreferences.SERVER_URL.key
                 ), newValue = serverConnection.serverUrl
             )
 
-            AppPreferences.serverBaseUrl.value = serverConnection.serverUrl
 
             preferencesRepository.changePreferenceValue(
-                preferenceKey = stringPreferencesKey(AppPreferenceType.SERVER_AUTH_TOKEN.name),
+                preferenceKey = stringPreferencesKey(AppPreferences.SERVER_AUTH_TOKEN.key),
                 newValue = serverConnection.authToken
             )
-            AppPreferences.serverSecurityToken.value = serverConnection.authToken
 
             preferencesRepository.changePreferenceValue(
                 preferenceKey = stringPreferencesKey(
-                    AppPreferenceType.SERVER_SYNC_TYPE.name
+                    AppPreferences.SERVER_SYNC_TYPE.key
                 ), newValue = serverConnection.syncType.name
             )
-            AppPreferences.serverSyncType.value = serverConnection.syncType
             onSyncStart()
-            if (AppPreferences.canReadFromServer()) {
+            val preferences = preferencesRepository.getPreferences()
+            if (preferences.canReadFromServer()) {
                 remoteSyncRepo.applyUpdatesFromRemote(timeStampAfter()).collectLatest {
                     it.onLoading {
                         dataSyncLogs.add(it)
                     }.onSuccess {
-                        AppVM.readSocketEvents(remoteSyncRepo)
+                        AppVM.readSocketEvents(remoteSyncRepo, preferences)
                     }.onFailure { _ ->
                         it.pushSnackbarOnFailure()
                         cancel()
                     }
                 }
             }
-            if (AppPreferences.canPushToServer()) {
+            if (preferences.canPushToServer()) {
                 with(remoteSyncRepo) {
                     channelFlow {
                         this.pushNonSyncedDataToServer<Unit>()
@@ -200,23 +196,20 @@ open class ServerManagementViewModel(
         viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
                 preferenceKey = stringPreferencesKey(
-                    AppPreferenceType.SERVER_URL.name
+                    AppPreferences.SERVER_URL.key
                 ), newValue = ""
             )
-            AppPreferences.serverBaseUrl.value = ""
 
             preferencesRepository.changePreferenceValue(
-                preferenceKey = stringPreferencesKey(AppPreferenceType.SERVER_AUTH_TOKEN.name),
+                preferenceKey = stringPreferencesKey(AppPreferences.SERVER_AUTH_TOKEN.key),
                 newValue = ""
             )
-            AppPreferences.serverSecurityToken.value = ""
 
             preferencesRepository.changePreferenceValue(
                 preferenceKey = stringPreferencesKey(
-                    AppPreferenceType.SERVER_SYNC_TYPE.name
+                    AppPreferences.SERVER_SYNC_TYPE.key
                 ), newValue = ""
             )
-            AppPreferences.serverSyncType.value = SyncType.TwoWay
 
             AppVM.shutdownSocketConnection()
             network.closeSyncServerClient()
@@ -244,11 +237,9 @@ open class ServerManagementViewModel(
     fun updateCertificateBypassRule(bypass: Boolean) {
         viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
-                preferenceKey = booleanPreferencesKey(AppPreferenceType.SKIP_CERT_CHECK_FOR_SYNC_SERVER.name),
+                preferenceKey = booleanPreferencesKey(AppPreferences.SKIP_CERT_CHECK_FOR_SYNC_SERVER.key),
                 newValue = bypass
             )
-        }.invokeOnCompletion {
-            AppPreferences.skipCertCheckForSync.value = bypass
         }
     }
 }

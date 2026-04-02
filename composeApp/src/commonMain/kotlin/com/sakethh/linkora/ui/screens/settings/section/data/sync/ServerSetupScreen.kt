@@ -41,13 +41,13 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.domain.SyncServerRoute
 import com.sakethh.linkora.domain.SyncType
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.components.InfoCard
 import com.sakethh.linkora.ui.domain.model.ServerConnection
@@ -67,14 +67,15 @@ fun ServerSetupScreen(
 ) {
     val navController = LocalNavController.current
     val serverManagementViewModel: ServerManagementViewModel = linkoraViewModel()
+    val preferences by serverManagementViewModel.preferencesAsFlow.collectAsStateWithLifecycle()
     val serverUrl = rememberSaveable {
-        mutableStateOf(AppPreferences.serverBaseUrl.value)
+        mutableStateOf(preferences.serverBaseUrl)
     }
     val securityToken = rememberSaveable {
-        mutableStateOf(AppPreferences.serverSecurityToken.value)
+        mutableStateOf(preferences.serverSecurityToken)
     }
     val selectedSyncType = retain {
-        mutableStateOf(AppPreferences.serverSyncType.value)
+        mutableStateOf(preferences.serverSyncType)
     }
     var showImportLogsFromServer by rememberSaveable {
         mutableStateOf(false)
@@ -172,7 +173,7 @@ fun ServerSetupScreen(
 
             item {
                 Card(modifier = Modifier.animateContentSize().padding(start = 15.dp, end = 15.dp)) {
-                    if (!AppPreferences.skipCertCheckForSync.value) {
+                    if (!preferences.skipCertCheckForSync) {
                         Text(
                             modifier = Modifier.padding(
                                 start = 15.dp, end = 15.dp, top = 15.dp, bottom = 5.dp
@@ -204,8 +205,8 @@ fun ServerSetupScreen(
                                 },
                                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                                     .fillMaxWidth().padding(
-                                    start = 15.dp, end = 15.dp, bottom = 15.dp
-                                ).pressScaleEffect()
+                                        start = 15.dp, end = 15.dp, bottom = 15.dp
+                                    ).pressScaleEffect()
                             ) {
                                 Text(
                                     text = Localization.Key.ImportServerCertificate.rememberLocalizedString(),
@@ -217,7 +218,7 @@ fun ServerSetupScreen(
                     }
                     Box(
                         modifier = Modifier.then(
-                            if (AppPreferences.skipCertCheckForSync.value) Modifier.background(
+                            if (preferences.skipCertCheckForSync) Modifier.background(
                                 MaterialTheme.colorScheme.errorContainer
                             ) else Modifier
                         ).padding(
@@ -230,15 +231,13 @@ fun ServerSetupScreen(
                                 doesDescriptionExists = true,
                                 description = Localization.Key.ForceBypassCertificateCheckingDescription.rememberLocalizedString(),
                                 isSwitchNeeded = true,
-                                isSwitchEnabled = AppPreferences.skipCertCheckForSync,
+                                isSwitchEnabled = preferences.skipCertCheckForSync,
                                 onSwitchStateChange = {
                                     if (!serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully && !serverManagementViewModel.serverSetupState.value.isConnecting) {
                                         serverManagementViewModel.updateCertificateBypassRule(it)
                                     }
                                 },
-                                isIconNeeded = rememberSaveable {
-                                    mutableStateOf(false)
-                                },
+                                isIconNeeded = false,
                             )
                         )
                     }

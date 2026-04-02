@@ -3,14 +3,17 @@ package com.sakethh.linkora
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.ExperimentalBrowserHistoryApi
 import androidx.navigation.bindToBrowserNavigation
 import androidx.navigation.compose.rememberNavController
 import androidx.room3.Room
 import androidx.sqlite.driver.web.WebWorkerSQLiteDriver
 import com.sakethh.linkora.data.local.LocalDatabase
+import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.platform.FileManager
@@ -18,13 +21,14 @@ import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.Network
 import com.sakethh.linkora.platform.PermissionManager
 import com.sakethh.linkora.platform.PlatformPreference
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.App
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.theme.DarkColors
 import com.sakethh.linkora.ui.theme.LightColors
 import com.sakethh.linkora.ui.theme.LinkoraTheme
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import org.w3c.dom.Worker
 
 @OptIn(ExperimentalWasmJsInterop::class)
@@ -47,20 +51,17 @@ fun main() {
         )
     )
 
-    /*MainScope().launch {
-        awaitAll(async {
-            AppPreferences.readAll(
-                defaultExportLocation = LinkoraSDK.getInstance().fileManager.getDefaultExportLocation(),
-                preferencesRepository = DependencyContainer.preferencesRepo
-            )
-        }, async {
-            Localization.loadLocalizedStrings(
-                AppPreferences.preferredAppLanguageCode.value
-            )
-        })
-    }*/
+    MainScope().launch {
+        DependencyContainer.preferencesRepo.loadPersistedPreferences()
+        val preferences = DependencyContainer.preferencesRepo.getPreferences()
+        Localization.loadLocalizedStrings(
+            preferences,
+            preferences.preferredAppLanguageCode,
+        )
+    }
 
     ComposeViewport {
+        val preferences by DependencyContainer.preferencesRepo.preferencesAsFlow.collectAsStateWithLifecycle()
         val navController = rememberNavController()
         LaunchedEffect(Unit) {
             navController.bindToBrowserNavigation()
@@ -69,7 +70,8 @@ fun main() {
             LocalNavController provides navController, LocalPlatform provides Platform.Web
         ) {
             LinkoraTheme(
-                colorScheme = if (AppPreferences.useDarkTheme.value) DarkColors else LightColors
+                colorScheme = if (preferences.useDarkTheme) DarkColors else LightColors,
+                preferredFont = preferences.selectedFont
             ) {
                 Surface {
                     App()

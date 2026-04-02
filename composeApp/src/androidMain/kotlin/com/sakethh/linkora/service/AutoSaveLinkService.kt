@@ -17,7 +17,6 @@ import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onSuccess
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.getLocalizedString
@@ -47,8 +46,11 @@ class AutoSaveLinkService : Service() {
         localPanelsRepo = DependencyContainer.localPanelsRepo,
         localTagsRepo = DependencyContainer.localTagsRepo,
         snapshotRepo = DependencyContainer.snapshotRepo,
+        preferencesRepository = DependencyContainer.preferencesRepo,
         showToast = ::toast
     )
+
+    private var areSnapshotsEnabled = false
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
@@ -67,16 +69,22 @@ class AutoSaveLinkService : Service() {
         startForeground(1, notification)
 
         CoroutineScope(Dispatchers.Default).launch {
+            val preferences = intentActivityVM.preferencesRepository.getPreferences()
+            areSnapshotsEnabled = preferences.areSnapshotsEnabled
             intentActivityVM.localLinksRepo.addANewLink(
                 selectedTagIds = null, linkSaveConfig = LinkSaveConfig(
-                    forceAutoDetectTitle = true, forceSaveWithoutRetrievingData = false
+                    forceAutoDetectTitle = true, forceSaveWithoutRetrievingData = false,
+                    useProxy = preferences.useProxy,
+                    skipSavingIfExists = preferences.skipSavingExistingLink,
+                    forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
                 ), viaSocket = false, link = Link(
                     linkType = LinkType.SAVED_LINK,
                     title = "",
                     url = url,
                     imgURL = "",
                     note = "",
-                    idOfLinkedFolder = Constants.SAVED_LINKS_ID
+                    idOfLinkedFolder = Constants.SAVED_LINKS_ID,
+                    userAgent = preferences.primaryJsoupUserAgent,
                 )
             ).collectLatest {
                 withContext(Dispatchers.Main) {
@@ -88,7 +96,7 @@ class AutoSaveLinkService : Service() {
                 }
             }
         }.invokeOnCompletion {
-            if (!MainActivity.wasLaunched && AppPreferences.areSnapshotsEnabled.value) {
+            if (!MainActivity.wasLaunched && areSnapshotsEnabled) {
                 intentActivityVM.createADataSnapshot(onCompletion = {
                     toast(Localization.Key.SnapshotCreatedSuccessfully.getLocalizedString())
                 })

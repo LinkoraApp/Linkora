@@ -1,6 +1,6 @@
 package com.sakethh.linkora.domain.dto.server
 
-import com.sakethh.linkora.preferences.AppPreferences
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkType
 import kotlinx.serialization.Serializable
 
@@ -11,5 +11,5 @@ data class CopyItemsDTO(
     val linkType: LinkType,
     val newParentFolderId: Long,
     val eventTimestamp: Long,
-    val correlation: Correlation = AppPreferences.getCorrelation()
+    val correlation: Correlation
 )

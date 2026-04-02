@@ -1,7 +1,6 @@
 package com.sakethh.linkora.platform
 
 import android.content.Context
-import android.content.res.Configuration
 import android.os.Build
 import android.util.Log
 import androidx.activity.compose.BackHandler
@@ -9,12 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.longPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.ui.AppVM
@@ -39,6 +34,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import readAllPreferences
+import readPreferenceValue
+import writePreferenceValue
 import java.security.cert.CertificateException
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
@@ -196,58 +194,21 @@ actual class PlatformPreference(
     actual suspend fun <T> writePreferenceValue(
         preferenceKey: PreferenceKey<T>, newValue: T
     ) {
-        dataStore.edit {
-            when (preferenceKey) {
-                is PreferenceKey.BooleanPreferencesKey -> {
-                    it[booleanPreferencesKey(preferenceKey.key)] = newValue as Boolean
-                }
-
-                is PreferenceKey.LongPreferencesKey -> {
-                    it[longPreferencesKey(preferenceKey.key)] = newValue as Long
-                }
-
-                is PreferenceKey.StringPreferencesKey -> {
-                    it[stringPreferencesKey(preferenceKey.key)] = newValue as String
-                }
-
-                is PreferenceKey.IntPreferencesKey -> {
-                    it[intPreferencesKey(preferenceKey.key)] = newValue as Int
-                }
-            }
-        }
+        writePreferenceValue(
+            dataStore = dataStore,
+            preferenceKey = preferenceKey,
+            newValue = newValue,
+        )
     }
 
     actual suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T? {
-        return when (preferenceKey) {
-            is PreferenceKey.BooleanPreferencesKey -> {
-                dataStore.data.first()[
-                    booleanPreferencesKey(
-                        preferenceKey.key,
-                    ),
-                ]
-            }
+        return readPreferenceValue(dataStore = dataStore, preferenceKey = preferenceKey)
+    }
 
-            is PreferenceKey.LongPreferencesKey -> {
-                dataStore.data.first()[
-                    longPreferencesKey(
-                        preferenceKey.key,
-                    ),
-                ]
-            }
-
-            is PreferenceKey.StringPreferencesKey -> {
-                dataStore.data.first()[
-                    stringPreferencesKey(
-                        preferenceKey.key,
-                    ),
-                ]
-            }
-
-            is PreferenceKey.IntPreferencesKey -> dataStore.data.first()[
-                intPreferencesKey(
-                    preferenceKey.key,
-                ),
-            ]
-        } as T?
+    actual suspend fun readAllPreferences(): AppPreferences {
+        val prefs = dataStore.data.first()
+        return readAllPreferences(
+            prefs,
+            externalAction = { externalAction -> externalAction(this) })
     }
 }

@@ -28,21 +28,22 @@ import com.composables.core.ScrollAreaScope
 import com.composables.core.Thumb
 import com.composables.core.VerticalScrollbar
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.di.DependencyContainer
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.RefreshLinkType
 import com.sakethh.linkora.domain.Result
+import com.sakethh.linkora.domain.SyncType
 import com.sakethh.linkora.domain.dto.server.Correlation
 import com.sakethh.linkora.domain.model.FlatChildFolderData
 import com.sakethh.linkora.domain.model.FlatSearchResult
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
-import com.sakethh.linkora.platform.platform
-import com.sakethh.linkora.preferences.AppPreferenceType
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.LastSeenId
 import com.sakethh.linkora.ui.LastSeenString
 import com.sakethh.linkora.ui.domain.PaginationState
+import com.sakethh.linkora.ui.domain.model.ServerConnection
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
@@ -248,11 +249,54 @@ suspend inline fun <reified IncomingBody> HttpResponse.handleResponseBody(): Res
     }
 }
 
+fun AppPreferences.toServerConnection(): ServerConnection {
+    return ServerConnection(
+        serverUrl = serverBaseUrl,
+        authToken = serverSecurityToken,
+        syncType = serverSyncType,
+        webSocketScheme = "wss"
+    )
+}
 
-fun Correlation.isSameAsCurrentClient(): Boolean = this.id == AppPreferences.getCorrelation().id
+fun AppPreferences.ifServerConfigured(init: () -> Unit) {
+    if (serverBaseUrl.isNotBlank()) {
+        init()
+    }
+}
+
+fun AppPreferences.currentSavedServerConfig(): ServerConnection {
+    return ServerConnection(
+        serverUrl = serverBaseUrl,
+        authToken = serverSecurityToken,
+        syncType = serverSyncType,
+        webSocketScheme = "wss"
+    )
+}
+
+fun AppPreferences.isServerConfigured(): Boolean {
+    return serverBaseUrl.isNotBlank()
+}
+
+fun AppPreferences.canPushToServer(): Boolean {
+    return listOf(SyncType.TwoWay, SyncType.ClientToServer).any {
+        isServerConfigured() && serverSyncType == it
+    }
+}
+
+fun AppPreferences.canReadFromServer(): Boolean {
+    return listOf(SyncType.TwoWay, SyncType.ServerToClient).any {
+        isServerConfigured() && serverSyncType == it
+    }
+}
+
+suspend fun AppPreferences.lastSyncedLocally(preferencesRepository: PreferencesRepository): Long {
+    return preferencesRepository.readPreferenceValue(
+        preferenceKey = longPreferencesKey(AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key)
+    ) ?: 0
+}
 
 suspend fun PreferencesRepository.updateLastSyncedWithServerTimeStamp(newValue: Long) {
-    val preferenceKey = longPreferencesKey(AppPreferenceType.LAST_TIME_SYNCED_WITH_SERVER.name)
+    val preferenceKey = longPreferencesKey(AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key)
     if ((this.readPreferenceValue(preferenceKey) ?: 0) < newValue) {
         this.changePreferenceValue(
             preferenceKey = preferenceKey,
@@ -383,7 +427,7 @@ fun RefreshLinkType.asLocalizedString() = when (this) {
 }
 
 @Composable
-fun ScrollAreaScope.VerticalScrollbar(){
+fun ScrollAreaScope.VerticalScrollbar() {
     VerticalScrollbar(
         modifier = Modifier.align(Alignment.TopEnd)
             .fillMaxHeight()

@@ -79,10 +79,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.ImageLoader
 import coil3.compose.LocalPlatformContext
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.linkoraViewModel
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.ImportFileType
 import com.sakethh.linkora.domain.LinkoraPlaceHolder
@@ -91,8 +93,6 @@ import com.sakethh.linkora.domain.RefreshLinkType
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.platform.PlatformSpecificBackHandler
 import com.sakethh.linkora.platform.platform
-import com.sakethh.linkora.preferences.AppPreferenceType
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.components.DeleteDialogBoxType
 import com.sakethh.linkora.ui.components.DeleteFolderOrLinkDialog
@@ -112,6 +112,8 @@ import com.sakethh.linkora.utils.asLocalizedString
 import com.sakethh.linkora.utils.currentSavedServerConfig
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.intPreferencesKey
+import com.sakethh.linkora.utils.isServerConfigured
+import com.sakethh.linkora.utils.lastSyncedLocally
 import com.sakethh.linkora.utils.rememberLocalizedString
 import com.sakethh.linkora.utils.stringPreferencesKey
 import kotlinx.coroutines.launch
@@ -122,6 +124,7 @@ fun DataSettingsScreen() {
     val navController = LocalNavController.current
     val serverManagementViewModel: ServerManagementViewModel = linkoraViewModel()
     val dataSettingsScreenVM: DataSettingsScreenVM = linkoraViewModel()
+    val preferences by dataSettingsScreenVM.preferencesAsFlow.collectAsStateWithLifecycle()
     var isImportExportProgressUIVisible by rememberSaveable {
         mutableStateOf(false)
     }
@@ -155,14 +158,14 @@ fun DataSettingsScreen() {
     var labelForAlertDialogWithProgress by rememberSaveable {
         mutableStateOf("")
     }
-    val exportLocation = rememberSaveable(AppPreferences.currentExportLocation.value) {
-        mutableStateOf(AppPreferences.currentExportLocation.value)
+    val exportLocation = rememberSaveable(preferences.currentExportLocation) {
+        mutableStateOf(preferences.currentExportLocation)
     }
 
     val localFocusManager = LocalFocusManager.current
 
-    var maxConcurrentRefreshCount by rememberSaveable(AppPreferences.maxConcurrentRefreshCount) {
-        mutableIntStateOf(AppPreferences.maxConcurrentRefreshCount)
+    var maxConcurrentRefreshCount by rememberSaveable(preferences.maxConcurrentRefreshCount) {
+        mutableIntStateOf(preferences.maxConcurrentRefreshCount)
     }
 
     val refreshesInProgress = rememberSaveable(
@@ -184,7 +187,7 @@ fun DataSettingsScreen() {
             item {
                 Spacer(modifier = Modifier)
             }
-            if (platform != Platform.Web){
+            if (platform != Platform.Web) {
                 item {
                     Text(
                         text = Localization.rememberLocalizedString(Localization.Key.ImportLabel),
@@ -224,7 +227,7 @@ fun DataSettingsScreen() {
                             }
                         }
                     }
-                    if (AppPreferences.isServerConfigured()) {
+                    if (preferences.isServerConfigured()) {
                         Text(
                             text = Localization.rememberLocalizedString(Localization.Key.ImportLabelDesc),
                             style = MaterialTheme.typography.titleSmall,
@@ -238,12 +241,12 @@ fun DataSettingsScreen() {
                 item {
                     SettingComponent(
                         SettingComponentParam(
-                            isIconNeeded = rememberSaveable { mutableStateOf(true) },
+                            isIconNeeded = true,
                             title = Localization.rememberLocalizedString(Localization.Key.ImportUsingJsonFile),
                             doesDescriptionExists = true,
                             description = Localization.rememberLocalizedString(Localization.Key.ImportUsingJsonFileDesc),
                             isSwitchNeeded = false,
-                            isSwitchEnabled = rememberSaveable { mutableStateOf(false) },
+                            isSwitchEnabled = false,
                             onSwitchStateChange = {
                                 if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) {
                                     selectedImportFormat.value = ImportFileType.JSON.name
@@ -264,19 +267,20 @@ fun DataSettingsScreen() {
                                 )
                             },
                             icon = Icons.Default.DataObject,
-                            shouldFilledIconBeUsed = rememberSaveable { mutableStateOf(true) })
+                            shouldFilledIconBeUsed = true
+                        )
                     )
                 }
 
                 item {
                     SettingComponent(
                         SettingComponentParam(
-                            isIconNeeded = rememberSaveable { mutableStateOf(true) },
+                            isIconNeeded = true,
                             title = Localization.rememberLocalizedString(Localization.Key.ImportDataFromHtmlFile),
                             doesDescriptionExists = true,
                             description = Localization.rememberLocalizedString(Localization.Key.ImportDataFromHtmlFileDesc),
                             isSwitchNeeded = false,
-                            isSwitchEnabled = AppPreferences.useAmoledTheme,
+                            isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
                                 if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) {
                                     selectedImportFormat.value = ImportFileType.HTML.name
@@ -297,7 +301,8 @@ fun DataSettingsScreen() {
                                 )
                             },
                             icon = Icons.Default.Html,
-                            shouldFilledIconBeUsed = rememberSaveable { mutableStateOf(true) })
+                            shouldFilledIconBeUsed = true
+                        )
                     )
                 }
 
@@ -310,7 +315,7 @@ fun DataSettingsScreen() {
                         textAlign = TextAlign.Start,
                         modifier = Modifier.padding(start = 15.dp, end = 15.dp),
                     )
-                    if (AppPreferences.isServerConfigured()) {
+                    if (preferences.isServerConfigured()) {
                         Text(
                             text = Localization.rememberLocalizedString(Localization.Key.ExportLabelDesc),
                             style = MaterialTheme.typography.titleSmall,
@@ -358,12 +363,12 @@ fun DataSettingsScreen() {
                 item {
                     SettingComponent(
                         SettingComponentParam(
-                            isIconNeeded = rememberSaveable { mutableStateOf(true) },
+                            isIconNeeded = true,
                             title = Localization.rememberLocalizedString(Localization.Key.ExportDataAsJson),
                             doesDescriptionExists = true,
                             description = Localization.rememberLocalizedString(Localization.Key.ExportDataAsJsonDesc),
                             isSwitchNeeded = false,
-                            isSwitchEnabled = AppPreferences.useAmoledTheme,
+                            isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
                                 dataOperationTitle.value =
                                     Localization.Key.ExportingDataToJSON.getLocalizedString()
@@ -378,19 +383,20 @@ fun DataSettingsScreen() {
                                     })
                             },
                             icon = Icons.Default.DataObject,
-                            shouldFilledIconBeUsed = rememberSaveable { mutableStateOf(true) })
+                            shouldFilledIconBeUsed = true
+                        )
                     )
                 }
 
                 item {
                     SettingComponent(
                         SettingComponentParam(
-                            isIconNeeded = rememberSaveable { mutableStateOf(true) },
+                            isIconNeeded = true,
                             title = Localization.rememberLocalizedString(Localization.Key.ExportDataAsHtml),
                             doesDescriptionExists = true,
                             description = Localization.rememberLocalizedString(Localization.Key.ExportDataAsHtmlDesc),
                             isSwitchNeeded = false,
-                            isSwitchEnabled = AppPreferences.useAmoledTheme,
+                            isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
                                 dataOperationTitle.value =
                                     Localization.Key.ExportingDataToHTML.getLocalizedString()
@@ -405,7 +411,8 @@ fun DataSettingsScreen() {
                                     })
                             },
                             icon = Icons.Default.Html,
-                            shouldFilledIconBeUsed = rememberSaveable { mutableStateOf(true) })
+                            shouldFilledIconBeUsed = true
+                        )
                     )
                     Spacer(modifier = Modifier.height(15.dp))
                     SettingSectionComponent(
@@ -435,30 +442,31 @@ fun DataSettingsScreen() {
             }
 
             item {
-                if (!AppPreferences.isServerConfigured()) {
+                if (!preferences.isServerConfigured()) {
                     SettingComponent(
                         SettingComponentParam(
-                            isIconNeeded = rememberSaveable { mutableStateOf(true) },
+                            isIconNeeded = true,
                             title = Localization.rememberLocalizedString(Localization.Key.ConnectToALinkoraServer),
                             doesDescriptionExists = true,
                             description = Localization.rememberLocalizedString(Localization.Key.ConnectToALinkoraServerDesc),
                             isSwitchNeeded = false,
-                            isSwitchEnabled = AppPreferences.useAmoledTheme,
+                            isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
                                 navController.navigate(Navigation.Settings.Data.ServerSetupScreen)
                             },
                             icon = Icons.Default.CloudSync,
-                            shouldFilledIconBeUsed = rememberSaveable { mutableStateOf(true) })
+                            shouldFilledIconBeUsed = true
+                        )
                     )
                 } else {
                     SettingComponent(
                         SettingComponentParam(
-                            isIconNeeded = rememberSaveable { mutableStateOf(true) },
+                            isIconNeeded = true,
                             title = Localization.rememberLocalizedString(Localization.Key.ManageConnectedServer),
                             doesDescriptionExists = true,
                             description = Localization.rememberLocalizedString(Localization.Key.ManageConnectedServerDesc),
                             isSwitchNeeded = false,
-                            isSwitchEnabled = AppPreferences.useAmoledTheme,
+                            isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
                                 shouldServerInfoBtmSheetBeVisible.value = true
                                 coroutineScope.launch {
@@ -466,27 +474,28 @@ fun DataSettingsScreen() {
                                 }
                             },
                             icon = Icons.Default.WbCloudy,
-                            shouldFilledIconBeUsed = rememberSaveable { mutableStateOf(true) })
+                            shouldFilledIconBeUsed = true
+                        )
                     )
 
                 }
             }
 
-            if (AppPreferences.isServerConfigured()) {
+            if (preferences.isServerConfigured()) {
                 item {
                     SettingComponent(
                         SettingComponentParam(
-                            isIconNeeded = rememberSaveable { mutableStateOf(true) },
+                            isIconNeeded = true,
                             title = Localization.Key.InitiateManualSync.rememberLocalizedString(),
                             doesDescriptionExists = true,
                             description = Localization.Key.InitiateManualSyncDesc.rememberLocalizedString(),
                             isSwitchNeeded = false,
-                            isSwitchEnabled = AppPreferences.useAmoledTheme,
+                            isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
                                 serverManagementViewModel.saveServerConnectionAndSync(
-                                    serverConnection = currentSavedServerConfig(),
+                                    serverConnection = preferences.currentSavedServerConfig(),
                                     timeStampAfter = {
-                                        AppPreferences.lastSyncedLocally(serverManagementViewModel.preferencesRepository)
+                                        preferences.lastSyncedLocally(serverManagementViewModel.preferencesRepository)
                                     },
                                     onSyncStart = {
                                         isForcePushAndPullProgressUIVisible = true
@@ -496,7 +505,8 @@ fun DataSettingsScreen() {
                                     })
                             },
                             icon = Icons.Default.Sync,
-                            shouldFilledIconBeUsed = rememberSaveable { mutableStateOf(true) })
+                            shouldFilledIconBeUsed = true
+                        )
                     )
                 }
             }
@@ -511,12 +521,12 @@ fun DataSettingsScreen() {
                 )
                 SettingComponent(
                     SettingComponentParam(
-                        isIconNeeded = rememberSaveable { mutableStateOf(true) },
+                        isIconNeeded = true,
                         title = Localization.Key.EnforceStrictDefaultIDsLabel.rememberLocalizedString(),
                         doesDescriptionExists = true,
                         description = Localization.Key.EnforceStrictDefaultIDsDesc.rememberLocalizedString(),
                         isSwitchNeeded = false,
-                        isSwitchEnabled = AppPreferences.useAmoledTheme,
+                        isSwitchEnabled = preferences.useAmoledTheme,
                         onSwitchStateChange = {
                             dataSettingsScreenVM.forceSetDefaultFolderToInternalIds(onStart = {
                                 labelForAlertDialogWithProgress =
@@ -527,7 +537,8 @@ fun DataSettingsScreen() {
                             })
                         },
                         icon = Icons.Default.AutoFixHigh,
-                        shouldFilledIconBeUsed = rememberSaveable { mutableStateOf(true) })
+                        shouldFilledIconBeUsed = true
+                    )
                 )
             }
 
@@ -541,12 +552,12 @@ fun DataSettingsScreen() {
                 )
                 SettingComponent(
                     SettingComponentParam(
-                        isIconNeeded = rememberSaveable { mutableStateOf(true) },
+                        isIconNeeded = true,
                         title = Localization.rememberLocalizedString(Localization.Key.DeleteDuplicateLinksFromAllCollections),
                         doesDescriptionExists = true,
                         description = Localization.rememberLocalizedString(Localization.Key.DeleteDuplicateLinksFromAllCollectionsDesc),
                         isSwitchNeeded = false,
-                        isSwitchEnabled = AppPreferences.useAmoledTheme,
+                        isSwitchEnabled = preferences.useAmoledTheme,
                         onSwitchStateChange = {
                             dataSettingsScreenVM.deleteDuplicates(onStart = {
                                 labelForAlertDialogWithProgress =
@@ -557,7 +568,8 @@ fun DataSettingsScreen() {
                             })
                         },
                         icon = Icons.Default.Delete,
-                        shouldFilledIconBeUsed = rememberSaveable { mutableStateOf(true) })
+                        shouldFilledIconBeUsed = true
+                    )
                 )
             }
             item {
@@ -570,17 +582,18 @@ fun DataSettingsScreen() {
                 )
                 SettingComponent(
                     SettingComponentParam(
-                        isIconNeeded = rememberSaveable { mutableStateOf(true) },
+                        isIconNeeded = true,
                         title = Localization.rememberLocalizedString(Localization.Key.DeleteEntireDataPermanently),
                         doesDescriptionExists = true,
                         description = Localization.rememberLocalizedString(Localization.Key.DeleteEntireDataPermanentlyDesc),
                         isSwitchNeeded = false,
-                        isSwitchEnabled = AppPreferences.useAmoledTheme,
+                        isSwitchEnabled = preferences.useAmoledTheme,
                         onSwitchStateChange = {
                             shouldDeleteEntireDialogBoxAppear.value = true
                         },
                         icon = Icons.Default.DeleteForever,
-                        shouldFilledIconBeUsed = rememberSaveable { mutableStateOf(true) })
+                        shouldFilledIconBeUsed = true
+                    )
                 )
             }
             item {
@@ -597,22 +610,17 @@ fun DataSettingsScreen() {
                         doesDescriptionExists = true,
                         description = Localization.rememberLocalizedString(Localization.Key.ClearImageCacheDesc),
                         isSwitchNeeded = false,
-                        isIconNeeded = rememberSaveable {
-                            mutableStateOf(true)
-                        },
+                        isIconNeeded = true,
                         icon = Icons.Default.BrokenImage,
-                        isSwitchEnabled = rememberSaveable {
-                            mutableStateOf(false)
-                        },
+                        isSwitchEnabled = false,
                         onSwitchStateChange = {
                             ImageLoader(coilPlatformContext).let {
                                 it.diskCache?.clear()
                                 it.memoryCache?.clear()
                             }
                         },
-                        shouldFilledIconBeUsed = rememberSaveable {
-                            mutableStateOf(true)
-                        })
+                        shouldFilledIconBeUsed = true
+                    )
                 )
             }
             item {
@@ -662,15 +670,14 @@ fun DataSettingsScreen() {
                                 )
                                 for (refreshLinkType in RefreshLinkType.entries) {
                                     val isSelected =
-                                        refreshLinkType.name == AppPreferences.selectedLinkRefreshType.name
+                                        refreshLinkType.name == preferences.selectedLinkRefreshType.name
                                     Row(
                                         modifier = Modifier.fillMaxWidth().clickable(onClick = {
-                                            AppPreferences.selectedLinkRefreshType = refreshLinkType
                                             dataSettingsScreenVM.changeSettingPreferenceValue(
                                                 preferenceKey = stringPreferencesKey(
-                                                    AppPreferenceType.REFRESH_LINK_TYPE.name
+                                                    AppPreferences.REFRESH_LINK_TYPE.key
                                                 ),
-                                                newValue = AppPreferences.selectedLinkRefreshType.name
+                                                newValue = preferences.selectedLinkRefreshType.name
                                             )
                                         }, indication = null, interactionSource = null)
                                             .pressScaleEffect(),
@@ -679,13 +686,11 @@ fun DataSettingsScreen() {
                                         RadioButton(
                                             selected = isSelected,
                                             onClick = {
-                                                AppPreferences.selectedLinkRefreshType =
-                                                    refreshLinkType
                                                 dataSettingsScreenVM.changeSettingPreferenceValue(
                                                     preferenceKey = stringPreferencesKey(
-                                                        AppPreferenceType.REFRESH_LINK_TYPE.name
+                                                        AppPreferences.REFRESH_LINK_TYPE.key
                                                     ),
-                                                    newValue = AppPreferences.selectedLinkRefreshType.name
+                                                    newValue = preferences.selectedLinkRefreshType.name
                                                 )
                                             })
                                         Text(
@@ -703,13 +708,11 @@ fun DataSettingsScreen() {
                                         FilledTonalIconButton(
                                             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                                                 .pressScaleEffect().padding(end = 5.dp), onClick = {
-                                                AppPreferences.maxConcurrentRefreshCount =
-                                                    maxConcurrentRefreshCount
                                                 dataSettingsScreenVM.changeSettingPreferenceValue(
                                                     preferenceKey = intPreferencesKey(
-                                                        AppPreferenceType.MAX_CONCURRENT_REFRESH_COUNT.name
+                                                        AppPreferences.MAX_CONCURRENT_REFRESH_COUNT.key
                                                     ),
-                                                    newValue = AppPreferences.maxConcurrentRefreshCount
+                                                    newValue = preferences.maxConcurrentRefreshCount
                                                 )
                                                 localFocusManager.clearFocus(force = true)
                                             }) {
@@ -751,19 +754,14 @@ fun DataSettingsScreen() {
                                     doesDescriptionExists = true,
                                     description = Localization.Key.RefreshLinksComponentDesc.rememberLocalizedString(),
                                     isSwitchNeeded = false,
-                                    isIconNeeded = rememberSaveable {
-                                        mutableStateOf(true)
-                                    },
+                                    isIconNeeded = true,
                                     icon = Icons.Default.Refresh,
-                                    isSwitchEnabled = rememberSaveable {
-                                        mutableStateOf(false)
-                                    },
+                                    isSwitchEnabled = false,
                                     onSwitchStateChange = {
                                         dataSettingsScreenVM.refreshAllLinks()
                                     },
-                                    shouldFilledIconBeUsed = rememberSaveable {
-                                        mutableStateOf(true)
-                                    })
+                                    shouldFilledIconBeUsed = true
+                                )
                             )
                         }
                     } else {
@@ -938,7 +936,8 @@ fun DataSettingsScreen() {
         isVisible = shouldServerInfoBtmSheetBeVisible,
         removeTheConnection = { onDeletion ->
             serverManagementViewModel.deleteTheConnection(onDeletion)
-        })
+        }, preferences = preferences
+    )
     LogsScreen(
         isVisible = isImportExportProgressUIVisible,
         onCancel = {
@@ -960,6 +959,7 @@ fun DataSettingsScreen() {
     )
     if (shouldDeleteEntireDialogBoxAppear.value) {
         DeleteFolderOrLinkDialog(
+            preferences = preferences,
             deleteFolderOrLinkDialogParam = DeleteFolderOrLinkDialogParam(
                 onDismiss = {
                     shouldDeleteEntireDialogBoxAppear.value = false

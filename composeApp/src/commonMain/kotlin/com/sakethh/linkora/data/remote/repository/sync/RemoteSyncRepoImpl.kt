@@ -3,6 +3,7 @@ package com.sakethh.linkora.data.remote.repository.sync
 import com.sakethh.linkora.data.local.dao.FoldersDao
 import com.sakethh.linkora.data.local.dao.LinksDao
 import com.sakethh.linkora.data.local.dao.TagsDao
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.SyncServerRoute
 import com.sakethh.linkora.domain.asAddFolderDTO
@@ -36,10 +37,10 @@ import com.sakethh.linkora.domain.repository.remote.RemotePanelsRepo
 import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
 import com.sakethh.linkora.domain.repository.remote.RemoteTagsRepo
 import com.sakethh.linkora.platform.Network
-import com.sakethh.linkora.preferences.AppPreferenceType
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.Utils.json
+import com.sakethh.linkora.utils.canPushToServer
 import com.sakethh.linkora.utils.catchAsThrowableAndEmitFailure
 import com.sakethh.linkora.utils.longPreferencesKey
 import com.sakethh.linkora.utils.performLocalOperationWithRemoteSyncFlow
@@ -71,8 +72,8 @@ class RemoteSyncRepoImpl(
     private val localFoldersRepo: LocalFoldersRepo,
     private val localLinksRepo: LocalLinksRepo,
     private val localPanelsRepo: LocalPanelsRepo,
-    private val authToken: () -> String,
-    private val baseUrl: () -> String,
+    private val authToken: suspend () -> String,
+    private val baseUrl: suspend () -> String,
     private val websocketScheme: () -> String,
     private val pendingSyncQueueRepo: PendingSyncQueueRepo,
     remoteFoldersRepo: RemoteFoldersRepo,
@@ -118,6 +119,7 @@ class RemoteSyncRepoImpl(
     )
 
     override suspend fun readSocketEvents(currentCorrelation: Correlation): Flow<Result<Unit>> {
+        val authToken = authToken()
         return wrappedResultFlow {
             network.getSyncServerClient().webSocket(urlString = run {
                 websocketScheme() + baseUrl.invoke().run {
@@ -132,7 +134,7 @@ class RemoteSyncRepoImpl(
             }.also {
                 linkoraLog("Connecting to the websocket at $it")
             }, request = {
-                bearerAuth(authToken())
+                bearerAuth(authToken)
                 parameter(
                     key = "correlation", value = Json.encodeToString(currentCorrelation)
                 )
@@ -373,7 +375,7 @@ class RemoteSyncRepoImpl(
                 PendingSyncQueue(
                     operation = SyncServerRoute.CREATE_FOLDER.name,
                     payload = Json.encodeToString(
-                        currentFolder.asAddFolderDTO()
+                        currentFolder.asAddFolderDTO(preferencesRepository.getPreferences().correlation)
                             .copy(offlineSyncItemId = currentFolder.localId)
                     )
                 )
@@ -390,7 +392,8 @@ class RemoteSyncRepoImpl(
                         CreateTagDTO(
                             name = currentTag.name,
                             eventTimestamp = currentTag.lastModified,
-                            offlineSyncItemId = currentTag.localId
+                            offlineSyncItemId = currentTag.localId,
+                            correlation = preferencesRepository.getPreferences().correlation
                         )
                     )
                 )
@@ -408,7 +411,8 @@ class RemoteSyncRepoImpl(
                         currentLink.asAddLinkDTO(
                             remoteTagIds = tagsDao.getTags(currentLink.localId).map {
                                 it.remoteId ?: -45454
-                            }).copy(offlineSyncItemId = currentLink.localId)
+                            }, correlation = preferencesRepository.getPreferences().correlation
+                        ).copy(offlineSyncItemId = currentLink.localId)
                     )
                 )
             )
@@ -425,7 +429,8 @@ class RemoteSyncRepoImpl(
                         AddANewPanelDTO(
                             panelName = currentPanel.panelName,
                             offlineSyncItemId = currentPanel.localId,
-                            eventTimestamp = currentPanel.lastModified
+                            eventTimestamp = currentPanel.lastModified,
+                            correlation = preferencesRepository.getPreferences().correlation
                         )
                     )
                 )
@@ -446,7 +451,8 @@ class RemoteSyncRepoImpl(
                             folderName = currentPanelFolder.folderName,
                             connectedPanelId = currentPanelFolder.connectedPanelId,
                             offlineSyncItemId = currentPanelFolder.localId,
-                            eventTimestamp = currentPanelFolder.lastModified
+                            eventTimestamp = currentPanelFolder.lastModified,
+                            correlation = preferencesRepository.getPreferences().correlation
                         )
                     )
                 )
@@ -460,6 +466,9 @@ class RemoteSyncRepoImpl(
 
     override suspend fun deleteEverything(deleteOnRemote: Boolean): Flow<Result<Unit>> {
         return performLocalOperationWithRemoteSyncFlow<Unit, DeleteEverythingDTO>(
+            canPushToServer = {
+                preferencesRepository.getPreferences().canPushToServer()
+            },
             performRemoteOperation = deleteOnRemote,
             remoteOperation = {
                 postFlow(
@@ -467,7 +476,7 @@ class RemoteSyncRepoImpl(
                     baseUrl = baseUrl,
                     authToken = authToken,
                     endPoint = SyncServerRoute.DELETE_EVERYTHING.name,
-                    outgoingBody = DeleteEverythingDTO()
+                    outgoingBody = DeleteEverythingDTO(correlation = preferencesRepository.getPreferences().correlation)
                 )
             },
             remoteOperationOnSuccess = {
@@ -476,7 +485,7 @@ class RemoteSyncRepoImpl(
             localDatabaseUtilsRepo.resetDatabase()
             preferencesRepository.changePreferenceValue(
                 preferenceKey = longPreferencesKey(
-                    AppPreferenceType.LAST_SELECTED_PANEL_ID.name
+                    AppPreferences.LAST_SELECTED_PANEL_ID.key
                 ), newValue = Constants.DEFAULT_PANELS_ID
             )
         }

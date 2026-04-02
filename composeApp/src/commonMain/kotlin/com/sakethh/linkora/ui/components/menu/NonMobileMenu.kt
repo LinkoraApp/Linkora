@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.ComposableContent
 import com.sakethh.linkora.domain.model.Folder
-import com.sakethh.linkora.preferences.AppPreferences
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.ui.components.CoilImage
 import com.sakethh.linkora.ui.components.InfoCard
 import com.sakethh.linkora.ui.components.link.TagsRow
@@ -39,6 +39,7 @@ import com.sakethh.linkora.utils.rememberLocalizedString
 
 @Composable
 fun NonMobileMenu(
+    preferences: AppPreferences,
     menuBtmSheetParam: MenuBtmSheetParam,
     currentLinkTagsPair: LinkTagsPair,
     currentFolder: Folder?,
@@ -58,8 +59,9 @@ fun NonMobileMenu(
                     modifier = Modifier.animateContentSize().fillMaxWidth()
                         .clip(RoundedCornerShape(15.dp)).height(200.dp),
                     imgURL = currentLinkTagsPair.link.imgURL,
+                    preferences = preferences,
                     userAgent = currentLinkTagsPair.link.userAgent
-                        ?: AppPreferences.primaryJsoupUserAgent.value,
+                        ?: preferences.primaryJsoupUserAgent,
                 )
                 Spacer(Modifier.height(10.dp))
                 Text(

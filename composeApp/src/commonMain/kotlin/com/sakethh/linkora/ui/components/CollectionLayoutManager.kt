@@ -43,12 +43,12 @@ import androidx.compose.ui.unit.dp
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.sakethh.linkora.di.LinkoraSDK
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.asUnifiedLazyState
 import com.sakethh.linkora.domain.model.FlatChildFolderData
 import com.sakethh.linkora.domain.model.FlatSearchResult
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.tag.Tag
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.LastSeenId
 import com.sakethh.linkora.ui.LastSeenString
 import com.sakethh.linkora.ui.components.folder.FolderComponent
@@ -71,6 +71,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CollectionLayoutManager(
+    preferences: AppPreferences,
     screenType: ScreenType,
     flatChildFolderDataState: PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<FlatChildFolderData>>>?,
     linksTagsPairsState: PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<LinkTagsPair>>>?,
@@ -170,10 +171,10 @@ fun CollectionLayoutManager(
 
     val loadingIndicatorModifier = retain(isDataEmpty) {
         Modifier.padding(top = 25.dp).fillMaxWidth().then(
-                if (!isDataEmpty) Modifier.padding(
-                    start = 15.dp, end = 15.dp, bottom = 150.dp
-                ) else Modifier.fillMaxHeight()
-            )
+            if (!isDataEmpty) Modifier.padding(
+                start = 15.dp, end = 15.dp, bottom = 150.dp
+            ) else Modifier.fillMaxHeight()
+        )
     }
 
     val folderComponentParam: (folder: Folder) -> FolderComponentParam = {
@@ -241,7 +242,7 @@ fun CollectionLayoutManager(
     }
 
     val unifiedListState = retain {
-        when (AppPreferences.selectedLinkLayout.value) {
+        when (preferences.selectedLinkLayout) {
             Layout.TITLE_ONLY_LIST_VIEW.name, Layout.REGULAR_LIST_VIEW.name -> listLayoutState.asUnifiedLazyState()
             Layout.STAGGERED_VIEW.name -> staggeredGridLayoutState.asUnifiedLazyState()
             else -> gridLayoutState.asUnifiedLazyState()
@@ -252,7 +253,7 @@ fun CollectionLayoutManager(
         unifiedLazyState = unifiedListState, onRetrieveNextPage
     )
 
-    when (AppPreferences.selectedLinkLayout.value) {
+    when (preferences.selectedLinkLayout) {
         Layout.TITLE_ONLY_LIST_VIEW.name, Layout.REGULAR_LIST_VIEW.name -> {
             val state = rememberScrollAreaState(lazyListState = listLayoutState)
             ScrollArea(state = state) {
@@ -285,8 +286,8 @@ fun CollectionLayoutManager(
                                     else -> {
                                         ListViewLinkComponent(
                                             linkComponentParam = linkComponentParam(it.asLinkTagsPair),
-                                            titleOnlyView = AppPreferences.selectedLinkLayout.value == Layout.TITLE_ONLY_LIST_VIEW.name,
-                                            onShare = {
+                                            titleOnlyView = preferences.selectedLinkLayout == Layout.TITLE_ONLY_LIST_VIEW.name,
+                                            preferences = preferences, onShare = {
                                                 LinkoraSDK.getInstance().nativeUtils.onShare(it)
                                             })
                                     }
@@ -304,8 +305,9 @@ fun CollectionLayoutManager(
                                     FolderComponent(folderComponentParam = folderComponentParam(it.asFolder))
                                 } else {
                                     ListViewLinkComponent(
+                                        preferences = preferences,
                                         linkComponentParam = linkComponentParam(it.asLinkTagsPair),
-                                        titleOnlyView = AppPreferences.selectedLinkLayout.value == Layout.TITLE_ONLY_LIST_VIEW.name,
+                                        titleOnlyView = preferences.selectedLinkLayout == Layout.TITLE_ONLY_LIST_VIEW.name,
                                         onShare = {
                                             LinkoraSDK.getInstance().nativeUtils.onShare(it)
                                         })
@@ -320,8 +322,9 @@ fun CollectionLayoutManager(
                                 "CollectionLayoutManager-LazyColumn-linksTagsPairs-P$pageKey-ID" + it.link.localId
                             }) {
                                 ListViewLinkComponent(
+                                    preferences = preferences,
                                     linkComponentParam = linkComponentParam(it),
-                                    titleOnlyView = AppPreferences.selectedLinkLayout.value == Layout.TITLE_ONLY_LIST_VIEW.name,
+                                    titleOnlyView = preferences.selectedLinkLayout == Layout.TITLE_ONLY_LIST_VIEW.name,
                                     onShare = {
                                         LinkoraSDK.getInstance().nativeUtils.onShare(it)
                                     })
@@ -407,6 +410,7 @@ fun CollectionLayoutManager(
 
                                     else -> {
                                         GridViewLinkComponent(
+                                            preferences = preferences,
                                             linkComponentParam = linkComponentParam(it.asLinkTagsPair),
                                             forStaggeredView = false
                                         )
@@ -430,7 +434,8 @@ fun CollectionLayoutManager(
                                 } else {
                                     GridViewLinkComponent(
                                         linkComponentParam = linkComponentParam(it.asLinkTagsPair),
-                                        forStaggeredView = AppPreferences.selectedLinkLayout.value == Layout.STAGGERED_VIEW.name
+                                        preferences = preferences,
+                                        forStaggeredView = preferences.selectedLinkLayout == Layout.STAGGERED_VIEW.name
                                     )
                                 }
                             }
@@ -452,7 +457,8 @@ fun CollectionLayoutManager(
                             }) {
                                 GridViewLinkComponent(
                                     linkComponentParam = linkComponentParam(it),
-                                    forStaggeredView = AppPreferences.selectedLinkLayout.value == Layout.STAGGERED_VIEW.name
+                                    preferences = preferences,
+                                    forStaggeredView = preferences.selectedLinkLayout == Layout.STAGGERED_VIEW.name
                                 )
                             }
                         }
@@ -543,6 +549,7 @@ fun CollectionLayoutManager(
                                 else -> {
                                     GridViewLinkComponent(
                                         linkComponentParam = linkComponentParam(it.asLinkTagsPair),
+                                        preferences = preferences,
                                         forStaggeredView = false
                                     )
                                 }
@@ -572,7 +579,8 @@ fun CollectionLayoutManager(
                             } else {
                                 GridViewLinkComponent(
                                     linkComponentParam = linkComponentParam(it.asLinkTagsPair),
-                                    forStaggeredView = AppPreferences.selectedLinkLayout.value == Layout.STAGGERED_VIEW.name
+                                    preferences = preferences,
+                                    forStaggeredView = preferences.selectedLinkLayout == Layout.STAGGERED_VIEW.name
                                 )
                             }
                         }
@@ -591,7 +599,8 @@ fun CollectionLayoutManager(
                         }) {
                             GridViewLinkComponent(
                                 linkComponentParam = linkComponentParam(it),
-                                forStaggeredView = AppPreferences.selectedLinkLayout.value == Layout.STAGGERED_VIEW.name
+                                preferences = preferences,
+                                forStaggeredView = preferences.selectedLinkLayout == Layout.STAGGERED_VIEW.name
                             )
                         }
                     }

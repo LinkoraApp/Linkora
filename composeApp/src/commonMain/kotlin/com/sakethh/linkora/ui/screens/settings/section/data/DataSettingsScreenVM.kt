@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.FileType
 import com.sakethh.linkora.domain.ImportFileType
@@ -22,8 +23,6 @@ import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
 import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.PermissionManager
-import com.sakethh.linkora.preferences.AppPreferenceType
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.AppVM
 import com.sakethh.linkora.ui.domain.ImportFileSelectionMethod
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
@@ -166,7 +165,7 @@ class DataSettingsScreenVM(
                 }.onSuccess {
                     try {
                         fileManager.writeRawExportStringToFile(
-                            exportLocation = AppPreferences.currentExportLocation.value,
+                            exportLocation = preferencesRepository.getPreferences().currentExportLocation,
                             exportFileType = exportFileType,
                             rawExportString = it.data,
                             onCompletion = {
@@ -301,18 +300,12 @@ class DataSettingsScreenVM(
                 preferencesRepository.changePreferenceValue(
                     preferenceKey = stringPreferencesKey(
                         if (exportLocationType == ExportLocationType.EXPORT) {
-                            AppPreferenceType.EXPORT_LOCATION.name
+                            AppPreferences.EXPORT_LOCATION.key
                         } else {
-                            AppPreferenceType.BACKUP_LOCATION.name
+                            AppPreferences.BACKUP_LOCATION.key
                         }
                     ), newValue = newExportLocation
                 )
-
-                if (exportLocationType == ExportLocationType.EXPORT) {
-                    AppPreferences.currentExportLocation.value = newExportLocation
-                } else {
-                    AppPreferences.currentBackupLocation.value = newExportLocation
-                }
             } catch (e: Exception) {
                 e.printStackTrace()
                 pushUIEvent(UIEvent.Type.ShowSnackbar(e.message.toString()))
@@ -324,10 +317,9 @@ class DataSettingsScreenVM(
         viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
                 preferenceKey = booleanPreferencesKey(
-                    AppPreferenceType.BACKUP_AUTO_DELETION_ENABLED.name
+                    AppPreferences.BACKUP_AUTO_DELETION_ENABLED.key
                 ), newValue = isEnabled
             )
-            AppPreferences.backupAutoDeletionEnabled.value = isEnabled
         }
     }
 
@@ -335,10 +327,9 @@ class DataSettingsScreenVM(
         viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
                 preferenceKey = intPreferencesKey(
-                    AppPreferenceType.BACKUP_AUTO_DELETION_THRESHOLD.name
+                    AppPreferences.BACKUP_AUTO_DELETION_THRESHOLD.key
                 ), newValue = count
             )
-            AppPreferences.backupAutoDeleteThreshold.intValue = count
         }
     }
 }

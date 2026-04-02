@@ -11,6 +11,7 @@ import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onLoading
 import com.sakethh.linkora.domain.onSuccess
 import com.sakethh.linkora.domain.repository.LocalizationRepo
+import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
@@ -22,10 +23,12 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class LanguageSettingsScreenVM(
+    preferencesRepository: PreferencesRepository,
     private val localizationRepoRemote: LocalizationRepo.Remote,
     private val localizationRepoLocal: LocalizationRepo.Local,
     private val nativeUtils: NativeUtils
 ) : ViewModel() {
+    val preferencesAsFlow = preferencesRepository.preferencesAsFlow
     private val _availableLanguages = MutableStateFlow(
         emptyList<LocalizedLanguage>()
     )

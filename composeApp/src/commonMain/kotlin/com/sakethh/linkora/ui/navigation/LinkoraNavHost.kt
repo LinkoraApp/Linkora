@@ -7,10 +7,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.sakethh.linkora.di.SpecificPanelManagerVMFactory
 import com.sakethh.linkora.di.linkoraViewModel
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.domain.CurrentFABContext
-import com.sakethh.linkora.ui.screens.collections.CollectionDetailPaneParams
 import com.sakethh.linkora.ui.screens.collections.CollectionScreenParams
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreen
 import com.sakethh.linkora.ui.screens.home.HomeScreen
@@ -35,6 +35,7 @@ import com.sakethh.linkora.ui.screens.settings.section.data.sync.ServerSetupScre
 
 @Composable
 fun LinkoraNavHost(
+    preferences: AppPreferences,
     startDestination: Navigation.Root,
     onOnboardingComplete: () -> Unit,
     currentFABContext: (CurrentFABContext) -> Unit,
@@ -72,7 +73,8 @@ fun LinkoraNavHost(
         composable<Navigation.Root.CollectionsScreen> {
             CollectionsScreen(
                 collectionScreenParams = collectionScreenParams,
-                currentFABContext = currentFABContext
+                currentFABContext = currentFABContext,
+                preferences = preferences
             )
         }
         composable<Navigation.Root.SettingsScreen> {
@@ -134,7 +136,11 @@ fun LinkoraNavHost(
             SnapshotsScreen()
         }
         composable<Navigation.Root.OnboardingSlidesScreen> {
-            OnboardingSlidesScreen(onOnboardingComplete = onOnboardingComplete, currentFABContext)
+            OnboardingSlidesScreen(
+                onOnboardingComplete = onOnboardingComplete,
+                preferences = preferences,
+                currentFABContext = currentFABContext
+            )
         }
     }
 }

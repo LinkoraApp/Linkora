@@ -214,7 +214,8 @@ actual class FileManager(private val context: Context) {
         )
 
         val jsonObj = if (!basedOnNewExportSchema) {
-            Json.decodeFromString<LegacyExportSchema>(jsonContent).asJSONExportSchema()
+            Json.decodeFromString<LegacyExportSchema>(jsonContent)
+                .asJSONExportSchema(userAgent = DependencyContainer.preferencesRepo.getPreferences().primaryJsoupUserAgent)
         } else Utils.json.decodeFromString<JSONExportSchema>(jsonContent).run {
             JSONExportSchema(schemaVersion = schemaVersion, links = links.map {
                 it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)

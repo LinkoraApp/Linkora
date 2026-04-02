@@ -1,6 +1,7 @@
 package com.sakethh.linkora.platform
 
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.FileType
 import com.sakethh.linkora.domain.LinkoraPlaceHolder
@@ -217,7 +218,9 @@ actual class FileManager {
             emit(Result.Loading(message = "Reading and deserializing JSON file: $fileName"))
 
             val jsonObj = if (!basedOnNewExportSchema) {
-                Json.decodeFromString<LegacyExportSchema>(jsonContent).asJSONExportSchema()
+                Json.decodeFromString<LegacyExportSchema>(jsonContent).asJSONExportSchema(
+                    DependencyContainer.preferencesRepo.getPreferences().primaryJsoupUserAgent
+                )
             } else Utils.json.decodeFromString<JSONExportSchema>(jsonContent).run {
                 JSONExportSchema(schemaVersion = schemaVersion, links = links.map {
                     it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)

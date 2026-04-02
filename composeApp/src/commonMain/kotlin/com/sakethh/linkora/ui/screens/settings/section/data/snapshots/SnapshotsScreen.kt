@@ -25,11 +25,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -39,14 +41,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.linkoraViewModel
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.SnapshotFormat
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.platform.platform
-import com.sakethh.linkora.preferences.AppPreferenceType
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
@@ -62,24 +64,24 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SnapshotsScreen() {
-
-    val backupLocation = rememberSaveable(AppPreferences.currentBackupLocation.value) {
-        mutableStateOf(AppPreferences.currentBackupLocation.value)
+    val dataSettingsScreenVM: DataSettingsScreenVM = linkoraViewModel()
+    val preferences by dataSettingsScreenVM.preferencesAsFlow.collectAsStateWithLifecycle()
+    var backupLocation by rememberSaveable(preferences.currentBackupLocation) {
+        mutableStateOf(preferences.currentBackupLocation)
     }
 
-    val backupAutoDeleteThreshold =
-        rememberSaveable(AppPreferences.backupAutoDeleteThreshold.intValue) {
-            mutableIntStateOf(AppPreferences.backupAutoDeleteThreshold.intValue)
-        }
+    var backupAutoDeleteThreshold by
+    rememberSaveable(preferences.backupAutoDeleteThreshold) {
+        mutableIntStateOf(preferences.backupAutoDeleteThreshold)
+    }
     val localFocusManager = LocalFocusManager.current
 
-    val isBackupAutoDeletionEnabled =
-        rememberSaveable(AppPreferences.backupAutoDeletionEnabled.value) {
-            mutableStateOf(AppPreferences.backupAutoDeletionEnabled.value)
-        }
+    val isBackupAutoDeletionEnabled by
+    rememberSaveable(preferences.backupAutoDeletionEnabled) {
+        mutableStateOf(preferences.backupAutoDeletionEnabled)
+    }
     val platform = platform
     val coroutineScope = rememberCoroutineScope()
-    val dataSettingsScreenVM: DataSettingsScreenVM = linkoraViewModel()
     SettingsSectionScaffold(
         topAppBarText = Navigation.Settings.Data.SnapshotsScreen.toString(),
     ) { paddingValues, topAppBarScrollBehaviour ->
@@ -95,12 +97,12 @@ fun SnapshotsScreen() {
             item {
                 SettingComponent(
                     SettingComponentParam(
-                        isIconNeeded = rememberSaveable { mutableStateOf(true) },
+                        isIconNeeded = true,
                         title = Localization.rememberLocalizedString(Localization.Key.UseSnapshots),
                         doesDescriptionExists = true,
                         description = Localization.rememberLocalizedString(Localization.Key.UseSnapshotsDescription),
                         isSwitchNeeded = true,
-                        isSwitchEnabled = AppPreferences.areSnapshotsEnabled,
+                        isSwitchEnabled = preferences.areSnapshotsEnabled,
                         onSwitchStateChange = {
                             var isStorageAccessPermitted = false
                             coroutineScope.launch {
@@ -108,20 +110,19 @@ fun SnapshotsScreen() {
                                     dataSettingsScreenVM.isStoragePermissionGranted()
                             }.invokeOnCompletion { _ ->
                                 if (isStorageAccessPermitted.not() && platform is Platform.Android) return@invokeOnCompletion
-
-                                AppPreferences.areSnapshotsEnabled.value = it
                                 dataSettingsScreenVM.changeSettingPreferenceValue(
                                     preferenceKey = booleanPreferencesKey(
-                                        AppPreferenceType.USE_SNAPSHOTS.name
+                                        AppPreferences.USE_SNAPSHOTS.key
                                     ), newValue = it
                                 )
                             }
                         },
                         icon = Icons.Default.BackupTable,
-                        shouldFilledIconBeUsed = rememberSaveable { mutableStateOf(true) })
+                        shouldFilledIconBeUsed = true
+                    )
                 )
             }
-            if (AppPreferences.areSnapshotsEnabled.value) {
+            if (preferences.areSnapshotsEnabled) {
                 item {
                     TextField(
                         supportingText = {
@@ -136,7 +137,7 @@ fun SnapshotsScreen() {
                                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                                     .pressScaleEffect().padding(end = 5.dp), onClick = {
                                     dataSettingsScreenVM.changeExportLocation(
-                                        exportLocation = backupLocation.value,
+                                        exportLocation = backupLocation,
                                         platform = platform,
                                         exportLocationType = ExportLocationType.SNAPSHOT
                                     )
@@ -152,8 +153,8 @@ fun SnapshotsScreen() {
                                 style = MaterialTheme.typography.titleMedium,
                                 textAlign = TextAlign.Start,
                             )
-                        }, value = backupLocation.value, onValueChange = {
-                            backupLocation.value = it
+                        }, value = backupLocation, onValueChange = {
+                            backupLocation = it
                         }, modifier = Modifier.padding(
                             start = 15.dp,
                             end = 15.dp,
@@ -163,7 +164,7 @@ fun SnapshotsScreen() {
                 item {
                     SettingComponent(
                         SettingComponentParam(
-                            isIconNeeded = rememberSaveable { mutableStateOf(true) },
+                            isIconNeeded = true,
                             title = Localization.rememberLocalizedString(Localization.Key.EnableAutoDeleteSnapshots),
                             doesDescriptionExists = true,
                             description = Localization.rememberLocalizedString(Localization.Key.EnableAutoDeleteSnapshotsDescription),
@@ -173,11 +174,12 @@ fun SnapshotsScreen() {
                                 dataSettingsScreenVM.updateAutoDeletionBackupsState(it)
                             },
                             icon = Icons.Default.AutoDelete,
-                            shouldFilledIconBeUsed = rememberSaveable { mutableStateOf(true) })
+                            shouldFilledIconBeUsed = true
+                        )
                     )
                 }
 
-                if (isBackupAutoDeletionEnabled.value) {
+                if (isBackupAutoDeletionEnabled) {
                     item {
                         TextField(
                             supportingText = {
@@ -193,7 +195,7 @@ fun SnapshotsScreen() {
                                     modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                                         .pressScaleEffect().padding(end = 5.dp), onClick = {
                                         dataSettingsScreenVM.updateAutoDeletionBackupsThreshold(
-                                            backupAutoDeleteThreshold.intValue
+                                            backupAutoDeleteThreshold
                                         )
                                         localFocusManager.clearFocus(force = true)
                                     }) {
@@ -209,9 +211,9 @@ fun SnapshotsScreen() {
                                     textAlign = TextAlign.Start,
                                 )
                             },
-                            value = backupAutoDeleteThreshold.intValue.toString(),
+                            value = backupAutoDeleteThreshold.toString(),
                             onValueChange = {
-                                backupAutoDeleteThreshold.intValue = try {
+                                backupAutoDeleteThreshold = try {
                                     it.toInt()
                                 } catch (_: Exception) {
                                     0
@@ -240,7 +242,7 @@ fun SnapshotsScreen() {
                             }.let {
                                 it.forEachIndexed { index, snapshotFormat ->
                                     val checked =
-                                        snapshotFormat.id.toString() == AppPreferences.snapshotExportFormatID.value
+                                        snapshotFormat.id.toString() == preferences.snapshotExportFormatID
                                     ToggleButton(
                                         shape = when (index) {
                                             0 -> RoundedCornerShape(
@@ -259,11 +261,9 @@ fun SnapshotsScreen() {
 
                                             else -> RoundedCornerShape(5.dp)
                                         }, checked = checked, onCheckedChange = {
-                                            AppPreferences.snapshotExportFormatID.value =
-                                                snapshotFormat.id.toString()
                                             dataSettingsScreenVM.changeSettingPreferenceValue(
                                                 preferenceKey = stringPreferencesKey(
-                                                    AppPreferenceType.SNAPSHOTS_EXPORT_TYPE.name
+                                                    AppPreferences.SNAPSHOTS_EXPORT_TYPE.key
                                                 ), newValue = snapshotFormat.id.toString()
                                             )
                                         }) {

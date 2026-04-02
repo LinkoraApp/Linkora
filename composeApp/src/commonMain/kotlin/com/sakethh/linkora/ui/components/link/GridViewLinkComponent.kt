@@ -41,8 +41,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.MediaType
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.components.CoilImage
 import com.sakethh.linkora.ui.domain.model.LinkComponentParam
 import com.sakethh.linkora.ui.utils.fadedEdges
@@ -54,7 +54,10 @@ import com.sakethh.linkora.utils.rememberLocalizedString
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GridViewLinkComponent(
-    linkComponentParam: LinkComponentParam, forStaggeredView: Boolean, modifier: Modifier = Modifier
+    preferences: AppPreferences,
+    linkComponentParam: LinkComponentParam,
+    forStaggeredView: Boolean,
+    modifier: Modifier = Modifier
 ) {
     val colorScheme = MaterialTheme.colorScheme
     Card(
@@ -62,7 +65,7 @@ fun GridViewLinkComponent(
         modifier = Modifier.fillMaxWidth()
             .then(if (!forStaggeredView) Modifier.wrapContentHeight() else Modifier)
             .pointerHoverIcon(icon = PointerIcon.Hand).combinedClickable(onClick = {
-                if (AppPreferences.showMenuOnGridLinkClick && !linkComponentParam.isSelectionModeEnabled.value) {
+                if (preferences.showMenuOnGridLinkClick && !linkComponentParam.isSelectionModeEnabled.value) {
                     linkComponentParam.onMoreIconClick()
                     return@combinedClickable
                 }
@@ -86,16 +89,17 @@ fun GridViewLinkComponent(
             Box(modifier = if (forStaggeredView) Modifier.fillMaxSize() else Modifier.height(150.dp)) {
                 CoilImage(
                     modifier = Modifier.fillMaxSize().then(
-                        if (AppPreferences.enableFadedEdgeForNonListViews.value) Modifier.fadedEdges(
+                        if (preferences.enableFadedEdgeForNonListViews) Modifier.fadedEdges(
                             colorScheme
                         ) else Modifier
                     ),
                     imgURL = linkComponentParam.link.imgURL,
                     contentScale = if (linkComponentParam.link.imgURL.startsWith("https://pbs.twimg.com/profile_images/") || !forStaggeredView) ContentScale.Crop else ContentScale.Fit,
                     userAgent = linkComponentParam.link.userAgent
-                        ?: AppPreferences.primaryJsoupUserAgent.value
+                        ?: preferences.primaryJsoupUserAgent,
+                    preferences = preferences
                 )
-                if (AppPreferences.showVideoTagOnUIIfApplicable.value && (linkComponentParam.link.mediaType == MediaType.VIDEO || linkComponentParam.link.url.host(
+                if (preferences.showVideoTagOnUIIfApplicable && (linkComponentParam.link.mediaType == MediaType.VIDEO || linkComponentParam.link.url.host(
                         throwOnException = false
                     ) in getVideoPlatformBaseUrls())
                 ) {
@@ -118,41 +122,41 @@ fun GridViewLinkComponent(
         }
 
         val showTitle by rememberSaveable(
-            AppPreferences.showTitleInLinkGridView.value,
+            preferences.showTitleInLinkGridView,
             linkComponentParam.link.title.isNotBlank()
         ) {
             mutableStateOf(
-                AppPreferences.showTitleInLinkGridView.value && linkComponentParam.link.title.isNotBlank()
+                preferences.showTitleInLinkGridView && linkComponentParam.link.title.isNotBlank()
             )
         }
         val showNote by rememberSaveable(
-            AppPreferences.showNoteInLinkView.value,
+            preferences.showNoteInLinkView,
             linkComponentParam.link.note.isNotBlank()
         ) {
             mutableStateOf(
-                AppPreferences.showNoteInLinkView.value && linkComponentParam.link.note.isNotBlank()
+                preferences.showNoteInLinkView && linkComponentParam.link.note.isNotBlank()
             )
         }
         val showDate by rememberSaveable(
-            AppPreferences.showDateInLinkView,
+            preferences.showDateInLinkView,
             linkComponentParam.link.date != null
         ) {
             mutableStateOf(
-                AppPreferences.showDateInLinkView && linkComponentParam.link.date != null
+                preferences.showDateInLinkView && linkComponentParam.link.date != null
             )
         }
         val showTags by
-        rememberSaveable(AppPreferences.showTagsInLinkView, linkComponentParam.tags != null) {
+        rememberSaveable(preferences.showTagsInLinkView, linkComponentParam.tags != null) {
             mutableStateOf(
-                AppPreferences.showTagsInLinkView && linkComponentParam.tags != null
+                preferences.showTagsInLinkView && linkComponentParam.tags != null
             )
         }
         val showHost by rememberSaveable(
             !linkComponentParam.isSelectionModeEnabled.value,
-            AppPreferences.showHostInLinkListView.value
+            preferences.showHostInLinkListView
         ) {
             mutableStateOf(
-                !linkComponentParam.isSelectionModeEnabled.value && AppPreferences.showHostInLinkListView.value
+                !linkComponentParam.isSelectionModeEnabled.value && preferences.showHostInLinkListView
             )
         }
         if (showTitle) {
@@ -234,7 +238,7 @@ fun GridViewLinkComponent(
                 text = linkComponentParam.link.url.host(throwOnException = false),
                 modifier = Modifier.padding(
                     start = 10.dp,
-                    top = if (!AppPreferences.showTagsInLinkView) 10.dp else 5.dp,
+                    top = if (!preferences.showTagsInLinkView) 10.dp else 5.dp,
                     end = 10.dp,
                 ).background(
                     color = MaterialTheme.colorScheme.primary.copy(0.25f),
@@ -251,7 +255,7 @@ fun GridViewLinkComponent(
                 showTitle || showNote || showDate || showHost
             }
         }
-        if (!AppPreferences.showMenuOnGridLinkClick) {
+        if (!preferences.showMenuOnGridLinkClick) {
             Box(
                 modifier = Modifier.padding(top = if (addTopSpacing) 10.dp else 0.dp)
                     .fillMaxWidth()

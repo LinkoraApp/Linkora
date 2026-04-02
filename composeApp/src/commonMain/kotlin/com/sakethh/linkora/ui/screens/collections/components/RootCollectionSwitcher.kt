@@ -16,21 +16,20 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import com.sakethh.linkora.Localization
-import com.sakethh.linkora.preferences.AppPreferences
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.rememberLocalizedString
-import kotlinx.coroutines.launch
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun RootCollectionSwitcher(
+    preferences: AppPreferences,
     isRootContentSwitcherBtmSheetVisible: Boolean,
     rootContentSwitcherBtmSheetState: SheetState,
     onHide: () -> Unit,
@@ -53,15 +52,15 @@ fun RootCollectionSwitcher(
                     }.padding(5.dp), verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(
                             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-                            selected = contentType.first == AppPreferences.selectedCollectionSourceId,
+                            selected = contentType.first == preferences.selectedCollectionSourceId,
                             onClick = {
                                 onSourceClick(contentType.first)
                             })
                         Spacer(Modifier.width(5.dp))
                         Text(
                             text = contentType.second,
-                            style = if (contentType.first == AppPreferences.selectedCollectionSourceId) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall,
-                            color = if (contentType.first == AppPreferences.selectedCollectionSourceId) LocalContentColor.current else LocalContentColor.current.copy(
+                            style = if (contentType.first == preferences.selectedCollectionSourceId) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall,
+                            color = if (contentType.first == preferences.selectedCollectionSourceId) LocalContentColor.current else LocalContentColor.current.copy(
                                 0.85f
                             )
                         )

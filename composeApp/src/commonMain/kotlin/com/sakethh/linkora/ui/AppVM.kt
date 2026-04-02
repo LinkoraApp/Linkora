@@ -13,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.data.local.repository.SnapshotRepoImpl
 import com.sakethh.linkora.di.LinkoraSDK
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.SyncServerRoute
 import com.sakethh.linkora.domain.asLinkType
@@ -33,8 +34,6 @@ import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
 import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.PermissionManager
-import com.sakethh.linkora.preferences.AppPreferenceType
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
 import com.sakethh.linkora.ui.domain.AppAction
 import com.sakethh.linkora.ui.domain.CurrentFABContext
@@ -51,11 +50,16 @@ import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.booleanPreferencesKey
+import com.sakethh.linkora.utils.canPushToServer
+import com.sakethh.linkora.utils.canReadFromServer
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.getRemoteOnlyFailureMsg
+import com.sakethh.linkora.utils.isServerConfigured
+import com.sakethh.linkora.utils.lastSyncedLocally
 import com.sakethh.linkora.utils.longPreferencesKey
 import com.sakethh.linkora.utils.pushSnackbar
 import com.sakethh.linkora.utils.pushSnackbarOnFailure
+import com.sakethh.linkora.utils.stringPreferencesKey
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -86,7 +90,6 @@ class AppVM(
     networkRepo = networkRepo,
     preferencesRepository = preferencesRepository,
     remoteSyncRepo = remoteSyncRepo,
-    loadExistingCertificateInfo = false,
     permissionManager = permissionManager,
     fileManager = fileManager,
     network = LinkoraSDK.getInstance().network
@@ -108,7 +111,7 @@ class AppVM(
     val startDestination: Navigation.Root = nativeUtils.platformRunBlocking {
         val showOnboarding = preferencesRepository.readPreferenceValue(
             booleanPreferencesKey(
-                AppPreferenceType.SHOULD_SHOW_ONBOARDING.name
+                AppPreferences.SHOULD_SHOW_ONBOARDING.key
             )
         ) != false && linksRepo.isLinksTableEmpty() && foldersRepo.isFoldersTableEmpty() && localPanelsRepo.isPanelsTableEmpty()
 
@@ -116,10 +119,10 @@ class AppVM(
             Navigation.Root.OnboardingSlidesScreen
         } else {
             onBoardingCompleted.value = true
-            when (AppPreferences.startDestination.value) {
+            when (preferencesRepository.readPreferenceValue(stringPreferencesKey(AppPreferences.INITIAL_ROUTE.key))) {
                 Navigation.Root.HomeScreen.toString() -> if (preferencesRepository.readPreferenceValue(
                         booleanPreferencesKey(
-                            AppPreferenceType.HOME_SCREEN_VISIBILITY.name
+                            AppPreferences.HOME_SCREEN_VISIBILITY.key
                         )
                     ) == false
                 ) {
@@ -175,7 +178,7 @@ class AppVM(
 
     suspend fun getLastSyncedTime(): Long {
         return preferencesRepository.readPreferenceValue(
-            preferenceKey = longPreferencesKey(AppPreferenceType.LAST_TIME_SYNCED_WITH_SERVER.name)
+            preferenceKey = longPreferencesKey(AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key)
         ) ?: 0
     }
 
@@ -209,13 +212,15 @@ class AppVM(
             }
         }
 
-        readSocketEvents(remoteSyncRepo)
 
         viewModelScope.launch {
-            if (AppPreferences.isServerConfigured()) {
+            val preferences = preferencesRepository.getPreferences()
+            readSocketEvents(remoteSyncRepo, preferences)
+
+            if (preferences.isServerConfigured()) {
                 try {
                     LinkoraSDK.getInstance().network.configureSyncServerClient(
-                        bypassCertCheck = AppPreferences.skipCertCheckForSync.value
+                        bypassCertCheck = preferences.skipCertCheckForSync
                     )
                 } catch (e: Exception) {
                     pushUIEvent(UIEvent.Type.ShowSnackbar(e.message.toString()))
@@ -223,14 +228,14 @@ class AppVM(
                 isPerformingStartupSync = true
                 // TODO: NESTED collectLatest
                 networkRepo.testServerConnection(
-                    serverUrl = AppPreferences.serverBaseUrl.value + SyncServerRoute.TEST_BEARER.name,
-                    token = AppPreferences.serverSecurityToken.value
+                    serverUrl = preferences.serverBaseUrl + SyncServerRoute.TEST_BEARER.name,
+                    token = preferences.serverSecurityToken
                 ).collectLatest {
                     it.onSuccess {
                         pushUIEvent(UIEvent.Type.ShowSnackbar(Localization.Key.SuccessfullyConnectedToTheServer.getLocalizedString()))
                         dataSyncingNotificationService.showNotification()
                         launch {
-                            if (AppPreferences.canPushToServer()) {
+                            if (preferences.canPushToServer()) {
                                 with(remoteSyncRepo) {
                                     channelFlow {
                                         pushPendingSyncQueueToServer<Unit>().collectLatest {
@@ -242,9 +247,9 @@ class AppVM(
                         }
 
                         listOf(launch {
-                            if (AppPreferences.canReadFromServer()) {
+                            if (preferences.canReadFromServer()) {
                                 remoteSyncRepo.applyUpdatesBasedOnRemoteTombstones(
-                                    AppPreferences.lastSyncedLocally(
+                                    preferences.lastSyncedLocally(
                                         preferencesRepository
                                     )
                                 ).collectLatest {
@@ -252,9 +257,9 @@ class AppVM(
                                 }
                             }
                         }, launch {
-                            if (AppPreferences.canReadFromServer()) {
+                            if (preferences.canReadFromServer()) {
                                 remoteSyncRepo.applyUpdatesFromRemote(
-                                    AppPreferences.lastSyncedLocally(
+                                    preferences.lastSyncedLocally(
                                         preferencesRepository
                                     )
                                 ).collectLatest {
@@ -277,7 +282,7 @@ class AppVM(
         viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
                 preferenceKey = booleanPreferencesKey(
-                    AppPreferenceType.SHOULD_SHOW_ONBOARDING.name
+                    AppPreferences.SHOULD_SHOW_ONBOARDING.key
                 ), newValue = false
             )
         }.invokeOnCompletion {
@@ -300,15 +305,15 @@ class AppVM(
             socketEventJob?.cancel()
         }
 
-        fun readSocketEvents(remoteSyncRepo: RemoteSyncRepo) {
-            if (AppPreferences.canReadFromServer().not()) return
+        fun readSocketEvents(remoteSyncRepo: RemoteSyncRepo, preferences: AppPreferences) {
+            if (preferences.canReadFromServer().not()) return
 
             socketEventJob?.cancel()
             socketEventJob = coroutineScope.launch(CoroutineExceptionHandler { _, throwable ->
                 throwable.printStackTrace()
                 throwable.pushSnackbar(coroutineScope)
             }) {
-                remoteSyncRepo.readSocketEvents(AppPreferences.getCorrelation()).collectLatest {
+                remoteSyncRepo.readSocketEvents(preferences.correlation).collectLatest {
                     it.pushSnackbarOnFailure()
                 }
             }

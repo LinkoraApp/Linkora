@@ -9,7 +9,7 @@ import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.MediaType
 import com.sakethh.linkora.domain.model.Folder
-import com.sakethh.linkora.preferences.AppPreferences
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.utils.epochToReadableDateTime
 import com.sakethh.linkora.utils.getSystemEpochSeconds
 import com.sakethh.linkora.utils.host
@@ -35,7 +35,7 @@ data class Link(
     val imgURL: String,
     val note: String,
     val idOfLinkedFolder: Long?,
-    val userAgent: String? = AppPreferences.primaryJsoupUserAgent.value,
+    val userAgent: String?,
     val mediaType: MediaType = MediaType.IMAGE,
     val lastModified: Long = getSystemEpochSeconds()
 ) {

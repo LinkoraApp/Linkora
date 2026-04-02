@@ -15,6 +15,7 @@ import com.sakethh.linkora.domain.repository.local.PendingSyncQueueRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.remote.RemoteTagsRepo
 import com.sakethh.linkora.utils.Sorting
+import com.sakethh.linkora.utils.canPushToServer
 import com.sakethh.linkora.utils.getSystemEpochSeconds
 import com.sakethh.linkora.utils.performLocalOperationWithRemoteSyncFlow
 import com.sakethh.linkora.utils.updateLastSyncedWithServerTimeStamp
@@ -31,13 +32,18 @@ class LocalTagsRepoImpl(
     override suspend fun createATag(tag: Tag, viaSocket: Boolean): Flow<Result<Long>> {
         var newTagId: Long? = null
         val eventTimestamp = getSystemEpochSeconds()
+        val preferences = preferencesRepository.getPreferences()
         return performLocalOperationWithRemoteSyncFlow(
+            canPushToServer = {
+                preferences.canPushToServer()
+            },
             performRemoteOperation = !viaSocket,
             remoteOperation = {
                 remoteTagsRepo.createATag(
                     createTagDTO = CreateTagDTO(
                         name = tag.name,
                         eventTimestamp = eventTimestamp,
+                        correlation = preferences.correlation
                     )
                 )
             },
@@ -60,7 +66,8 @@ class LocalTagsRepoImpl(
                             CreateTagDTO(
                                 name = tag.name,
                                 eventTimestamp = eventTimestamp,
-                                offlineSyncItemId = newTagId!!
+                                offlineSyncItemId = newTagId!!,
+                                correlation = preferences.correlation
                             )
                         )
                     )
@@ -88,13 +95,18 @@ class LocalTagsRepoImpl(
     override suspend fun deleteATag(id: Long, viaSocket: Boolean): Flow<Result<Unit>> {
         val tag = tagsDao.getATag(id)
         val eventTimestamp = getSystemEpochSeconds()
+        val preferences = preferencesRepository.getPreferences()
         return performLocalOperationWithRemoteSyncFlow(
+            canPushToServer = {
+                preferences.canPushToServer()
+            },
             performRemoteOperation = !viaSocket,
             remoteOperation = {
                 require(tag.remoteId != null)
                 remoteTagsRepo.deleteATag(
                     IDBasedDTO(
-                        id = tag.remoteId, eventTimestamp = eventTimestamp
+                        id = tag.remoteId, eventTimestamp = eventTimestamp,
+                        correlation = preferences.correlation
                     )
                 )
             },
@@ -109,7 +121,8 @@ class LocalTagsRepoImpl(
                             operation = SyncServerRoute.DELETE_TAG.name,
                             payload = Json.encodeToString(
                                 IDBasedDTO(
-                                    id = tag.remoteId, eventTimestamp = eventTimestamp
+                                    id = tag.remoteId, eventTimestamp = eventTimestamp,
+                                    correlation = preferences.correlation
                                 )
                             )
                         )
@@ -150,13 +163,20 @@ class LocalTagsRepoImpl(
     ): Flow<Result<Unit>> {
         val tag = tagsDao.getATag(localTagId)
         val eventTimestamp = getSystemEpochSeconds()
+        val preferences = preferencesRepository.getPreferences()
         return performLocalOperationWithRemoteSyncFlow(
+            canPushToServer = {
+                preferences.canPushToServer()
+            },
             performRemoteOperation = !viaSocket,
             remoteOperation = {
                 require(tag.remoteId != null)
                 remoteTagsRepo.renameATag(
                     renameTagDTO = RenameTagDTO(
-                        id = tag.remoteId, newName = newName, eventTimestamp = eventTimestamp
+                        id = tag.remoteId,
+                        newName = newName,
+                        eventTimestamp = eventTimestamp,
+                        correlation = preferences.correlation
                     )
                 )
             },
@@ -171,7 +191,10 @@ class LocalTagsRepoImpl(
                     PendingSyncQueue(
                         operation = SyncServerRoute.RENAME_TAG.name, payload = Json.encodeToString(
                             RenameTagDTO(
-                                newName = newName, id = tag.localId, eventTimestamp = eventTimestamp
+                                newName = newName,
+                                id = tag.localId,
+                                eventTimestamp = eventTimestamp,
+                                correlation = preferences.correlation
                             )
                         )
                     )

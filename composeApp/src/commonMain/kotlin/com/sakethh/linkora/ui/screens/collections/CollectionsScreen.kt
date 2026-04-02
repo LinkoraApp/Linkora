@@ -91,10 +91,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.platform.PlatformSpecificBackHandler
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.components.SortingIconButton
 import com.sakethh.linkora.ui.components.folder.FolderComponent
@@ -118,6 +118,7 @@ import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.Utils
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.rememberLocalizedString
+import com.sakethh.linkora.utils.supportsWideDisplay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -131,6 +132,7 @@ import kotlinx.coroutines.launch
 )
 @Composable
 fun CollectionsScreen(
+    preferences: AppPreferences,
     collectionScreenParams: CollectionScreenParams, currentFABContext: (CurrentFABContext) -> Unit
 ) {
     LaunchedEffect(Unit) {
@@ -169,12 +171,11 @@ fun CollectionsScreen(
         mutableStateOf(false)
     }
     val rootContentPagerState =
-        rememberPagerState(initialPage = AppPreferences.selectedCollectionSourceId) { 2 }
+        rememberPagerState(initialPage = preferences.selectedCollectionSourceId) { 2 }
     val rootContentSwitcherBtmSheetState =
         rememberModalBottomSheetState(skipPartiallyExpanded = true)
     LaunchedEffect(rootContentPagerState.currentPage) {
-        AppPreferences.selectedCollectionSourceId = rootContentPagerState.currentPage
-        rootContentPagerState.animateScrollToPage(AppPreferences.selectedCollectionSourceId)
+        rootContentPagerState.animateScrollToPage(rootContentPagerState.currentPage)
     }
     val allTags by collectionScreenParams.allTags.collectAsStateWithLifecycle()
     val rootFoldersListState = rememberLazyListState()
@@ -261,9 +262,7 @@ fun CollectionsScreen(
                                 fontSize = 22.sp
                             )
                         })
-                    if (!onAndroidMobile) {
-                        HorizontalDivider()
-                    }
+                    HorizontalDivider()
                 }
             }) { padding ->
             BoxWithConstraints(
@@ -276,7 +275,6 @@ fun CollectionsScreen(
                     modifier = Modifier.fillMaxWidth().verticalScroll(parentScrollState)
                 ) {
                     DefaultFolderComponent(
-                        onAndroidMobile = onAndroidMobile,
                         name = Localization.rememberLocalizedString(Localization.Key.AllLinks),
                         icon = Icons.Outlined.DatasetLinked,
                         onClick = {
@@ -291,6 +289,9 @@ fun CollectionsScreen(
                                 collectionType = CollectionType.FOLDER,
                             )
                             coroutineScope.launch {
+                                detailNavController.popBackStack<CollectionNavigation.Empty>(
+                                    inclusive = false
+                                )
                                 pendingDetailDestination = collectionDetailPaneInfo
                                 scaffoldNavigator.navigateTo(
                                     pane = ListDetailPaneScaffoldRole.Detail,
@@ -302,7 +303,6 @@ fun CollectionsScreen(
                     ItemDivider()
                     DefaultFolderComponent(
                         name = Localization.rememberLocalizedString(Localization.Key.SavedLinks),
-                        onAndroidMobile = onAndroidMobile,
                         icon = Icons.Outlined.Link,
                         onClick = {
                             val collectionDetailPaneInfo = CollectionDetailPaneInfo(
@@ -316,6 +316,9 @@ fun CollectionsScreen(
                                 collectionType = CollectionType.FOLDER,
                             )
                             coroutineScope.launch {
+                                detailNavController.popBackStack<CollectionNavigation.Empty>(
+                                    inclusive = false
+                                )
                                 pendingDetailDestination = collectionDetailPaneInfo
                                 scaffoldNavigator.navigateTo(
                                     pane = ListDetailPaneScaffoldRole.Detail,
@@ -327,7 +330,6 @@ fun CollectionsScreen(
                     DefaultFolderComponent(
                         name = Localization.rememberLocalizedString(Localization.Key.ImportantLinks),
                         icon = Icons.Outlined.StarOutline,
-                        onAndroidMobile = onAndroidMobile,
                         onClick = {
                             val collectionDetailPaneInfo = CollectionDetailPaneInfo(
                                 currentFolder = Folder(
@@ -340,6 +342,9 @@ fun CollectionsScreen(
                                 collectionType = CollectionType.FOLDER,
                             )
                             coroutineScope.launch {
+                                detailNavController.popBackStack<CollectionNavigation.Empty>(
+                                    inclusive = false
+                                )
                                 pendingDetailDestination = collectionDetailPaneInfo
                                 scaffoldNavigator.navigateTo(
                                     pane = ListDetailPaneScaffoldRole.Detail,
@@ -350,7 +355,6 @@ fun CollectionsScreen(
                     )
                     DefaultFolderComponent(
                         name = Localization.rememberLocalizedString(Localization.Key.Archive),
-                        onAndroidMobile = onAndroidMobile,
                         icon = Icons.Outlined.Archive,
                         onClick = {
                             val collectionDetailPaneInfo = CollectionDetailPaneInfo(
@@ -364,6 +368,9 @@ fun CollectionsScreen(
                                 collectionType = CollectionType.FOLDER,
                             )
                             coroutineScope.launch {
+                                detailNavController.popBackStack<CollectionNavigation.Empty>(
+                                    inclusive = false
+                                )
                                 pendingDetailDestination = collectionDetailPaneInfo
                                 scaffoldNavigator.navigateTo(
                                     pane = ListDetailPaneScaffoldRole.Detail,
@@ -475,6 +482,9 @@ fun CollectionsScreen(
                                                                 collectionType = CollectionType.FOLDER,
                                                             )
                                                         coroutineScope.launch {
+                                                            detailNavController.popBackStack<CollectionNavigation.Empty>(
+                                                                inclusive = false
+                                                            )
                                                             pendingDetailDestination =
                                                                 collectionDetailPaneInfo
                                                             scaffoldNavigator.navigateTo(
@@ -577,6 +587,9 @@ fun CollectionsScreen(
                                                                 collectionType = CollectionType.TAG,
                                                             )
                                                         coroutineScope.launch {
+                                                            detailNavController.popBackStack<CollectionNavigation.Empty>(
+                                                                inclusive = false
+                                                            )
                                                             pendingDetailDestination =
                                                                 collectionDetailPaneInfo
                                                             scaffoldNavigator.navigateTo(
@@ -642,9 +655,7 @@ fun CollectionsScreen(
             AnimatedPane {
                 Row {
                     listPane(Modifier.weight(1f))
-                    if (!onAndroidMobile) {
-                        VerticalDivider()
-                    }
+                    VerticalDivider()
                 }
             }
         },
@@ -666,9 +677,7 @@ fun CollectionsScreen(
         detailPane = {
             AnimatedPane {
                 Row {
-                    if (!onAndroidMobile) {
-                        VerticalDivider()
-                    }
+                    VerticalDivider()
                     NavHost(
                         navController = detailNavController,
                         startDestination = CollectionNavigation.Empty,
@@ -701,6 +710,7 @@ fun CollectionsScreen(
                                 },
                                 collectionDetailPaneInfo = collectionDetailPaneInfo,
                                 currentFABContext = currentFABContext,
+                                preferences = preferences,
                                 onNavigate = { collectionDetailPaneInfo ->
                                     detailNavController.navigate(
                                         CollectionNavigation.Pane(
@@ -742,12 +752,12 @@ fun CollectionsScreen(
         rootContentSwitcherBtmSheetState = rootContentSwitcherBtmSheetState,
         onHide = hideCollectionSwitcher,
         onSourceClick = { currCollectionSourceId ->
-            AppPreferences.selectedCollectionSourceId = currCollectionSourceId
             coroutineScope.launch {
                 rootContentPagerState.animateScrollToPage(currCollectionSourceId)
             }
             hideCollectionSwitcher()
-        })
+        }, preferences = preferences
+    )
 
     /*
   * The worst thing (in our context, specifically this collection screen's)
@@ -789,7 +799,6 @@ private val PaneExpansionAnchors = listOf(
 
 @Composable
 private fun DefaultFolderComponent(
-    onAndroidMobile: Boolean,
     name: String,
     icon: ImageVector,
     onClick: () -> Unit,
@@ -797,13 +806,13 @@ private fun DefaultFolderComponent(
 ) {
     Card(
         modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(
-            end = if (onAndroidMobile) 15.dp else 0.dp, start = 15.dp, top = 15.dp
+            end = 15.dp, start = 15.dp, top = 15.dp
         ).wrapContentHeight().fillMaxWidth().clickable(interactionSource = remember {
             MutableInteractionSource()
         }, indication = null, onClick = {
             onClick()
         }).pressScaleEffect().then(
-            if (isSelected && !onAndroidMobile) Modifier.border(
+            if (isSelected && supportsWideDisplay()) Modifier.border(
                 width = 2.5.dp,
                 color = MaterialTheme.colorScheme.primary,
                 shape = CardDefaults.shape

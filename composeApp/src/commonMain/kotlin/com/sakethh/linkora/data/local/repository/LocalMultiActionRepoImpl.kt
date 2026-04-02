@@ -25,6 +25,7 @@ import com.sakethh.linkora.domain.repository.local.PendingSyncQueueRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.remote.RemoteMultiActionRepo
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
+import com.sakethh.linkora.utils.canPushToServer
 import com.sakethh.linkora.utils.getSystemEpochSeconds
 import com.sakethh.linkora.utils.performLocalOperationWithRemoteSyncFlow
 import com.sakethh.linkora.utils.updateLastSyncedWithServerTimeStamp
@@ -46,18 +47,21 @@ class LocalMultiActionRepoImpl(
         linkIds: List<Long>, folderIds: List<Long>, viaSocket: Boolean
     ): Flow<Result<Unit>> {
         val eventTimestamp = getSystemEpochSeconds()
+        val preferences = preferencesRepository.getPreferences()
         return performLocalOperationWithRemoteSyncFlow(
-            performRemoteOperation = viaSocket.not(),
+            canPushToServer = {
+                preferences.canPushToServer()
+            },
+            performRemoteOperation = !viaSocket,
             remoteOperation = {
                 val remoteLinkIds = linksDao.getRemoteIds(linkIds)
                 val remoteFolderIds = foldersDao.getRemoteIds(folderIds)
-                require(remoteFolderIds != null && remoteLinkIds != null)
-
                 remoteMultiActionRepo.archiveMultipleItems(
                     ArchiveMultipleItemsDTO(
                         linkIds = remoteLinkIds,
                         folderIds = remoteFolderIds,
-                        eventTimestamp = eventTimestamp
+                        eventTimestamp = eventTimestamp,
+                        correlation = preferences.correlation
                     )
                 )
             },
@@ -72,7 +76,8 @@ class LocalMultiActionRepoImpl(
                             ArchiveMultipleItemsDTO(
                                 linkIds = linkIds,
                                 folderIds = folderIds,
-                                eventTimestamp = eventTimestamp
+                                eventTimestamp = eventTimestamp,
+                                correlation = preferences.correlation
                             )
                         )
                     )
@@ -93,15 +98,19 @@ class LocalMultiActionRepoImpl(
         val eventTimestamp = getSystemEpochSeconds()
         val remoteLinkIds = linksDao.getRemoteIds(linkIds)
         val remoteFolderIds = foldersDao.getRemoteIds(folderIds)
+        val preferences = preferencesRepository.getPreferences()
         return performLocalOperationWithRemoteSyncFlow(
-            performRemoteOperation = viaSocket.not(),
+            canPushToServer = {
+                preferences.canPushToServer()
+            },
+            performRemoteOperation = !viaSocket,
             remoteOperation = {
-                require(remoteFolderIds != null && remoteLinkIds != null)
                 remoteMultiActionRepo.deleteMultipleItems(
                     DeleteMultipleItemsDTO(
                         linkIds = remoteLinkIds,
                         folderIds = remoteFolderIds,
-                        eventTimestamp = eventTimestamp
+                        eventTimestamp = eventTimestamp,
+                        correlation = preferences.correlation
                     )
                 )
             },
@@ -109,20 +118,19 @@ class LocalMultiActionRepoImpl(
                 preferencesRepository.updateLastSyncedWithServerTimeStamp(it.eventTimestamp)
             },
             onRemoteOperationFailure = {
-                if (remoteFolderIds != null && remoteLinkIds != null) {
-                    pendingSyncQueueRepo.addInQueue(
-                        PendingSyncQueue(
-                            operation = SyncServerRoute.DELETE_MULTIPLE_ITEMS.name,
-                            payload = Json.encodeToString(
-                                DeleteMultipleItemsDTO(
-                                    linkIds = remoteLinkIds,
-                                    folderIds = remoteFolderIds,
-                                    eventTimestamp = eventTimestamp
-                                )
+                pendingSyncQueueRepo.addInQueue(
+                    PendingSyncQueue(
+                        operation = SyncServerRoute.DELETE_MULTIPLE_ITEMS.name,
+                        payload = Json.encodeToString(
+                            DeleteMultipleItemsDTO(
+                                linkIds = remoteLinkIds,
+                                folderIds = remoteFolderIds,
+                                eventTimestamp = eventTimestamp,
+                                correlation = preferences.correlation
                             )
                         )
                     )
-                }
+                )
             }) {
             withWriterConnection { transactor ->
                 transactor.immediateTransaction {
@@ -142,14 +150,18 @@ class LocalMultiActionRepoImpl(
         viaSocket: Boolean
     ): Flow<Result<Unit>> {
         val eventTimeStamp = getSystemEpochSeconds()
+        val preferences = preferencesRepository.getPreferences()
         return performLocalOperationWithRemoteSyncFlow(
-            performRemoteOperation = viaSocket.not(),
+            canPushToServer = {
+                preferences.canPushToServer()
+            },
+            performRemoteOperation = !viaSocket,
             remoteOperation = {
                 val remoteLinkIds = linksDao.getRemoteIds(linkIds)
                 val remoteFolderIds = foldersDao.getRemoteIds(folderIds)
                 val remoteParentFolderId = foldersDao.getRemoteFolderId(newParentFolderId)
 
-                require(remoteFolderIds != null && remoteLinkIds != null && remoteParentFolderId != null)
+                require(remoteParentFolderId != null)
 
                 remoteMultiActionRepo.moveMultipleItems(
                     MoveItemsDTO(
@@ -157,7 +169,8 @@ class LocalMultiActionRepoImpl(
                         linkIds = remoteLinkIds,
                         linkType = linkType,
                         newParentFolderId = remoteParentFolderId,
-                        eventTimestamp = eventTimeStamp
+                        eventTimestamp = eventTimeStamp,
+                        correlation = preferences.correlation
                     )
                 )
             },
@@ -174,7 +187,8 @@ class LocalMultiActionRepoImpl(
                                 linkIds = linkIds,
                                 linkType = linkType,
                                 newParentFolderId = newParentFolderId,
-                                eventTimestamp = eventTimeStamp
+                                eventTimestamp = eventTimeStamp,
+                                correlation = preferences.correlation
                             )
                         )
                     )
@@ -203,7 +217,11 @@ class LocalMultiActionRepoImpl(
 
         lateinit var copiedFolders: List<CopyFolderDTO>
 
+        val preferences = preferencesRepository.getPreferences()
         return performLocalOperationWithRemoteSyncFlow(
+            canPushToServer = {
+                preferences.canPushToServer()
+            },
             performRemoteOperation = !viaSocket,
             remoteOperation = {
                 val remoteParentFolderId = foldersDao.getRemoteFolderId(newParentFolderId)
@@ -214,7 +232,8 @@ class LocalMultiActionRepoImpl(
                         linkIds = copiedLinksIds.toMap(),
                         linkType = linkType,
                         newParentFolderId = remoteParentFolderId,
-                        eventTimestamp = eventTimeStamp
+                        eventTimestamp = eventTimeStamp,
+                        correlation = preferences.correlation
                     )
                 )
             },
@@ -249,7 +268,8 @@ class LocalMultiActionRepoImpl(
                                 linkIds = copiedLinksIds.toMap(),
                                 linkType = linkType,
                                 newParentFolderId = newParentFolderId,
-                                eventTimestamp = eventTimeStamp
+                                eventTimestamp = eventTimeStamp,
+                                correlation = preferences.correlation
                             )
                         )
                     )
@@ -398,18 +418,22 @@ class LocalMultiActionRepoImpl(
         linkIds: List<Long>, folderIds: List<Long>, viaSocket: Boolean
     ): Flow<Result<Unit>> {
         val eventTimestamp = getSystemEpochSeconds()
+        val preferences = preferencesRepository.getPreferences()
         return performLocalOperationWithRemoteSyncFlow(
+            canPushToServer = {
+                preferences.canPushToServer()
+            },
             performRemoteOperation = !viaSocket,
             remoteOperation = {
                 val remoteLinkIds = linksDao.getRemoteIds(linkIds)
                 val remoteFolderIds = foldersDao.getRemoteIds(folderIds)
-                require(remoteLinkIds != null && remoteFolderIds != null)
 
                 remoteMultiActionRepo.markItemsAsRegular(
                     MarkItemsRegularDTO(
                         foldersIds = remoteFolderIds,
                         linkIds = remoteLinkIds,
-                        eventTimestamp = eventTimestamp
+                        eventTimestamp = eventTimestamp,
+                        correlation = preferences.correlation
                     )
                 )
             },
@@ -430,7 +454,8 @@ class LocalMultiActionRepoImpl(
                             MarkItemsRegularDTO(
                                 foldersIds = folderIds,
                                 linkIds = linkIds,
-                                eventTimestamp = eventTimestamp
+                                eventTimestamp = eventTimestamp,
+                                correlation = preferences.correlation
                             )
                         )
                     )

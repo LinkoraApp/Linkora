@@ -1,14 +1,10 @@
 package com.sakethh.linkora.platform
 
+import RefreshAllLinksService
 import androidx.compose.runtime.Composable
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.longPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
 import com.sakethh.linkora.Localization
-import RefreshAllLinksService
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.PermissionStatus
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.PreferenceKey
@@ -40,6 +36,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
+import readAllPreferences
+import readPreferenceValue
+import writePreferenceValue
 import java.security.cert.CertificateException
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
@@ -48,7 +47,6 @@ import kotlin.io.inputStream
 import kotlin.io.println
 import kotlin.io.resolve
 import kotlin.use
-
 
 actual val showFollowSystemThemeOption: Boolean = false
 actual val platform: Platform = Platform.Desktop
@@ -226,58 +224,25 @@ actual object PlatformPreference {
         produceFile = { "${linkoraSpecificFolder.absolutePath}/${Constants.DATA_STORE_NAME}".toPath() },
     )
 
-    actual suspend fun <T> writePreferenceValue(preferenceKey: PreferenceKey<T>, newValue: T) {
-        dataStore.edit {
-            when (preferenceKey) {
-                is PreferenceKey.BooleanPreferencesKey -> {
-                    it[booleanPreferencesKey(preferenceKey.key)] = newValue as Boolean
-                }
 
-                is PreferenceKey.LongPreferencesKey -> {
-                    it[longPreferencesKey(preferenceKey.key)] = newValue as Long
-                }
-
-                is PreferenceKey.IntPreferencesKey -> {
-                    it[intPreferencesKey(preferenceKey.key)] = newValue as Int
-                }
-
-                is PreferenceKey.StringPreferencesKey -> {
-                    it[stringPreferencesKey(preferenceKey.key)] = newValue as String
-                }
-            }
-        }
+    actual suspend fun <T> writePreferenceValue(
+        preferenceKey: PreferenceKey<T>, newValue: T
+    ) {
+        writePreferenceValue(
+            dataStore = dataStore,
+            preferenceKey = preferenceKey,
+            newValue = newValue,
+        )
     }
 
-    actual suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T? =
-        when (preferenceKey) {
-            is PreferenceKey.BooleanPreferencesKey -> {
-                dataStore.data.first()[
-                    booleanPreferencesKey(
-                        preferenceKey.key,
-                    ),
-                ]
-            }
+    actual suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T? {
+        return readPreferenceValue(dataStore = dataStore, preferenceKey = preferenceKey)
+    }
 
-            is PreferenceKey.LongPreferencesKey -> {
-                dataStore.data.first()[
-                    longPreferencesKey(
-                        preferenceKey.key,
-                    ),
-                ]
-            }
-
-            is PreferenceKey.StringPreferencesKey -> {
-                dataStore.data.first()[
-                    stringPreferencesKey(
-                        preferenceKey.key,
-                    ),
-                ]
-            }
-
-            is PreferenceKey.IntPreferencesKey -> dataStore.data.first()[
-                intPreferencesKey(
-                    preferenceKey.key,
-                ),
-            ]
-        } as T?
+    actual suspend fun readAllPreferences(): AppPreferences {
+        val prefs = dataStore.data.first()
+        return readAllPreferences(
+            prefs,
+            externalAction = { externalAction -> externalAction(this) })
+    }
 }

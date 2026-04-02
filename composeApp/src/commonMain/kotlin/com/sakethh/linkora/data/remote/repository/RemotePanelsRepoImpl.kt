@@ -16,8 +16,8 @@ import kotlinx.coroutines.flow.Flow
 
 class RemotePanelsRepoImpl(
     private val syncServerClient:()-> HttpClient,
-    private val baseUrl: () -> String,
-    private val authToken: () -> String
+    private val baseUrl: suspend () -> String,
+    private val authToken: suspend () -> String
 ) : RemotePanelsRepo {
     override suspend fun addANewPanel(addANewPanelDTO: AddANewPanelDTO): Flow<Result<NewItemResponseDTO>> {
         return postFlow(

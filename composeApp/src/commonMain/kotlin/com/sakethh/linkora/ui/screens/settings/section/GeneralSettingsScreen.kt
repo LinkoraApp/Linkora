@@ -56,13 +56,13 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.linkoraViewModel
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.platform.platform
-import com.sakethh.linkora.preferences.AppPreferenceType
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.components.InfoCard
 import com.sakethh.linkora.ui.domain.AppIconCode
@@ -86,6 +86,7 @@ import org.jetbrains.compose.resources.painterResource
 fun GeneralSettingsScreen() {
     val navController = LocalNavController.current
     val settingsScreenViewModel: SettingsScreenViewModel = linkoraViewModel()
+    val preferences by settingsScreenViewModel.preferencesAsFlow.collectAsStateWithLifecycle()
     var showInitialNavigationChangerDialogBox by rememberSaveable {
         mutableStateOf(false)
     }
@@ -94,14 +95,17 @@ fun GeneralSettingsScreen() {
     }
     val platform = platform
     val onAndroidMobile = Platform.Android.onMobile()
-    val generalSectionData = retain {
-        settingsScreenViewModel.generalSection(onAndroidMobile)
+    val generalSectionData = retain(preferences) {
+        settingsScreenViewModel.generalSection(
+            onAndroidMobile,
+            preferences
+        )
     }
-    val isLinkoraTopAppBarEnabled = rememberSaveable {
-        mutableStateOf(AppPreferences.useLinkoraTopDecoratorOnDesktop.value)
+    val isLinkoraTopAppBarEnabled by rememberSaveable(preferences.useLinkoraTopDecoratorOnDesktop) {
+        mutableStateOf(preferences.useLinkoraTopDecoratorOnDesktop)
     }
     var tempSelectedAppIcon by rememberSaveable {
-        mutableStateOf(AppPreferences.selectedAppIcon)
+        mutableStateOf(preferences.selectedAppIcon)
     }
     var showIconSwitchDialogBox by rememberSaveable {
         mutableStateOf(false)
@@ -137,22 +141,21 @@ fun GeneralSettingsScreen() {
                             isSwitchNeeded = true,
                             isSwitchEnabled = isLinkoraTopAppBarEnabled,
                             onSwitchStateChange = {
-                                isLinkoraTopAppBarEnabled.value = it
                                 settingsScreenViewModel.changeSettingPreferenceValue(
                                     preferenceKey = booleanPreferencesKey(
-                                        AppPreferenceType.DESKTOP_TOP_DECORATOR.name
+                                        AppPreferences.DESKTOP_TOP_DECORATOR.key
                                     ), newValue = it
                                 )
                             },
-                            isIconNeeded = rememberSaveable {
-                                mutableStateOf(true)
-                            },
+                            isIconNeeded = true,
                             icon = Icons.Default.VideoLabel
                         )
                     )
                 }
             }
-            items(generalSectionData) { setting ->
+            items(generalSectionData, key = {
+                it.title
+            }) { setting ->
                 SettingComponent(setting)
             }
 
@@ -163,15 +166,11 @@ fun GeneralSettingsScreen() {
                         doesDescriptionExists = true,
                         description = Localization.Key.ChangeInitialRouteDesc.rememberLocalizedString(),
                         isSwitchNeeded = false,
-                        isSwitchEnabled = rememberSaveable {
-                            mutableStateOf(false)
-                        },
+                        isSwitchEnabled = true,
                         onSwitchStateChange = {
                             showInitialNavigationChangerDialogBox = true
                         },
-                        isIconNeeded = rememberSaveable {
-                            mutableStateOf(true)
-                        },
+                        isIconNeeded = true,
                         icon = Icons.Default.Start
                     )
                 )
@@ -184,15 +183,11 @@ fun GeneralSettingsScreen() {
                         doesDescriptionExists = false,
                         description = "",
                         isSwitchNeeded = false,
-                        isSwitchEnabled = rememberSaveable {
-                            mutableStateOf(false)
-                        },
+                        isSwitchEnabled = true,
                         onSwitchStateChange = {
                             showFontFamilySwitcherDialogBox = true
                         },
-                        isIconNeeded = rememberSaveable {
-                            mutableStateOf(true)
-                        },
+                        isIconNeeded = true,
                         icon = Icons.Default.TextFields
                     )
                 )
@@ -204,16 +199,12 @@ fun GeneralSettingsScreen() {
                         doesDescriptionExists = false,
                         description = "",
                         isSwitchNeeded = false,
-                        isSwitchEnabled = rememberSaveable {
-                            mutableStateOf(false)
-                        },
+                        isSwitchEnabled = true,
                         onSwitchStateChange = {
                             navController.navigate(Navigation.Root.OnboardingSlidesScreen)
                         },
                         icon = Icons.Outlined.PresentToAll,
-                        isIconNeeded = rememberSaveable {
-                            mutableStateOf(true)
-                        },
+                        isIconNeeded = true,
                     )
                 )
             }
@@ -247,7 +238,7 @@ fun GeneralSettingsScreen() {
                                 ) {
                                     with(this@FlowRow) {
                                         AnimatedVisibility(
-                                            AppPreferences.selectedAppIcon == it.name,
+                                            preferences.selectedAppIcon == it.name,
                                             enter = fadeIn(),
                                             exit = fadeOut()
                                         ) {
@@ -278,7 +269,7 @@ fun GeneralSettingsScreen() {
                         color = MaterialTheme.colorScheme.secondary
                     )
                     Text(
-                        text = AppPreferences.selectedAppIcon,
+                        text = preferences.selectedAppIcon,
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(
                             start = 15.dp, end = 15.dp, bottom = 15.dp
@@ -377,7 +368,7 @@ fun GeneralSettingsScreen() {
     }
     if (showInitialNavigationChangerDialogBox) {
         val currentlySelectedRoute = rememberSaveable {
-            mutableStateOf(AppPreferences.startDestination.value)
+            mutableStateOf(preferences.startDestination)
         }
         LaunchedEffect(Unit) {
             settingsScreenViewModel.currInitialRoute {
@@ -399,7 +390,7 @@ fun GeneralSettingsScreen() {
             onConfirm = {
                 settingsScreenViewModel.changeSettingPreferenceValue(
                     stringPreferencesKey(
-                        AppPreferenceType.INITIAL_ROUTE.name
+                        AppPreferences.INITIAL_ROUTE.key
                     ), currentlySelectedRoute.value
                 )
                 showInitialNavigationChangerDialogBox = false
@@ -407,7 +398,7 @@ fun GeneralSettingsScreen() {
     }
     if (showFontFamilySwitcherDialogBox) {
         var tempSelectedFont by rememberSaveable {
-            mutableStateOf(AppPreferences.selectedFont.name)
+            mutableStateOf(preferences.selectedFont.name)
         }
         SwitchDialogBox(
             title = Localization.Key.SelectAFontLabel.rememberLocalizedString(),
@@ -424,10 +415,9 @@ fun GeneralSettingsScreen() {
             onConfirm = {
                 settingsScreenViewModel.changeSettingPreferenceValue(
                     stringPreferencesKey(
-                        AppPreferenceType.FONT_TYPE.name
+                        AppPreferences.FONT_TYPE.key
                     ), tempSelectedFont
                 )
-                AppPreferences.selectedFont = Font.valueOf(tempSelectedFont)
                 showFontFamilySwitcherDialogBox = false
             })
     }

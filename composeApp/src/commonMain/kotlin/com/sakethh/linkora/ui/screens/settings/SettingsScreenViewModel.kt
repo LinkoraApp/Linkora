@@ -13,10 +13,10 @@ import androidx.compose.ui.platform.UriHandler
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.MediaType
 import com.sakethh.linkora.domain.PermissionStatus
-import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
@@ -24,8 +24,6 @@ import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.PermissionManager
-import com.sakethh.linkora.preferences.AppPreferenceType
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.domain.AppIconCode
 import com.sakethh.linkora.ui.domain.model.LinkComponentParam
 import com.sakethh.linkora.ui.domain.model.LinkPref
@@ -47,7 +45,12 @@ open class SettingsScreenViewModel(
     private val permissionManager: PermissionManager
 ) : ViewModel() {
 
-    fun generalSection(onAndroidMobile: Boolean): List<SettingComponentParam> {
+    val preferencesAsFlow = preferencesRepository.preferencesAsFlow
+
+    fun generalSection(
+        onAndroidMobile: Boolean,
+        preferences: AppPreferences
+    ): List<SettingComponentParam> {
         return buildList {
             this.addAll(
                 listOf(
@@ -56,48 +59,44 @@ open class SettingsScreenViewModel(
                         doesDescriptionExists = true,
                         description = Localization.getLocalizedString(Localization.Key.AutoDetectTitleDesc),
                         isSwitchNeeded = true,
-                        isSwitchEnabled = AppPreferences.isAutoDetectTitleForLinksEnabled,
-                        isIconNeeded = mutableStateOf(true),
+                        isSwitchEnabled = preferences.isAutoDetectTitleForLinksEnabled,
+                        isIconNeeded = true,
                         icon = Icons.Default.Search,
                         onSwitchStateChange = {
                             changeSettingPreferenceValue(
                                 preferenceKey = booleanPreferencesKey(
-                                    AppPreferenceType.AUTO_DETECT_TITLE_FOR_LINK.name
+                                    AppPreferences.AUTO_DETECT_TITLE_FOR_LINK.key
                                 ), newValue = it
                             )
-                            AppPreferences.isAutoDetectTitleForLinksEnabled.value = it
 
                             if (it) {
                                 changeSettingPreferenceValue(
                                     preferenceKey = booleanPreferencesKey(
-                                        AppPreferenceType.FORCE_SAVE_WITHOUT_FETCHING_META_DATA.name
+                                        AppPreferences.FORCE_SAVE_WITHOUT_FETCHING_META_DATA.key
                                     ), newValue = false
                                 )
-                                AppPreferences.forceSaveWithoutFetchingAnyMetaData.value = false
                             }
                         }), SettingComponentParam(
                         title = Localization.getLocalizedString(Localization.Key.ForceSaveWithoutRetrievingMetadata),
                         doesDescriptionExists = true,
                         description = Localization.getLocalizedString(Localization.Key.ForceSaveWithoutRetrievingMetadataDesc),
                         isSwitchNeeded = true,
-                        isSwitchEnabled = AppPreferences.forceSaveWithoutFetchingAnyMetaData,
-                        isIconNeeded = mutableStateOf(true),
+                        isSwitchEnabled = preferences.forceSaveWithoutFetchingAnyMetaData,
+                        isIconNeeded = true,
                         icon = Icons.Default.PublicOff,
                         onSwitchStateChange = {
                             changeSettingPreferenceValue(
                                 preferenceKey = booleanPreferencesKey(
-                                    AppPreferenceType.FORCE_SAVE_WITHOUT_FETCHING_META_DATA.name
+                                    AppPreferences.FORCE_SAVE_WITHOUT_FETCHING_META_DATA.key
                                 ), newValue = it
                             )
-                            AppPreferences.forceSaveWithoutFetchingAnyMetaData.value = it
 
                             if (it) {
                                 changeSettingPreferenceValue(
                                     preferenceKey = booleanPreferencesKey(
-                                        AppPreferenceType.AUTO_DETECT_TITLE_FOR_LINK.name
+                                        AppPreferences.AUTO_DETECT_TITLE_FOR_LINK.key
                                     ), newValue = false
                                 )
-                                AppPreferences.isAutoDetectTitleForLinksEnabled.value = false
                             }
                         },
                     ), SettingComponentParam(
@@ -105,16 +104,15 @@ open class SettingsScreenViewModel(
                         doesDescriptionExists = true,
                         description = Localization.Key.SkipSavingExistingLinksDesc.getLocalizedString(),
                         isSwitchNeeded = true,
-                        isSwitchEnabled = AppPreferences.skipSavingExistingLink,
-                        isIconNeeded = mutableStateOf(true),
+                        isSwitchEnabled = preferences.skipSavingExistingLink,
+                        isIconNeeded = true,
                         icon = Icons.Default.Block,
                         onSwitchStateChange = {
                             changeSettingPreferenceValue(
                                 preferenceKey = booleanPreferencesKey(
-                                    AppPreferenceType.SKIP_SAVING_EXISTING_LINK.name
+                                    AppPreferences.SKIP_SAVING_EXISTING_LINK.key
                                 ), newValue = it
                             )
-                            AppPreferences.skipSavingExistingLink.value = it
                         },
                     )
                 )
@@ -127,16 +125,15 @@ open class SettingsScreenViewModel(
                         doesDescriptionExists = true,
                         description = Localization.getLocalizedString(Localization.Key.ShowAssociatedImageInLinkMenuDesc),
                         isSwitchNeeded = true,
-                        isSwitchEnabled = AppPreferences.showAssociatedImageInLinkMenu,
-                        isIconNeeded = mutableStateOf(true),
+                        isSwitchEnabled = preferences.showAssociatedImageInLinkMenu,
+                        isIconNeeded = true,
                         icon = Icons.Default.Image,
                         onSwitchStateChange = {
                             changeSettingPreferenceValue(
                                 preferenceKey = booleanPreferencesKey(
-                                    AppPreferenceType.ASSOCIATED_IMAGES_IN_LINK_MENU_VISIBILITY.name
+                                    AppPreferences.ASSOCIATED_IMAGES_IN_LINK_MENU_VISIBILITY.key
                                 ), newValue = it
                             )
-                            AppPreferences.showAssociatedImageInLinkMenu.value = it
                         })
                 )
             }
@@ -147,16 +144,15 @@ open class SettingsScreenViewModel(
                     doesDescriptionExists = true,
                     description = Localization.Key.ForceSaveLinksDesc.getLocalizedString(),
                     isSwitchNeeded = true,
-                    isSwitchEnabled = AppPreferences.forceSaveIfRetrievalFails,
+                    isSwitchEnabled = preferences.forceSaveIfRetrievalFails,
                     onSwitchStateChange = {
                         changeSettingPreferenceValue(
                             preferenceKey = booleanPreferencesKey(
-                                AppPreferenceType.FORCE_SAVE_LINKS.name
+                                AppPreferences.FORCE_SAVE_LINKS.key
                             ), newValue = it
                         )
-                        AppPreferences.forceSaveIfRetrievalFails.value = it
                     },
-                    isIconNeeded = mutableStateOf(true),
+                    isIconNeeded = true,
                     icon = Icons.Default.PriorityHigh
                 )
             )
@@ -168,22 +164,21 @@ open class SettingsScreenViewModel(
                         doesDescriptionExists = true,
                         description = Localization.Key.AutoSaveLinksDesc.getLocalizedString(),
                         isSwitchNeeded = true,
-                        isSwitchEnabled = AppPreferences.autoSaveOnShareIntent,
+                        isSwitchEnabled = preferences.autoSaveOnShareIntent,
                         onSwitchStateChange = {
                             viewModelScope.launch {
                                 if (permissionManager.permittedToShowNotification() == PermissionStatus.Granted) {
                                     changeSettingPreferenceValue(
                                         preferenceKey = booleanPreferencesKey(
-                                            AppPreferenceType.AUTO_SAVE_ON_SHARE_INTENT.name
+                                            AppPreferences.AUTO_SAVE_ON_SHARE_INTENT.key
                                         ), newValue = it
                                     )
-                                    AppPreferences.autoSaveOnShareIntent.value = it
                                 } else {
                                     UIEvent.pushUIEvent(UIEvent.Type.ShowSnackbar(message = Localization.Key.AutoSaveNotificationPermission.getLocalizedString()))
                                 }
                             }
                         },
-                        isIconNeeded = mutableStateOf(true),
+                        isIconNeeded = true,
                         icon = Icons.Default.AutoMode
                     )
                 )
@@ -195,16 +190,15 @@ open class SettingsScreenViewModel(
                     doesDescriptionExists = true,
                     description = Localization.Key.EnableHomeScreenDesc.getLocalizedString(),
                     isSwitchNeeded = true,
-                    isSwitchEnabled = AppPreferences.isHomeScreenEnabled,
+                    isSwitchEnabled = preferences.isHomeScreenEnabled,
                     onSwitchStateChange = {
-                        AppPreferences.isHomeScreenEnabled.value = it
                         changeSettingPreferenceValue(
                             preferenceKey = booleanPreferencesKey(
-                                AppPreferenceType.HOME_SCREEN_VISIBILITY.name
+                                AppPreferences.HOME_SCREEN_VISIBILITY.key
                             ), newValue = it
                         )
                     },
-                    isIconNeeded = mutableStateOf(true),
+                    isIconNeeded = true,
                     icon = Icons.Rounded.Home
                 )
             )
@@ -223,14 +217,17 @@ open class SettingsScreenViewModel(
 
     fun currInitialRoute(init: (String) -> Unit) {
         viewModelScope.launch {
-            (preferencesRepository.readPreferenceValue(stringPreferencesKey(AppPreferenceType.INITIAL_ROUTE.name))
+            (preferencesRepository.readPreferenceValue(stringPreferencesKey(AppPreferences.INITIAL_ROUTE.key))
                 ?: Navigation.Root.HomeScreen.toString()).let {
                 init(it)
             }
         }
     }
 
-    fun sampleLinks(localUriHandler: UriHandler): List<LinkComponentParam> {
+    fun sampleLinks(
+        localUriHandler: UriHandler,
+        preferences: AppPreferences
+    ): List<LinkComponentParam> {
         return listOf(
             LinkComponentParam(
                 link = Link(
@@ -238,7 +235,7 @@ open class SettingsScreenViewModel(
                     host = "music.youtube.com",
                     imgURL = "https://lh3.googleusercontent.com/KMdNxgppeQ_CEAv3mcwYde9s6ehw-r9MWnE4wC2T0Yhax1aOwYvfRLfHCbLBbW-UVQQEdYniiXThgso",
                     url = "https://music.youtube.com/watch?v=DbiB1AtCA9k",
-                    userAgent = AppPreferences.primaryJsoupUserAgent.value,
+                    userAgent = preferences.primaryJsoupUserAgent,
                     linkType = LinkType.SAVED_LINK,
                     localId = 0L,
                     note = "",
@@ -260,7 +257,7 @@ open class SettingsScreenViewModel(
                     host = "rockstargames.com",
                     imgURL = "https://media-rockstargames-com.akamaized.net/rockstargames-newsite/img/global/games/fob/640/reddeadredemption2.jpg",
                     url = "https://www.rockstargames.com/reddeadredemption2",
-                    userAgent = AppPreferences.primaryJsoupUserAgent.value,
+                    userAgent = preferences.primaryJsoupUserAgent,
                     linkType = LinkType.SAVED_LINK,
                     localId = 0L,
                     note = "RDR2 is the epic tale of outlaw Arthur Morgan and the infamous Van der Linde gang, on the run across America at the dawn of the modern age.",
@@ -293,7 +290,7 @@ open class SettingsScreenViewModel(
                         "https://i.redd.it/8psapajhi8571.jpg"
                     ).random(),
                     url = "https://store.epicgames.com/en-US/p/a-plague-tale-requiem",
-                    userAgent = AppPreferences.primaryJsoupUserAgent.value,
+                    userAgent = preferences.primaryJsoupUserAgent,
                     linkType = LinkType.SAVED_LINK,
                     localId = 0L,
                     note = "The plague ravages the Kingdom of France. Amicia and her younger brother Hugo are pursued by the Inquisition through villages devastated by the disease.",
@@ -314,7 +311,7 @@ open class SettingsScreenViewModel(
                     title = "Shadow of the Tomb Raider",
                     imgURL = "https://images.ctfassets.net/x77ixfmkpoiv/4UnPNfdN8Yq2aZvOhIdBx9/1b641d296ebb37bfa3eca8873c25a321/SOTTR_Product_Image.jpg",
                     url = "https://www.tombraider.com/products/games/shadow-of-the-tomb-raider",
-                    userAgent = AppPreferences.primaryJsoupUserAgent.value,
+                    userAgent = preferences.primaryJsoupUserAgent,
                     linkType = LinkType.SAVED_LINK,
                     localId = 0L,
                     note = "As Lara Croft races to save the world from a Maya apocalypse, she must become the Tomb Raider she is destined to be.",
@@ -336,7 +333,7 @@ open class SettingsScreenViewModel(
                     host = "open.spotify.com",
                     imgURL = "https://cdn.prod.website-files.com/673de86e5b9b97bfffe3e0e4/67563ebf6f96ce8ad4d79ae4_Nas-Website.png",
                     url = "https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q",
-                    userAgent = AppPreferences.primaryJsoupUserAgent.value,
+                    userAgent = preferences.primaryJsoupUserAgent,
                     linkType = LinkType.SAVED_LINK,
                     localId = 0L,
                     note = "he's da man",
@@ -358,7 +355,7 @@ open class SettingsScreenViewModel(
                     host = "music.youtube.com",
                     imgURL = "https://lh3.googleusercontent.com/hloaKrX1jN1EfSLOUA11tgHZ3faSc5QFHNbMuB9bO-QTAdQRl-1oMZEXNQxOlk-p_sWBlf9Dd-4cal14",
                     url = "https://music.youtube.com/watch?v=Q5jl_fmMd8M",
-                    userAgent = AppPreferences.primaryJsoupUserAgent.value,
+                    userAgent = preferences.primaryJsoupUserAgent,
                     linkType = LinkType.SAVED_LINK,
                     localId = 0L,
                     note = "listen to this RN!!! If you like this (you will), you'll love the album, also check out McKinley's previous work such as Beautiful Paradise Jazz.",
@@ -380,7 +377,7 @@ open class SettingsScreenViewModel(
                     host = "twitter.com",
                     imgURL = "https://pbs.twimg.com/media/GT7RIrWWwAAjZzg.jpg",
                     url = "https://twitter.com/CatWorkers/status/1819121250226127061",
-                    userAgent = AppPreferences.primaryJsoupUserAgent.value,
+                    userAgent = preferences.primaryJsoupUserAgent,
                     linkType = LinkType.SAVED_LINK,
                     localId = 0L,
                     note = "",
@@ -402,7 +399,7 @@ open class SettingsScreenViewModel(
                     host = "youtube.com",
                     imgURL = "https://i.ytimg.com/vi/3vlqI5TPVjQ/maxresdefault.jpg",
                     url = "https://www.youtube.com/watch?v=3vlqI5TPVjQ",
-                    userAgent = AppPreferences.primaryJsoupUserAgent.value,
+                    userAgent = preferences.primaryJsoupUserAgent,
                     linkType = LinkType.SAVED_LINK,
                     localId = 0L,
                     note = "",
@@ -425,7 +422,7 @@ open class SettingsScreenViewModel(
                     host = "music.youtube.com",
                     imgURL = "https://i.ytimg.com/vi/qQH24C1Jrx0/maxresdefault.jpg",
                     url = "https://music.youtube.com/watch?v=78YNulckDng",
-                    userAgent = AppPreferences.primaryJsoupUserAgent.value,
+                    userAgent = preferences.primaryJsoupUserAgent,
                     linkType = LinkType.SAVED_LINK,
                     localId = 0L,
                     note = "",
@@ -448,7 +445,7 @@ open class SettingsScreenViewModel(
                     host = "youtube.com",
                     imgURL = "https://i.ytimg.com/vi/66OFYWBrg3o/maxresdefault.jpg",
                     url = "https://www.youtube.com/watch?v=66OFYWBrg3o",
-                    userAgent = AppPreferences.primaryJsoupUserAgent.value,
+                    userAgent = preferences.primaryJsoupUserAgent,
                     linkType = LinkType.SAVED_LINK,
                     localId = 0L,
                     note = "",
@@ -470,95 +467,83 @@ open class SettingsScreenViewModel(
         }
     }
 
-    val gridViewPref = listOf(
-        LinkPref(
-            onClick = {
-                AppPreferences.showTitleInLinkGridView.value =
-                    !AppPreferences.showTitleInLinkGridView.value
-                changeSettingPreferenceValue(
-                    preferenceKey = booleanPreferencesKey(AppPreferenceType.TITLE_VISIBILITY_FOR_NON_LIST_VIEWS.name),
-                    newValue = AppPreferences.showTitleInLinkGridView.value
-                )
-            },
-            title = Localization.Key.ShowTitle.getLocalizedString(),
-            isSwitchChecked = { AppPreferences.showTitleInLinkGridView.value }),
-        LinkPref(
-            onClick = {
-                AppPreferences.showNoteInLinkView.value =
-                    !AppPreferences.showNoteInLinkView.value
-                changeSettingPreferenceValue(
-                    preferenceKey = booleanPreferencesKey(AppPreferenceType.NOTE_VISIBILITY_IN_LIST_VIEWS.name),
-                    newValue = AppPreferences.showNoteInLinkView.value
-                )
-            },
-            title = Localization.Key.ShowNote.getLocalizedString(),
-            isSwitchChecked = { AppPreferences.showNoteInLinkView.value }),
-        LinkPref(
-            onClick = {
-                AppPreferences.showHostInLinkListView.value =
-                    !AppPreferences.showHostInLinkListView.value
-                changeSettingPreferenceValue(
-                    preferenceKey = booleanPreferencesKey(AppPreferenceType.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS.name),
-                    newValue = AppPreferences.showHostInLinkListView.value
-                )
-            },
-            title = Localization.Key.ShowHostAddress.getLocalizedString(),
-            isSwitchChecked = { AppPreferences.showHostInLinkListView.value }),
-        LinkPref(
-            onClick = {
-                AppPreferences.showTagsInLinkView =
-                    !AppPreferences.showTagsInLinkView
-                changeSettingPreferenceValue(
-                    preferenceKey = booleanPreferencesKey(AppPreferenceType.SHOW_TAGS_IN_LINK_VIEW.name),
-                    newValue = AppPreferences.showTagsInLinkView
-                )
-            },
-            title = Localization.Key.ShowTagsLabel.getLocalizedString(),
-            isSwitchChecked = { AppPreferences.showTagsInLinkView }),
-        LinkPref(
-            onClick = {
-                AppPreferences.showDateInLinkView =
-                    !AppPreferences.showDateInLinkView
-                changeSettingPreferenceValue(
-                    preferenceKey = booleanPreferencesKey(AppPreferenceType.SHOW_DATE_IN_LINK_VIEW.name),
-                    newValue = AppPreferences.showDateInLinkView
-                )
-            },
-            title = Localization.Key.ShowDateLabel.getLocalizedString(),
-            isSwitchChecked = { AppPreferences.showDateInLinkView }),
-        LinkPref(
-            onClick = {
-                AppPreferences.enableFadedEdgeForNonListViews.value =
-                    !AppPreferences.enableFadedEdgeForNonListViews.value
-                changeSettingPreferenceValue(
-                    preferenceKey = booleanPreferencesKey(AppPreferenceType.FADED_EDGE_VISIBILITY_FOR_NON_LIST_VIEWS.name),
-                    newValue = AppPreferences.enableFadedEdgeForNonListViews.value
-                )
-            },
-            title = Localization.Key.ShowBottomFadedEdge.getLocalizedString(),
-            isSwitchChecked = { AppPreferences.enableFadedEdgeForNonListViews.value }),
-        LinkPref(
-            onClick = {
-                AppPreferences.showMenuOnGridLinkClick = !AppPreferences.showMenuOnGridLinkClick
-                changeSettingPreferenceValue(
-                    preferenceKey = booleanPreferencesKey(AppPreferenceType.SHOW_MENU_ON_GRID_LINK_CLICK.name),
-                    newValue = AppPreferences.showMenuOnGridLinkClick
-                )
-            },
-            title = Localization.Key.ClickToOpenMenuLabel.getLocalizedString(),
-            isSwitchChecked = { AppPreferences.showMenuOnGridLinkClick }),
-    )
+    fun gridViewPref(preferences: AppPreferences): List<LinkPref> {
+        return listOf(
+            LinkPref(
+                onClick = {
+                    changeSettingPreferenceValue(
+                        preferenceKey = booleanPreferencesKey(AppPreferences.TITLE_VISIBILITY_FOR_NON_LIST_VIEWS.key),
+                        newValue = preferences.showTitleInLinkGridView
+                    )
+                },
+                title = Localization.Key.ShowTitle.getLocalizedString(),
+                isSwitchChecked = { preferences.showTitleInLinkGridView }),
+            LinkPref(
+                onClick = {
+                    changeSettingPreferenceValue(
+                        preferenceKey = booleanPreferencesKey(AppPreferences.NOTE_VISIBILITY_IN_LIST_VIEWS.key),
+                        newValue = preferences.showNoteInLinkView
+                    )
+                },
+                title = Localization.Key.ShowNote.getLocalizedString(),
+                isSwitchChecked = { preferences.showNoteInLinkView }),
+            LinkPref(
+                onClick = {
+                    changeSettingPreferenceValue(
+                        preferenceKey = booleanPreferencesKey(AppPreferences.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS.key),
+                        newValue = preferences.showHostInLinkListView
+                    )
+                },
+                title = Localization.Key.ShowHostAddress.getLocalizedString(),
+                isSwitchChecked = { preferences.showHostInLinkListView }),
+            LinkPref(
+                onClick = {
+                    changeSettingPreferenceValue(
+                        preferenceKey = booleanPreferencesKey(AppPreferences.SHOW_TAGS_IN_LINK_VIEW.key),
+                        newValue = preferences.showTagsInLinkView
+                    )
+                },
+                title = Localization.Key.ShowTagsLabel.getLocalizedString(),
+                isSwitchChecked = { preferences.showTagsInLinkView }),
+            LinkPref(
+                onClick = {
+                    changeSettingPreferenceValue(
+                        preferenceKey = booleanPreferencesKey(AppPreferences.SHOW_DATE_IN_LINK_VIEW.key),
+                        newValue = preferences.showDateInLinkView
+                    )
+                },
+                title = Localization.Key.ShowDateLabel.getLocalizedString(),
+                isSwitchChecked = { preferences.showDateInLinkView }),
+            LinkPref(
+                onClick = {
+                    changeSettingPreferenceValue(
+                        preferenceKey = booleanPreferencesKey(AppPreferences.FADED_EDGE_VISIBILITY_FOR_NON_LIST_VIEWS.key),
+                        newValue = preferences.enableFadedEdgeForNonListViews
+                    )
+                },
+                title = Localization.Key.ShowBottomFadedEdge.getLocalizedString(),
+                isSwitchChecked = { preferences.enableFadedEdgeForNonListViews }),
+            LinkPref(
+                onClick = {
+                    changeSettingPreferenceValue(
+                        preferenceKey = booleanPreferencesKey(AppPreferences.SHOW_MENU_ON_GRID_LINK_CLICK.key),
+                        newValue = preferences.showMenuOnGridLinkClick
+                    )
+                },
+                title = Localization.Key.ClickToOpenMenuLabel.getLocalizedString(),
+                isSwitchChecked = { preferences.showMenuOnGridLinkClick }),
+        )
+    }
 
     private val allIconCodes = AppIconCode.entries.map { it.name }
 
     fun onIconChange(newIconCode: String, onCompletion: () -> Unit) {
-        AppPreferences.selectedAppIcon = newIconCode
         nativeUtils.onIconChange(
             allIconCodes = allIconCodes, newIconCode = newIconCode, onCompletion = {
                 viewModelScope.launch {
                     preferencesRepository.changePreferenceValue(
                         preferenceKey = stringPreferencesKey(
-                            AppPreferenceType.SELECTED_APP_ICON.name
+                            AppPreferences.SELECTED_APP_ICON.key
                         ), newValue = newIconCode
                     )
                 }.invokeOnCompletion {

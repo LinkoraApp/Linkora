@@ -3,6 +3,7 @@ package com.sakethh.linkora.platform
 import androidx.compose.runtime.Composable
 import androidx.room3.RoomDatabaseConstructor
 import com.sakethh.linkora.data.local.LocalDatabase
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.PermissionStatus
 import com.sakethh.linkora.domain.Platform
@@ -137,6 +138,8 @@ expect class PlatformPreference {
         preferenceKey: PreferenceKey<T>,
         newValue: T,
     )
+
+    suspend fun readAllPreferences(): AppPreferences
 
     suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T?
 }

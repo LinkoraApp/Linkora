@@ -21,14 +21,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.compose.rememberNavController
 import com.sakethh.linkora.domain.Platform
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.App
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
@@ -105,7 +104,7 @@ class MainActivity : ComponentActivity() {
                         )
                     )
                 }
-            viewModel<MainVM>(factory = viewModelFactory {
+            val mainVM = viewModel<MainVM>(factory = viewModelFactory {
                 initializer {
                     MainVM(launchAction = {
                         when (it) {
@@ -129,23 +128,24 @@ class MainActivity : ComponentActivity() {
                     })
                 }
             })
+            val preferences by mainVM.preferencesAsFlow.collectAsStateWithLifecycle()
             CompositionLocalProvider(
                 LocalNavController provides navController,
                 LocalPlatform provides Platform.Android
             ) {
                 val context = LocalContext.current
                 val darkColors = DarkColors.copy(
-                    background = if (AppPreferences.useAmoledTheme.value) Color(0xFF000000) else DarkColors.background,
-                    surface = if (AppPreferences.useAmoledTheme.value) Color(0xFF000000) else DarkColors.surface
+                    background = if (preferences.useAmoledTheme) Color(0xFF000000) else DarkColors.background,
+                    surface = if (preferences.useAmoledTheme) Color(0xFF000000) else DarkColors.surface
                 )
                 val colors = when {
-                    AppPreferences.useDynamicTheming.value && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                        if (AppPreferences.useSystemTheme.value) {
+                    preferences.useDynamicTheming && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+                        if (preferences.useSystemTheme) {
                             if (isSystemInDarkTheme()) dynamicDarkColorScheme(context).copy(
-                                background = if (AppPreferences.useAmoledTheme.value) Color(
+                                background = if (preferences.useAmoledTheme) Color(
                                     0xFF000000
                                 ) else dynamicDarkColorScheme(context).background,
-                                surface = if (AppPreferences.useAmoledTheme.value) Color(
+                                surface = if (preferences.useAmoledTheme) Color(
                                     0xFF000000
                                 ) else dynamicDarkColorScheme(
                                     context
@@ -154,13 +154,13 @@ class MainActivity : ComponentActivity() {
                                 context
                             )
                         } else {
-                            if (AppPreferences.useDarkTheme.value) dynamicDarkColorScheme(
+                            if (preferences.useDarkTheme) dynamicDarkColorScheme(
                                 context
                             ).copy(
-                                background = if (AppPreferences.useAmoledTheme.value) Color(
+                                background = if (preferences.useAmoledTheme) Color(
                                     0xFF000000
                                 ) else dynamicDarkColorScheme(context).background,
-                                surface = if (AppPreferences.useAmoledTheme.value) Color(
+                                surface = if (preferences.useAmoledTheme) Color(
                                     0xFF000000
                                 ) else dynamicDarkColorScheme(
                                     context
@@ -169,14 +169,15 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    else -> if (AppPreferences.useSystemTheme.value) {
+                    else -> if (preferences.useSystemTheme) {
                         if (isSystemInDarkTheme()) darkColors else LightColors
                     } else {
-                        if (AppPreferences.useDarkTheme.value) darkColors else LightColors
+                        if (preferences.useDarkTheme) darkColors else LightColors
                     }
                 }
                 LinkoraTheme(
-                    colorScheme = colors
+                    colorScheme = colors,
+                    preferredFont = preferences.selectedFont
                 ) {
                     Surface {
                         App()
@@ -196,7 +197,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-class OpenDocumentTreeWithPermissionsContract() : ActivityResultContracts.OpenDocumentTree() {
+class OpenDocumentTreeWithPermissionsContract : ActivityResultContracts.OpenDocumentTree() {
     override fun createIntent(context: Context, input: Uri?): Intent {
         return super.createIntent(context, input).apply {
             listOf(

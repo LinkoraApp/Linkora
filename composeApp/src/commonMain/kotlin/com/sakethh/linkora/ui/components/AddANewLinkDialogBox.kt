@@ -106,6 +106,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.DependencyContainer
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ComposableContent
 import com.sakethh.linkora.domain.LinkSaveConfig
 import com.sakethh.linkora.domain.LinkType
@@ -115,8 +116,6 @@ import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.domain.onSuccess
-import com.sakethh.linkora.platform.platform
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.LastSeenId
 import com.sakethh.linkora.ui.LastSeenString
 import com.sakethh.linkora.ui.components.folder.SelectableFolderUIComponent
@@ -153,17 +152,18 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddANewLinkDialogBox(
-    addNewLinkDialogParams: AddNewLinkDialogParams
+    addNewLinkDialogParams: AddNewLinkDialogParams,
+    preferences: AppPreferences
 ) {
     val isDataExtractingForTheLink = rememberSaveable {
         mutableStateOf(false)
     }
 
     val isAutoDetectTitleEnabled = rememberSaveable {
-        mutableStateOf(AppPreferences.isAutoDetectTitleForLinksEnabled.value)
+        mutableStateOf(preferences.isAutoDetectTitleForLinksEnabled)
     }
     val isForceSaveWithoutFetchingMetaDataEnabled = rememberSaveable {
-        mutableStateOf(AppPreferences.forceSaveWithoutFetchingAnyMetaData.value)
+        mutableStateOf(preferences.forceSaveWithoutFetchingAnyMetaData)
     }
     val addTheFolderInRoot = rememberSaveable {
         mutableStateOf(false)
@@ -212,7 +212,8 @@ fun AddANewLinkDialogBox(
                         isAutoDetectTitleEnabled = isAutoDetectTitleEnabled,
                         isForceSaveWithoutFetchingMetaDataEnabled = isForceSaveWithoutFetchingMetaDataEnabled,
                         imgUrlTextFieldValue = imgUrlTextFieldValue,
-                        currentFolder = addNewLinkDialogParams.currentFolder
+                        currentFolder = addNewLinkDialogParams.currentFolder,
+                        preferences = preferences
                     )
                     BottomPartOfAddANewLinkDialogBox(
                         onDismiss = addNewLinkDialogParams.onDismiss,
@@ -234,7 +235,8 @@ fun AddANewLinkDialogBox(
                         foldersSearchQueryResult = addNewLinkDialogParams.foldersSearchQueryResult,
                         performAction = addNewLinkDialogParams.performAction,
                         rootRegularFolders = addNewLinkDialogParams.rootRegularFolders,
-                        imgUrlTextFieldValue = imgUrlTextFieldValue
+                        imgUrlTextFieldValue = imgUrlTextFieldValue,
+                        preferences = preferences
                     )
                     Spacer(Modifier.height(50.dp))
                 }
@@ -252,7 +254,8 @@ fun AddANewLinkDialogBox(
                             isAutoDetectTitleEnabled = isAutoDetectTitleEnabled,
                             isForceSaveWithoutFetchingMetaDataEnabled = isForceSaveWithoutFetchingMetaDataEnabled,
                             currentFolder = addNewLinkDialogParams.currentFolder,
-                            imgUrlTextFieldValue = imgUrlTextFieldValue
+                            imgUrlTextFieldValue = imgUrlTextFieldValue,
+                            preferences = preferences
                         )
                         VerticalDivider(
                             modifier = Modifier.padding(
@@ -279,7 +282,8 @@ fun AddANewLinkDialogBox(
                             foldersSearchQueryResult = addNewLinkDialogParams.foldersSearchQueryResult,
                             performAction = addNewLinkDialogParams.performAction,
                             rootRegularFolders = addNewLinkDialogParams.rootRegularFolders,
-                            imgUrlTextFieldValue = imgUrlTextFieldValue
+                            imgUrlTextFieldValue = imgUrlTextFieldValue,
+                            preferences = preferences
                         )
                     }
                     if (!isDataExtractingForTheLink.value) {
@@ -337,6 +341,7 @@ fun AddANewLinkDialogBox(
 
 @Composable
 private fun TopPartOfAddANewLinkDialogBox(
+    preferences: AppPreferences,
     isDataExtractingForTheLink: Boolean,
     linkTextFieldValue: MutableState<String>,
     titleTextFieldValue: MutableState<String>,
@@ -394,7 +399,7 @@ private fun TopPartOfAddANewLinkDialogBox(
             })
 
         Box(modifier = Modifier.animateContentSize()) {
-            if (!AppPreferences.isAutoDetectTitleForLinksEnabled.value && !isAutoDetectTitleEnabled.value) {
+            if (!preferences.isAutoDetectTitleForLinksEnabled && !isAutoDetectTitleEnabled.value) {
                 OutlinedTextField(
                     readOnly = isDataExtractingForTheLink,
                     modifier = Modifier.padding(
@@ -464,9 +469,9 @@ private fun TopPartOfAddANewLinkDialogBox(
             onValueChange = {
                 imgUrlTextFieldValue.value = it
             })
-        if (AppPreferences.isAutoDetectTitleForLinksEnabled.value || AppPreferences.forceSaveWithoutFetchingAnyMetaData.value) {
+        if (preferences.isAutoDetectTitleForLinksEnabled || preferences.forceSaveWithoutFetchingAnyMetaData) {
             InfoCard(
-                if (AppPreferences.isAutoDetectTitleForLinksEnabled.value) Localization.rememberLocalizedString(
+                if (preferences.isAutoDetectTitleForLinksEnabled) Localization.rememberLocalizedString(
                     Localization.Key.AutoDetectTitleIsEnabled
                 ) else Localization.rememberLocalizedString(
                     Localization.Key.DataRetrievalDisabled
@@ -474,10 +479,10 @@ private fun TopPartOfAddANewLinkDialogBox(
             )
         }
         Box(modifier = Modifier.fillMaxWidth().animateContentSize()) {
-            if (!isForceSaveWithoutFetchingMetaDataEnabled.value && !AppPreferences.isAutoDetectTitleForLinksEnabled.value && !AppPreferences.forceSaveWithoutFetchingAnyMetaData.value) {
+            if (!isForceSaveWithoutFetchingMetaDataEnabled.value && !preferences.isAutoDetectTitleForLinksEnabled && !preferences.forceSaveWithoutFetchingAnyMetaData) {
                 Row(
                     modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .padding(top = if (AppPreferences.isAutoDetectTitleForLinksEnabled.value) 0.dp else 10.dp)
+                        .padding(top = if (preferences.isAutoDetectTitleForLinksEnabled) 0.dp else 10.dp)
                         .fillMaxWidth().clickable {
                             if (!isDataExtractingForTheLink) {
                                 isAutoDetectTitleEnabled.value = !isAutoDetectTitleEnabled.value
@@ -504,7 +509,7 @@ private fun TopPartOfAddANewLinkDialogBox(
             }
         }
 
-        if (!isAutoDetectTitleEnabled.value && !AppPreferences.isAutoDetectTitleForLinksEnabled.value && !AppPreferences.forceSaveWithoutFetchingAnyMetaData.value) {
+        if (!isAutoDetectTitleEnabled.value && !preferences.isAutoDetectTitleForLinksEnabled && !preferences.forceSaveWithoutFetchingAnyMetaData) {
             Row(
                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(top = 10.dp)
                     .fillMaxWidth().clickable {
@@ -549,6 +554,7 @@ private fun TopPartOfAddANewLinkDialogBox(
 )
 @Composable
 private fun BottomPartOfAddANewLinkDialogBox(
+    preferences: AppPreferences,
     onDismiss: () -> Unit,
     isDataExtractingForTheLink: MutableState<Boolean>,
     linkTextFieldValue: MutableState<String>,
@@ -640,19 +646,19 @@ private fun BottomPartOfAddANewLinkDialogBox(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
                 .clickable(onClick = {
-                    AppPreferences.showTagsInAddNewLinkDialogBox =
-                        !AppPreferences.showTagsInAddNewLinkDialogBox
+                    AddANewLinkDialogBox.showTagsInAddNewLinkDialogBox =
+                        !preferences.showTagsInAddNewLinkDialogBox
                 }, indication = null, interactionSource = null)
         ) {
             IconButton(
                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(
                     start = 5.dp
                 ), onClick = {
-                    AppPreferences.showTagsInAddNewLinkDialogBox =
-                        !AppPreferences.showTagsInAddNewLinkDialogBox
+                    AddANewLinkDialogBox.showTagsInAddNewLinkDialogBox =
+                        !preferences.showTagsInAddNewLinkDialogBox
                 }) {
                 Icon(
-                    imageVector = if (AppPreferences.showTagsInAddNewLinkDialogBox) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    imageVector = if (preferences.showTagsInAddNewLinkDialogBox) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                     contentDescription = null
                 )
             }
@@ -664,7 +670,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
             )
         }
 
-        AnimatedVisibility(AppPreferences.showTagsInAddNewLinkDialogBox) {
+        AnimatedVisibility(preferences.showTagsInAddNewLinkDialogBox) {
             TagSelectionComponent(
                 paddingValues = PaddingValues(start = 15.dp, end = 25.dp),
                 allTags = allTags,
@@ -900,10 +906,13 @@ private fun BottomPartOfAddANewLinkDialogBox(
                             note = noteTextFieldValue.value,
                             idOfLinkedFolder = currentFolder?.localId
                                 ?: selectedFolderForSavingTheLink.value.localId,
-                            userAgent = AppPreferences.primaryJsoupUserAgent.value
+                            userAgent = preferences.primaryJsoupUserAgent
                         ), linkSaveConfig = LinkSaveConfig(
-                            forceAutoDetectTitle = isAutoDetectTitleEnabled.value || AppPreferences.isAutoDetectTitleForLinksEnabled.value,
-                            forceSaveWithoutRetrievingData = isForceSaveWithoutFetchingMetaDataEnabled.value || AppPreferences.forceSaveWithoutFetchingAnyMetaData.value
+                            forceAutoDetectTitle = isAutoDetectTitleEnabled.value || preferences.isAutoDetectTitleForLinksEnabled,
+                            forceSaveWithoutRetrievingData = isForceSaveWithoutFetchingMetaDataEnabled.value || preferences.forceSaveWithoutFetchingAnyMetaData,
+                            useProxy = preferences.useProxy,
+                            skipSavingIfExists = preferences.skipSavingExistingLink,
+                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails
                         ), onCompletion = onDismiss, selectedTags = selectedTags,
                         pushSnackbarOnSuccess = true
                     )
@@ -1308,6 +1317,8 @@ private fun FolderSelectorComponent(
 }
 
 object AddANewLinkDialogBox {
+
+    var showTagsInAddNewLinkDialogBox by mutableStateOf(false)
     val subFoldersList = mutableStateListOf<Folder>()
 
     private val _childFolders = MutableStateFlow(emptyList<Folder>())

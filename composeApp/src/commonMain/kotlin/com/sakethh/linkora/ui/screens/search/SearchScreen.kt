@@ -75,6 +75,7 @@ fun SearchScreen(
     cancelForceSearchActive: () -> Unit,
 ) {
     val searchScreenVM: SearchScreenVM = linkoraViewModel()
+    val preferences by searchScreenVM.preferencesAsFlow.collectAsStateWithLifecycle()
     val searchBarFocusRequester = retain {
         FocusRequester()
     }
@@ -275,6 +276,7 @@ fun SearchScreen(
                                 )
                             },
                             onRetrieveNextPage = searchScreenVM::retrieveNextSearchPage,
+                            preferences = preferences,
                             onFirstVisibleItemIndexChange = searchScreenVM::updateFirstVisibleIndexOfSearchPaginator
                         )
                     }
@@ -347,7 +349,8 @@ fun SearchScreen(
                 searchScreenVM.retrieveNextBatchOfHistoryLinks()
             },
             onFirstVisibleItemIndexChange = searchScreenVM::updateStartingIndexForHistoryPaginator,
-            flatSearchResultState = null
+            flatSearchResultState = null,
+            preferences = preferences
         )
     }
 }

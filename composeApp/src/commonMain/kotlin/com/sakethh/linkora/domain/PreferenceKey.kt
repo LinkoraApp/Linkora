@@ -1,19 +1,20 @@
 package com.sakethh.linkora.domain
 
 sealed interface PreferenceKey<T> {
+    val key: String
     data class BooleanPreferencesKey(
-        val key: String,
+        override val key: String,
     ) : PreferenceKey<Boolean>
 
     data class LongPreferencesKey(
-        val key: String,
+        override val key: String,
     ) : PreferenceKey<Long>
 
     data class IntPreferencesKey(
-        val key: String,
+        override val key: String,
     ) : PreferenceKey<Int>
 
     data class StringPreferencesKey(
-        val key: String,
+        override val key: String,
     ) : PreferenceKey<String>
 }

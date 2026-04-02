@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination.Companion.hasRoute
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.panel.Panel
@@ -15,7 +16,6 @@ import com.sakethh.linkora.domain.onSuccess
 import com.sakethh.linkora.domain.repository.local.LocalFoldersRepo
 import com.sakethh.linkora.domain.repository.local.LocalPanelsRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
-import com.sakethh.linkora.preferences.AppPreferenceType
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
@@ -44,6 +44,8 @@ class SpecificPanelManagerScreenVM(
     currentBackStackEntryFlow: Flow<NavBackStackEntry>,
     onAndroidMobile: Boolean
 ) : ViewModel() {
+    val preferencesAsFlow = preferencesRepository.preferencesAsFlow
+
     private val _foldersToIncludeInPanel = MutableStateFlow(emptyList<Folder>())
     val foldersToIncludeInPanel = _foldersToIncludeInPanel.asStateFlow()
 
@@ -197,10 +199,10 @@ class SpecificPanelManagerScreenVM(
 
     fun deleteAPanel(panelId: Long, onCompletion: () -> Unit) {
         viewModelScope.launch {
-            if (preferencesRepository.readPreferenceValue(longPreferencesKey(AppPreferenceType.LAST_SELECTED_PANEL_ID.name)) == panelId) {
+            if (preferencesRepository.readPreferenceValue(longPreferencesKey(AppPreferences.LAST_SELECTED_PANEL_ID.key)) == panelId) {
                 preferencesRepository.changePreferenceValue(
                     preferenceKey = longPreferencesKey(
-                        AppPreferenceType.LAST_SELECTED_PANEL_ID.name
+                        AppPreferences.LAST_SELECTED_PANEL_ID.key
                     ), newValue = Constants.DEFAULT_PANELS_ID
                 )
             }

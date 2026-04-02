@@ -6,6 +6,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import com.sakethh.linkora.domain.ComposableContent
+import com.sakethh.linkora.ui.domain.Font
 
 
 val LightColors = lightColorScheme(
@@ -76,11 +77,12 @@ val DarkColors = darkColorScheme(
 @Composable
 fun LinkoraTheme(
     colorScheme: ColorScheme,
+    preferredFont: Font,
     content: ComposableContent
 ) {
     MaterialTheme(
         colorScheme = colorScheme,
         content = content,
-        typography = LinkoraTypography
+        typography = LinkoraTypography(preferredFont)
     )
 }

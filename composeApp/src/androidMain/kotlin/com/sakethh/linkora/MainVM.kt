@@ -3,6 +3,8 @@ package com.sakethh.linkora
 import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sakethh.linkora.di.DependencyContainer
+import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.utils.AndroidUIEvent
@@ -14,9 +16,10 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class MainVM(
+    preferencesRepository: PreferencesRepository = DependencyContainer.preferencesRepo,
     launchAction: (Action) -> Unit,
 ) : ViewModel() {
-
+    val preferencesAsFlow = preferencesRepository.preferencesAsFlow
     init {
         viewModelScope.launch {
 

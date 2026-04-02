@@ -28,9 +28,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -38,14 +40,15 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.dto.github.GitHubReleaseDTOItem
 import com.sakethh.linkora.domain.model.link.Link
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.AppVersionLabel
+import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
 import com.sakethh.linkora.ui.utils.rememberDeserializableMutableObject
 import com.sakethh.linkora.utils.Constants
@@ -58,6 +61,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun AboutScreen() {
     val coroutineScope = rememberCoroutineScope()
+    val settingsScreenVM: SettingsScreenViewModel = linkoraViewModel()
+    val preferences by settingsScreenVM.preferencesAsFlow.collectAsStateWithLifecycle()
     val btmModalSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val shouldVersionCheckerDialogAppear = rememberSaveable {
         mutableStateOf(false)
@@ -79,6 +84,9 @@ fun AboutScreen() {
             )
         )
     }
+    var isOnLatestUpdate by rememberSaveable {
+        mutableStateOf(false)
+    }
     SettingsSectionScaffold(
         topAppBarText = Navigation.Settings.AboutScreen.toString()
     ) { paddingValues, topAppBarScrollBehaviour ->
@@ -93,7 +101,7 @@ fun AboutScreen() {
                 AppVersionLabel()
             }
             item {
-                if (!AppPreferences.isOnLatestUpdate.value) {
+                if (!isOnLatestUpdate) {
                     SettingsAppInfoComponent(
                         hasDescription = false,
                         description = "",
@@ -112,21 +120,21 @@ fun AboutScreen() {
                                         releaseName = "",
                                         tagName = ""
                                     )
-                                    AppPreferences.isOnLatestUpdate.value = false
+                                    isOnLatestUpdate = false
                                 } else {
-                                    retrievedAppVersionData.value = githubReleaseDTO!!
-                                    AppPreferences.isOnLatestUpdate.value =
+                                    retrievedAppVersionData.value = githubReleaseDTO
+                                    isOnLatestUpdate =
                                         githubReleaseDTO.releaseName != Constants.APP_VERSION_NAME
-                                    AppPreferences.isOnLatestUpdate.value =
+                                    isOnLatestUpdate =
                                         Constants.APP_VERSION_NAME == githubReleaseDTO.releaseName
                                 }
                                 shouldVersionCheckerDialogAppear.value = false
                                 shouldBtmModalSheetBeVisible.value =
-                                    AppPreferences.isOnLatestUpdate.value.not() && githubReleaseDTO != null
+                                    isOnLatestUpdate.not() && githubReleaseDTO != null
                             })
                         },
                     )
-                } else if (AppPreferences.isOnLatestUpdate.value) {
+                } else if (isOnLatestUpdate) {
                     Card(
                         border = BorderStroke(
                             1.dp, contentColorFor(MaterialTheme.colorScheme.surface)
@@ -194,8 +202,12 @@ fun AboutScreen() {
                                 imgURL = "",
                                 note = Localization.Key.LinkoraOnTwitter.getLocalizedString(),
                                 idOfLinkedFolder = null,
-                                userAgent = AppPreferences.primaryJsoupUserAgent.value
-                            ), tagIds = emptyList()
+                                userAgent = preferences.primaryJsoupUserAgent
+                            ),
+                            tagIds = emptyList(),
+                            useProxy = preferences.useProxy,
+                            skipSavingIfExists = preferences.skipSavingExistingLink,
+                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
                         )
                         uriHandler.openUri(url)
                     },
@@ -217,8 +229,11 @@ fun AboutScreen() {
                                 imgURL = "https://cdn.discordapp.com/assets/og_img_discord_home.png",
                                 note = Localization.Key.LinkoraOnDiscord.getLocalizedString(),
                                 idOfLinkedFolder = null,
-                                userAgent = AppPreferences.primaryJsoupUserAgent.value
-                            ), tagIds = emptyList()
+                                userAgent = preferences.primaryJsoupUserAgent
+                            ), tagIds = emptyList(),
+                            useProxy = preferences.useProxy,
+                            skipSavingIfExists = preferences.skipSavingExistingLink,
+                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails
                         )
                         uriHandler.openUri(url)
                     },
@@ -256,8 +271,11 @@ fun AboutScreen() {
                                 imgURL = "https://avatars.githubusercontent.com/u/183308434?s=280&v=4",
                                 note = Localization.Key.LinkoraOnGithub.getLocalizedString(),
                                 idOfLinkedFolder = null,
-                                userAgent = AppPreferences.primaryJsoupUserAgent.value
-                            ), tagIds = emptyList()
+                                userAgent = preferences.primaryJsoupUserAgent
+                            ), tagIds = emptyList(),
+                            useProxy = preferences.useProxy,
+                            skipSavingIfExists = preferences.skipSavingExistingLink,
+                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails
                         )
                         uriHandler.openUri(url)
                     },
@@ -285,8 +303,11 @@ fun AboutScreen() {
                                 imgURL = "https://repository-images.githubusercontent.com/648784316/df5ac80f-8d5a-4d8d-b7b5-6068ee49eb4b",
                                 note = Localization.Key.LinkoraIssuesOnGithub.getLocalizedString(),
                                 idOfLinkedFolder = null,
-                                userAgent = AppPreferences.primaryJsoupUserAgent.value
-                            ), tagIds = emptyList()
+                                userAgent = preferences.primaryJsoupUserAgent
+                            ), tagIds = emptyList(),
+                            useProxy = preferences.useProxy,
+                            skipSavingIfExists = preferences.skipSavingExistingLink,
+                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails
                         )
                         uriHandler.openUri(url)
                     },
@@ -316,8 +337,11 @@ fun AboutScreen() {
                                 imgURL = "https://repository-images.githubusercontent.com/648784316/df5ac80f-8d5a-4d8d-b7b5-6068ee49eb4b",
                                 note = Localization.Key.LinokraReleasesOnGitHub.getLocalizedString(),
                                 idOfLinkedFolder = null,
-                                userAgent = AppPreferences.primaryJsoupUserAgent.value
-                            ), tagIds = emptyList()
+                                userAgent = preferences.primaryJsoupUserAgent
+                            ), tagIds = emptyList(),
+                            useProxy = preferences.useProxy,
+                            skipSavingIfExists = preferences.skipSavingExistingLink,
+                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails
                         )
                         uriHandler.openUri(url)
                     },

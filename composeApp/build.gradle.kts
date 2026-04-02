@@ -51,9 +51,19 @@ kotlin {
         val desktopWebMain by creating {
             dependsOn(commonMain.get())
         }
-
         desktopMain.dependsOn(desktopWebMain)
         wasmJsMain.get().dependsOn(desktopWebMain)
+
+        val androidDesktopMain by creating {
+            dependsOn(commonMain.get())
+
+            dependencies {
+                implementation(libs.androidx.datastore.preferences.core)
+            }
+        }
+
+        desktopMain.dependsOn(androidDesktopMain)
+        androidMain.get().dependsOn(androidDesktopMain)
 
         androidMain.dependencies {
             implementation(compose.preview)

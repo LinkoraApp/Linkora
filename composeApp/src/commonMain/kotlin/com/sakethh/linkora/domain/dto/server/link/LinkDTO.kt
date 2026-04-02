@@ -1,6 +1,6 @@
 package com.sakethh.linkora.domain.dto.server.link
 
-import com.sakethh.linkora.preferences.AppPreferences
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.MediaType
 import com.sakethh.linkora.domain.dto.server.Correlation
@@ -22,5 +22,5 @@ data class LinkDTO(
     val mediaType: MediaType,
     val eventTimestamp: Long,
     val linkTags: List<LinkTagDTO>,
-    val correlation: Correlation = AppPreferences.getCorrelation()
+    val correlation: Correlation
 )

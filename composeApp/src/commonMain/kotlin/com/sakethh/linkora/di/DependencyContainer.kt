@@ -22,7 +22,8 @@ import com.sakethh.linkora.data.remote.repository.RemotePanelsRepoImpl
 import com.sakethh.linkora.data.remote.repository.RemoteTagsRepoImpl
 import com.sakethh.linkora.data.remote.repository.sync.RemoteSyncRepoImpl
 import com.sakethh.linkora.network.repository.NetworkRepoImpl
-import com.sakethh.linkora.preferences.AppPreferences
+import com.sakethh.linkora.utils.canPushToServer
+import kotlinx.coroutines.flow.map
 
 object DependencyContainer {
 
@@ -34,7 +35,7 @@ object DependencyContainer {
         LocalizationRepoImpl(
             standardClient = LinkoraSDK.getInstance().network.standardClient,
             localizationServerURL = {
-                AppPreferences.localizationServerURL.value
+                preferencesRepo.getPreferences().localizationServerURL
             },
             localizationDao = LinkoraSDK.getInstance().localDatabase.localizationDao
         )
@@ -51,8 +52,8 @@ object DependencyContainer {
             syncServerClient = {
                 LinkoraSDK.getInstance().network.getSyncServerClient()
             },
-            baseUrl = { AppPreferences.serverBaseUrl.value },
-            authToken = { AppPreferences.serverSecurityToken.value },
+            baseUrl = { preferencesRepo.getPreferences().serverBaseUrl },
+            authToken = { preferencesRepo.getPreferences().serverSecurityToken },
         )
     }
 
@@ -72,10 +73,10 @@ object DependencyContainer {
             localLinksRepo = localLinksRepo,
             localPanelsRepo = localPanelsRepo,
             authToken = {
-                AppPreferences.serverSecurityToken.value
+                preferencesRepo.getPreferences().serverSecurityToken
             },
             baseUrl = {
-                AppPreferences.serverBaseUrl.value
+                preferencesRepo.getPreferences().serverBaseUrl
             },
             pendingSyncQueueRepo = pendingSyncQueueRepo,
             remoteFoldersRepo = remoteFoldersRepo,
@@ -87,7 +88,7 @@ object DependencyContainer {
             linksDao = LinkoraSDK.getInstance().localDatabase.linksDao,
             foldersDao = LinkoraSDK.getInstance().localDatabase.foldersDao,
             websocketScheme = {
-                AppPreferences.WEB_SOCKET_SCHEME
+                "wss"
             },
             localTagsRepo = localTagsRepo,
             remoteTagsRepo = remoteTagsRepo,
@@ -117,7 +118,7 @@ object DependencyContainer {
         LocalLinksRepoImpl(
             linksDao = LinkoraSDK.getInstance().localDatabase.linksDao,
             primaryUserAgent = {
-                AppPreferences.primaryJsoupUserAgent.value
+                preferencesRepo.getPreferences().primaryJsoupUserAgent
             },
             remoteLinksRepo = remoteLinksRepo,
             foldersDao = LinkoraSDK.getInstance().localDatabase.foldersDao,
@@ -126,7 +127,7 @@ object DependencyContainer {
             standardClient = LinkoraSDK.getInstance().network.standardClient,
             tagsDao = LinkoraSDK.getInstance().localDatabase.tagsDao,
             proxyUrl = {
-                AppPreferences.proxyUrl
+                preferencesRepo.getPreferences().proxyUrl
             }
         )
     }
@@ -135,9 +136,9 @@ object DependencyContainer {
         RemoteTagsRepoImpl(syncServerClient = {
             LinkoraSDK.getInstance().network.getSyncServerClient()
         }, baseUrl = {
-            AppPreferences.serverBaseUrl.value
+            preferencesRepo.getPreferences().serverBaseUrl
         }, authToken = {
-            AppPreferences.serverSecurityToken.value
+            preferencesRepo.getPreferences().serverSecurityToken
         })
     }
 
@@ -154,10 +155,10 @@ object DependencyContainer {
         RemoteLinksRepoImpl(
             syncServerClient = { LinkoraSDK.getInstance().network.getSyncServerClient() },
             baseUrl = {
-                AppPreferences.serverBaseUrl.value
+                preferencesRepo.getPreferences().serverBaseUrl
             },
             authToken = {
-                AppPreferences.serverSecurityToken.value
+                preferencesRepo.getPreferences().serverSecurityToken
             })
     }
 
@@ -169,10 +170,10 @@ object DependencyContainer {
         RemotePanelsRepoImpl(
             syncServerClient = { LinkoraSDK.getInstance().network.getSyncServerClient() },
             baseUrl = {
-                AppPreferences.serverBaseUrl.value
+                preferencesRepo.getPreferences().serverBaseUrl
             },
             authToken = {
-                AppPreferences.serverSecurityToken.value
+                preferencesRepo.getPreferences().serverSecurityToken
             })
     }
 
@@ -196,7 +197,7 @@ object DependencyContainer {
             localFoldersRepo,
             localPanelsRepo,
             canPushToServer = {
-                AppPreferences.canPushToServer()
+                preferencesRepo.getPreferences().canPushToServer()
             },
             remoteSyncRepo = remoteSyncRepo,
             localTagsRepo = localTagsRepo,
@@ -209,10 +210,10 @@ object DependencyContainer {
         RemoteMultiActionRepoImpl(
             syncServerClient = { LinkoraSDK.getInstance().network.getSyncServerClient() },
             baseUrl = {
-                AppPreferences.serverBaseUrl.value
+                preferencesRepo.getPreferences().serverBaseUrl
             },
             authToken = {
-                AppPreferences.serverSecurityToken.value
+                preferencesRepo.getPreferences().serverSecurityToken
             })
     }
 
@@ -233,19 +234,13 @@ object DependencyContainer {
     val snapshotRepo by lazy {
         SnapshotRepoImpl(
             snapshotDao = LinkoraSDK.getInstance().localDatabase.snapshotDao,
-            isSnapshotsEnabled = AppPreferences.areSnapshotsEnabled,
-            snapshotExportFormatId = {
-                AppPreferences.snapshotExportFormatID.value.toInt()
-            },
-            autoDeleteSnapshots = {
-                AppPreferences.backupAutoDeletionEnabled.value
-            },
             linksRepo = localLinksRepo,
             foldersRepo = localFoldersRepo,
             localPanelsRepo = localPanelsRepo,
             exportDataRepo = exportDataRepo,
             localTagsRepo = localTagsRepo,
             fileManager = LinkoraSDK.getInstance().fileManager,
+            preferencesRepository = preferencesRepo
         )
     }
 }

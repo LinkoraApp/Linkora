@@ -29,18 +29,18 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.sakethh.linkora.Localization
-import com.sakethh.linkora.preferences.AppPreferences
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.ui.LocalNavController
+import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.utils.bottomNavPaddingAcrossPlatforms
 import com.sakethh.linkora.utils.fillMaxWidthWithPadding
-import com.sakethh.linkora.ui.navigation.Navigation
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ServerManagementBottomSheet(
+    preferences: AppPreferences,
     removeTheConnection: (onDeletion: () -> Unit) -> Unit,
     sheetState: SheetState,
     isVisible: MutableState<Boolean>,
@@ -85,7 +85,7 @@ fun ServerManagementBottomSheet(
                             )
                             Spacer(Modifier.height(2.dp))
                             Text(
-                                text = AppPreferences.serverBaseUrl.value,
+                                text = preferences.serverBaseUrl,
                                 style = MaterialTheme.typography.titleMedium
                             )
                         }
@@ -108,7 +108,7 @@ fun ServerManagementBottomSheet(
                             )
                             Spacer(Modifier.height(2.dp))
                             Text(
-                                text = AppPreferences.serverSyncType.value.asUIString(),
+                                text = preferences.serverSyncType.asUIString(),
                                 style = MaterialTheme.typography.titleMedium
                             )
                         }

@@ -43,9 +43,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ComposableContent
 import com.sakethh.linkora.domain.model.Folder
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.components.CoilImage
 import com.sakethh.linkora.ui.components.link.TagsRow
 import com.sakethh.linkora.ui.domain.Layout
@@ -62,6 +62,7 @@ import com.sakethh.linkora.utils.rememberLocalizedString
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MobileMenu(
+    preferences: AppPreferences,
     menuBtmSheetParam: MenuBtmSheetParam,
     currentLinkTagsPair: LinkTagsPair,
     currentFolder: Folder?,
@@ -74,7 +75,7 @@ fun MobileMenu(
         menuBtmSheetParam.menuBtmSheetFor
     }
     val showTags = remember {
-        menuBtmSheetParam.linkTagsPair?.tags?.isEmpty() == false && AppPreferences.selectedLinkLayout.value in listOf(
+        menuBtmSheetParam.linkTagsPair?.tags?.isEmpty() == false && preferences.selectedLinkLayout in listOf(
             Layout.STAGGERED_VIEW.name, Layout.GRID_VIEW.name
         )
     }
@@ -100,7 +101,7 @@ fun MobileMenu(
     ) {
         if (menuBtmSheetLinkEntries().contains(
                 menuBtmSheetFor
-            ) && currentLinkTagsPair.link.imgURL.isNotEmpty() && AppPreferences.showAssociatedImageInLinkMenu.value
+            ) && currentLinkTagsPair.link.imgURL.isNotEmpty() && preferences.showAssociatedImageInLinkMenu
         ) {
             Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
                 CoilImage(
@@ -111,8 +112,8 @@ fun MobileMenu(
                             MaterialTheme.colorScheme, edgeType = EdgeType.TOP
                         ),
                     imgURL = currentLinkTagsPair.link.imgURL,
-                    userAgent = currentLinkTagsPair.link.userAgent
-                        ?: AppPreferences.primaryJsoupUserAgent.value
+                    preferences = preferences, userAgent = currentLinkTagsPair.link.userAgent
+                        ?: preferences.primaryJsoupUserAgent
                 )
                 Column(
                     modifier = Modifier.align(Alignment.BottomStart)
@@ -140,7 +141,7 @@ fun MobileMenu(
         }
         if (menuBtmSheetLinkEntries().contains(
                 menuBtmSheetFor
-            ) && (!AppPreferences.showAssociatedImageInLinkMenu.value || currentLinkTagsPair.link.imgURL.isEmpty())
+            ) && (!preferences.showAssociatedImageInLinkMenu || currentLinkTagsPair.link.imgURL.isEmpty())
         ) {
             MenuNonImageHeader(
                 onClick = {
@@ -189,7 +190,7 @@ fun MobileMenu(
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = commonModifier.padding(
-                            top = if (!AppPreferences.showAssociatedImageInLinkMenu.value || currentLinkTagsPair.link.imgURL.isEmpty()) 10.dp else 0.dp
+                            top = if (!preferences.showAssociatedImageInLinkMenu || currentLinkTagsPair.link.imgURL.isEmpty()) 10.dp else 0.dp
                         ),
                         fontSize = 12.sp
                     )

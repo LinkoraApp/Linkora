@@ -2,6 +2,7 @@ package com.sakethh.linkora.domain
 
 import androidx.compose.runtime.Composable
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.domain.dto.server.Correlation
 import com.sakethh.linkora.domain.dto.server.folder.AddFolderDTO
 import com.sakethh.linkora.domain.dto.server.folder.FolderDTO
 import com.sakethh.linkora.domain.dto.server.link.AddLinkDTO
@@ -80,24 +81,30 @@ fun FolderType.asLocalizedString(): String {
     }
 }
 
-fun Folder.asAddFolderDTO(): AddFolderDTO = AddFolderDTO(
+fun Folder.asAddFolderDTO(correlation: Correlation): AddFolderDTO = AddFolderDTO(
     name = this.name,
     note = this.note,
     parentFolderId = this.parentFolderId,
     isArchived = this.isArchived,
-    eventTimestamp = this.lastModified
+    eventTimestamp = this.lastModified,
+    correlation = correlation
 )
 
-fun Folder.asFolderDTO(remoteId: Long, remoteParentFolderId: Long?): FolderDTO = FolderDTO(
+fun Folder.asFolderDTO(
+    remoteId: Long,
+    remoteParentFolderId: Long?,
+    correlation: Correlation
+): FolderDTO = FolderDTO(
     id = remoteId,
     name = this.name,
     note = this.note,
     parentFolderId = remoteParentFolderId,
     isArchived = this.isArchived,
-    eventTimestamp = this.lastModified
+    eventTimestamp = this.lastModified,
+    correlation = correlation
 )
 
-fun Link.asAddLinkDTO(remoteTagIds: List<Long>): AddLinkDTO = AddLinkDTO(
+fun Link.asAddLinkDTO(remoteTagIds: List<Long>, correlation: Correlation): AddLinkDTO = AddLinkDTO(
     linkType = this.linkType,
     title = this.title,
     url = this.url,
@@ -109,118 +116,126 @@ fun Link.asAddLinkDTO(remoteTagIds: List<Long>): AddLinkDTO = AddLinkDTO(
     userAgent = this.userAgent,
     markedAsImportant = false,
     mediaType = this.mediaType,
-    tags = remoteTagIds
+    tags = remoteTagIds,
+    correlation = correlation,
 )
 
-fun Link.asLinkDTO(id: Long, remoteLinkTags: List<LinkTagDTO>): LinkDTO = LinkDTO(
-    linkType = this.linkType,
-    title = this.title,
-    url = this.url,
-    baseURL = this.host,
-    imgURL = this.imgURL,
-    note = this.note,
-    idOfLinkedFolder = this.idOfLinkedFolder,
-    userAgent = this.userAgent,
-    markedAsImportant = false,
-    mediaType = this.mediaType,
-    id = id,
-    eventTimestamp = this.lastModified,
-    linkTags = remoteLinkTags
-)
+fun Link.asLinkDTO(id: Long, remoteLinkTags: List<LinkTagDTO>, correlation: Correlation): LinkDTO =
+    LinkDTO(
+        linkType = this.linkType,
+        title = this.title,
+        url = this.url,
+        baseURL = this.host,
+        imgURL = this.imgURL,
+        note = this.note,
+        idOfLinkedFolder = this.idOfLinkedFolder,
+        userAgent = this.userAgent,
+        markedAsImportant = false,
+        mediaType = this.mediaType,
+        id = id,
+        eventTimestamp = this.lastModified,
+        linkTags = remoteLinkTags,
+        correlation = correlation
+    )
 
-suspend fun LegacyExportSchema.asJSONExportSchema(): JSONExportSchema = coroutineScope {
-    val links = mutableListOf<Link>()
-    val folders = mutableListOf<Folder>()
-    val panels = mutableListOf<Panel>()
-    val panelFolders = mutableListOf<PanelFolder>()
-    awaitAll(
-        async {
-            links.addAll(this@asJSONExportSchema.linksTable.map {
-                Link(
-                    linkType = if (it.isLinkedWithSavedLinks) LinkType.SAVED_LINK else LinkType.FOLDER_LINK,
-                    title = it.title,
-                    url = it.webURL,
-                    imgURL = it.imgURL,
-                    note = it.infoForSaving,
-                    idOfLinkedFolder = it.keyOfLinkedFolderV10,
-                    localId = it.id
-                )
-            })
-        },
-        async {
-            links.addAll(this@asJSONExportSchema.importantLinksTable.map {
-                Link(
-                    linkType = LinkType.IMPORTANT_LINK,
-                    title = it.title,
-                    url = it.webURL,
-                    imgURL = it.imgURL,
-                    note = it.infoForSaving,
-                    idOfLinkedFolder = null,
-                    localId = it.id,
-                )
-            })
-        },
-        async {
-            links.addAll(this@asJSONExportSchema.archivedLinksTable.map {
-                Link(
-                    linkType = LinkType.ARCHIVE_LINK,
-                    title = it.title,
-                    url = it.webURL,
-                    imgURL = it.imgURL,
-                    note = it.infoForSaving,
-                    idOfLinkedFolder = null,
-                    localId = it.id
-                )
-            })
-        },
-        async {
-            links.addAll(this@asJSONExportSchema.historyLinksTable.map {
-                Link(
-                    linkType = LinkType.HISTORY_LINK,
-                    title = it.title,
-                    url = it.webURL,
-                    imgURL = it.imgURL,
-                    note = it.infoForSaving,
-                    idOfLinkedFolder = null,
-                    localId = it.id
-                )
-            })
-        },
-        async {
-            folders.addAll(
-                this@asJSONExportSchema.foldersTable.map {
-                    Folder(
-                        name = it.folderName,
+suspend fun LegacyExportSchema.asJSONExportSchema(userAgent: String): JSONExportSchema =
+    coroutineScope {
+        val links = mutableListOf<Link>()
+        val folders = mutableListOf<Folder>()
+        val panels = mutableListOf<Panel>()
+        val panelFolders = mutableListOf<PanelFolder>()
+        awaitAll(
+            async {
+                links.addAll(this@asJSONExportSchema.linksTable.map {
+                    Link(
+                        linkType = if (it.isLinkedWithSavedLinks) LinkType.SAVED_LINK else LinkType.FOLDER_LINK,
+                        title = it.title,
+                        url = it.webURL,
+                        imgURL = it.imgURL,
                         note = it.infoForSaving,
-                        parentFolderId = it.parentFolderID,
-                        isArchived = it.isFolderArchived,
-                        localId = it.id
+                        idOfLinkedFolder = it.keyOfLinkedFolderV10,
+                        localId = it.id,
+                        userAgent = userAgent
                     )
                 })
-        },
-        async {
-            panels.addAll(this@asJSONExportSchema.panels.map {
-                Panel(panelName = it.panelName, localId = it.panelId)
-            })
-        },
-        async {
-            panelFolders.addAll(this@asJSONExportSchema.panelFolders.map {
-                PanelFolder(
-                    localId = it.id,
-                    folderId = it.folderId,
-                    panelPosition = it.panelPosition,
-                    folderName = it.folderName,
-                    connectedPanelId = it.connectedPanelId
-                )
-            })
-        },
-    )
-    return@coroutineScope JSONExportSchema(
-        schemaVersion = this@asJSONExportSchema.schemaVersion,
-        links = links.toList(),
-        folders = folders.toList(),
-        panels = PanelForJSONExportSchema(
-            panels = panels.toList(), panelFolders = panelFolders.toList()
+            },
+            async {
+                links.addAll(this@asJSONExportSchema.importantLinksTable.map {
+                    Link(
+                        linkType = LinkType.IMPORTANT_LINK,
+                        title = it.title,
+                        url = it.webURL,
+                        imgURL = it.imgURL,
+                        note = it.infoForSaving,
+                        idOfLinkedFolder = null,
+                        localId = it.id,
+                        userAgent = userAgent
+                    )
+                })
+            },
+            async {
+                links.addAll(this@asJSONExportSchema.archivedLinksTable.map {
+                    Link(
+                        linkType = LinkType.ARCHIVE_LINK,
+                        title = it.title,
+                        url = it.webURL,
+                        imgURL = it.imgURL,
+                        note = it.infoForSaving,
+                        idOfLinkedFolder = null,
+                        localId = it.id,
+                        userAgent = userAgent
+                    )
+                })
+            },
+            async {
+                links.addAll(this@asJSONExportSchema.historyLinksTable.map {
+                    Link(
+                        linkType = LinkType.HISTORY_LINK,
+                        title = it.title,
+                        url = it.webURL,
+                        imgURL = it.imgURL,
+                        note = it.infoForSaving,
+                        idOfLinkedFolder = null,
+                        localId = it.id,
+                        userAgent = userAgent
+                    )
+                })
+            },
+            async {
+                folders.addAll(
+                    this@asJSONExportSchema.foldersTable.map {
+                        Folder(
+                            name = it.folderName,
+                            note = it.infoForSaving,
+                            parentFolderId = it.parentFolderID,
+                            isArchived = it.isFolderArchived,
+                            localId = it.id
+                        )
+                    })
+            },
+            async {
+                panels.addAll(this@asJSONExportSchema.panels.map {
+                    Panel(panelName = it.panelName, localId = it.panelId)
+                })
+            },
+            async {
+                panelFolders.addAll(this@asJSONExportSchema.panelFolders.map {
+                    PanelFolder(
+                        localId = it.id,
+                        folderId = it.folderId,
+                        panelPosition = it.panelPosition,
+                        folderName = it.folderName,
+                        connectedPanelId = it.connectedPanelId
+                    )
+                })
+            },
         )
-    )
-}
+        return@coroutineScope JSONExportSchema(
+            schemaVersion = this@asJSONExportSchema.schemaVersion,
+            links = links.toList(),
+            folders = folders.toList(),
+            panels = PanelForJSONExportSchema(
+                panels = panels.toList(), panelFolders = panelFolders.toList()
+            )
+        )
+    }

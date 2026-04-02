@@ -9,11 +9,10 @@ import androidx.work.WorkerParameters
 import com.sakethh.linkora.R
 import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.di.LinkoraSDK
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.model.RefreshLink
 import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onSuccess
-import com.sakethh.linkora.preferences.AppPreferenceType
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.service.RefreshAllLinksNotificationService
 import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
 import com.sakethh.linkora.ui.screens.settings.section.data.RefreshLinksState
@@ -39,9 +38,9 @@ class RefreshAllLinksWorker(appContext: Context, workerParameters: WorkerParamet
 
     companion object {
 
-        fun cancelLinksRefreshing(appContext: Context) {
+        fun cancelLinksRefreshing(appContext: Context, refreshLinksWorkerTag: String) {
             WorkManager.getInstance(appContext)
-                .cancelWorkById(UUID.fromString(AppPreferences.refreshLinksWorkerTag.value))
+                .cancelWorkById(UUID.fromString(refreshLinksWorkerTag))
             DataSettingsScreenVM.refreshLinksState.value = RefreshLinksState(
                 isInRefreshingState = false, currentIteration = 0
             )
@@ -66,12 +65,10 @@ class RefreshAllLinksWorker(appContext: Context, workerParameters: WorkerParamet
 
     private var processedLinksCount: Long = -1
 
-    private val maxConcurrentRefreshCount = AppPreferences.maxConcurrentRefreshCount
-
     override suspend fun doWork(): Result = coroutineScope {
-
+        val preferences = DependencyContainer.preferencesRepo.getPreferences()
         processedLinksCount = DependencyContainer.preferencesRepo.readPreferenceValue(
-            longPreferencesKey(AppPreferenceType.REFRESHED_LINKS_COUNT.name)
+            longPreferencesKey(AppPreferences.REFRESHED_LINKS_COUNT.key)
         ) ?: 0
 
         refreshAllLinksNotificationService.clearNotifications()
@@ -83,7 +80,7 @@ class RefreshAllLinksWorker(appContext: Context, workerParameters: WorkerParamet
             linksProcessedChannel?.consumeAsFlow()?.cancellable()
                 ?.collect { refreshedLinkIndex ->
                     DependencyContainer.preferencesRepo.changePreferenceValue(
-                        preferenceKey = longPreferencesKey(AppPreferenceType.REFRESHED_LINKS_COUNT.name),
+                        preferenceKey = longPreferencesKey(AppPreferences.REFRESHED_LINKS_COUNT.key),
                         newValue = ++processedLinksCount
                     )
 
@@ -122,11 +119,11 @@ class RefreshAllLinksWorker(appContext: Context, workerParameters: WorkerParamet
             if (linksToBeRefreshed.isEmpty()) return@coroutineScope Result.success()
 
             linksToBeRefreshed.asFlow()
-                .flatMapMerge(concurrency = maxConcurrentRefreshCount) { link ->
+                .flatMapMerge(concurrency = preferences.maxConcurrentRefreshCount) { link ->
                     channelFlow {
                         DependencyContainer.localLinksRepo.refreshLinkMetadata(
                             link,
-                            refreshLinkType = AppPreferences.selectedLinkRefreshType
+                            refreshLinkType = preferences.selectedLinkRefreshType
                         )
                             // TODO: REMOVE `collectLatest` from here
                             .collectLatest {
@@ -160,7 +157,11 @@ class RefreshAllLinksWorker(appContext: Context, workerParameters: WorkerParamet
     }
 
     private suspend fun cleanUp() {
-        cancelLinksRefreshing(applicationContext)
+        val preferences = DependencyContainer.preferencesRepo.getPreferences()
+        cancelLinksRefreshing(
+            applicationContext,
+            refreshLinksWorkerTag = preferences.refreshLinksWorkerTag
+        )
         DataSettingsScreenVM.refreshLinksState.value =
             DataSettingsScreenVM.refreshLinksState.value.copy(
                 isInRefreshingState = false, currentIteration = 0

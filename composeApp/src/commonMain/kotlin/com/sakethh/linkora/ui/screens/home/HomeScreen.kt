@@ -87,14 +87,14 @@ fun HomeScreen(currentFABContext: (CurrentFABContext) -> Unit) {
     val navController = LocalNavController.current
     val homeScreenVM: HomeScreenVM =
         linkoraViewModel(factory = HomeScreenVMAssistedFactory.createForHomeScreen())
+    val preferences by homeScreenVM.preferencesAsFlow.collectAsStateWithLifecycle()
     val shouldPanelsBtmSheetBeVisible = rememberSaveable {
         mutableStateOf(false)
     }
     val panelsBtmSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val panels = homeScreenVM.existingPanels.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
-    val activePanelAssociatedPanelFolders by
-    homeScreenVM.activePanelAssociatedPanelFolders.collectAsStateWithLifecycle()
+    val activePanelAssociatedPanelFolders by homeScreenVM.activePanelAssociatedPanelFolders.collectAsStateWithLifecycle()
     val pagerState = rememberPagerState(pageCount = {
         activePanelAssociatedPanelFolders.size
     })
@@ -145,8 +145,7 @@ fun HomeScreen(currentFABContext: (CurrentFABContext) -> Unit) {
                         }, indication = null, interactionSource = remember {
                             MutableInteractionSource()
                         }).pressScaleEffect().pointerHoverIcon(icon = PointerIcon.Hand)
-                        .fillMaxWidth()
-                        .padding(start = 5.dp, end = 5.dp),
+                        .fillMaxWidth().padding(start = 5.dp, end = 5.dp),
                 ) {
                     Spacer(Modifier.width(5.dp))
                     FilledTonalIconButton(onClick = {
@@ -202,10 +201,9 @@ fun HomeScreen(currentFABContext: (CurrentFABContext) -> Unit) {
             }
             HorizontalDivider()
             HorizontalPager(state = pagerState) { pageIndex ->
-                val panelFolderId =
-                    retain(activePanelAssociatedPanelFolders[pageIndex].folderId) {
-                        activePanelAssociatedPanelFolders[pageIndex].folderId
-                    }
+                val panelFolderId = retain(activePanelAssociatedPanelFolders[pageIndex].folderId) {
+                    activePanelAssociatedPanelFolders[pageIndex].folderId
+                }
                 CollectionLayoutManager(
                     screenType = ScreenType.FOLDERS_AND_LINKS,
                     flatChildFolderDataState = panelFoldersDataFlat[panelFolderId],
@@ -243,8 +241,7 @@ fun HomeScreen(currentFABContext: (CurrentFABContext) -> Unit) {
                     },
                     onLinkClick = {
                         homeScreenVM.addLinkToHistory(
-                            link = it.link,
-                            selectedTags = it.tags
+                            link = it.link, selectedTags = it.tags
                         )
                         localUriHandler.openUri(it.link.url)
                     },
@@ -276,11 +273,11 @@ fun HomeScreen(currentFABContext: (CurrentFABContext) -> Unit) {
                     },
                     onFirstVisibleItemIndexChange = {
                         homeScreenVM.onFirstVisibleItemIndexChange(
-                            folderId = panelFolderId,
-                            itemIndex = it
+                            folderId = panelFolderId, itemIndex = it
                         )
                     },
-                    flatSearchResultState = null
+                    flatSearchResultState = null,
+                    preferences = preferences,
                 )
             }
         }

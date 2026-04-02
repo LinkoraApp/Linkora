@@ -19,7 +19,7 @@ import kotlinx.serialization.json.Json
 
 class LocalizationRepoImpl(
     private val standardClient: HttpClient,
-    private val localizationServerURL: () -> String,
+    private val localizationServerURL: suspend () -> String,
     private val localizationDao: LocalizationDao
 ) :
     LocalizationRepo.Remote, LocalizationRepo.Local {

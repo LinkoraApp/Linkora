@@ -5,13 +5,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.domain.Result
+import com.sakethh.linkora.domain.SyncType
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.Quadruple
 import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onSuccess
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.domain.model.ServerConnection
 import io.ktor.client.HttpClient
 import io.ktor.client.request.bearerAuth
@@ -94,8 +95,8 @@ fun <T1, T2, T3, T4, T5, T6, M> hexadCombine(
 
 inline fun <reified OutgoingBody, reified IncomingBody> postFlow(
     crossinline syncServerClient: () -> HttpClient,
-    crossinline baseUrl: () -> String,
-    crossinline authToken: () -> String,
+    crossinline baseUrl: suspend () -> String,
+    crossinline authToken: suspend () -> String,
     endPoint: String,
     outgoingBody: OutgoingBody,
     contentType: ContentType = ContentType.Application.Json
@@ -114,8 +115,8 @@ inline fun <reified OutgoingBody, reified IncomingBody> postFlow(
 
 inline fun <reified IncomingBody> getFlow(
     crossinline syncServerClient: () -> HttpClient,
-    crossinline baseUrl: () -> String,
-    crossinline authToken: () -> String,
+    crossinline baseUrl: suspend () -> String,
+    crossinline authToken: suspend () -> String,
     endPoint: String,
     contentType: ContentType = ContentType.Application.Json
 ): Flow<Result<IncomingBody>> {
@@ -132,6 +133,7 @@ inline fun <reified IncomingBody> getFlow(
 
 fun <LocalType, RemoteType> performLocalOperationWithRemoteSyncFlow(
     performRemoteOperation: Boolean,
+    canPushToServer: suspend () -> Boolean,
     remoteOperation: suspend () -> Flow<Result<RemoteType>> = { emptyFlow() },
     remoteOperationOnSuccess: suspend (RemoteType) -> Unit = {},
     onRemoteOperationFailure: suspend () -> Unit = {},
@@ -141,7 +143,7 @@ fun <LocalType, RemoteType> performLocalOperationWithRemoteSyncFlow(
         emit(Result.Loading())
         val localResult = localOperation()
         Result.Success(localResult).let { success ->
-            if (performRemoteOperation && AppPreferences.canPushToServer()) {
+            if (performRemoteOperation && canPushToServer()) {
                 remoteOperation().collect { remoteResult ->
                     remoteResult.onFailure { failureMessage ->
                         success.isRemoteExecutionSuccessful = false
@@ -156,7 +158,7 @@ fun <LocalType, RemoteType> performLocalOperationWithRemoteSyncFlow(
             emit(success)
         }
     }.catchAsThrowableAndEmitFailure(init = {
-        if (performRemoteOperation && AppPreferences.canPushToServer()) {
+        if (performRemoteOperation && canPushToServer()) {
             onRemoteOperationFailure()
         }
     })
@@ -171,22 +173,8 @@ fun defaultFolderIds(): List<Long> = listOf(
     Constants.DEFAULT_PANELS_ID
 )
 
-fun ifServerConfigured(init: () -> Unit) {
-    if (AppPreferences.isServerConfigured()) {
-        init()
-    }
-}
-
 fun getVideoPlatformBaseUrls(): List<String> = listOf("youtube.com", "youtu.be")
 
-fun currentSavedServerConfig(): ServerConnection {
-    return ServerConnection(
-        serverUrl = AppPreferences.serverBaseUrl.value,
-        authToken = AppPreferences.serverSecurityToken.value,
-        syncType = AppPreferences.serverSyncType.value,
-        webSocketScheme = AppPreferences.WEB_SOCKET_SCHEME
-    )
-}
 
 @OptIn(ExperimentalTime::class)
 fun getSystemEpochSeconds() = Clock.System.now().epochSeconds

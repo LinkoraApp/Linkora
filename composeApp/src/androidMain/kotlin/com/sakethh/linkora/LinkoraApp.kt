@@ -15,7 +15,6 @@ import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.Network
 import com.sakethh.linkora.platform.PermissionManager
 import com.sakethh.linkora.platform.PlatformPreference
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.utils.Constants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -64,12 +63,11 @@ class LinkoraApp : Application() {
             )
         )
         runBlocking {
-            AppPreferences.readAll(
-                defaultExportLocation = LinkoraSDK.getInstance().fileManager.getDefaultExportLocation(),
-                preferencesRepository = DependencyContainer.preferencesRepo
-            )
+            DependencyContainer.preferencesRepo.loadPersistedPreferences()
+            val preferences = DependencyContainer.preferencesRepo.getPreferences()
             Localization.loadLocalizedStrings(
-                AppPreferences.preferredAppLanguageCode.value
+                preferences,
+                preferences.preferredAppLanguageCode,
             )
         }
         createNotificationChannel()

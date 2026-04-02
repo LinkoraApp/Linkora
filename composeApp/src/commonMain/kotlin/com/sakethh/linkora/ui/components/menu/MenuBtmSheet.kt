@@ -56,12 +56,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ComposableContent
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.RefreshLinkType
-import com.sakethh.linkora.platform.platform
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.domain.Layout
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.bottomNavPaddingAcrossPlatforms
@@ -74,6 +73,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun MenuBtmSheet(
+    preferences: AppPreferences,
     menuBtmSheetParam: MenuBtmSheetParam
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -88,7 +88,6 @@ fun MenuBtmSheet(
     val showNote = rememberSaveable(menuBtmSheetParam.showNote.value) {
         mutableStateOf(menuBtmSheetParam.showNote.value)
     }
-    platform
     val localClipboard = LocalClipboardManager.current
     val currentFolder = remember(menuBtmSheetParam.folder) {
         menuBtmSheetParam.folder
@@ -322,7 +321,7 @@ fun MenuBtmSheet(
                     elementImageVector = if (menuBtmSheetParam.menuBtmSheetFor == MenuBtmSheetType.Folder.RegularFolder) Icons.Outlined.FolderDelete else Icons.Outlined.DeleteForever
                 )
             }
-            if ((onAndroidMobile && AppPreferences.selectedLinkLayout.value in listOf(
+            if ((onAndroidMobile && preferences.selectedLinkLayout in listOf(
                     Layout.STAGGERED_VIEW.name, Layout.GRID_VIEW.name
                 ) && menuBtmSheetParam.menuBtmSheetFor in menuBtmSheetLinkEntries()) || (!onAndroidMobile && menuBtmSheetParam.menuBtmSheetFor in menuBtmSheetLinkEntries())
             ) {
@@ -363,14 +362,16 @@ fun MenuBtmSheet(
         }
         if (onAndroidMobile) {
             MobileMenu(
+                preferences,
                 menuBtmSheetParam,
                 menuBtmSheetParam.linkTagsPair!!,
                 currentFolder,
                 showNote,
-                commonContent
+                commonContent,
             )
         } else {
             NonMobileMenu(
+                preferences,
                 menuBtmSheetParam, menuBtmSheetParam.linkTagsPair!!, currentFolder, commonContent
             )
         }

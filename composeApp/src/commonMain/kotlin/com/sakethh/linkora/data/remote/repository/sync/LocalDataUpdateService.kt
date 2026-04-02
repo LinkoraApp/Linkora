@@ -7,6 +7,7 @@ import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.SyncServerRoute
 import com.sakethh.linkora.domain.dto.server.ArchiveMultipleItemsDTO
 import com.sakethh.linkora.domain.dto.server.CopyItemsSocketResponseDTO
+import com.sakethh.linkora.domain.dto.server.Correlation
 import com.sakethh.linkora.domain.dto.server.DeleteEverythingDTO
 import com.sakethh.linkora.domain.dto.server.IDBasedDTO
 import com.sakethh.linkora.domain.dto.server.MarkItemsRegularDTO
@@ -44,7 +45,6 @@ import com.sakethh.linkora.ui.domain.model.LinkTagsPair
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.Utils.json
-import com.sakethh.linkora.utils.isSameAsCurrentClient
 import com.sakethh.linkora.utils.updateLastSyncedWithServerTimeStamp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -67,6 +67,10 @@ class LocalDataUpdateService(
                 preferencesRepository.updateLastSyncedWithServerTimeStamp(eventTimestamp)
             }
         }
+    }
+
+    suspend fun Correlation.isSameAsCurrentClient(): Boolean {
+        return this.id == preferencesRepository.getPreferences().correlation.id
     }
 
     suspend fun updateLocalDBAccordingToEvent(

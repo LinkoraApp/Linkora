@@ -1,6 +1,6 @@
 package com.sakethh.linkora.domain.dto.server.folder
 
-import com.sakethh.linkora.preferences.AppPreferences
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.dto.server.Correlation
 import kotlinx.serialization.Serializable
 
@@ -8,5 +8,5 @@ import kotlinx.serialization.Serializable
 data class MarkSelectedFoldersAsRootDTO(
     val folderIds: List<Long>,
     val eventTimestamp: Long,
-    val correlation: Correlation = AppPreferences.getCorrelation()
+    val correlation: Correlation
 )

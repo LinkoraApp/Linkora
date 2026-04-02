@@ -62,12 +62,12 @@ import androidx.compose.ui.util.lerp
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.di.linkoraViewModel
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.platform.platform
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.components.folder.FolderComponent
 import com.sakethh.linkora.ui.components.link.ListViewLinkComponent
@@ -92,6 +92,7 @@ data class OnboardingSlide(val screen: @Composable () -> Unit)
 
 @Composable
 fun OnboardingSlidesScreen(
+    preferences: AppPreferences,
     onOnboardingComplete: () -> Unit, currentFABContext: (CurrentFABContext) -> Unit
 ) {
     LaunchedEffect(Unit) {
@@ -124,7 +125,9 @@ fun OnboardingSlidesScreen(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically, modifier = Modifier.then(
-                    if (platform is Platform.Desktop || platform is Platform.Web) Modifier.padding(15.dp) else Modifier.padding(
+                    if (platform is Platform.Desktop || platform is Platform.Web) Modifier.padding(
+                        15.dp
+                    ) else Modifier.padding(
                         end = 15.dp
                     )
                 )
@@ -283,71 +286,78 @@ fun Slide2() {
                     onCheckBoxChanged = {},
                     path = null,
                     showPath = false,
-                    onPathItemClick = {},)
+                    onPathItemClick = {},
+                )
             )
             ListViewLinkComponent(
                 linkComponentParam = LinkComponentParam(
                     link = Link(
-                title = "Red Dead Redemption 2 - Rockstar Games",
-                host = "rockstargames.com",
-                imgURL = "https://media-rockstargames-com.akamaized.net/rockstargames-newsite/img/global/downloads/buddyiconsconavatars/rdr2_officialart1_256x256.jpg",
-                url = "https://www.rockstargames.com/reddeadredemption2",
-                userAgent = AppPreferences.primaryJsoupUserAgent.value,
-                linkType = LinkType.SAVED_LINK,
-                localId = 0L,
-                note = "",
-                idOfLinkedFolder = null
-            ),
-                onMoreIconClick = { -> },
-                onLinkClick = { ->
-                    localUriHandler.openUri("https://www.rockstargames.com/reddeadredemption2")
+                        title = "Red Dead Redemption 2 - Rockstar Games",
+                        host = "rockstargames.com",
+                        imgURL = "https://media-rockstargames-com.akamaized.net/rockstargames-newsite/img/global/downloads/buddyiconsconavatars/rdr2_officialart1_256x256.jpg",
+                        url = "https://www.rockstargames.com/reddeadredemption2",
+                        userAgent = "Twitterbot/1.0",
+                        linkType = LinkType.SAVED_LINK,
+                        localId = 0L,
+                        note = "",
+                        idOfLinkedFolder = null
+                    ),
+                    onMoreIconClick = { },
+                    onLinkClick = {
+                        localUriHandler.openUri("https://www.rockstargames.com/reddeadredemption2")
+                    },
+                    onForceOpenInExternalBrowserClicked = { },
+                    isSelectionModeEnabled = rememberSaveable {
+                        mutableStateOf(false)
+                    },
+                    isItemSelected = rememberSaveable {
+                        mutableStateOf(false)
+                    },
+                    onLongClick = { },
+                    tags = listOf(
+                        Tag(name = "Tahiti"), Tag(name = "AndaquarterDONTFORGETTHEQUARTRR")
+                    ),
+                    onTagClick = {}, showPath = false, onFolderClick = {}),
+                titleOnlyView = false,
+                onShare = {
+                    LinkoraSDK.getInstance().nativeUtils.onShare(it)
                 },
-                onForceOpenInExternalBrowserClicked = { -> },
-                isSelectionModeEnabled = rememberSaveable {
-                    mutableStateOf(false)
-                },
-                isItemSelected = rememberSaveable {
-                    mutableStateOf(false)
-                },
-                onLongClick = { -> },
-                tags = listOf(
-                    Tag(name = "Tahiti"), Tag(name = "AndaquarterDONTFORGETTHEQUARTRR")
-                ),
-                onTagClick = {}, showPath = false, onFolderClick = {}), titleOnlyView = false, onShare = {
-                LinkoraSDK.getInstance().nativeUtils.onShare(it)
-            })
+                preferences = AppPreferences(),
+            )
             ListViewLinkComponent(
                 linkComponentParam = LinkComponentParam(
-                link = Link(
-                title = "Nas | Spotify",
-                host = "open.spotify.com",
-                imgURL = "https://ucarecdn.com/9b4d5145-a417-4ff9-a7e5-93a452a443c8/-/crop/974x818/26,197/-/preview/",
-                url = "https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q",
-                userAgent = AppPreferences.primaryJsoupUserAgent.value,
-                linkType = LinkType.SAVED_LINK,
-                localId = 0L,
-                note = "",
-                idOfLinkedFolder = null
-            ),
-                onForceOpenInExternalBrowserClicked = { -> },
-                isSelectionModeEnabled = rememberSaveable {
-                    mutableStateOf(false)
-                },
-                isItemSelected = rememberSaveable {
-                    mutableStateOf(false)
-                },
-                onLongClick = { -> },
-                onMoreIconClick = { -> },
-                onLinkClick = { ->
-                    localUriHandler.openUri("https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q")
-                },
-                tags = listOf(Tag(name = "half man half amazing")),
-                onTagClick = {}, showPath = false, onFolderClick = {}),
+                    link = Link(
+                        title = "Nas | Spotify",
+                        host = "open.spotify.com",
+                        imgURL = "https://ucarecdn.com/9b4d5145-a417-4ff9-a7e5-93a452a443c8/-/crop/974x818/26,197/-/preview/",
+                        url = "https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q",
+                        userAgent = "Twitterbot/1.0",
+                        linkType = LinkType.SAVED_LINK,
+                        localId = 0L,
+                        note = "",
+                        idOfLinkedFolder = null
+                    ),
+                    onForceOpenInExternalBrowserClicked = { },
+                    isSelectionModeEnabled = rememberSaveable {
+                        mutableStateOf(false)
+                    },
+                    isItemSelected = rememberSaveable {
+                        mutableStateOf(false)
+                    },
+                    onLongClick = { },
+                    onMoreIconClick = { },
+                    onLinkClick = {
+                        localUriHandler.openUri("https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q")
+                    },
+                    tags = listOf(Tag(name = "half man half amazing")),
+                    onTagClick = {}, showPath = false, onFolderClick = {}),
                 titleOnlyView = false,
                 imageAlignment = Alignment.TopCenter,
                 onShare = {
                     LinkoraSDK.getInstance().nativeUtils.onShare(it)
-                })
+                },
+                preferences = AppPreferences(),
+            )
             Spacer(modifier = Modifier.height(5.dp))
             SlideTitle(
                 string = Localization.Key.AppIntroSlide2MainLabel.rememberLocalizedString(),
@@ -449,33 +459,38 @@ fun Slide3() {
                                 onCheckBoxChanged = {},
                                 path = null,
                                 showPath = false,
-                                onPathItemClick = {},)
+                                onPathItemClick = {},
+                            )
                         )
                         ListViewLinkComponent(
                             linkComponentParam = LinkComponentParam(
                                 link = Link(
-                            title = "Synchronization in Linkora • Saketh Pathike",
-                            host = "sakethpathike.github.io",
-                            imgURL = "https://sakethpathike.github.io/images/ogImage-synchronization-in-linkora.png",
-                            url = "https://sakethpathike.github.io/blog/synchronization-in-linkora",
-                            userAgent = AppPreferences.primaryJsoupUserAgent.value,
-                            linkType = LinkType.SAVED_LINK,
-                            localId = 0L,
-                            note = "",
-                            idOfLinkedFolder = null
-                        ),
-                            onMoreIconClick = { -> },
-                            onLinkClick = { ->
-                                localUriHandler.openUri("https://sakethpathike.github.io/blog/synchronization-in-linkora")
+                                    title = "Synchronization in Linkora • Saketh Pathike",
+                                    host = "sakethpathike.github.io",
+                                    imgURL = "https://sakethpathike.github.io/images/ogImage-synchronization-in-linkora.png",
+                                    url = "https://sakethpathike.github.io/blog/synchronization-in-linkora",
+                                    userAgent = "Twitterbot/1.0",
+                                    linkType = LinkType.SAVED_LINK,
+                                    localId = 0L,
+                                    note = "",
+                                    idOfLinkedFolder = null
+                                ),
+                                onMoreIconClick = { },
+                                onLinkClick = {
+                                    localUriHandler.openUri("https://sakethpathike.github.io/blog/synchronization-in-linkora")
+                                },
+                                onForceOpenInExternalBrowserClicked = { },
+                                isSelectionModeEnabled = rememberSaveable { mutableStateOf(false) },
+                                isItemSelected = rememberSaveable { mutableStateOf(false) },
+                                onLongClick = { },
+                                tags = listOf(Tag(name = "Linkora")),
+                                onTagClick = {}, showPath = false, onFolderClick = {}),
+                            titleOnlyView = false,
+                            onShare = {
+                                LinkoraSDK.getInstance().nativeUtils.onShare(it)
                             },
-                            onForceOpenInExternalBrowserClicked = { -> },
-                            isSelectionModeEnabled = rememberSaveable { mutableStateOf(false) },
-                            isItemSelected = rememberSaveable { mutableStateOf(false) },
-                            onLongClick = { -> },
-                            tags = listOf(Tag(name = "Linkora")),
-                            onTagClick = {}, showPath = false, onFolderClick = {}), titleOnlyView = false, onShare = {
-                            LinkoraSDK.getInstance().nativeUtils.onShare(it)
-                        })
+                            preferences = AppPreferences(),
+                        )
                     }
 
                     1 -> {
@@ -501,38 +516,41 @@ fun Slide3() {
                                 onCheckBoxChanged = {},
                                 path = null,
                                 showPath = false,
-                                onPathItemClick = {},)
+                                onPathItemClick = {},
+                            )
                         )
                         ListViewLinkComponent(
                             linkComponentParam = LinkComponentParam(
                                 link = Link(
-                                title = "LinkoraApp/sync-server: self-hostable sync-server for Linkora with browser extension support.",
-                                host = "github.com",
-                                imgURL = "https://opengraph.githubassets.com/45fc9e2969396c9f27f7af994014d3a75ff93899d98ef2f6c5504fef71edd9cf/LinkoraApp/sync-server",
-                                url = "https://github.com/LinkoraApp/sync-server",
-                                userAgent = AppPreferences.primaryJsoupUserAgent.value,
-                                linkType = LinkType.SAVED_LINK,
-                                localId = 0L,
-                                note = "",
-                                idOfLinkedFolder = null
-                            ),
-                                onMoreIconClick = { -> },
-                                onLinkClick = { ->
+                                    title = "LinkoraApp/sync-server: self-hostable sync-server for Linkora with browser extension support.",
+                                    host = "github.com",
+                                    imgURL = "https://opengraph.githubassets.com/45fc9e2969396c9f27f7af994014d3a75ff93899d98ef2f6c5504fef71edd9cf/LinkoraApp/sync-server",
+                                    url = "https://github.com/LinkoraApp/sync-server",
+                                    userAgent = "Twitterbot/1.0",
+                                    linkType = LinkType.SAVED_LINK,
+                                    localId = 0L,
+                                    note = "",
+                                    idOfLinkedFolder = null
+                                ),
+                                onMoreIconClick = { },
+                                onLinkClick = {
                                     localUriHandler.openUri("https://github.com/LinkoraApp/sync-server")
                                 },
-                                onForceOpenInExternalBrowserClicked = { -> },
+                                onForceOpenInExternalBrowserClicked = { },
                                 isSelectionModeEnabled = rememberSaveable { mutableStateOf(false) },
                                 isItemSelected = rememberSaveable {
                                     mutableStateOf(false)
                                 },
-                                onLongClick = { -> },
+                                onLongClick = { },
                                 tags = listOf(Tag(name = "Linkora")),
                                 onTagClick = {}, showPath = false, onFolderClick = {}),
                             titleOnlyView = false,
                             imageAlignment = Alignment.TopCenter,
                             onShare = {
                                 LinkoraSDK.getInstance().nativeUtils.onShare(it)
-                            })
+                            },
+                            preferences = AppPreferences(),
+                        )
                     }
                 }
             }

@@ -18,8 +18,8 @@ import kotlinx.coroutines.flow.Flow
 
 class RemoteLinksRepoImpl(
     private val syncServerClient: () -> HttpClient,
-    private val baseUrl: () -> String,
-    private val authToken: () -> String
+    private val baseUrl: suspend () -> String,
+    private val authToken: suspend () -> String
 ) : RemoteLinksRepo {
     override suspend fun addANewLink(addLinkDTO: AddLinkDTO): Flow<Result<NewItemResponseDTO>> {
         return postFlow(

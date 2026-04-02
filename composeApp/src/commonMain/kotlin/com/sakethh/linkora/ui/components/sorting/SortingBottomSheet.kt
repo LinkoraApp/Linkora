@@ -21,6 +21,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -31,12 +32,12 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.linkoraViewModel
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ComposableContent
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
-import com.sakethh.linkora.preferences.AppPreferenceType
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.domain.SortingBtmSheetType
 import com.sakethh.linkora.ui.domain.SortingType
 import com.sakethh.linkora.ui.screens.collections.components.ItemDivider
@@ -53,6 +54,7 @@ fun SortingBottomSheet(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val sortingBtmSheetVM: SortingBtmSheetVM = linkoraViewModel()
+    val preferences by sortingBtmSheetVM.preferencesAsFlow.collectAsStateWithLifecycle()
     val linksSortingSelectedState = rememberSaveable {
         mutableStateOf(sortingBottomSheetParam.showLinksSelection.value)
     }
@@ -95,12 +97,12 @@ fun SortingBottomSheet(
                         fontSize = 16.sp,
                         style = MaterialTheme.typography.titleSmall,
                         color = if (it.sortingType == SortingType.valueOf(
-                                AppPreferences.selectedSortingType.value
+                                preferences.selectedSortingType
                             ) && !didAnyCheckBoxStateChanged.value
                         ) MaterialTheme.colorScheme.primary else LocalTextStyle.current.color
                     )
                     RadioButton(
-                        selected = it.sortingType.name == AppPreferences.selectedSortingType.value && !didAnyCheckBoxStateChanged.value,
+                        selected = it.sortingType.name == preferences.selectedSortingType && !didAnyCheckBoxStateChanged.value,
                         onClick = {
                             sortingBottomSheetParam.onSelected(
                                 it.sortingType,
@@ -157,20 +159,18 @@ fun SortingBottomSheet(
                     doesDescriptionExists = true,
                     description = Localization.Key.ForceShuffleLinksDesc.rememberLocalizedString(),
                     isSwitchNeeded = true,
-                    isSwitchEnabled = AppPreferences.forceShuffleLinks,
+                    isSwitchEnabled = preferences.forceShuffleLinks,
                     onSwitchStateChange = {
-                        AppPreferences.forceShuffleLinks.value = it
                         sortingBtmSheetVM.changeSettingPreferenceValue(
                             preferenceKey = booleanPreferencesKey(
-                                AppPreferenceType.FORCE_SHUFFLE_LINKS.name
+                                AppPreferences.FORCE_SHUFFLE_LINKS.key
                             ),
-                            newValue = AppPreferences.forceShuffleLinks.value,
+                            newValue = it,
                             onCompletion = hideBtmSheet
                         )
                     },
-                    isIconNeeded = rememberSaveable {
-                        mutableStateOf(false)
-                    })
+                    isIconNeeded = false
+                )
             )
             Spacer(
                 modifier = Modifier.navigationBarsPadding()

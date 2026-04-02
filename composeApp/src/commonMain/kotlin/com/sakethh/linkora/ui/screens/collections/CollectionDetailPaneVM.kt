@@ -16,7 +16,8 @@ import com.sakethh.linkora.domain.repository.local.LocalDatabaseUtilsRepo
 import com.sakethh.linkora.domain.repository.local.LocalFoldersRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.LocalTagsRepo
-import com.sakethh.linkora.preferences.AppPreferences
+import com.sakethh.linkora.domain.AppPreferences
+import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.ui.LastSeenId
 import com.sakethh.linkora.ui.LastSeenString
 import com.sakethh.linkora.ui.Paginator
@@ -39,6 +40,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -50,7 +52,8 @@ class CollectionDetailPaneVM(
     private val localLinksRepo: LocalLinksRepo,
     private val localTagsRepo: LocalTagsRepo,
     private val localDatabaseUtilsRepo: LocalDatabaseUtilsRepo,
-    val collectionDetailPaneInfo: CollectionDetailPaneInfo
+    val collectionDetailPaneInfo: CollectionDetailPaneInfo,
+    private val preferencesRepository: PreferencesRepository
 ) : ViewModel() {
 
     private val _linkTagsPairsState = MutableStateFlow(
@@ -158,16 +161,12 @@ class CollectionDetailPaneVM(
         }
     }
 
-    private val appPreferencesCombined = combine(snapshotFlow {
-        AppPreferences.forceShuffleLinks.value
-    }, snapshotFlow {
-        AppPreferences.selectedSortingType.value
-    }) { shuffleLinks, sortingType ->
-        Pair(shuffleLinks, sortingType)
-    }
+    val appPreferencesCombined = preferencesRepository.preferencesAsFlow
+        .map { Pair(it.forceShuffleLinks, it.selectedSortingType) }
+        .distinctUntilChanged()
 
-    val sortingType get() = AppPreferences.selectedSortingType.value
-    val shuffleLinks get() = AppPreferences.forceShuffleLinks.value
+    val sortingType get() = preferencesRepository.getPreferences().selectedSortingType
+    val shuffleLinks get() = preferencesRepository.getPreferences().forceShuffleLinks
 
     // localDatabaseUtilsRepo#getChildFolderData supports this directly, since it directly queries and returns the result. This can be replaced with it, but this should be fine.
     fun Flow<Result<List<Link>>>.mapToLinkTagsPair(): Flow<Result<List<LinkTagsPair>>> {
@@ -225,7 +224,7 @@ class CollectionDetailPaneVM(
             _rootArchiveFolders.onRetrieved(
                 currentKey = currentKey,
                 data = retrievedData,
-                shouldShuffle = AppPreferences.forceShuffleLinks.value,
+                shouldShuffle = shuffleLinks,
                 idSelector = { it.localId },
                 stringSelector = { it.name })
         },
@@ -266,7 +265,7 @@ class CollectionDetailPaneVM(
             _linkTagsPairsState.onRetrieved(
                 currentKey = currentKey,
                 data = retrievedData,
-                shouldShuffle = AppPreferences.forceShuffleLinks.value,
+                shouldShuffle = shuffleLinks,
                 idSelector = { it.link.localId },
                 stringSelector = { it.link.title })
         },
@@ -307,7 +306,7 @@ class CollectionDetailPaneVM(
             _childFoldersFlat.onRetrieved(
                 currentKey = currentKey,
                 data = retrievedData,
-                shouldShuffle = AppPreferences.forceShuffleLinks.value,
+                shouldShuffle = shuffleLinks,
 
                 idSelector = { item ->
                     item.folderLocalId ?: item.linkLocalId ?: 0L
@@ -391,7 +390,7 @@ class CollectionDetailPaneVM(
             _linkTagsPairsState.onRetrieved(
                 currentKey = currentKey,
                 data = retrievedData,
-                shouldShuffle = AppPreferences.forceShuffleLinks.value,
+                shouldShuffle = shuffleLinks,
                 idSelector = { it.link.localId },
                 stringSelector = { it.link.title })
         },
@@ -436,7 +435,7 @@ class CollectionDetailPaneVM(
             }
 
             launch {
-                var lastSortingType = AppPreferences.selectedSortingType.value
+                var lastSortingType = sortingType
                 appPreferencesCombined.collectLatest { (shuffleLinks, sortingType) ->
                     val isSortingTypeChanged = if (sortingType == lastSortingType) {
                         false

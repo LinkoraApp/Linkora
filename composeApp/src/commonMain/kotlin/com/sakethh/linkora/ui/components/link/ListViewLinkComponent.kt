@@ -55,10 +55,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.tag.Tag
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.components.CoilImage
 import com.sakethh.linkora.ui.domain.model.LinkComponentParam
@@ -69,6 +69,7 @@ import com.sakethh.linkora.utils.rememberLocalizedString
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ListViewLinkComponent(
+    preferences: AppPreferences,
     linkComponentParam: LinkComponentParam,
     titleOnlyView: Boolean,
     modifier: Modifier = Modifier,
@@ -113,8 +114,9 @@ fun ListViewLinkComponent(
                             .clip(RoundedCornerShape(15.dp)),
                         imgURL = linkComponentParam.link.imgURL,
                         userAgent = linkComponentParam.link.userAgent
-                            ?: AppPreferences.primaryJsoupUserAgent.value,
-                        alignment = imageAlignment
+                            ?: preferences.primaryJsoupUserAgent,
+                        alignment = imageAlignment,
+                        preferences = preferences
                     )
                 } else {
                     Box(
@@ -146,7 +148,7 @@ fun ListViewLinkComponent(
                 }
             }
         }
-        if (linkComponentParam.link.note.isNotBlank() && AppPreferences.showNoteInLinkView.value) {
+        if (linkComponentParam.link.note.isNotBlank() && preferences.showNoteInLinkView) {
             Text(
                 modifier = Modifier.padding(
                     end = 15.dp, top = 10.dp
@@ -160,7 +162,7 @@ fun ListViewLinkComponent(
                 color = MaterialTheme.colorScheme.onSurface.copy(0.75f)
             )
         }
-        if (AppPreferences.showDateInLinkView && linkComponentParam.link.date != null) {
+        if (preferences.showDateInLinkView && linkComponentParam.link.date != null) {
             Text(
                 modifier = Modifier.padding(
                     end = 15.dp, top = 10.dp
@@ -175,13 +177,13 @@ fun ListViewLinkComponent(
             )
         }
 
-        if (AppPreferences.showTagsInLinkView && linkComponentParam.tags != null) {
+        if (preferences.showTagsInLinkView && linkComponentParam.tags != null) {
             TagsRow(tags = linkComponentParam.tags, onTagClick = {
                 linkComponentParam.onTagClick(it)
             })
         }
 
-        if (AppPreferences.showHostInLinkListView.value) {
+        if (preferences.showHostInLinkListView) {
             Text(
                 modifier = Modifier.padding(
                     top = if (linkComponentParam.tags != null) 5.dp else 15.dp,

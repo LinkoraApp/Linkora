@@ -15,11 +15,11 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.R
+import com.sakethh.linkora.di.DependencyContainer
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.RefreshLinksRepo
-import com.sakethh.linkora.preferences.AppPreferenceType
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.longPreferencesKey
 import com.sakethh.linkora.utils.stringPreferencesKey
@@ -47,31 +47,32 @@ actual class NativeUtils(private val context: Context) {
         preferencesRepository: PreferencesRepository,
         refreshLinksRepo: RefreshLinksRepo
     ) {
+        val preferences = DependencyContainer.preferencesRepo.getPreferences()
         val workManager = WorkManager.getInstance(context)
         val request = OneTimeWorkRequestBuilder<RefreshAllLinksWorker>().setConstraints(
             Constraints(requiredNetworkType = NetworkType.CONNECTED)
         ).setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST).build()
 
-        AppPreferences.refreshLinksWorkerTag.value = request.id.toString()
         preferencesRepository.changePreferenceValue(
             preferenceKey = stringPreferencesKey(
-                AppPreferenceType.CURRENT_WORK_MANAGER_WORK_UUID.name
-            ), newValue = AppPreferences.refreshLinksWorkerTag.value
+                AppPreferences.CURRENT_WORK_MANAGER_WORK_UUID.key
+            ), newValue = preferences.refreshLinksWorkerTag
         )
         preferencesRepository.changePreferenceValue(
-            preferenceKey = longPreferencesKey(AppPreferenceType.REFRESHED_LINKS_COUNT.name),
+            preferenceKey = longPreferencesKey(AppPreferences.REFRESHED_LINKS_COUNT.key),
             newValue = 0
         )
         refreshLinksRepo.deleteAllIds()
         workManager.enqueueUniqueWork(
-            AppPreferences.refreshLinksWorkerTag.value, ExistingWorkPolicy.KEEP, request
+            preferences.refreshLinksWorkerTag, ExistingWorkPolicy.KEEP, request
         )
     }
 
     actual suspend fun isAnyRefreshingScheduled(): Flow<Boolean?> {
+        val preferences = DependencyContainer.preferencesRepo.getPreferences()
         return channelFlow {
             WorkManager.getInstance(context)
-                .getWorkInfoByIdFlow(UUID.fromString(AppPreferences.refreshLinksWorkerTag.value))
+                .getWorkInfoByIdFlow(UUID.fromString(preferences.refreshLinksWorkerTag))
                 .collectLatest {
                     if (it != null) {
                         send(it.state == WorkInfo.State.ENQUEUED)
@@ -83,7 +84,10 @@ actual class NativeUtils(private val context: Context) {
     }
 
     actual fun cancelRefreshingLinks() {
-        RefreshAllLinksWorker.cancelLinksRefreshing(context)
+        RefreshAllLinksWorker.cancelLinksRefreshing(
+            context,
+            refreshLinksWorkerTag = DependencyContainer.preferencesRepo.getPreferences().refreshLinksWorkerTag
+        )
     }
 
     actual class DataSyncingNotificationService(private val context: Context) {

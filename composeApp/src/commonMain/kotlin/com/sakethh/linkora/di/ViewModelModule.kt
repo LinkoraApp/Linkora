@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sakethh.linkora.ui.components.sorting.SortingBtmSheetVM
+import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM
 import com.sakethh.linkora.ui.screens.search.SearchScreenVM
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.screens.settings.section.LanguageSettingsScreenVM
@@ -23,6 +24,12 @@ inline fun <reified T : ViewModel> linkoraViewModel(factory: ViewModelProvider.F
 object LinkoraViewModelFactory : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T {
         return when (modelClass) {
+            CollectionsScreenVM::class -> CollectionsScreenVM(
+                localFoldersRepo = DependencyContainer.localFoldersRepo,
+                localLinksRepo = DependencyContainer.localLinksRepo,
+                localTagsRepo = DependencyContainer.localTagsRepo,
+                preferencesRepo = DependencyContainer.preferencesRepo,
+            )
 
             SortingBtmSheetVM::class -> SortingBtmSheetVM(
                 preferencesRepository = DependencyContainer.preferencesRepo,
@@ -33,7 +40,8 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
             SearchScreenVM::class -> SearchScreenVM(
                 localLinksRepo = DependencyContainer.localLinksRepo,
                 localTagsRepo = DependencyContainer.localTagsRepo,
-                localDatabaseUtilsRepo = DependencyContainer.localDatabaseUtilsImpl
+                localDatabaseUtilsRepo = DependencyContainer.localDatabaseUtilsImpl,
+                preferencesRepository = DependencyContainer.preferencesRepo
             )
 
             SettingsScreenViewModel::class -> SettingsScreenViewModel(
@@ -44,9 +52,10 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
 
             LanguageSettingsScreenVM::class -> DependencyContainer.localizationRepo.let { localizationRepo ->
                 LanguageSettingsScreenVM(
-                    localizationRepo,
-                    localizationRepo,
-                    LinkoraSDK.getInstance().nativeUtils
+                    preferencesRepository = DependencyContainer.preferencesRepo,
+                    localizationRepoLocal = localizationRepo,
+                    localizationRepoRemote = localizationRepo,
+                    nativeUtils = LinkoraSDK.getInstance().nativeUtils
                 )
             }
 

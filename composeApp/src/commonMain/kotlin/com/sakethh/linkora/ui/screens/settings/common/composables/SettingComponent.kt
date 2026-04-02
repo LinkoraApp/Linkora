@@ -49,19 +49,19 @@ fun SettingComponent(
                     MutableInteractionSource()
                 }, indication = null,
                 onClick = {
-                    settingComponentParam.onSwitchStateChange(!settingComponentParam.isSwitchEnabled.value)
+                    settingComponentParam.onSwitchStateChange(!settingComponentParam.isSwitchEnabled)
                     settingComponentParam.onAcknowledgmentClick(uriHandler)
                 })
             .pressScaleEffect()
             .fillMaxWidth()
             .animateContentSize(), verticalAlignment = Alignment.CenterVertically
     ) {
-        if (settingComponentParam.isIconNeeded.value && settingComponentParam.icon != null) {
+        if (settingComponentParam.isIconNeeded && settingComponentParam.icon != null) {
             Spacer(modifier = Modifier.width(10.dp))
             IconButton(
                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-                colors = if (settingComponentParam.shouldFilledIconBeUsed.value) IconButtonDefaults.filledTonalIconButtonColors() else IconButtonDefaults.iconButtonColors(),
-                onClick = { settingComponentParam.onSwitchStateChange(!settingComponentParam.isSwitchEnabled.value) }) {
+                colors = if (settingComponentParam.shouldFilledIconBeUsed) IconButtonDefaults.filledTonalIconButtonColors() else IconButtonDefaults.iconButtonColors(),
+                onClick = { settingComponentParam.onSwitchStateChange(!settingComponentParam.isSwitchEnabled) }) {
                 Icon(
                     imageVector = settingComponentParam.icon,
                     contentDescription = null,
@@ -80,9 +80,9 @@ fun SettingComponent(
                 style = MaterialTheme.typography.titleMedium,
                 fontSize = 16.sp,
                 modifier = Modifier
-                    .fillMaxWidth(if (settingComponentParam.shouldArrowIconBeAppear.value || settingComponentParam.isSwitchNeeded) 0.75f else 1f)
+                    .fillMaxWidth(if (settingComponentParam.shouldArrowIconBeAppear || settingComponentParam.isSwitchNeeded) 0.75f else 1f)
                     .padding(
-                        start = if (settingComponentParam.isIconNeeded.value) 0.dp else 15.dp,
+                        start = if (settingComponentParam.isIconNeeded) 0.dp else 15.dp,
                         end = if (!settingComponentParam.isSwitchNeeded) 25.dp else 0.dp
                     ),
                 lineHeight = 20.sp
@@ -97,9 +97,9 @@ fun SettingComponent(
                     lineHeight = 18.sp,
                     textAlign = TextAlign.Start,
                     modifier = Modifier
-                        .fillMaxWidth(if (settingComponentParam.shouldArrowIconBeAppear.value || settingComponentParam.isSwitchNeeded) 0.75f else 1f)
+                        .fillMaxWidth(if (settingComponentParam.shouldArrowIconBeAppear || settingComponentParam.isSwitchNeeded) 0.75f else 1f)
                         .padding(
-                            start = if (settingComponentParam.isIconNeeded.value) 0.dp else 15.dp,
+                            start = if (settingComponentParam.isIconNeeded) 0.dp else 15.dp,
                             top = 10.dp,
                             end = if (!settingComponentParam.isSwitchNeeded) 25.dp else 15.dp
                         )
@@ -111,13 +111,13 @@ fun SettingComponent(
                 Switch(
                     modifier = Modifier
                         .padding(end = 15.dp),
-                    checked = settingComponentParam.isSwitchEnabled.value,
+                    checked = settingComponentParam.isSwitchEnabled,
                     onCheckedChange = {
                         settingComponentParam.onSwitchStateChange(it)
                     })
             }
         }
-        if (settingComponentParam.shouldArrowIconBeAppear.value) {
+        if (settingComponentParam.shouldArrowIconBeAppear) {
             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
                 IconButton(modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand), onClick = {
                     settingComponentParam.onAcknowledgmentClick(

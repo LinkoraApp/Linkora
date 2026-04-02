@@ -53,13 +53,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavDestination.Companion.hasRoute
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.sakethh.linkora.Localization
-import com.sakethh.linkora.di.DependencyContainer
+import com.sakethh.linkora.di.CollectionDetailPaneVMFactory
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkSaveConfig
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Platform
@@ -97,22 +96,14 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CollectionDetailPane(
+    preferences: AppPreferences,
     currentFABContext: (CurrentFABContext) -> Unit,
     onNavigate: (CollectionDetailPaneInfo) -> Unit,
     collectionDetailPaneInfo: CollectionDetailPaneInfo,
     navigateUp: () -> Unit
 ) {
-    val collectionDetailPaneVM: CollectionDetailPaneVM = viewModel(factory = viewModelFactory {
-        initializer {
-            CollectionDetailPaneVM(
-                localFoldersRepo = DependencyContainer.localFoldersRepo,
-                localLinksRepo = DependencyContainer.localLinksRepo,
-                localTagsRepo = DependencyContainer.localTagsRepo,
-                localDatabaseUtilsRepo = DependencyContainer.localDatabaseUtilsImpl,
-                collectionDetailPaneInfo = collectionDetailPaneInfo,
-            )
-        }
-    })
+    val collectionDetailPaneVM: CollectionDetailPaneVM =
+        viewModel(factory = CollectionDetailPaneVMFactory.create(collectionDetailPaneInfo))
     val linkTagsPairs by collectionDetailPaneVM.linkTagsPairsState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { 2 })
@@ -252,7 +243,10 @@ fun CollectionDetailPane(
                                             ),
                                             linkSaveConfig = LinkSaveConfig(
                                                 forceAutoDetectTitle = false,
-                                                forceSaveWithoutRetrievingData = true
+                                                forceSaveWithoutRetrievingData = true,
+                                                useProxy = preferences.useProxy,
+                                                skipSavingIfExists = preferences.skipSavingExistingLink,
+                                                forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
                                             ),
                                             onCompletion = {},
                                             pushSnackbarOnSuccess = false,
@@ -289,7 +283,8 @@ fun CollectionDetailPane(
                                         )
                                     )
                                 },
-                                flatSearchResultState = null
+                                flatSearchResultState = null,
+                                preferences = preferences
                             )
                         }
 
@@ -477,7 +472,10 @@ fun CollectionDetailPane(
                         CollectionPaneAction.AddANewLink(
                             link = it.link.copy(linkType = LinkType.HISTORY_LINK, localId = 0),
                             linkSaveConfig = LinkSaveConfig(
-                                forceAutoDetectTitle = false, forceSaveWithoutRetrievingData = true
+                                forceAutoDetectTitle = false, forceSaveWithoutRetrievingData = true,
+                                useProxy = preferences.useProxy,
+                                skipSavingIfExists = preferences.skipSavingExistingLink,
+                                forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails
                             ),
                             onCompletion = {},
                             pushSnackbarOnSuccess = false,
@@ -514,7 +512,8 @@ fun CollectionDetailPane(
                         )
                     )
                 },
-                flatSearchResultState = null
+                flatSearchResultState = null,
+                preferences = preferences
             )
         }
     }

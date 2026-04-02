@@ -16,7 +16,7 @@ import com.sakethh.linkora.domain.onSuccess
 import com.sakethh.linkora.domain.repository.local.LocalDatabaseUtilsRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.LocalTagsRepo
-import com.sakethh.linkora.preferences.AppPreferences
+import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.ui.Paginator
 import com.sakethh.linkora.ui.domain.PaginationState
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
@@ -46,9 +46,10 @@ import kotlinx.coroutines.launch
 class SearchScreenVM(
     private val localLinksRepo: LocalLinksRepo,
     private val localDatabaseUtilsRepo: LocalDatabaseUtilsRepo,
-    private val localTagsRepo: LocalTagsRepo
+    private val localTagsRepo: LocalTagsRepo,
+    private val preferencesRepository: PreferencesRepository
 ) : ViewModel() {
-
+    val preferencesAsFlow = preferencesRepository.preferencesAsFlow
     private val _searchQuery = mutableStateOf("")
     val searchQuery = _searchQuery
 
@@ -94,13 +95,14 @@ class SearchScreenVM(
             }
 
             // Protocol: "typeOrder|sortStr|sortNum"
+            // TODO: refactor this into a data class
             val parts = lastSeenString?.split("|")
             val lastTypeOrder = parts?.getOrNull(0)?.toIntOrNull() ?: -1
             val lastSortStr = parts?.getOrNull(1) ?: ""
             val lastSortNum = parts?.getOrNull(2)?.toLongOrNull() ?: 0L
             val lastId = lastSeenId ?: Constants.EMPTY_LAST_SEEN_ID
 
-            val currentSort = AppPreferences.selectedSortingType.value
+            val currentSort = preferencesRepository.getPreferences().selectedSortingType
             val appliedFolderFilters = _appliedFolderFilters.toList()
             val appliedLinkFilters = _appliedLinkFilters.toList()
             val isTagFilteringApplied = _appliedTagFiltering.value
@@ -139,10 +141,11 @@ class SearchScreenVM(
             )
         },
         onRetrieved = { currentKey, orderedData ->
+            val sortOption = preferencesRepository.getPreferences().selectedSortingType
             _searchResultsState.onRetrieved(
                 currentKey = currentKey,
                 data = orderedData,
-                shouldShuffle = AppPreferences.forceShuffleLinks.value,
+                shouldShuffle = preferencesRepository.getPreferences().forceShuffleLinks,
 
                 idSelector = { item ->
                     when (item.itemType) {
@@ -152,7 +155,6 @@ class SearchScreenVM(
                     } ?: 0L
                 },
                 stringSelector = { item ->
-                    val sortOption = AppPreferences.selectedSortingType.value
 
                     val typeOrder = when (item.itemType) {
                         Constants.TAG -> 0
@@ -183,8 +185,12 @@ class SearchScreenVM(
         viewModelScope.launch {
             hexadCombine(
                 snapshotFlow { _searchQuery.value },
-                snapshotFlow { AppPreferences.selectedSortingType.value },
-                snapshotFlow { AppPreferences.forceShuffleLinks.value },
+                preferencesAsFlow.map {
+                    it.selectedSortingType
+                },
+                preferencesAsFlow.map {
+                    it.forceShuffleLinks
+                },
                 snapshotFlow { _appliedFolderFilters.toList() },
                 snapshotFlow { _appliedLinkFilters.toList() },
                 snapshotFlow { _appliedTagFiltering.value }) { query, _, _, _, _, _ ->
@@ -239,14 +245,17 @@ class SearchScreenVM(
 
     fun addANewLinkToHistory(link: Link, tagIds: List<Long>?) {
         viewModelScope.launch {
+            val preferences = preferencesRepository.getPreferences()
             localLinksRepo.addANewLink(
                 link = link.copy(
                     linkType = LinkType.HISTORY_LINK,
                     idOfLinkedFolder = null,
                 ), linkSaveConfig = LinkSaveConfig(
                     forceAutoDetectTitle = false, forceSaveWithoutRetrievingData = true,
-
-                    ), selectedTagIds = tagIds
+                    useProxy = preferences.useProxy,
+                    skipSavingIfExists = preferences.skipSavingExistingLink,
+                    forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
+                ), selectedTagIds = tagIds
             ).collectLatest {
                 it.onSuccess {
                     if (it.isRemoteExecutionSuccessful.not()) {
@@ -270,8 +279,12 @@ class SearchScreenVM(
         coroutineScope = viewModelScope,
         onRetrieve = { lastSeenId, lastSeenString ->
             combine(
-                snapshotFlow { AppPreferences.selectedSortingType.value },
-                snapshotFlow { AppPreferences.forceShuffleLinks.value },
+                preferencesAsFlow.map {
+                    it.selectedSortingType
+                },
+                preferencesAsFlow.map {
+                    it.forceShuffleLinks
+                },
             ) { selectedSortingType, forceShuffleLinks ->
                 forceShuffleLinks to selectedSortingType
             }.flatMapLatest { (forceShuffleLinks, selectedSortingType) ->
@@ -307,7 +320,7 @@ class SearchScreenVM(
             _historyLinkTagsPairsState.onRetrieved(
                 currentKey = currentKey,
                 data = retrievedData,
-                shouldShuffle = AppPreferences.forceShuffleLinks.value,
+                shouldShuffle = preferencesRepository.getPreferences().forceShuffleLinks,
                 idSelector = { it.link.localId },
                 stringSelector = { it.link.title }
             )

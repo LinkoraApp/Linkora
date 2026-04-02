@@ -6,9 +6,9 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.di.LinkoraSDK
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkoraPlaceHolder
-import com.sakethh.linkora.preferences.AppPreferenceType
-import com.sakethh.linkora.preferences.AppPreferences
+import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.stringPreferencesKey
 
@@ -18,9 +18,10 @@ object Localization {
     private val localizedStrings = mutableStateMapOf<LocalizedStringKey, String>()
     private val nativeUtils = LinkoraSDK.getInstance().nativeUtils
 
-    fun loadDefaultValues() {
+    fun loadDefaultValues(preferences: AppPreferences) {
         nativeUtils.platformRunBlocking {
             loadLocalizedStrings(
+                preferences,
                 languageCode = "en",
                 forceLoadDefaultValues = true,
             )
@@ -28,34 +29,33 @@ object Localization {
     }
 
     fun loadLocalizedStrings(
+        preferences: AppPreferences,
         languageCode: String
     ) {
         nativeUtils.platformRunBlocking {
-            loadLocalizedStrings(languageCode, forceLoadDefaultValues = false)
+            loadLocalizedStrings(
+                preferences = preferences,
+                languageCode,
+                forceLoadDefaultValues = false
+            )
         }
     }
 
     suspend fun loadLocalizedStrings(
+        preferences: AppPreferences,
         languageCode: String, forceLoadDefaultValues: Boolean = false
     ) {
-        if (languageCode == Constants.DEFAULT_APP_LANGUAGE_CODE && forceLoadDefaultValues.not()) return
-        if (AppPreferences.preferredAppLanguageCode.value != languageCode) {
-            AppPreferences.preferredAppLanguageName.value =
-                if (languageCode == Constants.DEFAULT_APP_LANGUAGE_CODE) {
-                    Constants.DEFAULT_APP_LANGUAGE_NAME
-                } else {
-                    DependencyContainer.localizationRepo.getLanguageNameForTheCode(
-                        languageCode
-                    )
-                }
-            AppPreferences.preferredAppLanguageCode.value = languageCode
+        if (languageCode == Constants.DEFAULT_APP_LANGUAGE_CODE && !forceLoadDefaultValues) return
+
+        linkoraLog("${preferences.preferredAppLanguageCode}, $languageCode")
+        if (preferences.preferredAppLanguageCode != languageCode) {
             DependencyContainer.preferencesRepo.changePreferenceValue(
-                stringPreferencesKey(AppPreferenceType.APP_LANGUAGE_NAME.name),
-                AppPreferences.preferredAppLanguageName.value
+                stringPreferencesKey(AppPreferences.APP_LANGUAGE_NAME.key),
+                preferences.preferredAppLanguageName
             )
             DependencyContainer.preferencesRepo.changePreferenceValue(
-                stringPreferencesKey(AppPreferenceType.APP_LANGUAGE_CODE.name),
-                AppPreferences.preferredAppLanguageCode.value
+                stringPreferencesKey(AppPreferences.APP_LANGUAGE_CODE.key),
+                preferences.preferredAppLanguageCode
             )
         }
         Key.entries.forEach { key ->
@@ -66,7 +66,7 @@ object Localization {
                     DependencyContainer.localizationRepo.getLocalizedStringValueFor(
                         key.name, languageCode
                     ).run {
-                        if (this == null || this.isBlank()) {
+                        if (this.isNullOrBlank()) {
                             key.defaultValue
                         } else {
                             this

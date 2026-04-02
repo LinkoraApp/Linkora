@@ -27,7 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.Localization
-import com.sakethh.linkora.preferences.AppPreferences
+import com.sakethh.linkora.domain.AppPreferences
+import com.sakethh.linkora.utils.canPushToServer
 import com.sakethh.linkora.utils.rememberLocalizedString
 
 enum class DeleteDialogBoxType {
@@ -46,6 +47,7 @@ data class DeleteFolderOrLinkDialogParam(
 
 @Composable
 fun DeleteFolderOrLinkDialog(
+    preferences: AppPreferences,
     deleteFolderOrLinkDialogParam: DeleteFolderOrLinkDialogParam
 ) {
     val isDeletionInProgress: MutableState<Boolean> = rememberSaveable {
@@ -93,7 +95,7 @@ fun DeleteFolderOrLinkDialog(
             textAlign = TextAlign.Start
         )
     }, text = {
-        if (isDeletionInProgress.value.not() && AppPreferences.canPushToServer() && deleteFolderOrLinkDialogParam.deleteDialogBoxType == DeleteDialogBoxType.REMOVE_ENTIRE_DATA) {
+        if (isDeletionInProgress.value.not() && preferences.canPushToServer() && deleteFolderOrLinkDialogParam.deleteDialogBoxType == DeleteDialogBoxType.REMOVE_ENTIRE_DATA) {
             Row(
                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth().clickable {
                     if (!isDeletionInProgress.value) {

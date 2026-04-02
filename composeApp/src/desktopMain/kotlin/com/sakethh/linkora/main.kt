@@ -22,6 +22,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -32,34 +33,29 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import androidx.room3.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.sakethh.linkora.data.local.LocalDatabase
 import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.di.LinkoraSDK
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.Network
 import com.sakethh.linkora.platform.PermissionManager
 import com.sakethh.linkora.platform.PlatformPreference
-import com.sakethh.linkora.preferences.AppPreferences
 import com.sakethh.linkora.ui.App
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.theme.DarkColors
 import com.sakethh.linkora.ui.theme.LightColors
 import com.sakethh.linkora.ui.theme.LinkoraTheme
-import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.isServerConfigured
 import com.sakethh.linkora.utils.rememberLocalizedString
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.withContext
-import okio.Path.Companion.toPath
 import java.awt.Dimension
 import java.io.File
 
@@ -94,41 +90,40 @@ suspend fun main() {
         )
     )
 
-    withContext(Dispatchers.IO) {
-        awaitAll(async {
-            AppPreferences.readAll(
-                defaultExportLocation = LinkoraSDK.getInstance().fileManager.getDefaultExportLocation(),
-                preferencesRepository = DependencyContainer.preferencesRepo
-            )
-        }, async {
-            Localization.loadLocalizedStrings(
-                AppPreferences.preferredAppLanguageCode.value
-            )
-        })
-    }
+    DependencyContainer.preferencesRepo.loadPersistedPreferences()
+    val preferences = DependencyContainer.preferencesRepo.getPreferences()
+    Localization.loadLocalizedStrings(
+        preferences,
+        preferences.preferredAppLanguageCode,
+    )
+
     application {
         val windowState = rememberWindowState(
             width = 1054.dp, height = 600.dp
         )
         val navController = rememberNavController()
+        val useLinkoraTopDecoratorOnDesktop = preferences.useLinkoraTopDecoratorOnDesktop
         Window(
             state = windowState,
             onCloseRequest = ::exitApplication,
             title = Localization.Key.Linkora.getLocalizedString(),
-            undecorated = AppPreferences.useLinkoraTopDecoratorOnDesktop.value
+            undecorated = useLinkoraTopDecoratorOnDesktop
         ) {
+            val preferences by DependencyContainer.preferencesRepo.preferencesAsFlow.collectAsStateWithLifecycle()
             window.minimumSize = Dimension(1054, 600)
             CompositionLocalProvider(
                 LocalNavController provides navController, LocalPlatform provides Platform.Desktop
             ) {
                 LinkoraTheme(
-                    colorScheme = if (AppPreferences.useDarkTheme.value) DarkColors else LightColors
+                    colorScheme = if (preferences.useDarkTheme) DarkColors else LightColors,
+                    preferredFont = preferences.selectedFont,
                 ) {
                     Scaffold(
                         topBar = {
-                            if (AppPreferences.useLinkoraTopDecoratorOnDesktop.value) {
+                            if (useLinkoraTopDecoratorOnDesktop) {
                                 WindowDraggableArea {
                                     TopDecorator(
+                                        preferences = preferences,
                                         minimize = {
                                             windowState.isMinimized = true
                                         },
@@ -152,6 +147,7 @@ suspend fun main() {
 
 @Composable
 private fun ApplicationScope.TopDecorator(
+    preferences: AppPreferences,
     minimize: () -> Unit,
     currentPlacement: WindowPlacement,
     changePlacement: (WindowPlacement) -> Unit
@@ -163,7 +159,7 @@ private fun ApplicationScope.TopDecorator(
                     Alignment.CenterStart
                 )
             ) {
-                if (AppPreferences.isServerConfigured()) {
+                if (preferences.isServerConfigured()) {
                     Spacer(Modifier.padding(start = 15.dp))
                     Icon(
                         imageVector = Icons.Default.WbCloudy, contentDescription = null
@@ -171,7 +167,7 @@ private fun ApplicationScope.TopDecorator(
                 }
                 Spacer(
                     Modifier.padding(
-                        start = if (AppPreferences.isServerConfigured().not()) 15.dp else 5.dp
+                        start = if (preferences.isServerConfigured().not()) 15.dp else 5.dp
                     )
                 )
                 Text(

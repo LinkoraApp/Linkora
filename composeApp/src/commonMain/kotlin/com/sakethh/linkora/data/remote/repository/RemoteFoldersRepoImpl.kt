@@ -18,8 +18,8 @@ import kotlinx.coroutines.flow.Flow
 
 class RemoteFoldersRepoImpl(
     private val syncServerClient: () -> HttpClient,
-    private val baseUrl: () -> String,
-    private val authToken: () -> String
+    private val baseUrl: suspend () -> String,
+    private val authToken: suspend () -> String
 ) : RemoteFoldersRepo {
 
     override suspend fun createFolder(addFolderDTO: AddFolderDTO): Flow<Result<NewItemResponseDTO>> {
