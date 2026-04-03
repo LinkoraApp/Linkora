@@ -57,6 +57,8 @@ import com.sakethh.linkora.ui.LastSeenString
 import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
 import com.sakethh.linkora.ui.components.menu.menuBtmSheetFolderEntries
 import com.sakethh.linkora.ui.domain.PaginationState
+import com.sakethh.linkora.ui.utils.UIEvent
+import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.ui.utils.rememberDeserializableMutableObject
 import com.sakethh.linkora.utils.rememberLocalizedString
@@ -85,7 +87,7 @@ data class RenameFolderOrLinkDialogParam @OptIn(ExperimentalMaterial3Api::class)
 fun RenameFolderOrLinkDialog(
     renameFolderOrLinkDialogParam: RenameFolderOrLinkDialogParam
 ) {
-    rememberCoroutineScope()
+    val coroutineScope = rememberCoroutineScope()
     if (renameFolderOrLinkDialogParam.showDialogBox) {
         var selectedTags by rememberDeserializableMutableObject {
             mutableStateOf(renameFolderOrLinkDialogParam.selectedTags)
@@ -241,6 +243,9 @@ fun RenameFolderOrLinkDialog(
                         modifier = Modifier.padding(start = 15.dp, top = 15.dp, bottom = 10.dp)
                     )
                     TagSelectionComponent(
+                        showCreateNewTagSheet = {
+                            coroutineScope.pushUIEvent(UIEvent.Type.ShowCreateTagBtmSheet)
+                        },
                         paddingValues = PaddingValues(start = 15.dp, end = 15.dp),
                         allTags = renameFolderOrLinkDialogParam.allTags.value,
                         selectedTags = selectedTags,

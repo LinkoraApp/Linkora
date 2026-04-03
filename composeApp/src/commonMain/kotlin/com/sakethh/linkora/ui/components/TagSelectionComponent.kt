@@ -58,9 +58,6 @@ import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.ui.LastSeenId
 import com.sakethh.linkora.ui.LastSeenString
 import com.sakethh.linkora.ui.domain.PaginationState
-import com.sakethh.linkora.ui.utils.UIEvent
-import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
-import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -73,14 +70,14 @@ fun TagSelectionComponent(
     selectedTags: List<Tag>,
     onTagClick: (tag: Tag) -> Unit,
     onRetrieveNextTagsPage: () -> Unit,
-    onFirstVisibleIndexChange: (Int) -> Unit
+    onFirstVisibleIndexChange: (Int) -> Unit,
+    showCreateNewTagSheet: () -> Unit
 ) {
     val lazyColumnState = rememberLazyListState()
     val lazyColumnUnifiedState = retain {
         lazyColumnState.asUnifiedLazyState()
 
     }
-    val coroutineScope = rememberCoroutineScope()
     val isTagsEmpty = allTags.data.isEmpty() || allTags.data.values.first().isEmpty()
 
     val buttonTotalHeight = ButtonDefaults.MinHeight + 30.dp
@@ -117,7 +114,7 @@ fun TagSelectionComponent(
                 .height(buttonTotalHeight)
                 .pointerHoverIcon(icon = PointerIcon.Hand),
             onClick = {
-                coroutineScope.pushUIEvent(UIEvent.Type.ShowCreateTagBtmSheet)
+                showCreateNewTagSheet()
             }
         ) {
             Box(
