@@ -284,13 +284,37 @@ fun App(
                 }
             },
             snackbarHost = {
-                SnackbarHost(appVM.snackbarHostState, snackbar = {
-                    Snackbar(
-                        it,
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                })
+                SnackbarHost(appVM.snackbarHostState) { snackbarData ->
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(7.5.dp)
+                                .clip(RoundedCornerShape(15.dp))
+                                .background(MaterialTheme.colorScheme.secondary)
+                                .border(
+                                    width = 1.5.dp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = RoundedCornerShape(15.dp),
+                                ).padding(15.dp),
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSecondary
+                            )
+                            Spacer(Modifier.width(10.dp))
+                            Text(
+                                text = snackbarData.visuals.message,
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onSecondary,
+                                fontSize = 18.sp,
+                                maxLines = 3,
+                            )
+                        }
+                    }
+                }
             },
             modifier = Modifier.fillMaxSize(),
         ) {
