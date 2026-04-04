@@ -6,5 +6,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class DeleteEverythingDTO(
-    val eventTimestamp: Long = getSystemEpochSeconds(), val correlation: Correlation
+    val eventTimestamp: Long = getSystemEpochSeconds(),
+    val correlation: Correlation? = null
 )

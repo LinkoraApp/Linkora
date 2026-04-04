@@ -9,5 +9,5 @@ data class UpdateFolderNameDTO(
     val folderId: Long,
     val newFolderName: String,
     val eventTimestamp: Long,
-    val correlation: Correlation
+    val correlation: Correlation? = null
 )

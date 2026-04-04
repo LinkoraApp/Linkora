@@ -8,5 +8,5 @@ import kotlinx.serialization.Serializable
 data class MarkSelectedFoldersAsRootDTO(
     val folderIds: List<Long>,
     val eventTimestamp: Long,
-    val correlation: Correlation
+    val correlation: Correlation? = null
 )

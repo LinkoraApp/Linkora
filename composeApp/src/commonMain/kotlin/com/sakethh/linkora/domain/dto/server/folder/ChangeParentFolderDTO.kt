@@ -9,5 +9,5 @@ data class ChangeParentFolderDTO(
     val folderId: Long,
     val newParentFolderId: Long?,
     val eventTimestamp: Long,
-    val correlation: Correlation
+    val correlation: Correlation? = null
 )

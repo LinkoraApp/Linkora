@@ -7,5 +7,5 @@ import kotlinx.serialization.Serializable
 data class NewItemResponseDTO(
     val timeStampBasedResponse: TimeStampBasedResponse,
     val id: Long,
-    val correlation: Correlation
+    val correlation: Correlation? = null
 )

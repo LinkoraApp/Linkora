@@ -8,5 +8,5 @@ data class ArchiveMultipleItemsDTO(
     val linkIds: List<Long>,
     val folderIds: List<Long>,
     val eventTimestamp: Long,
-    val correlation: Correlation
+    val correlation: Correlation? = null
 )

@@ -9,5 +9,5 @@ data class UpdateTitleOfTheLinkDTO(
     val linkId: Long,
     val newTitleOfTheLink: String,
     val eventTimestamp: Long,
-    val correlation: Correlation
+    val correlation: Correlation? = null
 )

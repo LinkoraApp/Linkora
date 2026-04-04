@@ -69,8 +69,8 @@ class LocalDataUpdateService(
         }
     }
 
-    suspend fun Correlation.isSameAsCurrentClient(): Boolean {
-        return this.id == preferencesRepository.getPreferences().correlation.id
+    fun Correlation?.isSameAsCurrentClient(): Boolean {
+        return this?.id == preferencesRepository.getPreferences().correlation.id
     }
 
     suspend fun updateLocalDBAccordingToEvent(
