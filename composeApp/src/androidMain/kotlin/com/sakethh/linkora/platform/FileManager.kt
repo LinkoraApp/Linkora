@@ -122,10 +122,6 @@ actual class FileManager(private val context: Context) {
         }
     }
 
-    actual fun getDefaultExportLocation(): String? {
-        return null
-    }
-
     actual suspend fun deleteAutoBackups(
         backupLocation: String, threshold: Int, onCompletion: (Int) -> Unit
     ) {

@@ -1,5 +1,6 @@
 package com.sakethh.linkora.ui.screens.collections
 
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -32,7 +33,6 @@ import com.sakethh.linkora.ui.utils.UIEvent.pushLocalizedSnackbar
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.asStateInWhileSubscribed
-import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.getRemoteOnlyFailureMsg
 import com.sakethh.linkora.utils.intPreferencesKey
@@ -48,6 +48,8 @@ import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -60,8 +62,26 @@ class CollectionsScreenVM(
     val sortingType get() = preferencesRepo.getPreferences().selectedSortingType
     val shuffleLinks get() = preferencesRepo.getPreferences().forceShuffleLinks
     val preferencesAsFlow = preferencesRepo.preferencesAsFlow
-    private val _currentCollectionSource get() = if (preferencesRepo.getPreferences().selectedCollectionSourceId == 0) Localization.Key.Folders.getLocalizedString() else Localization.Key.Tags.getLocalizedString()
-    var currentCollectionSource by mutableStateOf(_currentCollectionSource)
+    var currentCollectionSource by mutableStateOf(if (preferencesRepo.getPreferences().selectedCollectionSourceId == 0) Localization.Key.Folders.getLocalizedString() else Localization.Key.Tags.getLocalizedString())
+    val collectionPagerState = PagerState(
+        currentPage = preferencesRepo.getPreferences().selectedCollectionSourceId,
+        pageCount = { 2 })
+
+    init {
+        viewModelScope.launch {
+            snapshotFlow {
+                collectionPagerState.currentPage
+            }.distinctUntilChanged().debounce(150L).collectLatest { currentPage ->
+                currentCollectionSource =
+                    if (currentPage == 0) Localization.Key.Folders.getLocalizedString() else Localization.Key.Tags.getLocalizedString()
+
+                preferencesRepo.changePreferenceValue(
+                    preferenceKey = intPreferencesKey(AppPreferences.COLLECTION_SOURCE_ID.key),
+                    newValue = currentPage
+                )
+            }
+        }
+    }
 
     companion object {
         val selectedLinkTagPairsViaLongClick = mutableStateListOf<LinkTagsPair>()
@@ -286,30 +306,6 @@ class CollectionsScreenVM(
     }
 
     init {
-        viewModelScope.launch {
-            preferencesAsFlow.map {
-                it.selectedCollectionSourceId
-            }.cancellable().collectLatest {
-                currentCollectionSource = _currentCollectionSource
-                preferencesRepo.changePreferenceValue(
-                    preferenceKey = intPreferencesKey(
-                        AppPreferences.COLLECTION_SOURCE_ID.key
-                    ), newValue = it
-                )
-            }
-        }
-
-        viewModelScope.launch {
-            preferencesAsFlow.map {
-                it.showTagsInAddNewLinkDialogBox
-            }.cancellable().collectLatest {
-                preferencesRepo.changePreferenceValue(
-                    preferenceKey = booleanPreferencesKey(
-                        AppPreferences.SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK.key
-                    ), newValue = it
-                )
-            }
-        }
 
         viewModelScope.launch {
             tagsPaginator.retrieveNextBatch()

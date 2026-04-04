@@ -358,6 +358,7 @@ fun App(
                     },
                     preferences = preferences,
                     collectionScreenParams = CollectionScreenParams(
+                        collectionPagerState = collectionsScreenVM.collectionPagerState,
                         rootRegularFolders = collectionsScreenVM.rootRegularFolders,
                         allTags = collectionsScreenVM.allTags,
                         currentCollectionSource = collectionsScreenVM.currentCollectionSource,

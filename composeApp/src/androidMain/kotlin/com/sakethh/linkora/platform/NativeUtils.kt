@@ -47,7 +47,6 @@ actual class NativeUtils(private val context: Context) {
         preferencesRepository: PreferencesRepository,
         refreshLinksRepo: RefreshLinksRepo
     ) {
-        val preferences = DependencyContainer.preferencesRepo.getPreferences()
         val workManager = WorkManager.getInstance(context)
         val request = OneTimeWorkRequestBuilder<RefreshAllLinksWorker>().setConstraints(
             Constraints(requiredNetworkType = NetworkType.CONNECTED)
@@ -56,7 +55,7 @@ actual class NativeUtils(private val context: Context) {
         preferencesRepository.changePreferenceValue(
             preferenceKey = stringPreferencesKey(
                 AppPreferences.CURRENT_WORK_MANAGER_WORK_UUID.key
-            ), newValue = preferences.refreshLinksWorkerTag
+            ), newValue = request.id.toString()
         )
         preferencesRepository.changePreferenceValue(
             preferenceKey = longPreferencesKey(AppPreferences.REFRESHED_LINKS_COUNT.key),
@@ -64,7 +63,7 @@ actual class NativeUtils(private val context: Context) {
         )
         refreshLinksRepo.deleteAllIds()
         workManager.enqueueUniqueWork(
-            preferences.refreshLinksWorkerTag, ExistingWorkPolicy.KEEP, request
+            request.id.toString(), ExistingWorkPolicy.KEEP, request
         )
     }
 

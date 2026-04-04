@@ -130,6 +130,7 @@ import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.ui.utils.rememberDeserializableMutableObject
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
+import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.defaultFolderIds
 import com.sakethh.linkora.utils.defaultImpLinksFolder
 import com.sakethh.linkora.utils.defaultSavedLinksFolder
@@ -138,6 +139,7 @@ import com.sakethh.linkora.utils.pushSnackbarOnFailure
 import com.sakethh.linkora.utils.rememberLocalizedString
 import com.sakethh.linkora.utils.replaceFirstPlaceHolderWith
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -646,16 +648,14 @@ private fun BottomPartOfAddANewLinkDialogBox(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
                 .clickable(onClick = {
-                    AddANewLinkDialogBox.showTagsInAddNewLinkDialogBox =
-                        !preferences.showTagsInAddNewLinkDialogBox
+                    AddANewLinkDialogBox.updateTagSectionVisibility(show = !preferences.showTagsInAddNewLinkDialogBox)
                 }, indication = null, interactionSource = null)
         ) {
             IconButton(
                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(
                     start = 5.dp
                 ), onClick = {
-                    AddANewLinkDialogBox.showTagsInAddNewLinkDialogBox =
-                        !preferences.showTagsInAddNewLinkDialogBox
+                    AddANewLinkDialogBox.updateTagSectionVisibility(show = !preferences.showTagsInAddNewLinkDialogBox)
                 }) {
                 Icon(
                     imageVector = if (preferences.showTagsInAddNewLinkDialogBox) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
@@ -803,7 +803,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                                 folderName = it.name,
                                 onSubDirectoryIconClick = {
                                     AddANewLinkDialogBox.changeParentFolderId(
-                                        it.localId, coroutineScope
+                                        it.localId
                                     )
                                     AddANewLinkDialogBox.subFoldersList.add(it)
                                     showChildFoldersBtmSheet.value = true
@@ -1082,7 +1082,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                                     modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                                         .clickable {
                                             AddANewLinkDialogBox.changeParentFolderId(
-                                                subFolder.localId, coroutineScope
+                                                subFolder.localId
                                             )
                                             selectedFolderForSavingTheLink.value = subFolder
                                             if (AddANewLinkDialogBox.subFoldersList.indexOf(
@@ -1129,7 +1129,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                                 selectedFolderForSavingTheLink.value = it
                                 AddANewLinkDialogBox.subFoldersList.add(it)
                                 AddANewLinkDialogBox.changeParentFolderId(
-                                    selectedFolderForSavingTheLink.value.localId, coroutineScope
+                                    selectedFolderForSavingTheLink.value.localId
                                 )
                                 coroutineScope.launch {
                                     try {
@@ -1319,7 +1319,6 @@ private fun FolderSelectorComponent(
 
 object AddANewLinkDialogBox {
 
-    var showTagsInAddNewLinkDialogBox by mutableStateOf(false)
     val subFoldersList = mutableStateListOf<Folder>()
 
     private val _childFolders = MutableStateFlow(emptyList<Folder>())
@@ -1329,10 +1328,23 @@ object AddANewLinkDialogBox {
 
     fun cancelCollectionOfChildFolders() = changeParentFolderIdJob?.cancel()
 
-    fun changeParentFolderId(parentFolderId: Long, coroutineScope: CoroutineScope) {
+    private val addANewLinkDialogBoxScope = CoroutineScope(Dispatchers.Default)
+    private var updateTagSectionVisibilityJob: Job? = null
+
+    fun updateTagSectionVisibility(show: Boolean) {
+        updateTagSectionVisibilityJob?.cancel()
+        updateTagSectionVisibilityJob = addANewLinkDialogBoxScope.launch {
+            DependencyContainer.preferencesRepo.changePreferenceValue(
+                preferenceKey = booleanPreferencesKey(AppPreferences.SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK.key),
+                newValue = show
+            )
+        }
+    }
+
+    fun changeParentFolderId(parentFolderId: Long) {
         changeParentFolderIdJob?.cancel()
         linkoraLog(parentFolderId)
-        changeParentFolderIdJob = coroutineScope.launch {
+        changeParentFolderIdJob = addANewLinkDialogBoxScope.launch {
             DependencyContainer.localFoldersRepo.getChildFoldersOfThisParentIDAsFlow(
                 parentFolderId
             ).cancellable().collectLatest {

@@ -162,12 +162,12 @@ class DataSettingsScreenVM(
             }.collectLatest {
                 it.onLoading { exportLogItem ->
                     importExportProgressLogs.add(exportLogItem)
-                }.onSuccess {
+                }.onSuccess { (rawExportString)->
                     try {
                         fileManager.writeRawExportStringToFile(
                             exportLocation = preferencesRepository.getPreferences().currentExportLocation,
                             exportFileType = exportFileType,
-                            rawExportString = it.data,
+                            rawExportString = rawExportString,
                             onCompletion = {
                                 pushUIEvent(UIEvent.Type.ShowSnackbar(Localization.Key.ExportedSuccessfully.getLocalizedString()))
                             },

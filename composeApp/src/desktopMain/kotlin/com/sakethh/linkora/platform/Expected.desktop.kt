@@ -39,6 +39,7 @@ import okio.Path.Companion.toPath
 import readAllPreferences
 import readPreferenceValue
 import writePreferenceValue
+import java.io.File
 import java.security.cert.CertificateException
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
@@ -245,4 +246,14 @@ actual object PlatformPreference {
             prefs,
             externalAction = { externalAction -> externalAction(this) })
     }
+}
+
+actual fun defaultExportLocation(): String? {
+    val userHomeDir = System.getProperty("user.home")
+    return File(userHomeDir, "/Documents/Linkora/Exports").absolutePath
+}
+
+actual fun defaultSnapshotLocation(): String? {
+    val userHomeDir = System.getProperty("user.home")
+    return File(userHomeDir, "/Documents/Linkora/Snapshots").absolutePath
 }

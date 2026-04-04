@@ -27,7 +27,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -170,12 +169,11 @@ fun CollectionsScreen(
     var isRootContentSwitcherBtmSheetVisible by rememberSaveable {
         mutableStateOf(false)
     }
-    val rootContentPagerState =
-        rememberPagerState(initialPage = preferences.selectedCollectionSourceId) { 2 }
+    val collectionPagerState = collectionScreenParams.collectionPagerState
     val rootContentSwitcherBtmSheetState =
         rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    LaunchedEffect(rootContentPagerState.currentPage) {
-        rootContentPagerState.animateScrollToPage(rootContentPagerState.currentPage)
+    LaunchedEffect(collectionPagerState.currentPage) {
+        collectionPagerState.animateScrollToPage(collectionPagerState.currentPage)
     }
     val allTags by collectionScreenParams.allTags.collectAsStateWithLifecycle()
     val rootFoldersListState = rememberLazyListState()
@@ -433,7 +431,7 @@ fun CollectionsScreen(
                     }
 
                     HorizontalPager(
-                        state = rootContentPagerState,
+                        state = collectionPagerState,
                         modifier = Modifier.height(screenHeight).animateContentSize().fillMaxWidth()
                             .nestedScroll(defaultFoldersScrollConnection),
                         verticalAlignment = Alignment.Top,
@@ -753,7 +751,7 @@ fun CollectionsScreen(
         onHide = hideCollectionSwitcher,
         onSourceClick = { currCollectionSourceId ->
             coroutineScope.launch {
-                rootContentPagerState.animateScrollToPage(currCollectionSourceId)
+                collectionPagerState.animateScrollToPage(currCollectionSourceId)
             }
             hideCollectionSwitcher()
         }, preferences = preferences

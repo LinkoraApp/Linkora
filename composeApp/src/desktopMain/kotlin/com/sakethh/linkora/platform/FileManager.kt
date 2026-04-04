@@ -95,11 +95,6 @@ actual class FileManager {
         return "https://music.youtube.com/watch?v=LWUgT34GYhU"
     }
 
-    actual fun getDefaultExportLocation(): String? {
-        val userHomeDir = System.getProperty("user.home")
-        return File(userHomeDir, "/Documents/Linkora/Exports").absolutePath
-    }
-
     actual suspend fun deleteAutoBackups(
         backupLocation: String, threshold: Int, onCompletion: (Int) -> Unit
     ) {
