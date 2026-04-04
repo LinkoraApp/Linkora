@@ -90,8 +90,9 @@ fun main() {
         val preferences = DependencyContainer.preferencesRepo.getPreferences()
         Localization.loadLocalizedStrings(
             preferences,
-            preferences.preferredAppLanguageCode,
-        )
+            languageName = preferences.preferredAppLanguageName,
+            languageCode = preferences.preferredAppLanguageCode,
+        )?.join()
     }
 
     ComposeViewport {
