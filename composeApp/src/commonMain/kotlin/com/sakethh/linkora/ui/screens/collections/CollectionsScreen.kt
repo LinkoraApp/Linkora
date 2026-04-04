@@ -41,7 +41,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FilledTonalIconButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
@@ -111,7 +110,6 @@ import com.sakethh.linkora.ui.screens.collections.components.ItemDivider
 import com.sakethh.linkora.ui.screens.collections.components.RootCollectionSwitcher
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
-import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.Utils
@@ -247,21 +245,16 @@ fun CollectionsScreen(
     val listPane: @Composable (modifier: Modifier) -> Unit = { modifier ->
         Scaffold(
             modifier = modifier, floatingActionButtonPosition = FabPosition.End, topBar = {
-                if (!onAndroidMobile) return@Scaffold
-                Column {
-                    MediumTopAppBar(
-                        scrollBehavior = topAppBarScrollBehavior, title = {
-                            Text(
-                                text = Navigation.Root.CollectionsScreen.toString(),
-                                color = MaterialTheme.colorScheme.onSurface,
-                                style = MaterialTheme.typography.titleLarge,
-                                fontSize = 22.sp
-                            )
-                        })
-                    if (!onAndroidMobile) {
-                        HorizontalDivider()
-                    }
-                }
+                MediumTopAppBar(
+                    modifier = if (!onAndroidMobile) Modifier.size(0.dp) else Modifier,
+                    scrollBehavior = topAppBarScrollBehavior, title = {
+                        Text(
+                            text = Navigation.Root.CollectionsScreen.toString(),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontSize = 22.sp
+                        )
+                    })
             }) { padding ->
             BoxWithConstraints(
                 modifier = Modifier.padding(end = if (!onAndroidMobile) 15.dp else 0.dp)

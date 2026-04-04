@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -17,6 +18,8 @@ import androidx.compose.runtime.retain.retain
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -28,14 +31,12 @@ import com.composables.core.ScrollAreaScope
 import com.composables.core.Thumb
 import com.composables.core.VerticalScrollbar
 import com.sakethh.linkora.Localization
-import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.RefreshLinkType
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.SyncType
-import com.sakethh.linkora.domain.dto.server.Correlation
 import com.sakethh.linkora.domain.model.FlatChildFolderData
 import com.sakethh.linkora.domain.model.FlatSearchResult
 import com.sakethh.linkora.domain.model.link.Link
@@ -430,11 +431,15 @@ fun RefreshLinkType.asLocalizedString() = when (this) {
 fun ScrollAreaScope.VerticalScrollbar() {
     VerticalScrollbar(
         modifier = Modifier.align(Alignment.TopEnd)
+            .pointerHoverIcon(PointerIcon.Hand)
             .fillMaxHeight()
-            .width(4.dp)
+            .padding(end = 2.5.dp, start = 2.5.dp)
+            .width(8.dp)
     ) {
         Thumb(
-            Modifier.clip(RoundedCornerShape(50.dp))
+            modifier = Modifier
+                .pointerHoverIcon(PointerIcon.Hand)
+                .clip(RoundedCornerShape(25.dp))
                 .background(MaterialTheme.colorScheme.secondary.copy(0.65f))
         )
     }
