@@ -5,23 +5,29 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import com.sakethh.linkora.di.DependencyContainer
-import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.stringPreferencesKey
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 typealias LocalizedStringKey = String
 
 object Localization {
     private val localizedStrings = mutableStateMapOf<LocalizedStringKey, String>()
-    private val nativeUtils = LinkoraSDK.getInstance().nativeUtils
+    private val localizationScope = CoroutineScope(Dispatchers.Default)
+    var localizationJob: Job? = null
 
     fun loadDefaultValues(preferences: AppPreferences) {
-        nativeUtils.platformRunBlocking {
+        localizationJob?.cancel()
+        localizationJob = localizationScope.launch {
             loadLocalizedStrings(
                 preferences,
+                languageName = "English",
                 languageCode = "en",
                 forceLoadDefaultValues = true,
             )
@@ -30,19 +36,24 @@ object Localization {
 
     fun loadLocalizedStrings(
         preferences: AppPreferences,
-        languageCode: String
-    ) {
-        nativeUtils.platformRunBlocking {
+        languageCode: String,
+        languageName: String
+    ): Job? {
+        localizationJob?.cancel()
+        localizationJob = localizationScope.launch {
             loadLocalizedStrings(
                 preferences = preferences,
-                languageCode,
+                languageCode = languageCode,
+                languageName = languageName,
                 forceLoadDefaultValues = false
             )
         }
+        return localizationJob
     }
 
     suspend fun loadLocalizedStrings(
         preferences: AppPreferences,
+        languageName: String,
         languageCode: String, forceLoadDefaultValues: Boolean = false
     ) {
         if (languageCode == Constants.DEFAULT_APP_LANGUAGE_CODE && !forceLoadDefaultValues) return
@@ -51,11 +62,11 @@ object Localization {
         if (preferences.preferredAppLanguageCode != languageCode) {
             DependencyContainer.preferencesRepo.changePreferenceValue(
                 stringPreferencesKey(AppPreferences.APP_LANGUAGE_NAME.key),
-                preferences.preferredAppLanguageName
+                languageName
             )
             DependencyContainer.preferencesRepo.changePreferenceValue(
                 stringPreferencesKey(AppPreferences.APP_LANGUAGE_CODE.key),
-                preferences.preferredAppLanguageCode
+                languageCode
             )
         }
         Key.entries.forEach { key ->

@@ -67,8 +67,9 @@ class LinkoraApp : Application() {
             val preferences = DependencyContainer.preferencesRepo.getPreferences()
             Localization.loadLocalizedStrings(
                 preferences,
-                preferences.preferredAppLanguageCode,
-            )
+                languageCode = preferences.preferredAppLanguageCode,
+                languageName = preferences.preferredAppLanguageName,
+            )?.join()
         }
         createNotificationChannel()
     }

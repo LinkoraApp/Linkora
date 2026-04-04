@@ -226,6 +226,7 @@ fun LanguageSettingsScreen() {
                                 isLanguageSelectionBtmSheetVisible.value = false
                                 Localization.loadLocalizedStrings(
                                     languageCode = selectedLanguage.value.languageCode,
+                                    languageName = selectedLanguage.value.languageName,
                                     preferences = preferences
                                 )
                             }, indication = null, interactionSource = remember {
@@ -239,6 +240,7 @@ fun LanguageSettingsScreen() {
                                 isLanguageSelectionBtmSheetVisible.value = false
                                 Localization.loadLocalizedStrings(
                                     languageCode = selectedLanguage.value.languageCode,
+                                    languageName = selectedLanguage.value.languageName,
                                     preferences = preferences
                                 )
                             }) {
