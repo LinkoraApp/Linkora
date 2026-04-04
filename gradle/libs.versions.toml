@@ -33,6 +33,7 @@ ksp = "2.2.20-2.0.4"
 room = "3.0.0-alpha01"
 sqlite = "2.7.0-alpha01"
 statelyConcurrency = "2.1.0"
+uiToolingPreview = "1.10.3"
 workRuntime = "2.10.0"
 documentfile = "1.1.0"
 aboutLibraries = "13.1.0"
@@ -89,6 +90,7 @@ stately-concurrent-collections = { module = "co.touchlab:stately-concurrent-coll
 adaptive-core = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "adaptive" }
 adaptive-layout = { module = "org.jetbrains.compose.material3.adaptive:adaptive-layout", version.ref = "adaptive" }
 adaptive-navigation = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation", version.ref = "adaptive" }
+ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
