@@ -473,7 +473,7 @@ open class SettingsScreenViewModel(
                 onClick = {
                     changeSettingPreferenceValue(
                         preferenceKey = booleanPreferencesKey(AppPreferences.TITLE_VISIBILITY_FOR_NON_LIST_VIEWS.key),
-                        newValue = preferences.showTitleInLinkGridView
+                        newValue = !preferences.showTitleInLinkGridView
                     )
                 },
                 title = Localization.Key.ShowTitle.getLocalizedString(),
@@ -482,7 +482,7 @@ open class SettingsScreenViewModel(
                 onClick = {
                     changeSettingPreferenceValue(
                         preferenceKey = booleanPreferencesKey(AppPreferences.NOTE_VISIBILITY_IN_LIST_VIEWS.key),
-                        newValue = preferences.showNoteInLinkView
+                        newValue = !preferences.showNoteInLinkView
                     )
                 },
                 title = Localization.Key.ShowNote.getLocalizedString(),
@@ -491,7 +491,7 @@ open class SettingsScreenViewModel(
                 onClick = {
                     changeSettingPreferenceValue(
                         preferenceKey = booleanPreferencesKey(AppPreferences.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS.key),
-                        newValue = preferences.showHostInLinkListView
+                        newValue = !preferences.showHostInLinkListView
                     )
                 },
                 title = Localization.Key.ShowHostAddress.getLocalizedString(),
@@ -500,7 +500,7 @@ open class SettingsScreenViewModel(
                 onClick = {
                     changeSettingPreferenceValue(
                         preferenceKey = booleanPreferencesKey(AppPreferences.SHOW_TAGS_IN_LINK_VIEW.key),
-                        newValue = preferences.showTagsInLinkView
+                        newValue = !preferences.showTagsInLinkView
                     )
                 },
                 title = Localization.Key.ShowTagsLabel.getLocalizedString(),
@@ -509,7 +509,7 @@ open class SettingsScreenViewModel(
                 onClick = {
                     changeSettingPreferenceValue(
                         preferenceKey = booleanPreferencesKey(AppPreferences.SHOW_DATE_IN_LINK_VIEW.key),
-                        newValue = preferences.showDateInLinkView
+                        newValue = !preferences.showDateInLinkView
                     )
                 },
                 title = Localization.Key.ShowDateLabel.getLocalizedString(),
@@ -518,7 +518,7 @@ open class SettingsScreenViewModel(
                 onClick = {
                     changeSettingPreferenceValue(
                         preferenceKey = booleanPreferencesKey(AppPreferences.FADED_EDGE_VISIBILITY_FOR_NON_LIST_VIEWS.key),
-                        newValue = preferences.enableFadedEdgeForNonListViews
+                        newValue = !preferences.enableFadedEdgeForNonListViews
                     )
                 },
                 title = Localization.Key.ShowBottomFadedEdge.getLocalizedString(),
@@ -527,7 +527,7 @@ open class SettingsScreenViewModel(
                 onClick = {
                     changeSettingPreferenceValue(
                         preferenceKey = booleanPreferencesKey(AppPreferences.SHOW_MENU_ON_GRID_LINK_CLICK.key),
-                        newValue = preferences.showMenuOnGridLinkClick
+                        newValue = !preferences.showMenuOnGridLinkClick
                     )
                 },
                 title = Localization.Key.ClickToOpenMenuLabel.getLocalizedString(),

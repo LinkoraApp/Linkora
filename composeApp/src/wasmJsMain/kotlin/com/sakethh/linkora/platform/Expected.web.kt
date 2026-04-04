@@ -13,6 +13,7 @@ import com.sakethh.linkora.domain.RefreshLinkType
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.SnapshotFormat
 import com.sakethh.linkora.domain.SyncType
+import com.sakethh.linkora.domain.dto.server.Correlation
 import com.sakethh.linkora.domain.model.JSONExportSchema
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
@@ -86,7 +87,6 @@ actual class FileManager {
 
     actual suspend fun pickADirectory(): String? = null
 
-    actual fun getDefaultExportLocation(): String? = null
 
     actual suspend fun deleteAutoBackups(
         backupLocation: String, threshold: Int, onCompletion: (deletionCount: Int) -> Unit
@@ -236,6 +236,18 @@ actual object PlatformPreference {
 
     actual suspend fun readAllPreferences(): AppPreferences {
         return AppPreferences(
+            correlation = localStorage.getItem(AppPreferences.SERVER_CORRELATION.key).let {
+                if (it != null) {
+                    Json.decodeFromString<Correlation>(it)
+                } else {
+                    val randomCorrelation = Correlation.generateRandomCorrelation()
+                    localStorage.set(
+                        key = AppPreferences.SERVER_CORRELATION.key,
+                        value = Json.encodeToString(randomCorrelation)
+                    )
+                    randomCorrelation
+                }
+            },
             showSyncServerSurveyNotice = false,
             useDarkTheme = localStorage.getItem(AppPreferences.DARK_THEME.key)
                 ?.toBooleanStrictOrNull() ?: true,
@@ -332,3 +344,6 @@ actual object PlatformPreference {
         )
     }
 }
+
+actual fun defaultExportLocation(): String? = null
+actual fun defaultSnapshotLocation(): String? = null

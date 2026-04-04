@@ -328,12 +328,10 @@ fun DataSettingsScreen() {
 
                 item {
                     TextField(supportingText = {
-                        if (platform is Platform.Android) {
-                            Text(
-                                text = Localization.Key.CurrentExportLocationSupportingText.rememberLocalizedString(),
-                                style = MaterialTheme.typography.titleSmall
-                            )
-                        }
+                        Text(
+                            text = Localization.Key.CurrentExportLocationSupportingText.rememberLocalizedString(),
+                            style = MaterialTheme.typography.titleSmall
+                        )
                     }, textStyle = MaterialTheme.typography.titleSmall, trailingIcon = {
                         FilledTonalIconButton(
                             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
@@ -672,12 +670,13 @@ fun DataSettingsScreen() {
                                     val isSelected =
                                         refreshLinkType.name == preferences.selectedLinkRefreshType.name
                                     Row(
-                                        modifier = Modifier.fillMaxWidth().clickable(onClick = {
+                                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
+                                            .fillMaxWidth().clickable(onClick = {
                                             dataSettingsScreenVM.changeSettingPreferenceValue(
                                                 preferenceKey = stringPreferencesKey(
                                                     AppPreferences.REFRESH_LINK_TYPE.key
                                                 ),
-                                                newValue = preferences.selectedLinkRefreshType.name
+                                                newValue = refreshLinkType.name
                                             )
                                         }, indication = null, interactionSource = null)
                                             .pressScaleEffect(),
@@ -690,7 +689,7 @@ fun DataSettingsScreen() {
                                                     preferenceKey = stringPreferencesKey(
                                                         AppPreferences.REFRESH_LINK_TYPE.key
                                                     ),
-                                                    newValue = preferences.selectedLinkRefreshType.name
+                                                    newValue = refreshLinkType.name
                                                 )
                                             })
                                         Text(
@@ -712,7 +711,7 @@ fun DataSettingsScreen() {
                                                     preferenceKey = intPreferencesKey(
                                                         AppPreferences.MAX_CONCURRENT_REFRESH_COUNT.key
                                                     ),
-                                                    newValue = preferences.maxConcurrentRefreshCount
+                                                    newValue = maxConcurrentRefreshCount
                                                 )
                                                 localFocusManager.clearFocus(force = true)
                                             }) {

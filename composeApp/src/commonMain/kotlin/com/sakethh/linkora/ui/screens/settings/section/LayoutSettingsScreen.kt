@@ -61,7 +61,7 @@ fun LayoutSettingsScreen() {
     val settingsScreenViewModel: SettingsScreenViewModel = linkoraViewModel()
     val preferences by settingsScreenViewModel.preferencesAsFlow.collectAsStateWithLifecycle()
     val localUriHandler = LocalUriHandler.current
-    val sampleLinksList = retain {
+    val sampleLinksList = retain(preferences) {
         settingsScreenViewModel.sampleLinks(localUriHandler, preferences)
     }
     SettingsSectionScaffold(
@@ -104,7 +104,7 @@ fun LayoutSettingsScreen() {
                                 onClick = {
                                     settingsScreenViewModel.changeSettingPreferenceValue(
                                         preferenceKey = booleanPreferencesKey(AppPreferences.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS.key),
-                                        newValue = preferences.showHostInLinkListView
+                                        newValue = !preferences.showHostInLinkListView
                                     )
                                 },
                                 title = Localization.Key.ShowHostAddress.getLocalizedString(),
@@ -121,7 +121,7 @@ fun LayoutSettingsScreen() {
                                 onClick = {
                                     settingsScreenViewModel.changeSettingPreferenceValue(
                                         preferenceKey = booleanPreferencesKey(AppPreferences.NOTE_VISIBILITY_IN_LIST_VIEWS.key),
-                                        newValue = preferences.showNoteInLinkView
+                                        newValue = !preferences.showNoteInLinkView
                                     )
                                 },
                                 title = Localization.Key.ShowNote.getLocalizedString(),
@@ -137,7 +137,7 @@ fun LayoutSettingsScreen() {
                                 onClick = {
                                     settingsScreenViewModel.changeSettingPreferenceValue(
                                         preferenceKey = booleanPreferencesKey(AppPreferences.SHOW_TAGS_IN_LINK_VIEW.key),
-                                        newValue = preferences.showTagsInLinkView
+                                        newValue = !preferences.showTagsInLinkView
                                     )
                                 },
                                 title = Localization.Key.ShowTagsLabel.rememberLocalizedString(),
@@ -153,7 +153,7 @@ fun LayoutSettingsScreen() {
                                 onClick = {
                                     settingsScreenViewModel.changeSettingPreferenceValue(
                                         preferenceKey = booleanPreferencesKey(AppPreferences.SHOW_DATE_IN_LINK_VIEW.key),
-                                        newValue = preferences.showDateInLinkView
+                                        newValue = !preferences.showDateInLinkView
                                     )
                                 },
                                 title = Localization.Key.ShowDateLabel.rememberLocalizedString(),

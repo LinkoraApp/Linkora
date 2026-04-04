@@ -212,3 +212,6 @@ actual class PlatformPreference(
             externalAction = { externalAction -> externalAction(this) })
     }
 }
+
+actual fun defaultExportLocation(): String? = null
+actual fun defaultSnapshotLocation(): String? = null

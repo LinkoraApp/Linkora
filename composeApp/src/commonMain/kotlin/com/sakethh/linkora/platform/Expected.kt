@@ -89,8 +89,6 @@ expect class FileManager {
 
     suspend fun pickADirectory(): String?
 
-    fun getDefaultExportLocation(): String?
-
     suspend fun deleteAutoBackups(
         backupLocation: String,
         // maximum number of backups allowed to keep
@@ -143,6 +141,9 @@ expect class PlatformPreference {
 
     suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T?
 }
+
+expect fun defaultExportLocation(): String?
+expect fun defaultSnapshotLocation(): String?
 
 @Suppress("KotlinNoActualForExpect")
 expect object LocalDatabaseConstructor : RoomDatabaseConstructor<LocalDatabase> {

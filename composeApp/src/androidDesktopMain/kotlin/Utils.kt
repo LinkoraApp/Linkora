@@ -4,6 +4,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
+import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.domain.RefreshLinkType
@@ -11,12 +12,15 @@ import com.sakethh.linkora.domain.SnapshotFormat
 import com.sakethh.linkora.domain.SyncType
 import com.sakethh.linkora.domain.dto.server.Correlation
 import com.sakethh.linkora.platform.PlatformPreference
+import com.sakethh.linkora.platform.defaultExportLocation
+import com.sakethh.linkora.platform.defaultSnapshotLocation
 import com.sakethh.linkora.ui.domain.AppIconCode
 import com.sakethh.linkora.ui.domain.Font
 import com.sakethh.linkora.ui.domain.Layout
 import com.sakethh.linkora.ui.domain.SortingType
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.utils.Constants
+import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.stringPreferencesKey
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
@@ -26,24 +30,23 @@ import androidx.datastore.preferences.core.longPreferencesKey as dsLongKey
 import androidx.datastore.preferences.core.stringPreferencesKey as dsStringKey
 
 suspend fun readAllPreferences(
-    prefs: Preferences,
-    externalAction: suspend (suspend (PlatformPreference) -> Unit) -> Unit
+    prefs: Preferences, externalAction: suspend (suspend (PlatformPreference) -> Unit) -> Unit
 ): AppPreferences {
     return AppPreferences(
         correlation = prefs[dsStringKey(AppPreferences.SERVER_CORRELATION.key)].let {
-            if (it != null) {
-                Json.decodeFromString<Correlation>(it)
-            } else {
-                val randomCorrelation = Correlation.generateRandomCorrelation()
-                externalAction { platformPreference ->
-                    platformPreference.writePreferenceValue(
-                        preferenceKey = stringPreferencesKey(AppPreferences.SERVER_CORRELATION.key),
-                        newValue = Json.encodeToString(randomCorrelation)
-                    )
-                }
-                randomCorrelation
+        if (it != null) {
+            Json.decodeFromString<Correlation>(it)
+        } else {
+            val randomCorrelation = Correlation.generateRandomCorrelation()
+            externalAction { platformPreference ->
+                platformPreference.writePreferenceValue(
+                    preferenceKey = stringPreferencesKey(AppPreferences.SERVER_CORRELATION.key),
+                    newValue = Json.encodeToString(randomCorrelation)
+                )
             }
-        },
+            randomCorrelation
+        }
+    },
         useDarkTheme = prefs[dsBooleanKey(AppPreferences.DARK_THEME.key)] ?: true,
         useSystemTheme = prefs[dsBooleanKey(AppPreferences.FOLLOW_SYSTEM_THEME.key)] ?: false,
         useAmoledTheme = prefs[dsBooleanKey(AppPreferences.AMOLED_THEME_STATE.key)] ?: false,
@@ -104,10 +107,14 @@ suspend fun readAllPreferences(
             ?: SnapshotFormat.JSON.id.toString(),
         skipCertCheckForSync = prefs[dsBooleanKey(AppPreferences.SKIP_CERT_CHECK_FOR_SYNC_SERVER.key)]
             ?: false,
-        currentExportLocation = prefs[dsStringKey(AppPreferences.EXPORT_LOCATION.key)] ?: "",
-        currentBackupLocation = prefs[dsStringKey(AppPreferences.BACKUP_LOCATION.key)] ?: "",
+        currentExportLocation = (prefs[dsStringKey(AppPreferences.EXPORT_LOCATION.key)]
+            ?: defaultExportLocation())
+            ?: Localization.Key.ExportRequiresDirectory.getLocalizedString(),
+        currentBackupLocation = (prefs[dsStringKey(AppPreferences.BACKUP_LOCATION.key)]
+            ?: defaultSnapshotLocation())
+            ?: Localization.Key.BackupsWorkOnlyWithDirectory.getLocalizedString(),
         backupAutoDeleteThreshold = prefs[dsIntKey(AppPreferences.BACKUP_AUTO_DELETION_THRESHOLD.key)]
-            ?: 10,
+            ?: 25,
         backupAutoDeletionEnabled = prefs[dsBooleanKey(AppPreferences.BACKUP_AUTO_DELETION_ENABLED.key)]
             ?: false,
         selectedCollectionSourceId = prefs[dsIntKey(AppPreferences.COLLECTION_SOURCE_ID.key)] ?: 0,
@@ -131,13 +138,11 @@ suspend fun readAllPreferences(
         maxConcurrentRefreshCount = prefs[dsIntKey(AppPreferences.MAX_CONCURRENT_REFRESH_COUNT.key)]
             ?: 15,
         showSyncServerSurveyNotice = prefs[dsBooleanKey(AppPreferences.SHOW_SYNC_SERVER_SURVEY_NOTICE.key)]
-            ?: true
-    )
+            ?: true)
 }
 
 suspend fun <T> writePreferenceValue(
-    dataStore: DataStore<Preferences>,
-    preferenceKey: PreferenceKey<T>, newValue: T
+    dataStore: DataStore<Preferences>, preferenceKey: PreferenceKey<T>, newValue: T
 ) {
     dataStore.edit {
         when (preferenceKey) {
@@ -161,8 +166,7 @@ suspend fun <T> writePreferenceValue(
 }
 
 suspend fun <T> readPreferenceValue(
-    dataStore: DataStore<Preferences>,
-    preferenceKey: PreferenceKey<T>
+    dataStore: DataStore<Preferences>, preferenceKey: PreferenceKey<T>
 ): T? {
     val preferences = dataStore.data.first()
 
