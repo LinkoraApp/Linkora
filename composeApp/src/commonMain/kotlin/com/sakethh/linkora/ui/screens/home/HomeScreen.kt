@@ -39,7 +39,6 @@ import androidx.compose.material3.TabRowDefaults.primaryContentColor
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,12 +52,14 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.HomeScreenVMAssistedFactory
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.asMenuBtmSheetType
 import com.sakethh.linkora.platform.PlatformSpecificBackHandler
+import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.components.CollectionLayoutManager
 import com.sakethh.linkora.ui.components.SortingIconButton
@@ -73,16 +74,17 @@ import com.sakethh.linkora.ui.screens.LoadingScreen
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.pressScaleEffect
-import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(currentFABContext: (CurrentFABContext) -> Unit) {
-    LaunchedEffect(Unit) {
-        currentFABContext(CurrentFABContext.ROOT)
+fun HomeScreen() {
+    val localFABContext = LocalFabController.current
+    LifecycleResumeEffect(Unit) {
+        localFABContext.updateState(CurrentFABContext.ROOT)
+        onPauseOrDispose {}
     }
     val navController = LocalNavController.current
     val homeScreenVM: HomeScreenVM =
@@ -224,11 +226,13 @@ fun HomeScreen(currentFABContext: (CurrentFABContext) -> Unit) {
                             currentTag = null,
                             collectionType = CollectionType.FOLDER,
                         )
-                        navController.currentBackStackEntry?.savedStateHandle?.set(
-                            key = Constants.COLLECTION_INFO_SAVED_STATE_HANDLE_KEY,
-                            value = Json.encodeToString(collectionDetailPaneInfo)
+                        navController.navigate(
+                            Navigation.Collection.CollectionDetailScreen(
+                                Json.encodeToString(
+                                    collectionDetailPaneInfo
+                                )
+                            )
                         )
-                        navController.navigate(Navigation.Collection.MobileCollectionDetailScreen)
                     },
                     linkMoreIconClick = {
                         coroutineScope.pushUIEvent(
@@ -256,14 +260,12 @@ fun HomeScreen(currentFABContext: (CurrentFABContext) -> Unit) {
                             currentTag = it,
                             collectionType = CollectionType.TAG,
                         )
-                        navController.currentBackStackEntry?.savedStateHandle?.set(
-                            key = Constants.COLLECTION_INFO_SAVED_STATE_HANDLE_KEY,
-                            value = Json.encodeToString(
-                                collectionDetailPaneInfo
-                            )
-                        )
                         navController.navigate(
-                            Navigation.Collection.MobileCollectionDetailScreen
+                            Navigation.Collection.CollectionDetailScreen(
+                                Json.encodeToString(
+                                    collectionDetailPaneInfo
+                                )
+                            )
                         )
                     },
                     onTagClick = {},

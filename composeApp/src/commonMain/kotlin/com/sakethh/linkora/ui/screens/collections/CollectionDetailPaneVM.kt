@@ -16,7 +16,6 @@ import com.sakethh.linkora.domain.repository.local.LocalDatabaseUtilsRepo
 import com.sakethh.linkora.domain.repository.local.LocalFoldersRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.LocalTagsRepo
-import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.ui.LastSeenId
 import com.sakethh.linkora.ui.LastSeenString
@@ -39,7 +38,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -55,6 +53,8 @@ class CollectionDetailPaneVM(
     val collectionDetailPaneInfo: CollectionDetailPaneInfo,
     private val preferencesRepository: PreferencesRepository
 ) : ViewModel() {
+
+    val preferencesAsFlow = preferencesRepository.preferencesAsFlow
 
     private val _linkTagsPairsState = MutableStateFlow(
         value = PaginationState.retrieving<List<LinkTagsPair>>()

@@ -54,6 +54,7 @@ import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
+import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
 import androidx.compose.material3.adaptive.layout.PaneExpansionAnchor
 import androidx.compose.material3.adaptive.layout.rememberPaneExpansionState
 import androidx.compose.material3.adaptive.navigation.BackNavigationBehavior
@@ -81,6 +82,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
@@ -93,12 +95,12 @@ import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.platform.PlatformSpecificBackHandler
+import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.components.SortingIconButton
 import com.sakethh.linkora.ui.components.folder.FolderComponent
 import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
 import com.sakethh.linkora.ui.domain.CurrentFABContext
-import com.sakethh.linkora.ui.domain.FABContext
 import com.sakethh.linkora.ui.domain.model.CollectionDetailPaneInfo
 import com.sakethh.linkora.ui.domain.model.CollectionType
 import com.sakethh.linkora.ui.domain.model.FolderComponentParam
@@ -131,11 +133,8 @@ import kotlinx.coroutines.launch
 fun CollectionsScreen(
     preferences: AppPreferences,
     collectionScreenParams: CollectionScreenParams,
-    currentFABContext: (CurrentFABContext) -> Unit
 ) {
-    LaunchedEffect(Unit) {
-        currentFABContext(CurrentFABContext.ROOT)
-    }
+    val localFABContext = LocalFabController.current
     val onAndroidMobile = Platform.Android.onMobile()
     val scaffoldNavigator = rememberListDetailPaneScaffoldNavigator<Unit>()
 
@@ -144,19 +143,20 @@ fun CollectionsScreen(
     var lastDetailDestination by retain { mutableStateOf<CollectionDetailPaneInfo?>(null) }
     val currentDetailEntry by detailNavController.currentBackStackEntryAsState()
 
-    LaunchedEffect(currentDetailEntry) {
-        if (currentDetailEntry == null || currentDetailEntry?.destination?.hasRoute<CollectionNavigation.Empty>() == true) {
-            lastDetailDestination = null
-            currentFABContext(CurrentFABContext.ROOT)
+    val isDetailVisible = scaffoldNavigator.scaffoldValue.primary == PaneAdaptedValue.Expanded
+    val isDetailEmpty =
+        currentDetailEntry == null || currentDetailEntry?.destination?.hasRoute<CollectionNavigation.Empty>() == true
+
+    LaunchedEffect(isDetailVisible, isDetailEmpty) {
+        CollectionsScreenVM.inCollectionsListPane = !isDetailVisible || isDetailEmpty
+    }
+
+    LifecycleResumeEffect(isDetailVisible, isDetailEmpty) {
+        if (!isDetailVisible || isDetailEmpty) {
+            localFABContext.updateState(CurrentFABContext.ROOT)
         }
-        if (currentDetailEntry?.destination?.hasRoute<CollectionNavigation.Pane>() == true && lastDetailDestination?.currentFolder != null) {
-            currentFABContext(
-                CurrentFABContext(
-                    fabContext = FABContext.ADD_LINK_IN_FOLDER,
-                    currentFolder = lastDetailDestination?.currentFolder
-                )
-            )
-        }
+
+        onPauseOrDispose {}
     }
     val rootFolders by collectionScreenParams.rootRegularFolders.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
@@ -247,7 +247,8 @@ fun CollectionsScreen(
             modifier = modifier, floatingActionButtonPosition = FabPosition.End, topBar = {
                 MediumTopAppBar(
                     modifier = if (!onAndroidMobile) Modifier.size(0.dp) else Modifier,
-                    scrollBehavior = topAppBarScrollBehavior, title = {
+                    scrollBehavior = topAppBarScrollBehavior,
+                    title = {
                         Text(
                             text = Navigation.Root.CollectionsScreen.toString(),
                             color = MaterialTheme.colorScheme.onSurface,
@@ -716,8 +717,6 @@ fun CollectionsScreen(
                                     detailNavController.navigateUp()
                                 },
                                 collectionDetailPaneInfo = collectionDetailPaneInfo,
-                                currentFABContext = currentFABContext,
-                                preferences = preferences,
                                 onNavigate = { collectionDetailPaneInfo ->
                                     detailNavController.navigate(
                                         CollectionNavigation.Pane(

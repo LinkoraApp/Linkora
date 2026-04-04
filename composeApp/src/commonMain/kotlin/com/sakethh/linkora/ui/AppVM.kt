@@ -37,8 +37,6 @@ import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.PermissionManager
 import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
 import com.sakethh.linkora.ui.domain.AppAction
-import com.sakethh.linkora.ui.domain.CurrentFABContext
-import com.sakethh.linkora.ui.domain.FABContext
 import com.sakethh.linkora.ui.domain.TransferActionType
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
 import com.sakethh.linkora.ui.navigation.Navigation
@@ -97,13 +95,6 @@ class AppVM(
 ) {
 
     var isPerformingStartupSync by mutableStateOf(false)
-
-    var currentContextOfFAB = mutableStateOf(CurrentFABContext(fabContext = FABContext.HIDE))
-        private set
-
-    fun updateFABContext(currentFABContext: CurrentFABContext) {
-        currentContextOfFAB.value = currentFABContext
-    }
 
     val transferActionType = mutableStateOf(TransferActionType.NONE)
 

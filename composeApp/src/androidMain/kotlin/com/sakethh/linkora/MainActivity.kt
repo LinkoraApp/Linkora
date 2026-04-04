@@ -18,6 +18,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
@@ -29,6 +30,8 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.compose.rememberNavController
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.ui.App
+import com.sakethh.linkora.ui.FabStateController
+import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.components.NotificationPermissionDialogBox
@@ -131,6 +134,9 @@ class MainActivity : ComponentActivity() {
             val preferences by mainVM.preferencesAsFlow.collectAsStateWithLifecycle()
             CompositionLocalProvider(
                 LocalNavController provides navController,
+                LocalFabController provides retain {
+                    FabStateController()
+                },
                 LocalPlatform provides Platform.Android
             ) {
                 val context = LocalContext.current

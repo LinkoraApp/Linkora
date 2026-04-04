@@ -42,7 +42,6 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults.primaryContentColor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -59,6 +58,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.di.linkoraViewModel
@@ -68,6 +68,7 @@ import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.platform.platform
+import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.components.folder.FolderComponent
 import com.sakethh.linkora.ui.components.link.ListViewLinkComponent
@@ -92,11 +93,16 @@ data class OnboardingSlide(val screen: @Composable () -> Unit)
 
 @Composable
 fun OnboardingSlidesScreen(
-    preferences: AppPreferences,
-    onOnboardingComplete: () -> Unit, currentFABContext: (CurrentFABContext) -> Unit
+    onOnboardingComplete: () -> Unit
 ) {
-    LaunchedEffect(Unit) {
-        currentFABContext(CurrentFABContext(fabContext = FABContext.HIDE))
+    val localFABContext = LocalFabController.current
+    LifecycleResumeEffect(Unit) {
+        localFABContext.updateState(
+            CurrentFABContext(
+                FABContext.HIDE
+            )
+        )
+        onPauseOrDispose {}
     }
     val pagerState = rememberPagerState { 4 }
     val coroutineScope = rememberCoroutineScope()

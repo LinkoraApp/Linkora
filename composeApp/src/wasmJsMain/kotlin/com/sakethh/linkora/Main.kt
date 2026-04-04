@@ -22,6 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -47,6 +48,8 @@ import com.sakethh.linkora.platform.Network
 import com.sakethh.linkora.platform.PermissionManager
 import com.sakethh.linkora.platform.PlatformPreference
 import com.sakethh.linkora.ui.App
+import com.sakethh.linkora.ui.FabStateController
+import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.theme.DarkColors
@@ -114,7 +117,10 @@ fun main() {
         }
         val coroutineScope = rememberCoroutineScope()
         CompositionLocalProvider(
-            LocalNavController provides navController, LocalPlatform provides Platform.Web
+            LocalNavController provides navController,
+            LocalFabController provides retain {
+                FabStateController()
+            }, LocalPlatform provides Platform.Web
         ) {
             LinkoraTheme(
                 colorScheme = if (preferences.useDarkTheme) DarkColors else LightColors,
@@ -140,9 +146,10 @@ fun main() {
                                 )
                                 Spacer(modifier = Modifier.height(7.5.dp))
                                 Text(
-                                    text = "Room on the web is still in early alpha, " +
-                                            "so database operations might be a bit unstable. If something breaks, " +
-                                            "please report it on GitHub and include your browser console logs.",
+                                    text = "Room handles database operations on Linkora Web using OPFS, which has strict browser locking limits. " +
+                                            "Room Web is still in early alpha, so the Linkora web port is highly experimental and can be unstable at times. " +
+                                            "It is not recommended for daily use yet, unlike Linkora Android and Desktop. " +
+                                            "If something breaks, please report it on GitHub with your browser version and console logs.",
                                     fontSize = 16.sp,
                                     style = MaterialTheme.typography.titleSmall
                                 )

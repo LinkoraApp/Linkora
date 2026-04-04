@@ -43,6 +43,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.linkoraViewModel
@@ -50,6 +51,7 @@ import com.sakethh.linkora.domain.FolderType
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.asLocalizedString
 import com.sakethh.linkora.domain.asMenuBtmSheetType
+import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.components.CollectionLayoutManager
 import com.sakethh.linkora.ui.components.SortingIconButton
@@ -63,14 +65,12 @@ import com.sakethh.linkora.ui.screens.DataEmptyScreen
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.pressScaleEffect
-import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
-    currentFABContext: (CurrentFABContext) -> Unit,
     forceActiveSearch: Boolean,
     cancelForceSearchActive: () -> Unit,
 ) {
@@ -79,8 +79,10 @@ fun SearchScreen(
     val searchBarFocusRequester = retain {
         FocusRequester()
     }
-    LaunchedEffect(Unit) {
-        currentFABContext(CurrentFABContext.ROOT)
+    val localFABContext = LocalFabController.current
+    LifecycleResumeEffect(Unit) {
+        localFABContext.updateState(CurrentFABContext.ROOT)
+        onPauseOrDispose {}
     }
     DisposableEffect(Unit) {
         onDispose {
@@ -210,11 +212,11 @@ fun SearchScreen(
                                     currentTag = null,
                                     collectionType = CollectionType.FOLDER
                                 )
-                                navController.currentBackStackEntry?.savedStateHandle?.set(
-                                    key = Constants.COLLECTION_INFO_SAVED_STATE_HANDLE_KEY,
-                                    value = Json.encodeToString(collectionDetailPaneInfo)
+                                navController.navigate(
+                                    Navigation.Collection.CollectionDetailScreen(
+                                        Json.encodeToString(collectionDetailPaneInfo)
+                                    )
                                 )
-                                navController.navigate(Navigation.Collection.MobileCollectionDetailScreen)
                             },
                             linkMoreIconClick = {
                                 coroutineScope.pushUIEvent(
@@ -242,14 +244,12 @@ fun SearchScreen(
                                     currentTag = it,
                                     collectionType = CollectionType.TAG,
                                 )
-                                navController.currentBackStackEntry?.savedStateHandle?.set(
-                                    key = Constants.COLLECTION_INFO_SAVED_STATE_HANDLE_KEY,
-                                    value = Json.encodeToString(
-                                        collectionDetailPaneInfo
-                                    )
-                                )
                                 navController.navigate(
-                                    Navigation.Collection.MobileCollectionDetailScreen
+                                    Navigation.Collection.CollectionDetailScreen(
+                                        Json.encodeToString(
+                                            collectionDetailPaneInfo
+                                        )
+                                    )
                                 )
                             },
                             onTagClick = {
@@ -258,14 +258,12 @@ fun SearchScreen(
                                     currentTag = it,
                                     collectionType = CollectionType.TAG,
                                 )
-                                navController.currentBackStackEntry?.savedStateHandle?.set(
-                                    key = Constants.COLLECTION_INFO_SAVED_STATE_HANDLE_KEY,
-                                    value = Json.encodeToString(
-                                        collectionDetailPaneInfo
-                                    )
-                                )
                                 navController.navigate(
-                                    Navigation.Collection.MobileCollectionDetailScreen
+                                    Navigation.Collection.CollectionDetailScreen(
+                                        Json.encodeToString(
+                                            collectionDetailPaneInfo
+                                        )
+                                    )
                                 )
                             },
                             tagMoreIconClick = {
@@ -333,14 +331,12 @@ fun SearchScreen(
                     currentTag = it,
                     collectionType = CollectionType.TAG,
                 )
-                navController.currentBackStackEntry?.savedStateHandle?.set(
-                    key = Constants.COLLECTION_INFO_SAVED_STATE_HANDLE_KEY,
-                    value = Json.encodeToString(
-                        collectionDetailPaneInfo
-                    )
-                )
                 navController.navigate(
-                    Navigation.Collection.MobileCollectionDetailScreen
+                    Navigation.Collection.CollectionDetailScreen(
+                        Json.encodeToString(
+                            collectionDetailPaneInfo
+                        )
+                    )
                 )
             },
             tagMoreIconClick = {},

@@ -3,7 +3,7 @@ package com.sakethh.linkora.ui.domain
 import com.sakethh.linkora.domain.model.Folder
 
 enum class FABContext {
-    ADD_LINK_IN_FOLDER,
+    ADD_LINK_ONLY,
     REGULAR,
     HIDE
 }

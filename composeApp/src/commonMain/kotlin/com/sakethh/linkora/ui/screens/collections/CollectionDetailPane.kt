@@ -34,7 +34,6 @@ import androidx.compose.material3.TabRowDefaults.primaryContentColor
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -51,20 +50,20 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavDestination.Companion.hasRoute
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.CollectionDetailPaneVMFactory
-import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkSaveConfig
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.asLocalizedString
 import com.sakethh.linkora.domain.asMenuBtmSheetType
 import com.sakethh.linkora.domain.asUnifiedLazyState
+import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.components.CollectionLayoutManager
 import com.sakethh.linkora.ui.components.PerformAtTheEndOfTheList
@@ -83,6 +82,7 @@ import com.sakethh.linkora.ui.screens.search.FilterChip
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.utils.Constants
+import com.sakethh.linkora.utils.Utils
 import com.sakethh.linkora.utils.VerticalScrollbar
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.getLocalizedString
@@ -93,17 +93,34 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
+@Composable
+fun CollectionDetailScreen(
+    collectionDetailPaneInfo: CollectionDetailPaneInfo,
+) {
+    val navController = LocalNavController.current
+    CollectionDetailPane(
+        onNavigate = { collectionDetailPaneInfo ->
+            navController.navigate(
+                Navigation.Collection.CollectionDetailScreen(
+                    Utils.json.encodeToString(collectionDetailPaneInfo)
+                )
+            )
+        },
+        collectionDetailPaneInfo = collectionDetailPaneInfo,
+        navigateUp = navController::navigateUp,
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CollectionDetailPane(
-    preferences: AppPreferences,
-    currentFABContext: (CurrentFABContext) -> Unit,
     onNavigate: (CollectionDetailPaneInfo) -> Unit,
     collectionDetailPaneInfo: CollectionDetailPaneInfo,
     navigateUp: () -> Unit
 ) {
     val collectionDetailPaneVM: CollectionDetailPaneVM =
         viewModel(factory = CollectionDetailPaneVMFactory.create(collectionDetailPaneInfo))
+    val preferences by collectionDetailPaneVM.preferencesAsFlow.collectAsStateWithLifecycle()
     val linkTagsPairs by collectionDetailPaneVM.linkTagsPairsState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { 2 })
@@ -122,37 +139,40 @@ fun CollectionDetailPane(
         })
     val collectionDetailPaneInfo = collectionDetailPaneVM.collectionDetailPaneInfo
     val onAndroidMobile = Platform.Android.onMobile() || !supportsWideDisplay()
-    val navController = LocalNavController.current
-    DisposableEffect(Unit) {
-        onDispose {
-            if (onAndroidMobile && navController.currentBackStackEntry?.destination?.hasRoute<Navigation.Root.CollectionsScreen>() == true) {
-                currentFABContext(CurrentFABContext.ROOT)
-            }
-        }
-    }
+    val localFabStateController = LocalFabController.current
+    val folder = collectionDetailPaneInfo.currentFolder
+    val tag = collectionDetailPaneInfo.currentTag
 
-    LaunchedEffect(collectionDetailPaneInfo.currentFolder) {
-        if (collectionDetailPaneInfo.currentTag != null || (collectionDetailPaneInfo.currentFolder != null && (collectionDetailPaneInfo.currentFolder.localId == Constants.ALL_LINKS_ID || collectionDetailPaneInfo.currentFolder.localId >= 0))) {
-            currentFABContext(
+    LifecycleResumeEffect(folder, tag) {
+        if (folder != null && folder.localId == Constants.ARCHIVE_ID) {
+            localFabStateController.updateState(CurrentFABContext(FABContext.HIDE))
+        } else if (folder != null && (folder.localId == Constants.SAVED_LINKS_ID || folder.localId == Constants.IMPORTANT_LINKS_ID)) {
+            localFabStateController.updateState(
+                CurrentFABContext(
+                    fabContext = FABContext.ADD_LINK_ONLY,
+                    currentFolder = folder
+                )
+            )
+        } else if (tag != null || (folder != null && (folder.localId == Constants.ALL_LINKS_ID || folder.localId >= 0))) {
+            localFabStateController.updateState(
                 CurrentFABContext(
                     fabContext = FABContext.REGULAR,
-                    currentFolder = collectionDetailPaneInfo.currentFolder
+                    currentFolder = folder
                 )
             )
-            return@LaunchedEffect
-        }
-        if (collectionDetailPaneInfo.currentFolder != null && (collectionDetailPaneInfo.currentFolder.localId == Constants.SAVED_LINKS_ID || collectionDetailPaneInfo.currentFolder.localId == Constants.IMPORTANT_LINKS_ID)) {
-            currentFABContext(
-                CurrentFABContext(
-                    fabContext = FABContext.ADD_LINK_IN_FOLDER,
-                    currentFolder = collectionDetailPaneInfo.currentFolder
-                )
-            )
-            return@LaunchedEffect
+        } else {
+            localFabStateController.updateState(CurrentFABContext(FABContext.HIDE))
         }
 
-        // for archive:
-        currentFABContext(CurrentFABContext(FABContext.HIDE))
+        onPauseOrDispose {
+            // no need for cleanup here
+            // parent CollectionsScreen already tracks isDetailVisible and isDetailEmpty,
+            // and handles asserting ROOT when the side pane is removed or hidden.
+            // also, even if we navigated here directly from another screen (like Search)
+            // instead of the collections list, we STILL don't need cleanup.
+            // when we navigate back, that previous screen hits RESUMED and updates
+            // the state on its own
+        }
     }
 
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {

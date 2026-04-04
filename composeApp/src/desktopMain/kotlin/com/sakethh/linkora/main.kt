@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.retain.retain
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -48,6 +49,8 @@ import com.sakethh.linkora.platform.Network
 import com.sakethh.linkora.platform.PermissionManager
 import com.sakethh.linkora.platform.PlatformPreference
 import com.sakethh.linkora.ui.App
+import com.sakethh.linkora.ui.FabStateController
+import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.theme.DarkColors
@@ -113,7 +116,9 @@ suspend fun main() {
             val preferences by DependencyContainer.preferencesRepo.preferencesAsFlow.collectAsStateWithLifecycle()
             window.minimumSize = Dimension(1054, 600)
             CompositionLocalProvider(
-                LocalNavController provides navController, LocalPlatform provides Platform.Desktop
+                LocalNavController provides navController, LocalFabController provides retain {
+                    FabStateController()
+                }, LocalPlatform provides Platform.Desktop
             ) {
                 LinkoraTheme(
                     colorScheme = if (preferences.useDarkTheme) DarkColors else LightColors,

@@ -13,6 +13,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.retain.retain
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
@@ -32,6 +33,8 @@ import com.sakethh.linkora.domain.repository.local.LocalTagsRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.SnapshotRepo
 import com.sakethh.linkora.service.AutoSaveLinkService
+import com.sakethh.linkora.ui.FabStateController
+import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.components.AddANewLinkDialogBox
@@ -102,6 +105,9 @@ class ShareToSaveActivity : ComponentActivity() {
             val preferences by intentActivityVM.preferencesAsFlow.collectAsStateWithLifecycle()
             CompositionLocalProvider(
                 LocalNavController provides navController,
+                LocalFabController provides retain {
+                    FabStateController()
+                },
                 LocalPlatform provides Platform.Android
             ) {
                 val darkColors = DarkColors.copy(

@@ -88,6 +88,7 @@ sealed interface Navigation {
             override fun toString(): String =
                 Localization.getLocalizedString(Localization.Key.Acknowledgments)
         }
+
         @Serializable
         data object AboutLibraries : Settings
 
@@ -98,6 +99,7 @@ sealed interface Navigation {
                 override fun toString(): String =
                     Localization.getLocalizedString(Localization.Key.LinkoraServerSetup)
             }
+
             @Serializable
             data object SnapshotsScreen : Data {
                 override fun toString(): String =
@@ -122,7 +124,7 @@ sealed interface Navigation {
     @Serializable
     sealed interface Collection {
         @Serializable
-        data object MobileCollectionDetailScreen : Collection {
+        data class CollectionDetailScreen(val collectionDetailPaneInfo: String) : Collection {
             override fun toString(): String {
                 return Localization.getLocalizedString(Localization.Key.MobileCollectionDetailScreen)
             }

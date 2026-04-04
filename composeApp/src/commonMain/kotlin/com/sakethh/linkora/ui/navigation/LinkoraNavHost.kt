@@ -5,12 +5,14 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.sakethh.linkora.di.SpecificPanelManagerVMFactory
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.ui.LocalNavController
-import com.sakethh.linkora.ui.domain.CurrentFABContext
+import com.sakethh.linkora.ui.domain.model.CollectionDetailPaneInfo
+import com.sakethh.linkora.ui.screens.collections.CollectionDetailScreen
 import com.sakethh.linkora.ui.screens.collections.CollectionScreenParams
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreen
 import com.sakethh.linkora.ui.screens.home.HomeScreen
@@ -32,13 +34,13 @@ import com.sakethh.linkora.ui.screens.settings.section.about.AboutScreen
 import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreen
 import com.sakethh.linkora.ui.screens.settings.section.data.snapshots.SnapshotsScreen
 import com.sakethh.linkora.ui.screens.settings.section.data.sync.ServerSetupScreen
+import com.sakethh.linkora.utils.Utils
 
 @Composable
 fun LinkoraNavHost(
     preferences: AppPreferences,
     startDestination: Navigation.Root,
     onOnboardingComplete: () -> Unit,
-    currentFABContext: (CurrentFABContext) -> Unit,
     collectionScreenParams: CollectionScreenParams,
     // An event can be pushed to the UIEvent flow instead of hoisting like this, but fine
     forceSearchActive: Boolean,
@@ -61,11 +63,10 @@ fun LinkoraNavHost(
         popExitTransition = { fadeOut() },
     ) {
         composable<Navigation.Root.HomeScreen> {
-            HomeScreen(currentFABContext)
+            HomeScreen()
         }
         composable<Navigation.Root.SearchScreen> {
             SearchScreen(
-                currentFABContext = currentFABContext,
                 forceActiveSearch = forceSearchActive,
                 cancelForceSearchActive = cancelForceSearchActive
             )
@@ -73,12 +74,20 @@ fun LinkoraNavHost(
         composable<Navigation.Root.CollectionsScreen> {
             CollectionsScreen(
                 collectionScreenParams = collectionScreenParams,
-                currentFABContext = currentFABContext,
                 preferences = preferences
             )
         }
+        composable<Navigation.Collection.CollectionDetailScreen> { navBackStackEntry ->
+            val collectionDetailPaneInfo =
+                navBackStackEntry.toRoute<CollectionNavigation.Pane>().run {
+                    Utils.json.decodeFromString<CollectionDetailPaneInfo>(this.collectionDetailPaneInfo)
+                }
+            CollectionDetailScreen(
+                collectionDetailPaneInfo = collectionDetailPaneInfo
+            )
+        }
         composable<Navigation.Root.SettingsScreen> {
-            SettingsScreen(currentFABContext)
+            SettingsScreen()
         }
         composable<Navigation.Settings.ThemeSettingsScreen> {
             ThemeSettingsScreen()
@@ -100,7 +109,6 @@ fun LinkoraNavHost(
         }
         composable<Navigation.Home.PanelsManagerScreen> {
             PanelsManagerScreen(
-                currentFABContext,
                 specificPanelManagerScreenParam = SpecificPanelManagerScreenParam(
                     foldersOfTheSelectedPanel = specificPanelManagerScreenVM.foldersOfTheSelectedPanel,
                     foldersToIncludeInPanel = specificPanelManagerScreenVM.foldersToIncludeInPanel,
@@ -138,8 +146,6 @@ fun LinkoraNavHost(
         composable<Navigation.Root.OnboardingSlidesScreen> {
             OnboardingSlidesScreen(
                 onOnboardingComplete = onOnboardingComplete,
-                preferences = preferences,
-                currentFABContext = currentFABContext
             )
         }
     }

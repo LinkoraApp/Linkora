@@ -1,13 +1,17 @@
 package com.sakethh.linkora.ui
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -105,6 +109,7 @@ import com.sakethh.linkora.ui.screens.collections.components.TagDeletionConfirma
 import com.sakethh.linkora.ui.screens.collections.components.TagMenu
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
+import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.booleanPreferencesKey
@@ -171,7 +176,10 @@ fun App(
             )
         }
     }
-    val currentFABContext by appVM.currentContextOfFAB
+    val currentFABContext by LocalFabController.current.fabState.collectAsStateWithLifecycle()
+    LaunchedEffect(currentFABContext) {
+        linkoraLog("currentFABContext = $currentFABContext")
+    }
     var forceSearchActive by rememberSaveable {
         mutableStateOf(false)
     }
@@ -216,7 +224,6 @@ fun App(
                             selectedAndInRoot = selectedAndInRoot,
                             currentRoute = currentRoute,
                             progressBarVisible = showLoadingProgressBarOnTransferAction,
-                            currentFABContext = currentFABContext,
                             transferActionType = appVM.transferActionType.value,
                             changeTransferActionType = {
                                 appVM.transferActionType.value = it
@@ -241,62 +248,74 @@ fun App(
                     exit = fadeOut(),
                     visible = currentRoute?.hasRoute<Navigation.Root.SettingsScreen>() == false && !currentRoute.hasRoute<Navigation.Home.PanelsManagerScreen>() && currentFABContext.fabContext != FABContext.HIDE && !CollectionsScreenVM.isSelectionEnabled.value,
                 ) {
-                    if (currentFABContext.fabContext == FABContext.ADD_LINK_IN_FOLDER) {
-                        FloatingActionButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-                            onClick = {
-                                appVM.showAddLinkDialog = true
-                            }) {
-                            Icon(
-                                imageVector = Icons.Default.AddLink, contentDescription = null
-                            )
+                    AnimatedContent(
+                        targetState = currentFABContext.fabContext,
+                        label = "fab_morph_animation",
+                        transitionSpec = {
+                            (scaleIn() + fadeIn()).togetherWith(scaleOut() + fadeOut())
+                        }) { targetContext ->
+                        when (targetContext) {
+                            FABContext.ADD_LINK_ONLY -> {
+                                FloatingActionButton(
+                                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                                    onClick = {
+                                        appVM.showAddLinkDialog = true
+                                    }) {
+                                    Icon(
+                                        imageVector = Icons.Default.AddLink,
+                                        contentDescription = null
+                                    )
+                                }
+                            }
+
+                            FABContext.REGULAR -> {
+                                AddItemFab(
+                                    AddItemFABParam(
+                                        isReducedTransparencyBoxVisible = isReducedTransparencyBoxVisible.value,
+                                        onShowDialogForNewFolder = {
+                                            appVM.showNewFolderDialog = true
+                                        },
+                                        onShowAddLinkDialog = {
+                                            appVM.showAddLinkDialog = true
+                                        },
+                                        isMainFabRotated = AppVM.isMainFabRotated.value,
+                                        rotationAnimatable = rotationAnimatable,
+                                        inASpecificScreen = false,
+                                        onCreateATagClick = {
+                                            appVM.showBtmSheetForNewTagAddition = true
+                                        },
+                                        hideReducedTransparencyBox = {
+                                            isReducedTransparencyBoxVisible.value = false
+                                        },
+                                        undoMainFabRotation = {
+                                            AppVM.isMainFabRotated.value = false
+                                        },
+                                        showReducedTransparencyBox = {
+                                            isReducedTransparencyBoxVisible.value = true
+                                        },
+                                        rotateMainFab = {
+                                            AppVM.isMainFabRotated.value = true
+                                        })
+                                )
+                            }
+
+                            FABContext.HIDE -> {
+
+                            }
                         }
-                        return@AnimatedVisibility
                     }
-                    AddItemFab(
-                        AddItemFABParam(
-                            isReducedTransparencyBoxVisible = isReducedTransparencyBoxVisible.value,
-                            onShowDialogForNewFolder = {
-                                appVM.showNewFolderDialog = true
-                            },
-                            onShowAddLinkDialog = {
-                                appVM.showAddLinkDialog = true
-                            },
-                            isMainFabRotated = AppVM.isMainFabRotated.value,
-                            rotationAnimatable = rotationAnimatable,
-                            inASpecificScreen = false,
-                            onCreateATagClick = {
-                                appVM.showBtmSheetForNewTagAddition = true
-                            },
-                            hideReducedTransparencyBox = {
-                                isReducedTransparencyBoxVisible.value = false
-                            },
-                            undoMainFabRotation = {
-                                AppVM.isMainFabRotated.value = false
-                            },
-                            showReducedTransparencyBox = {
-                                isReducedTransparencyBoxVisible.value = true
-                            },
-                            rotateMainFab = {
-                                AppVM.isMainFabRotated.value = true
-                            })
-                    )
                 }
             },
             snackbarHost = {
                 SnackbarHost(appVM.snackbarHostState) { snackbarData ->
                     Box(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(7.5.dp)
-                                .clip(RoundedCornerShape(15.dp))
-                                .background(MaterialTheme.colorScheme.secondary)
-                                .border(
-                                    width = 1.5.dp,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    shape = RoundedCornerShape(15.dp),
-                                ).padding(15.dp),
+                        modifier = Modifier.fillMaxWidth().padding(7.5.dp)
+                            .clip(RoundedCornerShape(15.dp))
+                            .background(MaterialTheme.colorScheme.secondary).border(
+                                width = 1.5.dp,
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = RoundedCornerShape(15.dp),
+                            ).padding(15.dp),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
@@ -349,9 +368,6 @@ fun App(
                 LinkoraNavHost(
                     startDestination = appVM.startDestination,
                     onOnboardingComplete = appVM::markOnboardingComplete,
-                    currentFABContext = {
-                        appVM.updateFABContext(it)
-                    },
                     forceSearchActive = forceSearchActive,
                     cancelForceSearchActive = {
                         forceSearchActive = false
@@ -393,7 +409,7 @@ fun App(
                         onDismiss = {
                             appVM.showAddLinkDialog = false
                         },
-                        currentFolder = if ((inRootScreen == true && onAndroidMobile) || currentFABContext.currentFolder?.localId == Constants.ALL_LINKS_ID) null else currentFABContext.currentFolder,
+                        currentFolder = if ((inRootScreen == true && currentFABContext.currentFolder == null) || currentFABContext.currentFolder?.localId == Constants.ALL_LINKS_ID) null else currentFABContext.currentFolder,
                         allTags = collectionsScreenVM.allTags,
                         selectedTags = collectionsScreenVM.selectedTags,
                         foldersSearchQuery = collectionsScreenVM.foldersSearchQuery,
@@ -537,14 +553,12 @@ fun App(
                                 currentTag = it,
                                 collectionType = CollectionType.TAG,
                             )
-                            localNavController.currentBackStackEntry?.savedStateHandle?.set(
-                                key = Constants.COLLECTION_INFO_SAVED_STATE_HANDLE_KEY,
-                                value = Json.encodeToString(
-                                    collectionDetailPaneInfo
-                                )
-                            )
                             localNavController.navigate(
-                                Navigation.Collection.MobileCollectionDetailScreen
+                                Navigation.Collection.CollectionDetailScreen(
+                                    Json.encodeToString(
+                                        collectionDetailPaneInfo
+                                    )
+                                )
                             )
                             hideMenuSheet()
                         },

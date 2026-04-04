@@ -26,7 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -36,13 +35,14 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.HomeScreenVMAssistedFactory
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.panel.Panel
-import com.sakethh.linkora.platform.platform
+import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.components.AddANewPanelDialogBox
 import com.sakethh.linkora.ui.components.AddANewPanelParam
@@ -62,12 +62,13 @@ import com.sakethh.linkora.utils.rememberLocalizedString
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PanelsManagerScreen(
-    currentFABContext: (CurrentFABContext) -> Unit,
     specificPanelManagerScreenParam: SpecificPanelManagerScreenParam,
     performAction: (PanelsAction) -> Unit
 ) {
-    LaunchedEffect(Unit) {
-        currentFABContext(CurrentFABContext(FABContext.HIDE))
+    val localFABContext = LocalFabController.current
+    LifecycleResumeEffect(Unit) {
+        localFABContext.updateState(CurrentFABContext(FABContext.HIDE))
+        onPauseOrDispose {}
     }
     val navController = LocalNavController.current
     val topAppBarState = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()

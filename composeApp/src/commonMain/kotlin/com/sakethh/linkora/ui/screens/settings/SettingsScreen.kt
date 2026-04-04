@@ -36,7 +36,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,8 +45,10 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.navigation.NavController
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.domain.CurrentFABContext
 import com.sakethh.linkora.ui.domain.FABContext
@@ -65,9 +66,11 @@ import org.jetbrains.compose.resources.painterResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(currentFABContext: (CurrentFABContext) -> Unit) {
-    LaunchedEffect(Unit) {
-        currentFABContext(CurrentFABContext(FABContext.HIDE))
+fun SettingsScreen() {
+    val localFABContext = LocalFabController.current
+    LifecycleResumeEffect(Unit) {
+        localFABContext.updateState(CurrentFABContext(FABContext.HIDE))
+        onPauseOrDispose {}
     }
     val navController = LocalNavController.current
     val topAppBarScrollState = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()

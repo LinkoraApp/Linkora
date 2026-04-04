@@ -37,6 +37,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -44,10 +45,10 @@ import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Platform
+import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.domain.AppAction
-import com.sakethh.linkora.ui.domain.CurrentFABContext
 import com.sakethh.linkora.ui.domain.TransferActionType
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM
@@ -64,7 +65,6 @@ fun BottomNavOnSelection(
     progressBarVisible: Boolean,
     showLoadingProgressBarOnTransferAction: () -> Unit,
     hideLoadingProgressBarOnTransferAction: () -> Unit,
-    currentFABContext: CurrentFABContext,
     transferActionType: TransferActionType,
     changeTransferActionType: (TransferActionType) -> Unit,
     selectedAndInRoot: MutableState<Boolean>,
@@ -120,7 +120,8 @@ fun BottomNavOnSelection(
                 )
             }
         }
-        val currentFolder = currentFABContext.currentFolder
+        val currentFolder =
+            LocalFabController.current.fabState.collectAsStateWithLifecycle().value.currentFolder
         val showPasteButton =
             (if (Platform.Android.onMobile()) currentFolder != null else true) && (transferActionType != TransferActionType.NONE && (if (Platform.Android.onMobile()) !selectedAndInRoot.value else currentFolder != null)) && currentFolder?.localId != Constants.ALL_LINKS_ID
 

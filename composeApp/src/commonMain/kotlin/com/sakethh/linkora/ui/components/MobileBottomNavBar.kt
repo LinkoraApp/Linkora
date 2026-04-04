@@ -31,7 +31,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.navigation.Navigation
@@ -49,14 +48,12 @@ fun MobileBottomNavBar(
     navDestination: NavDestination?,
     onDoubleTap: (Navigation.Root) -> Unit
 ) {
-    platform
     val localNavController = LocalNavController.current
-
     val mobileBottomNavBarVM: MobileBottomNavBarVM = viewModel(initializer = {
         MobileBottomNavBarVM()
     })
     AnimatedVisibility(
-        visible = !supportsWideDisplay() && inRootScreen == true && !CollectionsScreenVM.isSelectionEnabled.value,
+        visible = CollectionsScreenVM.inCollectionsListPane && !supportsWideDisplay() && inRootScreen == true && !CollectionsScreenVM.isSelectionEnabled.value,
         exit = slideOutVertically(targetOffsetY = { it }),
         enter = slideInVertically(initialOffsetY = { it })
     ) {

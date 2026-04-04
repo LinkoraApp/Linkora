@@ -22,7 +22,7 @@ class LinkoraSDK(
 
         fun getInstance(): LinkoraSDK {
             require(assigned) {
-                "LinkoraSDK has not been set. Call LinkoraSDKProvider.set() first."
+                "LinkoraSDK has not been set. Call LinkoraSDK.set() first."
             }
             return shared
         }

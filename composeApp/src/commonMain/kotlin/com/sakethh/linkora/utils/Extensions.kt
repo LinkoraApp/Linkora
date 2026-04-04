@@ -1,5 +1,7 @@
 package com.sakethh.linkora.utils
 
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -7,7 +9,6 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -29,6 +30,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.composables.core.ScrollAreaScope
 import com.composables.core.Thumb
+import com.composables.core.ThumbVisibility
 import com.composables.core.VerticalScrollbar
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
@@ -61,6 +63,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.update
 import kotlin.jvm.JvmName
+import kotlin.time.Duration
 
 fun String.addZeroAtPrefixOnInt() =
     try {
@@ -208,10 +211,10 @@ fun String.replaceFirstPlaceHolderWith(string: String): String {
 }
 
 fun String.isATwitterUrl(): Boolean {
-    return this.trim().startsWith("http://twitter.com/") or this.trim()
-        .startsWith("https://twitter.com/") or this.trim().startsWith(
+    return this.trim().startsWith("http://twitter.com/") || this.trim()
+        .startsWith("https://twitter.com/") || this.trim().startsWith(
         "http://x.com/"
-    ) or this.trim().startsWith("https://x.com/")
+    ) || this.trim().startsWith("https://x.com/")
 }
 
 suspend fun <T : Any> T.then(init: suspend () -> Unit): T {
@@ -437,6 +440,11 @@ fun ScrollAreaScope.VerticalScrollbar() {
             .width(8.dp)
     ) {
         Thumb(
+            thumbVisibility = ThumbVisibility.HideWhileIdle(
+                enter = fadeIn(),
+                exit = fadeOut(),
+                hideDelay = Duration.parse("2s")
+            ),
             modifier = Modifier
                 .pointerHoverIcon(PointerIcon.Hand)
                 .clip(RoundedCornerShape(25.dp))
