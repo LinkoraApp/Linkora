@@ -9,5 +9,5 @@ data class RenameTagDTO(
     val id: Long,
     val newName: String,
     val eventTimestamp: Long,
-    val correlation: Correlation,
+    val correlation: Correlation? = null,
 )

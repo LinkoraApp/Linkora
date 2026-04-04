@@ -22,5 +22,5 @@ data class LinkDTO(
     val mediaType: MediaType,
     val eventTimestamp: Long,
     val linkTags: List<LinkTagDTO>,
-    val correlation: Correlation
+    val correlation: Correlation? = null
 )

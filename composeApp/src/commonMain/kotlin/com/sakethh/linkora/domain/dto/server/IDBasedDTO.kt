@@ -7,5 +7,5 @@ import kotlinx.serialization.Serializable
 data class IDBasedDTO(
     val id: Long,
     val eventTimestamp: Long,
-    val correlation: Correlation
+    val correlation: Correlation? = null
 )

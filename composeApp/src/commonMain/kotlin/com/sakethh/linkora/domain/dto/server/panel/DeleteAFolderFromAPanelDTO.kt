@@ -9,5 +9,5 @@ data class DeleteAFolderFromAPanelDTO(
     val panelId: Long,
     val folderID: Long,
     val eventTimestamp: Long,
-    val correlation: Correlation
+    val correlation: Correlation? = null
 )

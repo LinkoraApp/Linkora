@@ -11,5 +11,5 @@ data class CopyItemsDTO(
     val linkType: LinkType,
     val newParentFolderId: Long,
     val eventTimestamp: Long,
-    val correlation: Correlation
+    val correlation: Correlation? = null
 )

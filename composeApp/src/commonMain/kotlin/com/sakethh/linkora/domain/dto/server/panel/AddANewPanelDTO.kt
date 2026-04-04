@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class AddANewPanelDTO(
     val panelName: String,
-    val correlation: Correlation,
+    val correlation: Correlation? = null,
     val eventTimestamp: Long,
     val offlineSyncItemId: Long = 0
 )

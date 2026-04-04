@@ -8,5 +8,5 @@ data class MarkItemsRegularDTO(
     val foldersIds: List<Long>,
     val linkIds: List<Long>,
     val eventTimestamp: Long,
-    val correlation: Correlation
+    val correlation: Correlation? = null
 )

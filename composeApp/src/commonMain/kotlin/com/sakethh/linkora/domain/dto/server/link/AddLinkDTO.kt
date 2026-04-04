@@ -18,7 +18,7 @@ data class AddLinkDTO(
     val userAgent: String?,
     val markedAsImportant: Boolean,
     val mediaType: MediaType,
-    val correlation: Correlation,
+    val correlation: Correlation? = null,
     val eventTimestamp: Long,
     val tags: List<Long>,
     val offlineSyncItemId: Long = 0

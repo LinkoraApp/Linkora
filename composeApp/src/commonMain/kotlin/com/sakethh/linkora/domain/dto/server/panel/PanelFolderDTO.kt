@@ -11,5 +11,5 @@ data class PanelFolderDTO(
     val panelPosition: Long,
     val folderName: String,
     val connectedPanelId: Long, val eventTimestamp: Long,
-    val correlation: Correlation
+    val correlation: Correlation? = null
 )

@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class CopyItemsHTTPResponseDTO(
     val folders: List<CopiedFolderResponse>,
     val linkIds: Map<Long, Long>,
-    val correlation: Correlation,
+    val correlation: Correlation? = null,
     val eventTimestamp: Long
 )
 
@@ -17,5 +17,5 @@ data class CopiedFolderResponse(
 
 @Serializable
 data class CopyItemsSocketResponseDTO(
-    val eventTimestamp: Long, val correlation: Correlation
+    val eventTimestamp: Long, val correlation: Correlation? = null
 )

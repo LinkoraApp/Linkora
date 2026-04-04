@@ -9,5 +9,5 @@ data class UpdateFolderNoteDTO(
     val folderId: Long,
     val newNote: String,
     val eventTimestamp: Long,
-    val correlation: Correlation
+    val correlation: Correlation? = null
 )
