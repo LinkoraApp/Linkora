@@ -58,7 +58,6 @@ import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.CollectionDetailPaneVMFactory
-import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkSaveConfig
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Platform
@@ -83,6 +82,7 @@ import com.sakethh.linkora.ui.screens.search.FilterChip
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.utils.Constants
+import com.sakethh.linkora.utils.Utils
 import com.sakethh.linkora.utils.VerticalScrollbar
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.getLocalizedString
@@ -93,10 +93,29 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
+@Composable
+fun CollectionDetailScreen(
+    collectionDetailPaneInfo: CollectionDetailPaneInfo,
+    currentFABContext: (CurrentFABContext) -> Unit
+) {
+    val navController = LocalNavController.current
+    CollectionDetailPane(
+        currentFABContext = currentFABContext,
+        onNavigate = { collectionDetailPaneInfo ->
+            navController.navigate(
+                Navigation.Collection.CollectionDetailScreen(
+                    Utils.json.encodeToString(collectionDetailPaneInfo)
+                )
+            )
+        },
+        collectionDetailPaneInfo = collectionDetailPaneInfo,
+        navigateUp = navController::navigateUp,
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CollectionDetailPane(
-    preferences: AppPreferences,
     currentFABContext: (CurrentFABContext) -> Unit,
     onNavigate: (CollectionDetailPaneInfo) -> Unit,
     collectionDetailPaneInfo: CollectionDetailPaneInfo,
@@ -104,6 +123,7 @@ fun CollectionDetailPane(
 ) {
     val collectionDetailPaneVM: CollectionDetailPaneVM =
         viewModel(factory = CollectionDetailPaneVMFactory.create(collectionDetailPaneInfo))
+    val preferences by collectionDetailPaneVM.preferencesAsFlow.collectAsStateWithLifecycle()
     val linkTagsPairs by collectionDetailPaneVM.linkTagsPairsState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { 2 })

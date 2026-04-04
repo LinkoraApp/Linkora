@@ -146,8 +146,11 @@ fun CollectionsScreen(
 
     LaunchedEffect(currentDetailEntry) {
         if (currentDetailEntry == null || currentDetailEntry?.destination?.hasRoute<CollectionNavigation.Empty>() == true) {
+            CollectionsScreenVM.inCollectionsListPane = true
             lastDetailDestination = null
             currentFABContext(CurrentFABContext.ROOT)
+        } else {
+            CollectionsScreenVM.inCollectionsListPane = false
         }
         if (currentDetailEntry?.destination?.hasRoute<CollectionNavigation.Pane>() == true && lastDetailDestination?.currentFolder != null) {
             currentFABContext(
@@ -247,7 +250,8 @@ fun CollectionsScreen(
             modifier = modifier, floatingActionButtonPosition = FabPosition.End, topBar = {
                 MediumTopAppBar(
                     modifier = if (!onAndroidMobile) Modifier.size(0.dp) else Modifier,
-                    scrollBehavior = topAppBarScrollBehavior, title = {
+                    scrollBehavior = topAppBarScrollBehavior,
+                    title = {
                         Text(
                             text = Navigation.Root.CollectionsScreen.toString(),
                             color = MaterialTheme.colorScheme.onSurface,
@@ -717,7 +721,6 @@ fun CollectionsScreen(
                                 },
                                 collectionDetailPaneInfo = collectionDetailPaneInfo,
                                 currentFABContext = currentFABContext,
-                                preferences = preferences,
                                 onNavigate = { collectionDetailPaneInfo ->
                                     detailNavController.navigate(
                                         CollectionNavigation.Pane(

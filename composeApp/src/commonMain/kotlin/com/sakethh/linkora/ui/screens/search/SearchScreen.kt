@@ -63,7 +63,6 @@ import com.sakethh.linkora.ui.screens.DataEmptyScreen
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.pressScaleEffect
-import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.serialization.json.Json
 
@@ -210,11 +209,11 @@ fun SearchScreen(
                                     currentTag = null,
                                     collectionType = CollectionType.FOLDER
                                 )
-                                navController.currentBackStackEntry?.savedStateHandle?.set(
-                                    key = Constants.COLLECTION_INFO_SAVED_STATE_HANDLE_KEY,
-                                    value = Json.encodeToString(collectionDetailPaneInfo)
+                                navController.navigate(
+                                    Navigation.Collection.CollectionDetailScreen(
+                                        Json.encodeToString(collectionDetailPaneInfo)
+                                    )
                                 )
-                                navController.navigate(Navigation.Collection.MobileCollectionDetailScreen)
                             },
                             linkMoreIconClick = {
                                 coroutineScope.pushUIEvent(
@@ -242,14 +241,12 @@ fun SearchScreen(
                                     currentTag = it,
                                     collectionType = CollectionType.TAG,
                                 )
-                                navController.currentBackStackEntry?.savedStateHandle?.set(
-                                    key = Constants.COLLECTION_INFO_SAVED_STATE_HANDLE_KEY,
-                                    value = Json.encodeToString(
-                                        collectionDetailPaneInfo
-                                    )
-                                )
                                 navController.navigate(
-                                    Navigation.Collection.MobileCollectionDetailScreen
+                                    Navigation.Collection.CollectionDetailScreen(
+                                        Json.encodeToString(
+                                            collectionDetailPaneInfo
+                                        )
+                                    )
                                 )
                             },
                             onTagClick = {
@@ -258,14 +255,12 @@ fun SearchScreen(
                                     currentTag = it,
                                     collectionType = CollectionType.TAG,
                                 )
-                                navController.currentBackStackEntry?.savedStateHandle?.set(
-                                    key = Constants.COLLECTION_INFO_SAVED_STATE_HANDLE_KEY,
-                                    value = Json.encodeToString(
-                                        collectionDetailPaneInfo
-                                    )
-                                )
                                 navController.navigate(
-                                    Navigation.Collection.MobileCollectionDetailScreen
+                                    Navigation.Collection.CollectionDetailScreen(
+                                        Json.encodeToString(
+                                            collectionDetailPaneInfo
+                                        )
+                                    )
                                 )
                             },
                             tagMoreIconClick = {
@@ -333,14 +328,12 @@ fun SearchScreen(
                     currentTag = it,
                     collectionType = CollectionType.TAG,
                 )
-                navController.currentBackStackEntry?.savedStateHandle?.set(
-                    key = Constants.COLLECTION_INFO_SAVED_STATE_HANDLE_KEY,
-                    value = Json.encodeToString(
-                        collectionDetailPaneInfo
-                    )
-                )
                 navController.navigate(
-                    Navigation.Collection.MobileCollectionDetailScreen
+                    Navigation.Collection.CollectionDetailScreen(
+                        Json.encodeToString(
+                            collectionDetailPaneInfo
+                        )
+                    )
                 )
             },
             tagMoreIconClick = {},

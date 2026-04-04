@@ -537,14 +537,12 @@ fun App(
                                 currentTag = it,
                                 collectionType = CollectionType.TAG,
                             )
-                            localNavController.currentBackStackEntry?.savedStateHandle?.set(
-                                key = Constants.COLLECTION_INFO_SAVED_STATE_HANDLE_KEY,
-                                value = Json.encodeToString(
-                                    collectionDetailPaneInfo
-                                )
-                            )
                             localNavController.navigate(
-                                Navigation.Collection.MobileCollectionDetailScreen
+                                Navigation.Collection.CollectionDetailScreen(
+                                    Json.encodeToString(
+                                        collectionDetailPaneInfo
+                                    )
+                                )
                             )
                             hideMenuSheet()
                         },

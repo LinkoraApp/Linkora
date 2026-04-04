@@ -93,6 +93,7 @@ class CollectionsScreenVM(
             selectedLinkTagPairsViaLongClick.clear()
             selectedFoldersViaLongClick.clear()
         }
+        var inCollectionsListPane by mutableStateOf(false)
     }
 
 

@@ -5,12 +5,15 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.sakethh.linkora.di.SpecificPanelManagerVMFactory
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.domain.CurrentFABContext
+import com.sakethh.linkora.ui.domain.model.CollectionDetailPaneInfo
+import com.sakethh.linkora.ui.screens.collections.CollectionDetailScreen
 import com.sakethh.linkora.ui.screens.collections.CollectionScreenParams
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreen
 import com.sakethh.linkora.ui.screens.home.HomeScreen
@@ -32,6 +35,7 @@ import com.sakethh.linkora.ui.screens.settings.section.about.AboutScreen
 import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreen
 import com.sakethh.linkora.ui.screens.settings.section.data.snapshots.SnapshotsScreen
 import com.sakethh.linkora.ui.screens.settings.section.data.sync.ServerSetupScreen
+import com.sakethh.linkora.utils.Utils
 
 @Composable
 fun LinkoraNavHost(
@@ -75,6 +79,16 @@ fun LinkoraNavHost(
                 collectionScreenParams = collectionScreenParams,
                 currentFABContext = currentFABContext,
                 preferences = preferences
+            )
+        }
+        composable<Navigation.Collection.CollectionDetailScreen> { navBackStackEntry ->
+            val collectionDetailPaneInfo =
+                navBackStackEntry.toRoute<CollectionNavigation.Pane>().run {
+                    Utils.json.decodeFromString<CollectionDetailPaneInfo>(this.collectionDetailPaneInfo)
+                }
+            CollectionDetailScreen(
+                currentFABContext = currentFABContext,
+                collectionDetailPaneInfo = collectionDetailPaneInfo
             )
         }
         composable<Navigation.Root.SettingsScreen> {
