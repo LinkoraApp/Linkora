@@ -303,6 +303,10 @@ fun App(
                             preferences.serverBaseUrl.isNotBlank() && onAndroidMobile
                         },
                         onRefresh = {
+                            if (appVM.isPerformingStartupSync || isDataSyncingFromPullRefresh.value) {
+                                coroutineScope.pushUIEvent(UIEvent.Type.ShowSnackbar("A sync process is already in progress"))
+                                return@pullToRefresh
+                            }
                             appVM.saveServerConnectionAndSync(
                                 serverConnection = preferences.currentSavedServerConfig(),
                                 timeStampAfter = {
