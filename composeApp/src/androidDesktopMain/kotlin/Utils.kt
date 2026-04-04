@@ -129,7 +129,9 @@ suspend fun readAllPreferences(
             )
         } ?: RefreshLinkType.Both,
         maxConcurrentRefreshCount = prefs[dsIntKey(AppPreferences.MAX_CONCURRENT_REFRESH_COUNT.key)]
-            ?: 15
+            ?: 15,
+        showSyncServerSurveyNotice = prefs[dsBooleanKey(AppPreferences.SHOW_SYNC_SERVER_SURVEY_NOTICE.key)]
+            ?: true
     )
 }
 

@@ -68,7 +68,8 @@ data class AppPreferences(
     val forceSaveIfRetrievalFails: Boolean = true,
     val selectedFont: Font = Font.POPPINS,
     val selectedLinkRefreshType: RefreshLinkType = RefreshLinkType.Both,
-    val maxConcurrentRefreshCount: Int = 15
+    val maxConcurrentRefreshCount: Int = 15,
+    val showSyncServerSurveyNotice: Boolean = false
 ) {
     companion object {
         val DARK_THEME = booleanPreferencesKey("DARK_THEME")
@@ -145,5 +146,6 @@ data class AppPreferences(
         val SHOW_DATE_IN_LINK_VIEW = booleanPreferencesKey("SHOW_DATE_IN_LINK_VIEW")
         val PROXY_URL = stringPreferencesKey("PROXY_URL")
         val USE_PROXY = booleanPreferencesKey("USE_PROXY")
+        val SHOW_SYNC_SERVER_SURVEY_NOTICE = booleanPreferencesKey("SHOW_SYNC_SERVER_SURVEY_NOTICE")
     }
 }

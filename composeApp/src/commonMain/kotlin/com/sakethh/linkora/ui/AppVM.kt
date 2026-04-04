@@ -15,6 +15,7 @@ import com.sakethh.linkora.data.local.repository.SnapshotRepoImpl
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkType
+import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.domain.SyncServerRoute
 import com.sakethh.linkora.domain.asLinkType
 import com.sakethh.linkora.domain.model.Folder
@@ -107,6 +108,17 @@ class AppVM(
     val transferActionType = mutableStateOf(TransferActionType.NONE)
 
     val onBoardingCompleted = mutableStateOf(false)
+
+    fun <T> updatePreference(key: PreferenceKey<T>, newValue:T, onCompletion: () -> Unit){
+        viewModelScope.launch {
+            preferencesRepository.changePreferenceValue(
+                preferenceKey = key,
+                newValue = newValue
+            )
+        }.invokeOnCompletion {
+            onCompletion()
+        }
+    }
 
     val startDestination: Navigation.Root = nativeUtils.platformRunBlocking {
         val showOnboarding = preferencesRepository.readPreferenceValue(

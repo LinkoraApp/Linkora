@@ -151,6 +151,10 @@ class PreferencesImpl(
                     maxConcurrentRefreshCount = value as Int
                 )
 
+                AppPreferences.SHOW_SYNC_SERVER_SURVEY_NOTICE -> currentPref.copy(
+                    showSyncServerSurveyNotice = value as Boolean
+                )
+
                 else -> currentPref
             }
         }

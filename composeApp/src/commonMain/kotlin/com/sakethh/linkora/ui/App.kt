@@ -9,19 +9,33 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddLink
+import androidx.compose.material.icons.filled.Analytics
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -37,16 +51,20 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.sakethh.linkora.di.APPVMAssistedFactory
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.di.linkoraViewModel
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkSaveConfig
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Platform
@@ -85,7 +103,11 @@ import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM
 import com.sakethh.linkora.ui.screens.collections.components.RenameTagComponent
 import com.sakethh.linkora.ui.screens.collections.components.TagDeletionConfirmation
 import com.sakethh.linkora.ui.screens.collections.components.TagMenu
+import com.sakethh.linkora.ui.utils.UIEvent
+import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
+import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.Constants
+import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.currentSavedServerConfig
 import com.sakethh.linkora.utils.host
 import com.sakethh.linkora.utils.ifServerConfigured
@@ -114,8 +136,7 @@ fun App(
     }
     val tagMenuBtmSheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    val collectionsScreenVM: CollectionsScreenVM =
-        linkoraViewModel()
+    val collectionsScreenVM: CollectionsScreenVM = linkoraViewModel()
     val rootRouteList = retain {
         listOf(
             Navigation.Root.HomeScreen,
@@ -138,7 +159,7 @@ fun App(
     val coroutineScope = rememberCoroutineScope()
     val platform = LocalPlatform.current
 
-    var isDataSyncingFromPullRefresh = rememberSaveable {
+    val isDataSyncingFromPullRefresh = rememberSaveable {
         mutableStateOf(false)
     }
     val pullToRefreshState = rememberPullToRefreshState()
@@ -296,6 +317,7 @@ fun App(
                         })
                 } else Modifier
             ) {
+
                 LinkoraNavHost(
                     startDestination = appVM.startDestination,
                     onOnboardingComplete = appVM::markOnboardingComplete,
@@ -391,8 +413,7 @@ fun App(
             }
             if (appVM.showMenuSheet) {
                 MenuBtmSheet(
-                    preferences = preferences,
-                    menuBtmSheetParam = MenuBtmSheetParam(
+                    preferences = preferences, menuBtmSheetParam = MenuBtmSheetParam(
                         onDismiss = {
                             appVM.showMenuSheet = false
                         },
@@ -678,6 +699,83 @@ fun App(
                             }
                         })
                 })
+
+            val syncServerSurveyBtmSheetState = rememberModalBottomSheetState(
+                skipPartiallyExpanded = true, confirmValueChange = { sheetValue ->
+                    if (sheetValue == SheetValue.Hidden) {
+                        !preferences.showSyncServerSurveyNotice
+                    } else {
+                        true
+                    }
+                })
+            var showSyncServerNotice by rememberSaveable {
+                mutableStateOf(preferences.showSyncServerSurveyNotice)
+            }
+            if (preferences.isServerConfigured() && platform != Platform.Web && showSyncServerNotice) {
+                ModalBottomSheet(
+                    sheetState = syncServerSurveyBtmSheetState, onDismissRequest = {}) {
+                    Column(
+                        modifier = Modifier.padding(
+                            start = 15.dp, end = 15.dp, bottom = 7.5.dp
+                        ),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Analytics,
+                            contentDescription = null,
+                        )
+                        Spacer(modifier = Modifier.height(7.5.dp))
+                        Text(
+                            text = "Hey, you're using the sync server. I'm considering rewriting it in Rust since the current Java setup uses around 300 MB just sitting idle, and Rust gets that down to ~5 MB. " + "Your input would help me figure out if it's worth the time.",
+                            fontSize = 16.sp,
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                        Spacer(modifier = Modifier.height(5.dp))
+                        Button(
+                            onClick = {
+                                appVM.updatePreference(
+                                    key = booleanPreferencesKey(AppPreferences.SHOW_SYNC_SERVER_SURVEY_NOTICE.key),
+                                    newValue = false,
+                                    onCompletion = {
+                                        coroutineScope.launch {
+                                            syncServerSurveyBtmSheetState.hide()
+                                        }.invokeOnCompletion {
+                                            showSyncServerNotice = false
+                                            localUriHandler.openUri("https://forms.gle/75ww25CLQqZuSSuZ6")
+                                        }
+                                    })
+                            },
+                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .pressScaleEffect().fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Take the survey",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
+                        OutlinedButton(
+                            onClick = {
+                                appVM.updatePreference(
+                                    key = booleanPreferencesKey(AppPreferences.SHOW_SYNC_SERVER_SURVEY_NOTICE.key),
+                                    newValue = false,
+                                    onCompletion = {
+                                        coroutineScope.launch {
+                                            syncServerSurveyBtmSheetState.hide()
+                                        }.invokeOnCompletion {
+                                            showSyncServerNotice = false
+                                        }
+                                    })
+                            },
+                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .pressScaleEffect().fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Not Interested",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }

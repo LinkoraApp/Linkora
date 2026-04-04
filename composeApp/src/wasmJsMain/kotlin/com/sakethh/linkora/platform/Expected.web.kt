@@ -236,6 +236,7 @@ actual object PlatformPreference {
 
     actual suspend fun readAllPreferences(): AppPreferences {
         return AppPreferences(
+            showSyncServerSurveyNotice = false,
             useDarkTheme = localStorage.getItem(AppPreferences.DARK_THEME.key)
                 ?.toBooleanStrictOrNull() ?: true,
             useSystemTheme = localStorage.getItem(AppPreferences.FOLLOW_SYSTEM_THEME.key)
