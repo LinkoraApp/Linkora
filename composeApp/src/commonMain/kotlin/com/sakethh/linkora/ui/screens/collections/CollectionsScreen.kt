@@ -132,7 +132,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun CollectionsScreen(
     preferences: AppPreferences,
-    collectionScreenParams: CollectionScreenParams, currentFABContext: (CurrentFABContext) -> Unit
+    collectionScreenParams: CollectionScreenParams,
+    currentFABContext: (CurrentFABContext) -> Unit
 ) {
     LaunchedEffect(Unit) {
         currentFABContext(CurrentFABContext.ROOT)
@@ -160,9 +161,6 @@ fun CollectionsScreen(
         }
     }
     val rootFolders by collectionScreenParams.rootRegularFolders.collectAsStateWithLifecycle()
-    LaunchedEffect(rootFolders) {
-        linkoraLog("rootFolders:\n:${rootFolders}")
-    }
     val coroutineScope = rememberCoroutineScope()
     val navController = LocalNavController.current
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -260,7 +258,9 @@ fun CollectionsScreen(
                                 fontSize = 22.sp
                             )
                         })
-                    HorizontalDivider()
+                    if (!onAndroidMobile) {
+                        HorizontalDivider()
+                    }
                 }
             }) { padding ->
             BoxWithConstraints(
@@ -287,9 +287,11 @@ fun CollectionsScreen(
                                 collectionType = CollectionType.FOLDER,
                             )
                             coroutineScope.launch {
-                                detailNavController.popBackStack<CollectionNavigation.Empty>(
-                                    inclusive = false
-                                )
+                                if (detailNavController.currentDestination != null) {
+                                    detailNavController.popBackStack<CollectionNavigation.Empty>(
+                                        inclusive = false
+                                    )
+                                }
                                 pendingDetailDestination = collectionDetailPaneInfo
                                 scaffoldNavigator.navigateTo(
                                     pane = ListDetailPaneScaffoldRole.Detail,
@@ -314,9 +316,11 @@ fun CollectionsScreen(
                                 collectionType = CollectionType.FOLDER,
                             )
                             coroutineScope.launch {
-                                detailNavController.popBackStack<CollectionNavigation.Empty>(
-                                    inclusive = false
-                                )
+                                if (detailNavController.currentDestination != null) {
+                                    detailNavController.popBackStack<CollectionNavigation.Empty>(
+                                        inclusive = false
+                                    )
+                                }
                                 pendingDetailDestination = collectionDetailPaneInfo
                                 scaffoldNavigator.navigateTo(
                                     pane = ListDetailPaneScaffoldRole.Detail,
@@ -340,9 +344,11 @@ fun CollectionsScreen(
                                 collectionType = CollectionType.FOLDER,
                             )
                             coroutineScope.launch {
-                                detailNavController.popBackStack<CollectionNavigation.Empty>(
-                                    inclusive = false
-                                )
+                                if (detailNavController.currentDestination != null) {
+                                    detailNavController.popBackStack<CollectionNavigation.Empty>(
+                                        inclusive = false
+                                    )
+                                }
                                 pendingDetailDestination = collectionDetailPaneInfo
                                 scaffoldNavigator.navigateTo(
                                     pane = ListDetailPaneScaffoldRole.Detail,
@@ -366,9 +372,11 @@ fun CollectionsScreen(
                                 collectionType = CollectionType.FOLDER,
                             )
                             coroutineScope.launch {
-                                detailNavController.popBackStack<CollectionNavigation.Empty>(
-                                    inclusive = false
-                                )
+                                if (detailNavController.currentDestination != null) {
+                                    detailNavController.popBackStack<CollectionNavigation.Empty>(
+                                        inclusive = false
+                                    )
+                                }
                                 pendingDetailDestination = collectionDetailPaneInfo
                                 scaffoldNavigator.navigateTo(
                                     pane = ListDetailPaneScaffoldRole.Detail,
@@ -480,9 +488,11 @@ fun CollectionsScreen(
                                                                 collectionType = CollectionType.FOLDER,
                                                             )
                                                         coroutineScope.launch {
-                                                            detailNavController.popBackStack<CollectionNavigation.Empty>(
-                                                                inclusive = false
-                                                            )
+                                                            if (detailNavController.currentDestination != null) {
+                                                                detailNavController.popBackStack<CollectionNavigation.Empty>(
+                                                                    inclusive = false
+                                                                )
+                                                            }
                                                             pendingDetailDestination =
                                                                 collectionDetailPaneInfo
                                                             scaffoldNavigator.navigateTo(
@@ -585,9 +595,11 @@ fun CollectionsScreen(
                                                                 collectionType = CollectionType.TAG,
                                                             )
                                                         coroutineScope.launch {
-                                                            detailNavController.popBackStack<CollectionNavigation.Empty>(
-                                                                inclusive = false
-                                                            )
+                                                            if (detailNavController.currentDestination != null) {
+                                                                detailNavController.popBackStack<CollectionNavigation.Empty>(
+                                                                    inclusive = false
+                                                                )
+                                                            }
                                                             pendingDetailDestination =
                                                                 collectionDetailPaneInfo
                                                             scaffoldNavigator.navigateTo(
@@ -653,7 +665,9 @@ fun CollectionsScreen(
             AnimatedPane {
                 Row {
                     listPane(Modifier.weight(1f))
-                    VerticalDivider()
+                    if (!onAndroidMobile) {
+                        VerticalDivider()
+                    }
                 }
             }
         },
@@ -675,7 +689,9 @@ fun CollectionsScreen(
         detailPane = {
             AnimatedPane {
                 Row {
-                    VerticalDivider()
+                    if (!onAndroidMobile) {
+                        VerticalDivider()
+                    }
                     NavHost(
                         navController = detailNavController,
                         startDestination = CollectionNavigation.Empty,
@@ -754,7 +770,8 @@ fun CollectionsScreen(
                 collectionPagerState.animateScrollToPage(currCollectionSourceId)
             }
             hideCollectionSwitcher()
-        }, preferences = preferences
+        },
+        preferences = preferences
     )
 
     /*
@@ -797,10 +814,7 @@ private val PaneExpansionAnchors = listOf(
 
 @Composable
 private fun DefaultFolderComponent(
-    name: String,
-    icon: ImageVector,
-    onClick: () -> Unit,
-    isSelected: Boolean
+    name: String, icon: ImageVector, onClick: () -> Unit, isSelected: Boolean
 ) {
     Card(
         modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(
