@@ -1,30 +1,47 @@
 # Contributing to Linkora
 
-Thanks for helping improve Linkora. To keep the project manageable, please follow these guidelines.
+Thanks for your interest in improving Linkora. To keep things from turning into a mess, please
+follow these guidelines.
 
-## The Golden Rule: Check the Label
+## Check the Label
 
-* **"Open For Contribution"**: These are safe to pick up. They don't conflict with my current work.
-* **No Label**: These are usually tasks I want to handle. If you really want to work on one, ask about it in the issue first, but be aware that it might already be in development.
+* **"Open For Contribution"**: These are safe to pick up and won't conflict with my current work.
+* **No Label**: These are usually things I want to handle myself. They might not be in active
+  development right now, but I am still interested in building them. You can comment on the issue or
+  email me, and if I am not working on it, I will assign it to you.
 
 ## How to Start
 
 1. **Find a Task:** Look for the "Open For Contribution" label.
-2. **Claim It:** Comment on the issue so work isn't duplicated.
-3. **New Features:** If it's not in Issues, **open an issue first**. Don't write code until I confirm I want it in the app.
+2. **Claim It:** Comment on the issue so we don't end up duplicating work.
+3. **Propose Something New:** If your idea isn't already in the Issues, open one first. Please don't
+   write any code until I confirm it's something I want in the app. I have an unhealthy habit of
+   refactoring and rewriting things for no reason, so confirming upfront avoids your work colliding
+   with mine and creating a messy merge conflict.
 
 ## Development Guidelines
 
-**Coding Style:** Match the existing code style. Consistency prevents unnecessary refactors. If the code looks like it belongs here, it's good.
+**Coding style:** Try to match the existing code style. Keeping things consistent prevents
+unnecessary refactors. If your code looks like it naturally belongs here, you are good to go.
 
-## Submitting a Pull Request (PR)
+**dev/feature branch:** Make sure to use a `dev/feat` branch instead of working directly on
+`master`. Only pull upstream changes into `master`.
 
-* **One Issue = One PR.** Keep them separate for easier merging.
-* **Clear Titles.** Describe exactly what the PR does.
-* **Verify it works.** Linkora is KMP. You **must** test on both **Android and Desktop** before submitting.
-* **Tests.** Adding test cases with your submission is highly appreciated.
-* **Description & Media.** Reference the issue. If you changed the UI, attach screenshots or a screen recording.
+**Rebase instead of merging:** When working on a specific branch, never merge changes from `master`.
+Instead, rebase them. This keeps your changes on top, maintains a linear history, and avoids a
+tangled commit graph.
+
+## Submitting a Pull Request
+
+* **One issue = one PR.** Keeping them separate makes merging much easier.
+* **Clear titles.** Describe exactly what your PR does.
+* **Verify it works.** Since Linkora is built with Kotlin Multiplatform, you **must** test your
+  changes on **Android, Desktop, and Web** before submitting.
+* **Tests.** Adding test cases for important blocks of code within your PR is highly appreciated.
+* **Description and media.** Make sure to reference the original issue. If your PR changes the UI,
+  please attach screenshots or a screen recording.
 
 ## Questions?
 
-Ask in **Discussions**, comment on the issue, or email **sakethh@proton.me**.
+Feel free to ask in **Discussions**, drop a comment on the relevant issue, or email me directly at
+sakethh@proton.me.
