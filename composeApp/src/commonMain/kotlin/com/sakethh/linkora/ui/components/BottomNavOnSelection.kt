@@ -30,6 +30,7 @@ import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,9 +39,9 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.LinkType
@@ -68,11 +69,12 @@ fun BottomNavOnSelection(
     transferActionType: TransferActionType,
     changeTransferActionType: (TransferActionType) -> Unit,
     selectedAndInRoot: MutableState<Boolean>,
-    currentRoute: NavDestination?,
     performAction: (AppAction) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     val localNavController = LocalNavController.current
+    val currentBackStackEntryState by localNavController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntryState?.destination
     val platform = LocalPlatform.current
     Column(
         modifier = Modifier.fillMaxWidth().animateContentSize()
@@ -123,8 +125,7 @@ fun BottomNavOnSelection(
         val currentFolder =
             LocalFabController.current.fabState.collectAsStateWithLifecycle().value.currentFolder
         val showPasteButton =
-            (if (Platform.Android.onMobile()) currentFolder != null else true) && (transferActionType != TransferActionType.NONE && (if (Platform.Android.onMobile()) !selectedAndInRoot.value else currentFolder != null)) && currentFolder?.localId != Constants.ALL_LINKS_ID
-
+            transferActionType != TransferActionType.NONE && currentFolder != null && currentFolder.localId > 0
         if (!(CollectionsScreenVM.selectedFoldersViaLongClick.isNotEmpty() && currentFolder?.localId in defaultFolderIds().dropWhile {
                 it == Constants.ARCHIVE_ID
             })) {

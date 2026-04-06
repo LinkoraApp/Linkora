@@ -22,15 +22,16 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.navigation.Navigation
@@ -45,15 +46,17 @@ fun MobileBottomNavBar(
     rootRouteList: List<Navigation.Root>,
     isPerformingStartupSync: Boolean,
     inRootScreen: Boolean?,
-    navDestination: NavDestination?,
     onDoubleTap: (Navigation.Root) -> Unit
 ) {
     val localNavController = LocalNavController.current
     val mobileBottomNavBarVM: MobileBottomNavBarVM = viewModel(initializer = {
         MobileBottomNavBarVM()
     })
+    val currentBackStackEntryState by localNavController.currentBackStackEntryAsState()
+    val navDestination = currentBackStackEntryState?.destination
+    val inCollectionScreen = navDestination?.hasRoute<Navigation.Root.CollectionsScreen>() == true
     AnimatedVisibility(
-        visible = CollectionsScreenVM.inCollectionsListPane && !supportsWideDisplay() && inRootScreen == true && !CollectionsScreenVM.isSelectionEnabled.value,
+        visible = (!inCollectionScreen || (inCollectionScreen && CollectionsScreenVM.inCollectionsListPane)) && !supportsWideDisplay() && inRootScreen == true && !CollectionsScreenVM.isSelectionEnabled.value,
         exit = slideOutVertically(targetOffsetY = { it }),
         enter = slideInVertically(initialOffsetY = { it })
     ) {
@@ -73,8 +76,7 @@ fun MobileBottomNavBar(
                         selected = isSelected,
                         onClick = {
                             mobileBottomNavBarVM.incrementTapCount(
-                                navRouteItem,
-                                onDoubleTapSucceeded = {
+                                navRouteItem, onDoubleTapSucceeded = {
                                     onDoubleTap(navRouteItem)
                                 })
                             if (!isSelected) {

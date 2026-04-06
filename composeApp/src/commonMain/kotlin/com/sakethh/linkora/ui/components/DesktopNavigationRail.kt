@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -32,8 +33,8 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.platform.platform
@@ -46,7 +47,6 @@ import com.sakethh.linkora.utils.currentSavedServerConfig
 fun DesktopNavigationRail(
     preferences: AppPreferences,
     rootRouteList: List<Navigation.Root>,
-    currentRoute: NavDestination?,
     isDataSyncingFromPullRefresh: MutableState<Boolean>,
     onNavigate: () -> Unit,
     isPerformingStartupSync: Boolean,
@@ -55,6 +55,8 @@ fun DesktopNavigationRail(
     performAction: (AppAction) -> Unit
 ) {
     val localNavController = LocalNavController.current
+    val currentBackStackEntryState by localNavController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntryState?.destination
     Row {
         Box(modifier = Modifier.fillMaxHeight(), contentAlignment = Alignment.Center) {
             Column(

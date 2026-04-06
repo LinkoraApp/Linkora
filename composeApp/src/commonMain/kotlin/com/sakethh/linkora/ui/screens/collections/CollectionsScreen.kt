@@ -691,14 +691,16 @@ fun CollectionsScreen(
                         startDestination = CollectionNavigation.Empty,
                     ) {
                         composable<CollectionNavigation.Empty> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = Localization.Key.SelectACollection.rememberLocalizedString(),
-                                    style = MaterialTheme.typography.titleMedium
-                                )
+                            if (!onAndroidMobile) {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = Localization.Key.SelectACollection.rememberLocalizedString(),
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                }
                             }
                         }
                         composable<CollectionNavigation.Pane> { navBackStackEntry ->

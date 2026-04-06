@@ -191,7 +191,6 @@ fun App(
         ) {
             DesktopNavigationRail(
                 rootRouteList = rootRouteList,
-                currentRoute = currentRoute,
                 isDataSyncingFromPullRefresh = isDataSyncingFromPullRefresh,
                 onNavigate = {},
                 isPerformingStartupSync = appVM.isPerformingStartupSync,
@@ -222,7 +221,6 @@ fun App(
                                 showLoadingProgressBarOnTransferAction = false
                             },
                             selectedAndInRoot = selectedAndInRoot,
-                            currentRoute = currentRoute,
                             progressBarVisible = showLoadingProgressBarOnTransferAction,
                             transferActionType = appVM.transferActionType.value,
                             changeTransferActionType = {
@@ -236,7 +234,6 @@ fun App(
                     rootRouteList = rootRouteList,
                     isPerformingStartupSync = appVM.isPerformingStartupSync,
                     inRootScreen = inRootScreen,
-                    navDestination = currentRoute,
                     preferences = preferences,
                     onDoubleTap = { navigationRoot ->
                         forceSearchActive = navigationRoot is Navigation.Root.SearchScreen
@@ -441,8 +438,9 @@ fun App(
                                 )
                             }
                         },
-                        currentFolder = currentFABContext.currentFolder
-                    )
+                        currentFolder = currentFABContext.currentFolder?.run {
+                            if (this.localId > 0) this else null
+                        })
                 )
             }
             val localUriHandler = LocalUriHandler.current
