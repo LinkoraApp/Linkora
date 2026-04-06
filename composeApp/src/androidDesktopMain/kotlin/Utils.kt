@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
+import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.domain.RefreshLinkType
 import com.sakethh.linkora.domain.SnapshotFormat
@@ -14,6 +15,7 @@ import com.sakethh.linkora.domain.dto.server.Correlation
 import com.sakethh.linkora.platform.PlatformPreference
 import com.sakethh.linkora.platform.defaultExportLocation
 import com.sakethh.linkora.platform.defaultSnapshotLocation
+import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.ui.domain.AppIconCode
 import com.sakethh.linkora.ui.domain.Font
 import com.sakethh.linkora.ui.domain.Layout
@@ -34,27 +36,29 @@ suspend fun readAllPreferences(
 ): AppPreferences {
     return AppPreferences(
         correlation = prefs[dsStringKey(AppPreferences.SERVER_CORRELATION.key)].let {
-        if (it != null) {
-            Json.decodeFromString<Correlation>(it)
-        } else {
-            val randomCorrelation = Correlation.generateRandomCorrelation()
-            externalAction { platformPreference ->
-                platformPreference.writePreferenceValue(
-                    preferenceKey = stringPreferencesKey(AppPreferences.SERVER_CORRELATION.key),
-                    newValue = Json.encodeToString(randomCorrelation)
-                )
+            if (it != null) {
+                Json.decodeFromString<Correlation>(it)
+            } else {
+                val randomCorrelation = Correlation.generateRandomCorrelation()
+                externalAction { platformPreference ->
+                    platformPreference.writePreferenceValue(
+                        preferenceKey = stringPreferencesKey(AppPreferences.SERVER_CORRELATION.key),
+                        newValue = Json.encodeToString(randomCorrelation)
+                    )
+                }
+                randomCorrelation
             }
-            randomCorrelation
-        }
-    },
-        useDarkTheme = prefs[dsBooleanKey(AppPreferences.DARK_THEME.key)] ?: true,
-        useSystemTheme = prefs[dsBooleanKey(AppPreferences.FOLLOW_SYSTEM_THEME.key)] ?: false,
+        },
+        useDarkTheme = prefs[dsBooleanKey(AppPreferences.DARK_THEME.key)]
+            ?: (platform == Platform.Desktop),
+        useSystemTheme = prefs[dsBooleanKey(AppPreferences.FOLLOW_SYSTEM_THEME.key)]
+            ?: (platform == Platform.Android),
         useAmoledTheme = prefs[dsBooleanKey(AppPreferences.AMOLED_THEME_STATE.key)] ?: false,
         useDynamicTheming = prefs[dsBooleanKey(AppPreferences.DYNAMIC_THEMING.key)] ?: false,
         isAutoDetectTitleForLinksEnabled = prefs[dsBooleanKey(AppPreferences.AUTO_DETECT_TITLE_FOR_LINK.key)]
             ?: false,
         showAssociatedImageInLinkMenu = prefs[dsBooleanKey(AppPreferences.ASSOCIATED_IMAGES_IN_LINK_MENU_VISIBILITY.key)]
-            ?: false,
+            ?: true,
         isHomeScreenEnabled = prefs[dsBooleanKey(AppPreferences.HOME_SCREEN_VISIBILITY.key)]
             ?: true,
         useRemoteStrings = prefs[dsBooleanKey(AppPreferences.USE_REMOTE_LANGUAGE_STRINGS.key)]
@@ -80,7 +84,7 @@ suspend fun readAllPreferences(
             ?: false,
         skipSavingExistingLink = prefs[dsBooleanKey(AppPreferences.SKIP_SAVING_EXISTING_LINK.key)]
             ?: true,
-        useProxy = prefs[dsBooleanKey(AppPreferences.USE_PROXY.key)] ?: true,
+        useProxy = prefs[dsBooleanKey(AppPreferences.USE_PROXY.key)] ?: false,
         proxyUrl = prefs[dsStringKey(AppPreferences.PROXY_URL.key)] ?: Constants.PROXY_SERVER_URL,
         startDestination = prefs[dsStringKey(AppPreferences.INITIAL_ROUTE.key)]
             ?: Navigation.Root.HomeScreen.toString(),

@@ -138,7 +138,7 @@ class AppVM(
                 else -> Navigation.Root.CollectionsScreen
             }
         }
-    } ?: Navigation.Root.CollectionsScreen
+    } ?: Navigation.Root.HomeScreen
 
 
     fun performAppAction(appAction: AppAction) {
