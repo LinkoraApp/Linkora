@@ -33,8 +33,7 @@ kotlin {
 
     jvm("desktop")
 
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
+    @OptIn(ExperimentalWasmDsl::class) wasmJs {
         browser {
             outputModuleName = "composeApp"
             commonWebpackConfig {
@@ -231,4 +230,28 @@ compose.desktop {
             modules("jdk.unsupported.desktop")
         }
     }
+}
+
+
+val addNetlifyHeadersToDist = task("addNetlifyHeadersToDist") {
+    doLast {
+        val prodDistDir =
+            File(layout.projectDirectory.asFile, "/build/dist/wasmJs/productionExecutable")
+        val headersFile = File(prodDistDir, "_headers")
+        if (!headersFile.exists()) {
+            headersFile.createNewFile()
+        }
+        headersFile.writeText(
+            """
+            /*
+              Cross-Origin-Opener-Policy: same-origin
+              Cross-Origin-Embedder-Policy: require-corp
+            """.trimIndent()
+        )
+        println("Wrote Netlify headers to: ${headersFile.absolutePath}")
+    }
+}
+
+tasks.named("wasmJsBrowserDistribution") {
+    finalizedBy(addNetlifyHeadersToDist)
 }
