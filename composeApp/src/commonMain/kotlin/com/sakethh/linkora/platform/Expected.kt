@@ -77,7 +77,7 @@ expect class FileManager {
     )
 
     suspend fun getSyncServerCertificate(
-        onCompletion: () -> Unit
+        onCompletion: (certInfo: String) -> Unit
     ): ByteArray?
 
     suspend fun exportSnapshotData(

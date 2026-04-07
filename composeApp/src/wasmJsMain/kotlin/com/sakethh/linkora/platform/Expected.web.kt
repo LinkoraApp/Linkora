@@ -106,7 +106,8 @@ actual class FileManager {
     actual suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>> =
         emptyFlow()
 
-    actual suspend fun getSyncServerCertificate(onCompletion: () -> Unit): ByteArray? = null
+    actual suspend fun getSyncServerCertificate(onCompletion: (provider: String) -> Unit): ByteArray? =
+        null
 
 }
 

@@ -4,6 +4,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
+import com.fleeksoft.io.ByteArrayInputStream
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
@@ -26,10 +27,29 @@ import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.stringPreferencesKey
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
+import java.text.SimpleDateFormat
+import java.util.Locale
 import androidx.datastore.preferences.core.booleanPreferencesKey as dsBooleanKey
 import androidx.datastore.preferences.core.intPreferencesKey as dsIntKey
 import androidx.datastore.preferences.core.longPreferencesKey as dsLongKey
 import androidx.datastore.preferences.core.stringPreferencesKey as dsStringKey
+
+fun getCertificateInfo(factory: CertificateFactory, inputStream: ByteArrayInputStream): String {
+    val certificate = factory.generateCertificate(inputStream) as X509Certificate
+    val rawSubject = certificate.subjectX500Principal.name
+    val issuedTo = rawSubject.split(",").firstOrNull { it.trim().startsWith("CN=") }
+        ?.substringAfter("CN=") ?: rawSubject
+
+    val rawIssuer = certificate.issuerX500Principal.name
+    val issuedBy = rawIssuer.split(",").firstOrNull { it.trim().startsWith("CN=") }
+        ?.substringAfter("CN=") ?: rawIssuer
+
+    val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+    val expiresOn = dateFormat.format(certificate.notAfter)
+    return "Issued To: $issuedTo\nIssued By: $issuedBy\nExpires On: $expiresOn"
+}
 
 suspend fun readAllPreferences(
     prefs: Preferences, externalAction: suspend (suspend (PlatformPreference) -> Unit) -> Unit

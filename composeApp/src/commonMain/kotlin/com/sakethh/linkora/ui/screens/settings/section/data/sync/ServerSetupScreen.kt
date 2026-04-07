@@ -85,7 +85,7 @@ fun ServerSetupScreen(
         mutableStateOf(false)
     }
 
-    val importedCertFileName = rememberSaveable {
+    val importedCertInfo = rememberSaveable {
         mutableStateOf("")
     }
 
@@ -178,10 +178,10 @@ fun ServerSetupScreen(
                             modifier = Modifier.padding(
                                 start = 15.dp, end = 15.dp, top = 15.dp, bottom = 5.dp
                             ),
-                            text = if (importedCertFileName.value.isNotBlank()) Localization.Key.ImportedServerCertificate.rememberLocalizedString()
+                            text = if (importedCertInfo.value.isNotBlank()) Localization.Key.ImportedServerCertificate.rememberLocalizedString()
                                 .replace(
                                     LinkoraPlaceHolder.First.value,
-                                    importedCertFileName.value
+                                    importedCertInfo.value
                                 ) else if (isCertificateInProcessing.value) Localization.Key.ProcessingCertificate.rememberLocalizedString() else Localization.Key.ImportServerCertificateDescription.rememberLocalizedString(),
                             style = MaterialTheme.typography.titleSmall
                         )
@@ -199,6 +199,7 @@ fun ServerSetupScreen(
                                         serverManagementViewModel.importSignedCertificate(onStart = {
                                             isCertificateInProcessing.value = true
                                         }, onCompletion = {
+                                            importedCertInfo.value = it
                                             isCertificateInProcessing.value = false
                                         })
                                     }

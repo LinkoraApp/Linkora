@@ -20,6 +20,7 @@ import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.getSystemEpochSeconds
 import com.sakethh.linkora.utils.ifNot
 import com.sakethh.linkora.utils.replaceFirstPlaceHolderWith
+import getCertificateInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
@@ -279,7 +280,8 @@ actual class FileManager {
         getHtmlStr(file)
     }
 
-    actual suspend fun getSyncServerCertificate(onCompletion: () -> Unit): ByteArray? {
+    actual suspend fun getSyncServerCertificate(onCompletion: (certInfo: String) -> Unit): ByteArray? {
+        var certInfo = ""
         return try {
             val fileDialog = FileDialog(
                 Frame(),
@@ -300,11 +302,17 @@ actual class FileManager {
                 return null
             }
             val factory = CertificateFactory.getInstance("X.509")
-            val inputStream = ByteArrayInputStream(sourceFile.readBytes())
-            (factory.generateCertificate(inputStream) as X509Certificate).encoded
+            val certBytes = sourceFile.readBytes()
+            certInfo = getCertificateInfo(
+                factory = factory,
+                inputStream = ByteArrayInputStream(certBytes)
+            )
+            (factory.generateCertificate(ByteArrayInputStream(certBytes)) as X509Certificate).encoded
         } catch (e: Exception) {
             e.printStackTrace()
             null
+        } finally {
+            onCompletion(certInfo)
         }
     }
 }

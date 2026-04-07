@@ -15,7 +15,6 @@ import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
 import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.Network
 import com.sakethh.linkora.platform.PermissionManager
-import com.sakethh.linkora.platform.PlatformIODispatcher
 import com.sakethh.linkora.ui.AppVM
 import com.sakethh.linkora.ui.domain.model.ServerConnection
 import com.sakethh.linkora.ui.utils.UIEvent
@@ -31,7 +30,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 open class ServerManagementViewModel(
     private val networkRepo: NetworkRepo,
@@ -114,20 +112,6 @@ open class ServerManagementViewModel(
         saveServerConnectionAndSyncJob?.cancel()
         dataSyncLogs.clear()
         saveServerConnectionAndSyncJob = viewModelScope.launch {
-            withContext(PlatformIODispatcher) {
-                syncServerCertificate?.let { certificate ->
-                    fileManager.saveSyncServerCertificateInternally(
-                        certificate = certificate, onCompletion = {
-                            pushUIEvent(
-                                UIEvent.Type.ShowSnackbar(
-                                    Localization.getLocalizedString(
-                                        Localization.Key.ServerCertificateSavedSuccessfully
-                                    )
-                                )
-                            )
-                        })
-                }
-            }
             preferencesRepository.changePreferenceValue(
                 preferenceKey = stringPreferencesKey(
                     AppPreferences.SERVER_URL.key
@@ -226,11 +210,25 @@ open class ServerManagementViewModel(
         syncServerCertificate = null
         onStart()
         certImportJob?.cancel()
+        var certInfo = ""
         certImportJob = viewModelScope.launch {
             syncServerCertificate = fileManager.getSyncServerCertificate(
-                onCompletion = {
-                    onCompletion("CER")
+                onCompletion = { info ->
+                    certInfo = info
                 })
+            syncServerCertificate?.let { syncServerCertificate ->
+                fileManager.saveSyncServerCertificateInternally(
+                    certificate = syncServerCertificate, onCompletion = {
+                        onCompletion(certInfo)
+                        pushUIEvent(
+                            UIEvent.Type.ShowSnackbar(
+                                Localization.getLocalizedString(
+                                    Localization.Key.ServerCertificateSavedSuccessfully
+                                )
+                            )
+                        )
+                    })
+            }
         }
     }
 

@@ -20,11 +20,13 @@ import com.sakethh.linkora.domain.model.legacy.LegacyExportSchema
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
+import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.AndroidUIEvent
 import com.sakethh.linkora.utils.Utils
 import com.sakethh.linkora.utils.getSystemEpochSeconds
 import com.sakethh.linkora.utils.pushSnackbar
 import com.sakethh.linkora.worker.SnapshotWorker
+import getCertificateInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -242,25 +244,33 @@ actual class FileManager(private val context: Context) {
         emit(Result.Success(importContent))
     }
 
-    actual suspend fun getSyncServerCertificate(onCompletion: () -> Unit): ByteArray? {
+    actual suspend fun getSyncServerCertificate(onCompletion: (certInfo: String) -> Unit): ByteArray? {
         AndroidUIEvent.pushUIEvent(
             AndroidUIEvent.Type.ImportAFile(
                 fileType = "*/*"
             )
         )
+        var certInfo = ""
         return try {
             val (uri) = AndroidUIEvent.androidUIEventChannel.first() as AndroidUIEvent.Type.UriOfTheFileForImporting
             if (uri == null) {
                 return null
             }
+            linkoraLog("Importing the certificate")
             context.contentResolver.openInputStream(uri)?.use { inputStream ->
                 val factory = CertificateFactory.getInstance("X.509")
-                val inputStream = ByteArrayInputStream(inputStream.readBytes())
-                (factory.generateCertificate(inputStream) as X509Certificate).encoded
+                val inputStreamBytes = inputStream.readBytes()
+                certInfo = getCertificateInfo(
+                    factory = factory,
+                    inputStream = ByteArrayInputStream(inputStreamBytes)
+                )
+                (factory.generateCertificate(ByteArrayInputStream(inputStreamBytes)) as X509Certificate).encoded
             }
         } catch (e: Exception) {
             e.printStackTrace()
             return null
+        } finally {
+            onCompletion(certInfo)
         }
     }
 
