@@ -1,0 +1,7 @@
+- Resizable list pane in collection screen on large screens.
+- Scrollbar support added to Regular and grid layouts.
+- Startup time should be noticeably better than before.
+- New proxy available for routing requests, built for web and disabled by default on Android.
+- Web is now a supported platform via Kotlin/Wasm (experimental).
+
+https://github.com/LinkoraApp/Linkora/releases/tag/release-v0.17.0

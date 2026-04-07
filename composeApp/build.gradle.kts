@@ -144,8 +144,8 @@ android {
         applicationId = "com.sakethh.linkora"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 48
-        versionName = "0.16.0"
+        versionCode = 49
+        versionName = "0.17.0"
     }
     packaging {
         resources {
@@ -212,7 +212,7 @@ compose.desktop {
             )
             packageName = "Linkora"
             this.vendor = "Saketh Pathike"
-            this.packageVersion = "1.0.14"/*
+            this.packageVersion = "1.0.15"/*
 
             This logo (src/desktopMain/resources/logo.*) was painted by `mondstern`.
             The original post can be found here: https://pixelfed.social/p/mondstern/747494483548287527

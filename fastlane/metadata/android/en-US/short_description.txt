@@ -1,1 +1,1 @@
-Link organizer for Android and desktop with self-hosted sync.
+Local-first multiplatform link organizer with optional self-hosted sync.
