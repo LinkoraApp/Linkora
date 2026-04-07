@@ -35,9 +35,7 @@ object Localization {
     }
 
     fun loadLocalizedStrings(
-        preferences: AppPreferences,
-        languageCode: String,
-        languageName: String
+        preferences: AppPreferences, languageCode: String, languageName: String
     ): Job? {
         localizationJob?.cancel()
         localizationJob = localizationScope.launch {
@@ -54,19 +52,18 @@ object Localization {
     suspend fun loadLocalizedStrings(
         preferences: AppPreferences,
         languageName: String,
-        languageCode: String, forceLoadDefaultValues: Boolean = false
+        languageCode: String,
+        forceLoadDefaultValues: Boolean = false
     ) {
         if (languageCode == Constants.DEFAULT_APP_LANGUAGE_CODE && !forceLoadDefaultValues) return
 
         linkoraLog("${preferences.preferredAppLanguageCode}, $languageCode")
         if (preferences.preferredAppLanguageCode != languageCode) {
             DependencyContainer.preferencesRepo.changePreferenceValue(
-                stringPreferencesKey(AppPreferences.APP_LANGUAGE_NAME.key),
-                languageName
+                stringPreferencesKey(AppPreferences.APP_LANGUAGE_NAME.key), languageName
             )
             DependencyContainer.preferencesRepo.changePreferenceValue(
-                stringPreferencesKey(AppPreferences.APP_LANGUAGE_CODE.key),
-                languageCode
+                stringPreferencesKey(AppPreferences.APP_LANGUAGE_CODE.key), languageCode
             )
         }
         Key.entries.forEach { key ->
@@ -579,7 +576,7 @@ object Localization {
         SortImportantLinksBy(defaultValue = "Sort Important Links by"),
         SortBasedOn(defaultValue = "Sort Based on"),
         SearchTitlesToFindLinksAndFolders(
-            defaultValue = "Search titles or notes to find links and folders"
+            defaultValue = "Search links, folders, and tags by name and note, or look up a link by URL"
         ),
         RegularFolder(defaultValue = "Regular Folder"),
         ArchiveFolder(defaultValue = "Archive Folder"),
@@ -766,7 +763,7 @@ object Localization {
         NoPanelsFound(
             defaultValue = "No panels yet.\nCreate panels and link folders to organize your work by topic or purpose."
         ),
-        SearchInLinkora(defaultValue = "Search Linkora: Browse through all your saved links and folders."),
+        SearchInLinkora(defaultValue = "Search Linkora: Find your links, folders, and tags in one place"),
         NoSearchResults(
             defaultValue = "No results found."
         ),
@@ -868,5 +865,13 @@ object Localization {
         AutoSaveNotificationPermission("Auto-saving requires notification permission."),
         Title("Title"),
         Image("Image"),
+        Proxy("Proxy"),
+        SyncInProgress("A sync process is already in progress"),
+        UseAProxyServer("Use a Proxy Server"),
+        UseAProxyServerDesc("Relay requests through the Proxy Server"),
+        UseAProxyServerLongDesc(
+            "All traffic sent from your device is routed via this proxy. Ensure you are using a Linkora-compatible proxy.\n\n" + "Note: Public proxy instance does not guarantee continuous uptime. Use a self-hosted version if a proxy is really necessary."
+        ),
+        InvalidExportDir("Looks like you skipped picking an export location.")
     }
 }

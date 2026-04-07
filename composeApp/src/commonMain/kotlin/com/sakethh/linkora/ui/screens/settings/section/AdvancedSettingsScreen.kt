@@ -83,9 +83,9 @@ fun AdvancedSettingsScreen() {
                 item {
                     SettingComponent(
                         settingComponentParam = SettingComponentParam(
-                            title = "Use a Proxy Server",
+                            title = Localization.Key.UseAProxyServer.rememberLocalizedString(),
                             doesDescriptionExists = true,
-                            description = "Relay requests through the Proxy Server",
+                            description = Localization.Key.UseAProxyServerDesc.rememberLocalizedString(),
                             isSwitchNeeded = true,
                             isSwitchEnabled = useProxy,
                             onSwitchStateChange = {
@@ -105,12 +105,8 @@ fun AdvancedSettingsScreen() {
             if (useProxy || platform == Platform.Web) {
                 item {
                     PreferenceTextField(
-                        textFieldDescText = """
-                        All traffic sent from your device is routed via this proxy. Ensure you are using a Linkora-compatible proxy.
-                      
-                        Note: Public proxy instance does not guarantee continuous uptime. Use a self-hosted version if a proxy is really necessary.
-                    """.trimIndent(),
-                        textFieldLabel = "Proxy",
+                        textFieldDescText = Localization.Key.UseAProxyServerLongDesc.rememberLocalizedString(),
+                        textFieldLabel = Localization.Key.Proxy.rememberLocalizedString(),
                         textFieldValue = proxyServerUrl,
                         onResetButtonClick = {
                             settingsScreenVM.changeSettingPreferenceValue(

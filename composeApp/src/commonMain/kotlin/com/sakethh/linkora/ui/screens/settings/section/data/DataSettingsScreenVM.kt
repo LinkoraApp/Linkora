@@ -295,7 +295,7 @@ class DataSettingsScreenVM(
 
                 val newExportLocation =
                     if (platform == Platform.Desktop) exportLocation else fileManager.pickADirectory()
-                        ?: throw NullPointerException("Looks like you skipped picking an export location.")
+                        ?: throw NullPointerException(Localization.Key.InvalidExportDir.getLocalizedString())
 
                 preferencesRepository.changePreferenceValue(
                     preferenceKey = stringPreferencesKey(
