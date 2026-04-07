@@ -55,7 +55,7 @@ actual class FileManager {
         }
 
         // kinda repeated in Expected.android, but alright
-        val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US)
+        val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-SSS", Locale.US)
         val timestamp = simpleDateFormat.format(Date())
         val exportFileName =
             "${if (exportLocationType == ExportLocationType.EXPORT) "LinkoraExport" else "LinkoraSnapshot"}-$timestamp.${if (exportFileType == ExportFileType.HTML) "html" else "json"}"
