@@ -26,11 +26,11 @@ jobs:
         with:
           ref: ${{ inputs.tag }}
 
-      - name: Setup Java 17
+      - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
           cache: gradle
 
       - name: Make Gradlew executable
@@ -99,11 +99,11 @@ jobs:
         with:
           ref: ${{ inputs.tag }}
 
-      - name: Setup Java 17
+      - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
           cache: gradle
 
       - name: Make Gradlew executable
@@ -160,11 +160,11 @@ jobs:
         with:
           ref: ${{ inputs.tag }}
 
-      - name: Setup Java 17
+      - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
           cache: gradle
 
       - name: Make Gradlew executable
