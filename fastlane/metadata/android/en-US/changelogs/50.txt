@@ -1,0 +1,4 @@
+- Resizable list pane in collection screen on large screens.
+- Scrollbar support added to Regular and grid layouts.
+- Optimized application cold start times by ∼72%.
+- New proxy available for routing requests, built for web and disabled by default on Android.
