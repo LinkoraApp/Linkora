@@ -16,11 +16,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -38,6 +44,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -74,6 +83,9 @@ fun ServerSetupScreen(
     val securityToken = rememberSaveable {
         mutableStateOf(preferences.serverSecurityToken)
     }
+    val isSecurityTokenVisible = rememberSaveable {
+        mutableStateOf(false)
+    }
     val selectedSyncType = retain {
         mutableStateOf(preferences.serverSyncType)
     }
@@ -87,6 +99,10 @@ fun ServerSetupScreen(
 
     val importedCertInfo = rememberSaveable {
         mutableStateOf("")
+    }
+
+    val pwdVisualTransformation = retain {
+        PasswordVisualTransformation()
     }
 
     SettingsSectionScaffold(
@@ -150,7 +166,21 @@ fun ServerSetupScreen(
                             style = MaterialTheme.typography.titleMedium
                         )
                     },
-                    readOnly = serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully && serverManagementViewModel.serverSetupState.value.isConnecting.not()
+                    readOnly = serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully && serverManagementViewModel.serverSetupState.value.isConnecting.not(),
+                    visualTransformation = if (isSecurityTokenVisible.value) VisualTransformation.None else pwdVisualTransformation,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    trailingIcon = {
+                        IconButton(
+                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
+                            onClick = {
+                                isSecurityTokenVisible.value = !isSecurityTokenVisible.value
+                            }) {
+                            Icon(
+                                imageVector = if (isSecurityTokenVisible.value) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                contentDescription = null
+                            )
+                        }
+                    }
                 )
             }
 
