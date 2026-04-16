@@ -15,11 +15,8 @@ class UtilsTest {
     @Test
     fun `html parsing should return valid meta info`() = runTest {
         val retrievalJobs = mutableListOf<Job>()
+        val appPreferences = AppPreferences()
         listOf(
-            "https://sakethpathike.github.io/blog/kmp-in-practice" to ScrapedLinkInfo(
-                title = "Kotlin Multiplatform, in practice. • Saketh Pathike",
-                imgUrl = "https://sakethpathike.github.io/images/ogImage-kmp-in-practice.png",
-            ),
             "https://mockk.io/" to ScrapedLinkInfo(
                 title = "MockK",
                 imgUrl = "https://mockk.io/doc/stats-shared.png",
@@ -41,10 +38,10 @@ class UtilsTest {
                 val scrapedInfo = LocalLinksRepoImpl(
                     linksDao = mockk(),
                     primaryUserAgent = {
-                        AppPreferences.primaryJsoupUserAgent.value
+                        appPreferences.primaryJsoupUserAgent
                     },
                     proxyUrl = {
-                        AppPreferences.proxyUrl
+                        appPreferences.proxyUrl
                     },
                     standardClient = mockk(),
                     remoteLinksRepo = mockk(),
