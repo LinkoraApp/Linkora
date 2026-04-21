@@ -185,7 +185,7 @@ fun AddANewLinkDialogBox(
         mutableStateOf(addNewLinkDialogParams.url)
     }
     val titleTextFieldValue = rememberSaveable {
-        mutableStateOf("")
+        mutableStateOf(addNewLinkDialogParams.title)
     }
     val noteTextFieldValue = rememberSaveable {
         mutableStateOf("")
