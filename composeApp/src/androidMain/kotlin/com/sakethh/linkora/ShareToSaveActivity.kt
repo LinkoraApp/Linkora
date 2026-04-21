@@ -50,6 +50,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlin.toString
 
 class ShareToSaveActivity : ComponentActivity() {
 
@@ -181,7 +182,10 @@ class ShareToSaveActivity : ComponentActivity() {
                             performAction = collectionsScreenVM::performAction,
                             url = this@ShareToSaveActivity.intent?.getStringExtra(
                                 Intent.EXTRA_TEXT
-                            ).toString()
+                            ).toString(),
+                            title = this@ShareToSaveActivity.intent?.getStringExtra(
+                                Intent.EXTRA_SUBJECT
+                            ) ?: ""
                         ),
                     )
                 }
