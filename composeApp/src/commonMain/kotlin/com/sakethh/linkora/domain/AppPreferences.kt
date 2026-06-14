@@ -34,7 +34,7 @@ data class AppPreferences(
     val showTitleInLinkGridView: Boolean = true,
     val showHostInLinkListView: Boolean = true,
     val enableFadedEdgeForNonListViews: Boolean = true,
-    val forceSaveWithoutFetchingAnyMetaData: Boolean = false,
+    var forceSaveWithoutFetchingAnyMetaData: Boolean = false,
     val skipSavingExistingLink: Boolean = true,
     val useProxy: Boolean = platform == Platform.Web,
     val proxyUrl: String = Constants.PROXY_SERVER_URL,
