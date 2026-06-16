@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface LocalFoldersRepo {
     suspend fun insertANewFolder(
-        folder: Folder, ignoreFolderAlreadyExistsException: Boolean, viaSocket: Boolean = false
+        folder: Folder, viaSocket: Boolean = false
     ): Flow<Result<Long>>
 
     suspend fun insertANewFolderLocally(

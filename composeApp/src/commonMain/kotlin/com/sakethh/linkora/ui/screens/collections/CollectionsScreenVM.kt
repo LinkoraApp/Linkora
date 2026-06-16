@@ -93,6 +93,7 @@ class CollectionsScreenVM(
             selectedLinkTagPairsViaLongClick.clear()
             selectedFoldersViaLongClick.clear()
         }
+
         var inCollectionsListPane by mutableStateOf(false)
     }
 
@@ -137,7 +138,6 @@ class CollectionsScreenVM(
 
             is AddANewLinkDialogBoxAction.InsertANewFolder -> insertANewFolder(
                 folder = addANewLinkDialogBoxAction.folder,
-                ignoreFolderAlreadyExistsThrowable = addANewLinkDialogBoxAction.ignoreFolderAlreadyExistsThrowable,
                 onCompletion = addANewLinkDialogBoxAction.onCompletion
             )
 
@@ -347,10 +347,10 @@ class CollectionsScreenVM(
 
 
     fun insertANewFolder(
-        folder: Folder, ignoreFolderAlreadyExistsThrowable: Boolean, onCompletion: () -> Unit
+        folder: Folder, onCompletion: () -> Unit
     ) {
         viewModelScope.launch {
-            localFoldersRepo.insertANewFolder(folder, ignoreFolderAlreadyExistsThrowable)
+            localFoldersRepo.insertANewFolder(folder)
                 .collectLatest {
                     it.onSuccess {
                         pushUIEvent(

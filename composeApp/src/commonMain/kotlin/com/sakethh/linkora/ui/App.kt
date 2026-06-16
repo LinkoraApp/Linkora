@@ -435,7 +435,6 @@ fun App(
                                         parentFolderId = currentFABContext.currentFolder?.run {
                                             if (this.localId > 0) this.localId else null
                                         }),
-                                    ignoreFolderAlreadyExistsThrowable = false,
                                     onCompletion = onCompletion
                                 )
                             }

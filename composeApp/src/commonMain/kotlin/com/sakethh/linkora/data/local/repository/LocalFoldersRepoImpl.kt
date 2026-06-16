@@ -13,7 +13,6 @@ import com.sakethh.linkora.domain.linkoraPlaceHolders
 import com.sakethh.linkora.domain.mapToResultFlow
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.PendingSyncQueue
-import com.sakethh.linkora.domain.onSuccess
 import com.sakethh.linkora.domain.repository.local.LocalFoldersRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.LocalPanelsRepo
@@ -29,7 +28,6 @@ import com.sakethh.linkora.utils.wrappedResultFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
 
 class LocalFoldersRepoImpl(
@@ -43,7 +41,7 @@ class LocalFoldersRepoImpl(
 ) : LocalFoldersRepo {
 
     override suspend fun insertANewFolder(
-        folder: Folder, ignoreFolderAlreadyExistsException: Boolean, viaSocket: Boolean
+        folder: Folder, viaSocket: Boolean
     ): Flow<Result<Long>> {
         var newLocalId: Long? = null
         val preferences = preferencesRepository.getPreferences()
@@ -90,29 +88,6 @@ class LocalFoldersRepoImpl(
             localOperation = {
                 if (folder.name.isEmpty() || linkoraPlaceHolders().contains(folder.name)) {
                     throw Folder.InvalidName(if (folder.name.isEmpty()) "Folder name cannot be blank." else "\"${folder.name}\" is reserved.")
-                }
-                if (!ignoreFolderAlreadyExistsException) {
-                    when (folder.parentFolderId) {
-                        null -> {
-                            doesThisRootFolderExists(folder.name).first().onSuccess {
-                                if (it.data) {
-                                    throw Folder.FolderAlreadyExists("Folder named \"${folder.name}\" already exists")
-                                }
-                            }
-                        }
-
-                        else -> {
-                            doesThisChildFolderExists(folder.name, folder.parentFolderId).first()
-                                .onSuccess {
-                                    if (it.data == 1) {
-                                        getThisFolderData(folder.parentFolderId).first()
-                                            .onSuccess { parentFolder ->
-                                                throw Folder.FolderAlreadyExists("A folder named \"${folder.name}\" already exists in ${parentFolder.data.name}.")
-                                            }
-                                    }
-                                }
-                        }
-                    }
                 }
                 newLocalId = foldersDao.insertANewFolder(folder.copy(localId = 0))
                 newLocalId

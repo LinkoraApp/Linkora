@@ -318,7 +318,7 @@ class LocalDataUpdateService(
                         remoteId = folderDto.id,
                         isArchived = folderDto.isArchived,
                         lastModified = folderDto.eventTimestamp
-                    ), ignoreFolderAlreadyExistsException = true, viaSocket = true
+                    ), viaSocket = true
                 ).collectAndUpdateTimestamp(folderDto.eventTimestamp)
             }
 

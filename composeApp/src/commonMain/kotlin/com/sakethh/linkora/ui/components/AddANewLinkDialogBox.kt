@@ -1231,7 +1231,6 @@ private fun BottomPartOfAddANewLinkDialogBox(
                                 parentFolderId = if (addTheFolderInRoot.value || selectedFolderForSavingTheLink.value.localId in defaultFolderIds()) null else selectedFolderForSavingTheLink.value.localId,
                             ),
                             onCompletion = onCompletion,
-                            ignoreFolderAlreadyExistsThrowable = true
                         )
                     )
                 },

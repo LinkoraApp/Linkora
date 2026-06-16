@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface FoldersDao {
     @Insert
-    suspend fun insertANewFolder(folders: Folder): Long
+    suspend fun insertANewFolder(folder: Folder): Long
 
     @Query("INSERT INTO folders(name, note,parentFolderID,isArchived) SELECT name, note, :parentFolderID, isArchived FROM folders WHERE localId= :actualFolderId")
     suspend fun duplicateAFolder(actualFolderId: Long, parentFolderID: Long?): Long

@@ -23,7 +23,6 @@ sealed interface AddANewLinkDialogBoxAction {
 
     data class InsertANewFolder(
         val folder: Folder,
-        val ignoreFolderAlreadyExistsThrowable: Boolean,
         val onCompletion: () -> Unit
     ) : AddANewLinkDialogBoxAction
 

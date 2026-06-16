@@ -336,7 +336,7 @@ class RemoteSyncRepoImpl(
                     remoteId = folderDTO.id,
                     isArchived = folderDTO.isArchived,
                     lastModified = folderDTO.eventTimestamp
-                ), ignoreFolderAlreadyExistsException = true, viaSocket = true
+                ), viaSocket = true
             ).collectAndUpdateTimestamp(folderDTO.eventTimestamp)
         }
     }
