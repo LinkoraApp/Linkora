@@ -5,15 +5,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import com.sakethh.linkora.Localization
-import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.domain.Result
-import com.sakethh.linkora.domain.SyncType
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.Quadruple
 import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onSuccess
-import com.sakethh.linkora.ui.domain.model.ServerConnection
 import io.ktor.client.HttpClient
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
@@ -23,6 +20,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
@@ -157,11 +155,10 @@ fun <LocalType, RemoteType> performLocalOperationWithRemoteSyncFlow(
             }
             emit(success)
         }
-    }.catchAsThrowableAndEmitFailure(init = {
-        if (performRemoteOperation && canPushToServer()) {
-            onRemoteOperationFailure()
-        }
-    })
+    }.catch {
+        it.printStackTrace()
+        emit(Result.Failure(message = it.message.toString()))
+    }
 }
 
 fun defaultFolderIds(): List<Long> = listOf(
