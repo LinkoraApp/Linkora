@@ -10,4 +10,5 @@ plugins {
     id("com.mikepenz.aboutlibraries.plugin") version "13.1.0" apply false
     alias(libs.plugins.stability.analyzer) apply false
     id("androidx.room3") version "3.0.0-alpha01" apply false
+    alias(libs.plugins.jetbrains.kotlin.jvm) apply false
 }

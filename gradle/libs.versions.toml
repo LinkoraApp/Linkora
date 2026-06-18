@@ -19,6 +19,7 @@ junit = "4.13.2"
 kotlin = "2.3.10"
 kotlinx-coroutines = "1.9.0"
 kotlinxBrowser = "0.5.0"
+kotlinxCoroutinesCoreVersion = "1.11.0"
 kotlinxCoroutinesTest = "1.10.2"
 kotlinxDatetime = "0.7.1"
 kotlinxSerializationJson = "1.10.0"
@@ -41,6 +42,7 @@ aboutLibraries = "13.1.0"
 assertk = "0.28.1"
 composeHotReload = "1.0.0"
 adaptive = "1.2.0"
+jetbrainsKotlinJvm = "2.3.10"
 
 [libraries]
 androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastorePreferencesCore" }
@@ -50,6 +52,7 @@ androidx-work-runtime = { module = "androidx.work:work-runtime", version.ref = "
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coilNetworkKtor3" }
 fleeksoft-ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoupVersion" }
+jetbrains-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCoreVersion" }
 jetbrains-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3Version" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
@@ -102,3 +105,4 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 stability-analyzer = { id = "com.github.skydoves.compose.stability.analyzer", version = "0.6.5" }
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
+jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }

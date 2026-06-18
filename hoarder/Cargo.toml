@@ -1,0 +1,13 @@
+[package]
+name = "hoarder"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "hoarder"
+crate-type = ["cdylib"]
+path = "src/main/rust/hoarder.rs"
+
+[dependencies]
+monolith = "2.10.1"
+jni = "0.21"

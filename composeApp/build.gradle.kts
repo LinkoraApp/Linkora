@@ -1,5 +1,6 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
+import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
@@ -76,6 +77,7 @@ kotlin {
             implementation(libs.androidx.documentfile)
             implementation(libs.ktor.client.android)
             implementation(libs.androidx.datastore.preferences.core)
+            implementation(project(":hoarder"))
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -117,6 +119,7 @@ kotlin {
             implementation(libs.sqlite.bundled)
             implementation(libs.ktor.client.java)
             implementation(libs.androidx.datastore.preferences.core)
+            implementation(project(":hoarder"))
         }
         wasmJsMain.dependencies {
             implementation(libs.ktor.client.js)
@@ -189,6 +192,10 @@ android {
         "src/commonMain/resources", "src/androidMain/resources"
     )
 
+    sourceSets["main"].jniLibs.srcDirs(
+        rootProject.file("hoarder/build/jniLibs")
+    )
+
     dependenciesInfo {
         includeInApk = false
         includeInBundle = false
@@ -233,10 +240,29 @@ compose.desktop {
             }
             modules("jdk.unsupported")
             modules("jdk.unsupported.desktop")
+
+            val rustTarget = "x86_64-unknown-linux-gnu"
+            val rustBuildDir =
+                project(":hoarder").projectDir.resolve("target/$rustTarget/release")
+            jvmArgs += "-Djava.library.path=${rustBuildDir.absolutePath}"
         }
     }
 }
 
+tasks.withType<JavaExec>().configureEach {
+    val currentOs = OperatingSystem.current()
+
+    val rustTarget = when {
+        currentOs.isLinux -> "x86_64-unknown-linux-gnu"
+        currentOs.isWindows -> "x86_64-pc-windows-msvc"
+        else -> "unknown"
+    }
+
+    val rustBuildDir = project(":hoarder").projectDir.resolve("target/$rustTarget/release")
+
+    systemProperty("java.library.path", rustBuildDir.absolutePath)
+    dependsOn(":hoarder:cargoBuildDesktop")
+}
 
 val addNetlifyHeadersToDist = task("addNetlifyHeadersToDist") {
     doLast {
@@ -259,4 +285,8 @@ val addNetlifyHeadersToDist = task("addNetlifyHeadersToDist") {
 
 tasks.named("wasmJsBrowserDistribution") {
     finalizedBy(addNetlifyHeadersToDist)
+}
+
+tasks.matching { it.name == "preBuild" }.configureEach {
+    dependsOn(":hoarder:cargoBuildAndroid")
 }
