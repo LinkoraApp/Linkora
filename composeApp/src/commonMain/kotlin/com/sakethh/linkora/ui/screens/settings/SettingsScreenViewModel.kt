@@ -36,6 +36,7 @@ import com.sakethh.linkora.ui.screens.onboarding.Slide4
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.openUriOrNotify
 import com.sakethh.linkora.utils.stringPreferencesKey
 import kotlinx.coroutines.launch
 
@@ -243,7 +244,9 @@ open class SettingsScreenViewModel(
                 ),
                 onMoreIconClick = { },
                 onLinkClick = {
-                    localUriHandler.openUri("https://music.youtube.com/watch?v=DbiB1AtCA9k")
+                    viewModelScope.launch {
+                        localUriHandler.openUriOrNotify("https://music.youtube.com/watch?v=DbiB1AtCA9k")
+                    }
                 },
                 onForceOpenInExternalBrowserClicked = { },
                 isSelectionModeEnabled = mutableStateOf(false),
@@ -265,7 +268,9 @@ open class SettingsScreenViewModel(
                 ),
                 onMoreIconClick = { },
                 onLinkClick = {
-                    localUriHandler.openUri("https://www.rockstargames.com/reddeadredemption2")
+                    viewModelScope.launch {
+                        localUriHandler.openUriOrNotify("https://www.rockstargames.com/reddeadredemption2")
+                    }
                 },
                 onForceOpenInExternalBrowserClicked = { },
                 isSelectionModeEnabled = mutableStateOf(false),
@@ -298,7 +303,9 @@ open class SettingsScreenViewModel(
                 ),
                 onMoreIconClick = { },
                 onLinkClick = {
-                    localUriHandler.openUri("https://store.epicgames.com/en-US/p/a-plague-tale-requiem")
+                    viewModelScope.launch {
+                        localUriHandler.openUriOrNotify("https://store.epicgames.com/en-US/p/a-plague-tale-requiem")
+                    }
                 },
                 onForceOpenInExternalBrowserClicked = { },
                 isSelectionModeEnabled = mutableStateOf(false),
@@ -319,7 +326,9 @@ open class SettingsScreenViewModel(
                 ),
                 onMoreIconClick = { },
                 onLinkClick = {
-                    localUriHandler.openUri("https://www.tombraider.com/products/games/shadow-of-the-tomb-raider")
+                    viewModelScope.launch {
+                        localUriHandler.openUriOrNotify("https://www.tombraider.com/products/games/shadow-of-the-tomb-raider")
+                    }
                 },
                 onForceOpenInExternalBrowserClicked = { },
                 isSelectionModeEnabled = mutableStateOf(false),
@@ -345,7 +354,9 @@ open class SettingsScreenViewModel(
                 onLongClick = { },
                 onMoreIconClick = { },
                 onLinkClick = {
-                    localUriHandler.openUri("https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q")
+                    viewModelScope.launch {
+                        localUriHandler.openUriOrNotify("https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q")
+                    }
                 },
                 tags = listOf(Tag(name = "half man, half amazing.")),
                 onTagClick = {}, showPath = false, onFolderClick = {}),
@@ -367,7 +378,9 @@ open class SettingsScreenViewModel(
                 onLongClick = { },
                 onMoreIconClick = { },
                 onLinkClick = {
-                    localUriHandler.openUri("https://music.youtube.com/watch?v=Q5jl_fmMd8M")
+                    viewModelScope.launch {
+                        localUriHandler.openUriOrNotify("https://music.youtube.com/watch?v=Q5jl_fmMd8M")
+                    }
                 },
                 tags = null,
                 onTagClick = {}, showPath = false, onFolderClick = {}),
@@ -389,7 +402,9 @@ open class SettingsScreenViewModel(
                 onLongClick = { },
                 onMoreIconClick = { },
                 onLinkClick = {
-                    localUriHandler.openUri("https://twitter.com/CatWorkers/status/1819121250226127061")
+                    viewModelScope.launch {
+                        localUriHandler.openUriOrNotify("https://twitter.com/CatWorkers/status/1819121250226127061")
+                    }
                 },
                 tags = listOf(Tag(name = "\uD83D\uDE97")),
                 onTagClick = {}, showPath = false, onFolderClick = {}),
@@ -412,7 +427,9 @@ open class SettingsScreenViewModel(
                 onLongClick = { },
                 onMoreIconClick = { },
                 onLinkClick = {
-                    localUriHandler.openUri("https://www.youtube.com/watch?v=3vlqI5TPVjQ")
+                    viewModelScope.launch {
+                        localUriHandler.openUriOrNotify("https://www.youtube.com/watch?v=3vlqI5TPVjQ")
+                    }
                 },
                 tags = null,
                 onTagClick = {}, showPath = false, onFolderClick = {}),
@@ -435,7 +452,9 @@ open class SettingsScreenViewModel(
                 onLongClick = { },
                 onMoreIconClick = { },
                 onLinkClick = {
-                    localUriHandler.openUri("https://music.youtube.com/watch?v=78YNulckDng")
+                    viewModelScope.launch {
+                        localUriHandler.openUriOrNotify("https://music.youtube.com/watch?v=78YNulckDng")
+                    }
                 },
                 tags = null,
                 onTagClick = {}, showPath = false, onFolderClick = {}),
@@ -458,7 +477,9 @@ open class SettingsScreenViewModel(
                 onLongClick = { },
                 onMoreIconClick = { },
                 onLinkClick = {
-                    localUriHandler.openUri("https://www.youtube.com/watch?v=66OFYWBrg3o")
+                    viewModelScope.launch {
+                        localUriHandler.openUriOrNotify("https://www.youtube.com/watch?v=66OFYWBrg3o")
+                    }
                 },
                 tags = listOf(Tag(name = "KD"), Tag(name = "Kings Disease")),
                 onTagClick = {}, showPath = false, onFolderClick = {}),

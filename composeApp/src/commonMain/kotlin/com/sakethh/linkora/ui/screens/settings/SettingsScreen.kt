@@ -36,6 +36,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,7 +58,9 @@ import com.sakethh.linkora.ui.screens.collections.components.ItemDivider
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
+import com.sakethh.linkora.utils.openUriOrNotify
 import com.sakethh.linkora.utils.rememberLocalizedString
+import kotlinx.coroutines.launch
 import linkora.composeapp.generated.resources.Res
 import linkora.composeapp.generated.resources.discord
 import linkora.composeapp.generated.resources.github
@@ -75,6 +78,7 @@ fun SettingsScreen() {
     val navController = LocalNavController.current
     val topAppBarScrollState = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val uriHandler = LocalUriHandler.current
+    val coroutineScope = rememberCoroutineScope()
     Scaffold(topBar = {
         Column {
             LargeTopAppBar(
@@ -109,7 +113,9 @@ fun SettingsScreen() {
                         FilledIconButton(
                             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                                 .pressScaleEffect(), onClick = {
-                                uriHandler.openUri("https://www.github.com/LinkoraApp")
+                                coroutineScope.launch {
+                                    uriHandler.openUriOrNotify("https://www.github.com/LinkoraApp")
+                                }
                             }) {
                             Icon(
                                 painter = painterResource(Res.drawable.github),
@@ -120,7 +126,9 @@ fun SettingsScreen() {
                         FilledIconButton(
                             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                                 .pressScaleEffect(), onClick = {
-                                uriHandler.openUri("https://discord.gg/ZDBXNtv8MD")
+                                coroutineScope.launch {
+                                    uriHandler.openUriOrNotify("https://discord.gg/ZDBXNtv8MD")
+                                }
                             }) {
                             Icon(
                                 painter = painterResource(Res.drawable.discord),
@@ -131,7 +139,9 @@ fun SettingsScreen() {
                         FilledIconButton(
                             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                                 .pressScaleEffect(), onClick = {
-                                uriHandler.openUri("https://www.twitter.com/LinkoraApp")
+                                coroutineScope.launch {
+                                    uriHandler.openUriOrNotify("https://www.twitter.com/LinkoraApp")
+                                }
                             }) {
                             Icon(
                                 painter = painterResource(Res.drawable.twitter),
@@ -150,7 +160,9 @@ fun SettingsScreen() {
                     )
                     Button(
                         onClick = {
-                            uriHandler.openUri("https://github.com/LinkoraApp/localization-server")
+                            coroutineScope.launch {
+                                uriHandler.openUriOrNotify("https://github.com/LinkoraApp/localization-server")
+                            }
                         },
                         modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                             .padding(start = 15.dp).pressScaleEffect()
@@ -165,7 +177,9 @@ fun SettingsScreen() {
                     }
                     Button(
                         onClick = {
-                            uriHandler.openUri("https://ko-fi.com/sakethpathike")
+                            coroutineScope.launch {
+                                uriHandler.openUriOrNotify("https://ko-fi.com/sakethpathike")
+                            }
                         },
                         modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                             .padding(start = 15.dp).pressScaleEffect()
@@ -180,7 +194,9 @@ fun SettingsScreen() {
                     }
                     Button(
                         onClick = {
-                            uriHandler.openUri("https://play.google.com/store/apps/details?id=com.sakethh.linkora")
+                            coroutineScope.launch {
+                                uriHandler.openUriOrNotify("https://play.google.com/store/apps/details?id=com.sakethh.linkora")
+                            }
                         },
                         modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                             .padding(start = 15.dp, bottom = 15.dp).pressScaleEffect()

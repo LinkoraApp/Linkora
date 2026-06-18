@@ -81,6 +81,7 @@ import com.sakethh.linkora.ui.screens.collections.components.ItemDivider
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.openUriOrNotify
 import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
 import linkora.composeapp.generated.resources.LOLCATpl_logo
@@ -265,6 +266,7 @@ private fun SlideDesc(string: String, modifier: Modifier = Modifier) {
 @Composable
 fun Slide2() {
     val localUriHandler = LocalUriHandler.current
+    val coroutineScope = rememberCoroutineScope()
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.verticalScroll(rememberScrollState(1)).fillMaxWidth()
@@ -310,7 +312,9 @@ fun Slide2() {
                     ),
                     onMoreIconClick = { },
                     onLinkClick = {
-                        localUriHandler.openUri("https://www.rockstargames.com/reddeadredemption2")
+                        coroutineScope.launch {
+                            localUriHandler.openUriOrNotify("https://www.rockstargames.com/reddeadredemption2")
+                        }
                     },
                     onForceOpenInExternalBrowserClicked = { },
                     isSelectionModeEnabled = rememberSaveable {
@@ -353,7 +357,9 @@ fun Slide2() {
                     onLongClick = { },
                     onMoreIconClick = { },
                     onLinkClick = {
-                        localUriHandler.openUri("https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q")
+                        coroutineScope.launch {
+                            localUriHandler.openUriOrNotify("https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q")
+                        }
                     },
                     tags = listOf(Tag(name = "half man half amazing")),
                     onTagClick = {}, showPath = false, onFolderClick = {}),
@@ -483,7 +489,9 @@ fun Slide3() {
                                 ),
                                 onMoreIconClick = { },
                                 onLinkClick = {
-                                    localUriHandler.openUri("https://sakethpathike.github.io/blog/synchronization-in-linkora")
+                                    coroutineScope.launch {
+                                        localUriHandler.openUriOrNotify("https://sakethpathike.github.io/blog/synchronization-in-linkora")
+                                    }
                                 },
                                 onForceOpenInExternalBrowserClicked = { },
                                 isSelectionModeEnabled = rememberSaveable { mutableStateOf(false) },
@@ -540,7 +548,9 @@ fun Slide3() {
                                 ),
                                 onMoreIconClick = { },
                                 onLinkClick = {
-                                    localUriHandler.openUri("https://github.com/LinkoraApp/sync-server")
+                                    coroutineScope.launch {
+                                        localUriHandler.openUriOrNotify("https://github.com/LinkoraApp/sync-server")
+                                    }
                                 },
                                 onForceOpenInExternalBrowserClicked = { },
                                 isSelectionModeEnabled = rememberSaveable { mutableStateOf(false) },

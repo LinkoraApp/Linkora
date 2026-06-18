@@ -86,6 +86,7 @@ import com.sakethh.linkora.utils.Utils
 import com.sakethh.linkora.utils.VerticalScrollbar
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.openUriOrNotify
 import com.sakethh.linkora.utils.rememberLocalizedString
 import com.sakethh.linkora.utils.supportsWideDisplay
 import kotlinx.coroutines.flow.collectLatest
@@ -273,7 +274,9 @@ fun CollectionDetailPane(
                                             selectedTags = it.tags
                                         )
                                     )
-                                    localUriHandler.openUri(it.link.url)
+                                    coroutineScope.launch {
+                                        localUriHandler.openUriOrNotify(it.link.url)
+                                    }
                                 },
                                 isCurrentlyInDetailsView = {
                                     collectionDetailPaneInfo.currentFolder.localId == it.localId
@@ -502,7 +505,9 @@ fun CollectionDetailPane(
                             selectedTags = it.tags
                         )
                     )
-                    localUriHandler.openUri(it.link.url)
+                    coroutineScope.launch {
+                        localUriHandler.openUriOrNotify(it.link.url)
+                    }
                 },
                 isCurrentlyInDetailsView = {
                     collectionDetailPaneInfo.currentFolder?.localId == it.localId

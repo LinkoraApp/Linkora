@@ -3,6 +3,7 @@ package com.sakethh.linkora.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.unit.dp
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.PreferenceKey
@@ -11,6 +12,7 @@ import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.Quadruple
 import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onSuccess
+import com.sakethh.linkora.ui.utils.UIEvent
 import io.ktor.client.HttpClient
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
@@ -211,5 +213,14 @@ fun booleanPreferencesKey(key: String) = PreferenceKey.BooleanPreferencesKey(key
 fun supportsWideDisplay(): Boolean {
     return with(LocalDensity.current) {
         LocalWindowInfo.current.containerSize.width.toDp() > 840.dp
+    }
+}
+
+suspend fun UriHandler.openUriOrNotify(uri: String) {
+    try {
+        openUri(uri)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        UIEvent.pushUIEvent(UIEvent.Type.ShowSnackbar("Couldn't open link, make sure you have a browser installed."))
     }
 }

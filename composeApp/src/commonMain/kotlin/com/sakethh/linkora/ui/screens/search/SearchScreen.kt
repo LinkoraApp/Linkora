@@ -65,7 +65,9 @@ import com.sakethh.linkora.ui.screens.DataEmptyScreen
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.pressScaleEffect
+import com.sakethh.linkora.utils.openUriOrNotify
 import com.sakethh.linkora.utils.rememberLocalizedString
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -228,7 +230,9 @@ fun SearchScreen(
                                 )
                             },
                             onLinkClick = {
-                                localUriHandler.openUri(it.link.url)
+                                coroutineScope.launch {
+                                    localUriHandler.openUriOrNotify(it.link.url)
+                                }
                                 searchScreenVM.addANewLinkToHistory(
                                     link = it.link.copy(
                                         linkType = LinkType.HISTORY_LINK, localId = 0
@@ -316,7 +320,9 @@ fun SearchScreen(
                 )
             },
             onLinkClick = {
-                localUriHandler.openUri(it.link.url)
+                coroutineScope.launch {
+                    localUriHandler.openUriOrNotify(it.link.url)
+                }
                 searchScreenVM.addANewLinkToHistory(
                     link = it.link.copy(linkType = LinkType.HISTORY_LINK, localId = 0),
                     tagIds = it.tags.map { it.localId })

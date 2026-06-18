@@ -120,6 +120,7 @@ import com.sakethh.linkora.utils.host
 import com.sakethh.linkora.utils.ifServerConfigured
 import com.sakethh.linkora.utils.inRootScreen
 import com.sakethh.linkora.utils.isServerConfigured
+import com.sakethh.linkora.utils.openUriOrNotify
 import com.sakethh.linkora.utils.supportsWideDisplay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -521,7 +522,9 @@ fun App(
                                 pushSnackbarOnSuccess = false,
                                 selectedTags = appVM.selectedLinkTagsForMenuBtmSheet.tags
                             )
-                            localUriHandler.openUri(appVM.selectedLinkTagsForMenuBtmSheet.link.url)
+                            coroutineScope.launch {
+                                localUriHandler.openUriOrNotify(appVM.selectedLinkTagsForMenuBtmSheet.link.url)
+                            }
                         },
                         onShare = {
                             LinkoraSDK.getInstance().nativeUtils.onShare(it)
@@ -782,7 +785,9 @@ fun App(
                                             syncServerSurveyBtmSheetState.hide()
                                         }.invokeOnCompletion {
                                             showSyncServerNotice = false
-                                            localUriHandler.openUri("https://forms.gle/75ww25CLQqZuSSuZ6")
+                                            coroutineScope.launch {
+                                                localUriHandler.openUriOrNotify("https://forms.gle/75ww25CLQqZuSSuZ6")
+                                            }
                                         }
                                     })
                             },

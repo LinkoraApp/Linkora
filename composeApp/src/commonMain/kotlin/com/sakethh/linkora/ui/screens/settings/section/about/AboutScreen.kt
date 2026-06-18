@@ -54,6 +54,7 @@ import com.sakethh.linkora.ui.utils.rememberDeserializableMutableObject
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.openUriOrNotify
 import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
 
@@ -209,7 +210,9 @@ fun AboutScreen() {
                             skipSavingIfExists = preferences.skipSavingExistingLink,
                             forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
                         )
-                        uriHandler.openUri(url)
+                        coroutineScope.launch {
+                            uriHandler.openUriOrNotify(url)
+                        }
                     },
                 )
             }
@@ -235,7 +238,9 @@ fun AboutScreen() {
                             skipSavingIfExists = preferences.skipSavingExistingLink,
                             forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails
                         )
-                        uriHandler.openUri(url)
+                        coroutineScope.launch {
+                            uriHandler.openUriOrNotify(url)
+                        }
                     },
                 )
             }
@@ -277,7 +282,9 @@ fun AboutScreen() {
                             skipSavingIfExists = preferences.skipSavingExistingLink,
                             forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails
                         )
-                        uriHandler.openUri(url)
+                        coroutineScope.launch {
+                            uriHandler.openUriOrNotify(url)
+                        }
                     },
                 )
             }
@@ -309,7 +316,9 @@ fun AboutScreen() {
                             skipSavingIfExists = preferences.skipSavingExistingLink,
                             forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails
                         )
-                        uriHandler.openUri(url)
+                        coroutineScope.launch {
+                            uriHandler.openUriOrNotify(url)
+                        }
                     },
                 )
             }
@@ -343,7 +352,9 @@ fun AboutScreen() {
                             skipSavingIfExists = preferences.skipSavingExistingLink,
                             forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails
                         )
-                        uriHandler.openUri(url)
+                        coroutineScope.launch {
+                            uriHandler.openUriOrNotify(url)
+                        }
                     },
                 )
             }

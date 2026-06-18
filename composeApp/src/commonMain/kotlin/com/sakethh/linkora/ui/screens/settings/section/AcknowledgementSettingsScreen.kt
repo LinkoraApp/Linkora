@@ -16,10 +16,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -30,21 +30,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.Localization
-import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.SettingSectionComponent
 import com.sakethh.linkora.ui.screens.settings.SettingSectionComponentParam
-import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
+import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
+import com.sakethh.linkora.utils.openUriOrNotify
 import com.sakethh.linkora.utils.rememberLocalizedString
+import kotlinx.coroutines.launch
 import linkora.composeapp.generated.resources.LOLCATpl_logo
 import linkora.composeapp.generated.resources.Res
 import linkora.composeapp.generated.resources.mondstern_logo
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
-import com.sakethh.linkora.ui.utils.pressScaleEffect
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,9 +75,15 @@ fun AcknowledgementScreen() {
                 )
             }
             item {
-                SettingSectionComponent(SettingSectionComponentParam(onClick = {
-                    navController.navigate(Navigation.Settings.AboutLibraries)
-                }, sectionIcon = Icons.Default.Info, sectionTitle = Localization.Key.AboutLibraries.rememberLocalizedString()))
+                SettingSectionComponent(
+                    SettingSectionComponentParam(
+                        onClick = {
+                            navController.navigate(Navigation.Settings.AboutLibraries)
+                        },
+                        sectionIcon = Icons.Default.Info,
+                        sectionTitle = Localization.Key.AboutLibraries.rememberLocalizedString()
+                    )
+                )
             }
             item {
                 Spacer(modifier = Modifier)
@@ -94,6 +100,7 @@ private fun AcknowledgeComponent(
     btnText: String,
 ) {
     val localUriHandler = LocalUriHandler.current
+    val coroutineScope = rememberCoroutineScope()
     Column(
         modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp)
             .clip(RoundedCornerShape(15.dp)).border(
@@ -119,9 +126,12 @@ private fun AcknowledgeComponent(
         )
         FilledTonalButton(
             onClick = {
-                localUriHandler.openUri(btnRedirectUrl)
+                coroutineScope.launch {
+                    localUriHandler.openUriOrNotify(btnRedirectUrl)
+                }
             },
-            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth().padding(start = 15.dp, top = 10.dp, end = 15.dp)
+            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
+                .padding(start = 15.dp, top = 10.dp, end = 15.dp)
                 .pressScaleEffect()
         ) {
             Text(

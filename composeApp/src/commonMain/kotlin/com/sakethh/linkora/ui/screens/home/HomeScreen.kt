@@ -74,6 +74,7 @@ import com.sakethh.linkora.ui.screens.LoadingScreen
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.pressScaleEffect
+import com.sakethh.linkora.utils.openUriOrNotify
 import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -247,7 +248,9 @@ fun HomeScreen() {
                         homeScreenVM.addLinkToHistory(
                             link = it.link, selectedTags = it.tags
                         )
-                        localUriHandler.openUri(it.link.url)
+                        coroutineScope.launch {
+                            localUriHandler.openUriOrNotify(it.link.url)
+                        }
                     },
                     isCurrentlyInDetailsView = {
                         false
