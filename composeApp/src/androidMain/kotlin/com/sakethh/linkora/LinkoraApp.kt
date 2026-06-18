@@ -59,7 +59,8 @@ class LinkoraApp : Application() {
                         produceFile = {
                             applicationContext.filesDir.resolve(Constants.DATA_STORE_NAME).absolutePath.toPath()
                         })
-                )
+                ),
+                hoarder = NativeUtils.Hoarder()
             )
         )
         runBlocking {

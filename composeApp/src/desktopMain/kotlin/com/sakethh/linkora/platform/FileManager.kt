@@ -40,15 +40,13 @@ import java.util.Date
 import java.util.Locale
 
 actual class FileManager {
-
-    actual suspend fun writeRawExportStringToFile(
+    private suspend fun writeToFile(
         exportLocation: String,
         exportFileType: ExportFileType,
         exportLocationType: ExportLocationType,
-        rawExportString: RawExportString,
+        byteArray: ByteArray,
         onCompletion: suspend (String) -> Unit
     ) {
-
         val exportsFolder = File(exportLocation)
 
         exportsFolder.exists().ifNot {
@@ -58,16 +56,35 @@ actual class FileManager {
         // kinda repeated in Expected.android, but alright
         val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-SSS", Locale.US)
         val timestamp = simpleDateFormat.format(Date())
-        val exportFileName =
-            "${if (exportLocationType == ExportLocationType.EXPORT) "LinkoraExport" else "LinkoraSnapshot"}-$timestamp.${if (exportFileType == ExportFileType.HTML) "html" else "json"}"
+        val exportFileName = when (exportLocationType) {
+            ExportLocationType.EXPORT -> "LinkoraExport"
+            ExportLocationType.SNAPSHOT -> "LinkoraSnapshot"
+            ExportLocationType.HOARDER -> "LinkoraHoarding"
+        } + "-$timestamp.${if (exportFileType == ExportFileType.HTML) "html" else "json"}"
 
         val exportFilePath = Paths.get(exportsFolder.absolutePath, exportFileName)
 
         withContext(Dispatchers.IO) {
-            Files.write(exportFilePath, rawExportString.toByteArray())
+            Files.write(exportFilePath, byteArray)
         }
         onCompletion(exportFileName)
         linkoraLog(exportFileName)
+    }
+
+    actual suspend fun writeRawExportStringToFile(
+        exportLocation: String,
+        exportFileType: ExportFileType,
+        exportLocationType: ExportLocationType,
+        rawExportString: RawExportString,
+        onCompletion: suspend (String) -> Unit
+    ) {
+        writeToFile(
+            exportLocation = exportLocation,
+            exportFileType = exportFileType,
+            exportLocationType = exportLocationType,
+            byteArray = rawExportString.toByteArray(),
+            onCompletion = onCompletion
+        )
     }
 
     actual suspend fun saveSyncServerCertificateInternally(
@@ -304,8 +321,7 @@ actual class FileManager {
             val factory = CertificateFactory.getInstance("X.509")
             val certBytes = sourceFile.readBytes()
             certInfo = getCertificateInfo(
-                factory = factory,
-                inputStream = ByteArrayInputStream(certBytes)
+                factory = factory, inputStream = ByteArrayInputStream(certBytes)
             )
             (factory.generateCertificate(ByteArrayInputStream(certBytes)) as X509Certificate).encoded
         } catch (e: Exception) {
@@ -314,5 +330,21 @@ actual class FileManager {
         } finally {
             onCompletion(certInfo)
         }
+    }
+
+    actual suspend fun writeByteArrayToFile(
+        exportLocation: String,
+        exportFileType: ExportFileType,
+        exportLocationType: ExportLocationType,
+        byteArray: ByteArray,
+        onCompletion: suspend (String) -> Unit
+    ) {
+        writeToFile(
+            exportLocation = exportLocation,
+            exportFileType = exportFileType,
+            exportLocationType = exportLocationType,
+            byteArray = byteArray,
+            onCompletion = onCompletion
+        )
     }
 }

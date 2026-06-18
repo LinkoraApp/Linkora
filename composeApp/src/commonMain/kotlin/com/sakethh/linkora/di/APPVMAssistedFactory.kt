@@ -21,7 +21,7 @@ object APPVMAssistedFactory {
                 fileManager = LinkoraSDK.getInstance().fileManager,
                 dataSyncingNotificationService = LinkoraSDK.getInstance().dataSyncingNotificationService,
                 snapshotRepo = DependencyContainer.snapshotRepo,
-                nativeUtils = LinkoraSDK.getInstance().nativeUtils
+                nativeUtils = LinkoraSDK.getInstance().nativeUtils,
             )
         }
     }

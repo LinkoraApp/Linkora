@@ -62,6 +62,7 @@ kotlin {
             dependsOn(commonMain.get())
 
             dependencies {
+                implementation(project(":hoarder"))
                 implementation(libs.androidx.datastore.preferences.core)
             }
         }

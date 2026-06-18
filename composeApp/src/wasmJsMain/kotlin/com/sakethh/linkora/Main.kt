@@ -84,7 +84,8 @@ fun main() {
                 .setDriver(WebWorkerSQLiteDriver(createWorker())).build(),
             platformPreference = PlatformPreference,
             network = Network,
-            dataSyncingNotificationService = NativeUtils.DataSyncingNotificationService()
+            dataSyncingNotificationService = NativeUtils.DataSyncingNotificationService(),
+            hoarder = NativeUtils.Hoarder()
         )
     )
 

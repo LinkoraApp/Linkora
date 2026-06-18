@@ -1,5 +1,6 @@
 package com.sakethh.linkora.platform
 
+import AndroidDesktopHoarder
 import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
@@ -17,6 +18,7 @@ import com.sakethh.linkora.Localization
 import com.sakethh.linkora.R
 import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.domain.AppPreferences
+import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.RefreshLinksRepo
@@ -139,5 +141,27 @@ actual class NativeUtils(private val context: Context) {
 
     actual fun <T> platformRunBlocking(block: suspend () -> T): T? = runBlocking {
         block()
+    }
+
+    actual class Hoarder {
+        val androidDesktopHoarder = AndroidDesktopHoarder()
+        actual suspend fun init(): Result<Boolean> =
+            androidDesktopHoarder.init()
+
+        actual suspend fun getHTMLPage(
+            url: String,
+            userAgent: String,
+            timeout: Long,
+            allowInsecureProtocol: Boolean,
+            ignoreDocErrors: Boolean,
+            useCss: Boolean,
+            embedFonts: Boolean,
+            embedImages: Boolean,
+            restrictJs: Boolean,
+            logStuff: Boolean
+        ): Result<ByteArray> = androidDesktopHoarder.getHTMLPage(
+            url, userAgent, timeout, allowInsecureProtocol, ignoreDocErrors,
+            useCss, embedFonts, embedImages, restrictJs, logStuff
+        )
     }
 }

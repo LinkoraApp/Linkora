@@ -47,18 +47,22 @@ import kotlin.coroutines.coroutineContext
 import kotlin.coroutines.resume
 
 actual class FileManager(private val context: Context) {
-    actual suspend fun writeRawExportStringToFile(
+
+    private suspend fun writeToFile(
         exportLocation: String,
         exportFileType: ExportFileType,
         exportLocationType: ExportLocationType,
-        rawExportString: RawExportString,
+        byteArray: ByteArray,
         onCompletion: suspend (String) -> Unit
     ) {
 
         val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-SSS", Locale.US)
         val timestamp = simpleDateFormat.format(Date())
-        val exportFileName =
-            "${if (exportLocationType == ExportLocationType.EXPORT) "LinkoraExport" else "LinkoraSnapshot"}-$timestamp.${if (exportFileType == ExportFileType.HTML) "html" else "json"}"
+        val exportFileName = when (exportLocationType) {
+            ExportLocationType.EXPORT -> "LinkoraExport"
+            ExportLocationType.SNAPSHOT -> "LinkoraSnapshot"
+            ExportLocationType.HOARDER -> "LinkoraHoarding"
+        } + "-$timestamp.${if (exportFileType == ExportFileType.HTML) "html" else "json"}"
 
         val directoryUri = exportLocation.toUri()
         val directory = DocumentFile.fromTreeUri(context, directoryUri)
@@ -69,7 +73,7 @@ actual class FileManager(private val context: Context) {
         newFile?.uri?.let { fileUri ->
             try {
                 context.contentResolver.openOutputStream(fileUri)?.use { outputStream ->
-                    outputStream.write(rawExportString.toByteArray())
+                    outputStream.write(byteArray)
                 }
                 onCompletion(exportFileName)
             } catch (e: Exception) {
@@ -79,6 +83,22 @@ actual class FileManager(private val context: Context) {
                 e.printStackTrace()
             }
         }
+    }
+
+    actual suspend fun writeRawExportStringToFile(
+        exportLocation: String,
+        exportFileType: ExportFileType,
+        exportLocationType: ExportLocationType,
+        rawExportString: RawExportString,
+        onCompletion: suspend (String) -> Unit
+    ) {
+        writeToFile(
+            exportLocation = exportLocation,
+            exportFileType = exportFileType,
+            exportLocationType = exportLocationType,
+            byteArray = rawExportString.toByteArray(),
+            onCompletion = onCompletion
+        )
     }
 
 
@@ -273,4 +293,20 @@ actual class FileManager(private val context: Context) {
 
     actual suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>> =
         emptyFlow()
+
+    actual suspend fun writeByteArrayToFile(
+        exportLocation: String,
+        exportFileType: ExportFileType,
+        exportLocationType: ExportLocationType,
+        byteArray: ByteArray,
+        onCompletion: suspend (String) -> Unit
+    ) {
+        writeToFile(
+            exportLocation = exportLocation,
+            exportFileType = exportFileType,
+            exportLocationType = exportLocationType,
+            byteArray = byteArray,
+            onCompletion = onCompletion
+        )
+    }
 }

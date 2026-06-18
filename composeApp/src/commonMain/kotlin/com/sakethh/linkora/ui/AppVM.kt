@@ -100,7 +100,7 @@ class AppVM(
 
     val onBoardingCompleted = mutableStateOf(false)
 
-    fun <T> updatePreference(key: PreferenceKey<T>, newValue:T, onCompletion: () -> Unit){
+    fun <T> updatePreference(key: PreferenceKey<T>, newValue: T, onCompletion: () -> Unit) {
         viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
                 preferenceKey = key,

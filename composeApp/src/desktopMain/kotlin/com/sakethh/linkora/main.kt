@@ -89,7 +89,8 @@ suspend fun main() {
             },
             platformPreference = PlatformPreference,
             network = Network,
-            dataSyncingNotificationService = NativeUtils.DataSyncingNotificationService()
+            dataSyncingNotificationService = NativeUtils.DataSyncingNotificationService(),
+            hoarder = NativeUtils.Hoarder()
         )
     )
 

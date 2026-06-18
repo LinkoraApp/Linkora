@@ -56,6 +56,14 @@ expect class FileManager {
         onCompletion: suspend (String) -> Unit
     )
 
+    suspend fun writeByteArrayToFile(
+        exportLocation: String,
+        exportFileType: ExportFileType,
+        exportLocationType: ExportLocationType,
+        byteArray: ByteArray,
+        onCompletion: suspend (String) -> Unit
+    )
+
 
     suspend fun importFromJSONObj(
     ): Flow<Result<JSONExportSchema>>
@@ -99,6 +107,22 @@ expect class FileManager {
 
 expect class NativeUtils {
     fun onShare(url: String)
+
+    class Hoarder {
+        suspend fun init(): Result<Boolean>
+        suspend fun getHTMLPage(
+            url: String,
+            userAgent: String,
+            timeout: Long,
+            allowInsecureProtocol: Boolean,
+            ignoreDocErrors: Boolean,
+            useCss: Boolean,
+            embedFonts: Boolean,
+            embedImages: Boolean,
+            restrictJs: Boolean,
+            logStuff: Boolean
+        ): Result<ByteArray>
+    }
 
     suspend fun onRefreshAllLinks(
         localLinksRepo: LocalLinksRepo,

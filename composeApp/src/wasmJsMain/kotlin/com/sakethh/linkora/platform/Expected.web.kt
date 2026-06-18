@@ -109,6 +109,15 @@ actual class FileManager {
     actual suspend fun getSyncServerCertificate(onCompletion: (provider: String) -> Unit): ByteArray? =
         null
 
+    actual suspend fun writeByteArrayToFile(
+        exportLocation: String,
+        exportFileType: ExportFileType,
+        exportLocationType: ExportLocationType,
+        byteArray: ByteArray,
+        onCompletion: suspend (String) -> Unit
+    ) {
+    }
+
 }
 
 actual class NativeUtils {
@@ -150,6 +159,27 @@ actual class NativeUtils {
             block()
         }
         return null
+    }
+
+    actual class Hoarder {
+        actual suspend fun init(): Result<Boolean> {
+            return Result.Failure("huh")
+        }
+
+        actual suspend fun getHTMLPage(
+            url: String,
+            userAgent: String,
+            timeout: Long,
+            allowInsecureProtocol: Boolean,
+            ignoreDocErrors: Boolean,
+            useCss: Boolean,
+            embedFonts: Boolean,
+            embedImages: Boolean,
+            restrictJs: Boolean,
+            logStuff: Boolean
+        ): Result<ByteArray> {
+            return Result.Failure("huh")
+        }
     }
 }
 
