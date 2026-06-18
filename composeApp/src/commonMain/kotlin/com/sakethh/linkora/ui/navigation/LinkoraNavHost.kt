@@ -32,6 +32,7 @@ import com.sakethh.linkora.ui.screens.settings.section.LayoutSettingsScreen
 import com.sakethh.linkora.ui.screens.settings.section.ThemeSettingsScreen
 import com.sakethh.linkora.ui.screens.settings.section.about.AboutScreen
 import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreen
+import com.sakethh.linkora.ui.screens.settings.section.data.capture.WebPageCaptureScreen
 import com.sakethh.linkora.ui.screens.settings.section.data.snapshots.SnapshotsScreen
 import com.sakethh.linkora.ui.screens.settings.section.data.sync.ServerSetupScreen
 import com.sakethh.linkora.utils.Utils
@@ -147,6 +148,9 @@ fun LinkoraNavHost(
             OnboardingSlidesScreen(
                 onOnboardingComplete = onOnboardingComplete,
             )
+        }
+        composable<Navigation.Settings.Data.WebPageCapturesScreen> {
+            WebPageCaptureScreen()
         }
     }
 }

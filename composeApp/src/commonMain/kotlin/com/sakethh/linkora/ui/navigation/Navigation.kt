@@ -105,6 +105,12 @@ sealed interface Navigation {
                 override fun toString(): String =
                     Localization.Key.Snapshots.getLocalizedString()
             }
+
+            @Serializable
+            data object WebPageCapturesScreen : Data {
+                override fun toString(): String =
+                    "Web-page Captures"
+            }
         }
     }
 

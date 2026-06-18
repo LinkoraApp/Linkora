@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.SwitchLeft
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.WbCloudy
+import androidx.compose.material.icons.filled.Web
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
@@ -425,6 +426,21 @@ fun DataSettingsScreen() {
                             bottomSpacing = 0.dp
                         )
                     )
+                    if (platform != Platform.Web) {
+                        Spacer(modifier = Modifier.height(15.dp))
+                        SettingSectionComponent(
+                            SettingSectionComponentParam(
+                                onClick = {
+                                    navController.navigate(Navigation.Settings.Data.WebPageCapturesScreen)
+                                },
+                                sectionTitle = "Web‑page Captures",
+                                sectionIcon = Icons.Default.Web,
+                                shouldArrowIconAppear = true,
+                                fontSize = 16.sp,
+                                bottomSpacing = 0.dp
+                            )
+                        )
+                    }
                 }
             }
 
@@ -672,13 +688,13 @@ fun DataSettingsScreen() {
                                     Row(
                                         modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
                                             .fillMaxWidth().clickable(onClick = {
-                                            dataSettingsScreenVM.changeSettingPreferenceValue(
-                                                preferenceKey = stringPreferencesKey(
-                                                    AppPreferences.REFRESH_LINK_TYPE.key
-                                                ),
-                                                newValue = refreshLinkType.name
-                                            )
-                                        }, indication = null, interactionSource = null)
+                                                dataSettingsScreenVM.changeSettingPreferenceValue(
+                                                    preferenceKey = stringPreferencesKey(
+                                                        AppPreferences.REFRESH_LINK_TYPE.key
+                                                    ),
+                                                    newValue = refreshLinkType.name
+                                                )
+                                            }, indication = null, interactionSource = null)
                                             .pressScaleEffect(),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
