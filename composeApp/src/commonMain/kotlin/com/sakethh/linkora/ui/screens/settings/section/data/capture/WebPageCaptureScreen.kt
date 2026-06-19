@@ -41,37 +41,40 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sakethh.linkora.di.linkoraViewModel
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
+import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
+import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
+import com.sakethh.linkora.utils.booleanPreferencesKey
+import com.sakethh.linkora.utils.intPreferencesKey
+import com.sakethh.linkora.utils.stringPreferencesKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WebPageCaptureScreen() {
-    var useWebCaptures by rememberSaveable { mutableStateOf(false) }
-    var webcapturesLocation by rememberSaveable { mutableStateOf("") }
 
-    var saveImages by rememberSaveable { mutableStateOf(true) }
-    var saveFonts by rememberSaveable { mutableStateOf(true) }
-    var saveCss by rememberSaveable { mutableStateOf(true) }
-    var executeJs by rememberSaveable { mutableStateOf(false) }
-    var saveAudio by rememberSaveable { mutableStateOf(true) }
-    var saveVideo by rememberSaveable { mutableStateOf(true) }
-    var saveMetadata by rememberSaveable { mutableStateOf(true) }
+    val dataSettingsScreenVM = linkoraViewModel<DataSettingsScreenVM>()
+    val preferences by dataSettingsScreenVM.preferencesAsFlow.collectAsStateWithLifecycle()
 
-    var whitelistDomains by rememberSaveable { mutableStateOf("") }
-    var blacklistDomains by rememberSaveable { mutableStateOf("") }
-
-    var saveAsVersions by rememberSaveable { mutableStateOf(false) }
-    var retainAllVersions by rememberSaveable { mutableStateOf(false) }
-    var maxVersions by rememberSaveable { mutableStateOf(3f) }
     val localFocusManager = LocalFocusManager.current
-
+    var whitelistDomains by rememberSaveable(preferences.webCaptureWhitelistDomains) {
+        mutableStateOf(preferences.webCaptureWhitelistDomains)
+    }
+    var blacklistDomains by rememberSaveable(preferences.webCaptureBlacklistDomains) {
+        mutableStateOf(preferences.webCaptureBlacklistDomains)
+    }
+    var webCaptureLocation by rememberSaveable(preferences.webCapturesLocation) {
+        mutableStateOf(preferences.webCapturesLocation)
+    }
     SettingsSectionScaffold(
         topAppBarText = Navigation.Settings.Data.WebPageCapturesScreen.toString(),
     ) { paddingValues, topAppBarScrollBehaviour ->
@@ -94,15 +97,20 @@ fun WebPageCaptureScreen() {
                         doesDescriptionExists = true,
                         description = "Automatically downloads pages as HTML for offline view whenever a new link is saved or refreshed. Works well for text and media, though heavy JS sites may not fully load. Processes entirely on-device, which can be resource-heavy.",
                         isSwitchNeeded = true,
-                        isSwitchEnabled = useWebCaptures,
-                        onSwitchStateChange = { useWebCaptures = !useWebCaptures },
+                        isSwitchEnabled = preferences.useWebCaptures,
+                        onSwitchStateChange = {
+                            dataSettingsScreenVM.changeSettingPreferenceValue(
+                                preferenceKey = booleanPreferencesKey(AppPreferences.USE_WEB_CAPTURES.key),
+                                newValue = !preferences.useWebCaptures
+                            )
+                        },
                         icon = Icons.Default.Web,
                         shouldFilledIconBeUsed = false
                     )
                 )
             }
 
-            if (useWebCaptures) {
+            if (preferences.useWebCaptures) {
                 item {
                     TextField(
                         supportingText = {
@@ -118,7 +126,13 @@ fun WebPageCaptureScreen() {
                                     .pointerHoverIcon(icon = PointerIcon.Hand)
                                     .pressScaleEffect()
                                     .padding(end = 5.dp),
-                                onClick = { }
+                                onClick = {
+                                    dataSettingsScreenVM.changeExportLocation(
+                                        exportLocation = webCaptureLocation,
+                                        platform = platform,
+                                        exportLocationType = ExportLocationType.HOARDER
+                                    )
+                                }
                             ) {
                                 Icon(
                                     imageVector = if (platform is Platform.Android) Icons.Default.FolderOpen else Icons.Default.Save,
@@ -134,8 +148,13 @@ fun WebPageCaptureScreen() {
                                 textAlign = TextAlign.Start,
                             )
                         },
-                        value = webcapturesLocation,
-                        onValueChange = { webcapturesLocation = it },
+                        value = webCaptureLocation,
+                        onValueChange = {
+                            dataSettingsScreenVM.changeSettingPreferenceValue(
+                                preferenceKey = stringPreferencesKey(AppPreferences.WEB_CAPTURES_LOCATION.key),
+                                newValue = it
+                            )
+                        },
                         modifier = Modifier
                             .padding(horizontal = 15.dp)
                             .fillMaxWidth()
@@ -168,32 +187,67 @@ fun WebPageCaptureScreen() {
                         ) {
                             AssetStripOption(
                                 label = "Include Images",
-                                checked = saveImages,
-                                onCheckedChange = { saveImages = it })
+                                checked = preferences.webCaptureSaveImages,
+                                onCheckedChange = {
+                                    dataSettingsScreenVM.changeSettingPreferenceValue(
+                                        preferenceKey = booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_IMAGES.key),
+                                        newValue = it
+                                    )
+                                })
                             AssetStripOption(
                                 label = "Include Fonts",
-                                checked = saveFonts,
-                                onCheckedChange = { saveFonts = it })
+                                checked = preferences.webCaptureSaveFonts,
+                                onCheckedChange = {
+                                    dataSettingsScreenVM.changeSettingPreferenceValue(
+                                        preferenceKey = booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_FONTS.key),
+                                        newValue = it
+                                    )
+                                })
                             AssetStripOption(
                                 label = "Include CSS Stylesheets",
-                                checked = saveCss,
-                                onCheckedChange = { saveCss = it })
+                                checked = preferences.webCaptureSaveCss,
+                                onCheckedChange = {
+                                    dataSettingsScreenVM.changeSettingPreferenceValue(
+                                        preferenceKey = booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_CSS.key),
+                                        newValue = it
+                                    )
+                                })
                             AssetStripOption(
                                 label = "Include Audio Elements",
-                                checked = saveAudio,
-                                onCheckedChange = { saveAudio = it })
+                                checked = preferences.webCaptureSaveAudio,
+                                onCheckedChange = {
+                                    dataSettingsScreenVM.changeSettingPreferenceValue(
+                                        preferenceKey = booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_AUDIO.key),
+                                        newValue = it
+                                    )
+                                })
                             AssetStripOption(
                                 label = "Include Video Elements",
-                                checked = saveVideo,
-                                onCheckedChange = { saveVideo = it })
+                                checked = preferences.webCaptureSaveVideo,
+                                onCheckedChange = {
+                                    dataSettingsScreenVM.changeSettingPreferenceValue(
+                                        preferenceKey = booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_VIDEO.key),
+                                        newValue = it
+                                    )
+                                })
                             AssetStripOption(
                                 label = "Include Page Metadata",
-                                checked = saveMetadata,
-                                onCheckedChange = { saveMetadata = it })
+                                checked = preferences.webCaptureSaveMetadata,
+                                onCheckedChange = {
+                                    dataSettingsScreenVM.changeSettingPreferenceValue(
+                                        preferenceKey = booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_METADATA.key),
+                                        newValue = it
+                                    )
+                                })
                             AssetStripOption(
                                 label = "Execute JavaScript",
-                                checked = executeJs,
-                                onCheckedChange = { executeJs = it })
+                                checked = preferences.webCaptureExecuteJs,
+                                onCheckedChange = {
+                                    dataSettingsScreenVM.changeSettingPreferenceValue(
+                                        preferenceKey = booleanPreferencesKey(AppPreferences.WEB_CAPTURE_EXECUTE_JS.key),
+                                        newValue = it
+                                    )
+                                })
                         }
                     }
                 }
@@ -207,7 +261,9 @@ fun WebPageCaptureScreen() {
                     ) {
                         TextField(
                             value = whitelistDomains,
-                            onValueChange = { whitelistDomains = it },
+                            onValueChange = {
+                                whitelistDomains = it
+                            },
                             supportingText = {
                                 Text(
                                     text = "Separate multiple domains with commas",
@@ -221,6 +277,10 @@ fun WebPageCaptureScreen() {
                                         .pressScaleEffect()
                                         .padding(end = 5.dp),
                                     onClick = {
+                                        dataSettingsScreenVM.changeSettingPreferenceValue(
+                                            preferenceKey = stringPreferencesKey(AppPreferences.WEB_CAPTURE_WHITELIST_DOMAINS.key),
+                                            newValue = whitelistDomains
+                                        )
                                         localFocusManager.clearFocus()
                                     }
                                 ) {
@@ -247,7 +307,9 @@ fun WebPageCaptureScreen() {
                         )
                         TextField(
                             value = blacklistDomains,
-                            onValueChange = { blacklistDomains = it },
+                            onValueChange = {
+                                blacklistDomains = it
+                            },
                             supportingText = {
                                 Text(
                                     text = "Separate multiple domains with commas",
@@ -261,6 +323,10 @@ fun WebPageCaptureScreen() {
                                         .pressScaleEffect()
                                         .padding(end = 5.dp),
                                     onClick = {
+                                        dataSettingsScreenVM.changeSettingPreferenceValue(
+                                            preferenceKey = stringPreferencesKey(AppPreferences.WEB_CAPTURE_BLACKLIST_DOMAINS.key),
+                                            newValue = blacklistDomains
+                                        )
                                         localFocusManager.clearFocus()
                                     }
                                 ) {
@@ -296,15 +362,20 @@ fun WebPageCaptureScreen() {
                             doesDescriptionExists = true,
                             description = "Retain historical page snapshots instead of overwriting the existing file when saving a duplicate link or refreshing.",
                             isSwitchNeeded = true,
-                            isSwitchEnabled = saveAsVersions,
-                            onSwitchStateChange = { saveAsVersions = !saveAsVersions },
+                            isSwitchEnabled = preferences.webCaptureSaveAsVersions,
+                            onSwitchStateChange = {
+                                dataSettingsScreenVM.changeSettingPreferenceValue(
+                                    preferenceKey = booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_AS_VERSIONS.key),
+                                    newValue = !preferences.webCaptureSaveAsVersions
+                                )
+                            },
                             icon = Icons.Default.History,
                             shouldFilledIconBeUsed = true
                         )
                     )
                 }
 
-                if (saveAsVersions) {
+                if (preferences.webCaptureSaveAsVersions) {
                     item {
                         SettingComponent(
                             SettingComponentParam(
@@ -313,8 +384,13 @@ fun WebPageCaptureScreen() {
                                 doesDescriptionExists = false,
                                 description = "Retain historical page snapshots instead of overwriting the existing file when saving a duplicate link or pulling a fresh updates.",
                                 isSwitchNeeded = true,
-                                isSwitchEnabled = retainAllVersions,
-                                onSwitchStateChange = { retainAllVersions = !retainAllVersions },
+                                isSwitchEnabled = preferences.webCaptureRetainAllVersions,
+                                onSwitchStateChange = {
+                                    dataSettingsScreenVM.changeSettingPreferenceValue(
+                                        preferenceKey = booleanPreferencesKey(AppPreferences.WEB_CAPTURE_RETAIN_ALL_VERSIONS.key),
+                                        newValue = !preferences.webCaptureRetainAllVersions
+                                    )
+                                },
                                 icon = Icons.Default.AllInclusive,
                                 shouldFilledIconBeUsed = true
                             )
@@ -324,15 +400,20 @@ fun WebPageCaptureScreen() {
                         SliderOption(
                             modifier = Modifier.padding(start = 15.dp, end = 15.dp),
                             label = "Max versions per page",
-                            value = maxVersions,
-                            onValueChange = { maxVersions = it },
+                            value = preferences.webCaptureMaxVersions.toFloat(),
+                            onValueChange = {
+                                dataSettingsScreenVM.changeSettingPreferenceValue(
+                                    preferenceKey = intPreferencesKey(AppPreferences.WEB_CAPTURE_MAX_VERSIONS.key),
+                                    newValue = it.toInt()
+                                )
+                            },
                             valueRange = 1f..10f,
                             steps = 8,
-                            enabled = !retainAllVersions,
-                            displayValue = maxVersions.toInt().toString()
+                            enabled = !preferences.webCaptureRetainAllVersions,
+                            displayValue = preferences.webCaptureMaxVersions.toString()
                         )
                     }
-                    if (!retainAllVersions) {
+                    if (!preferences.webCaptureRetainAllVersions) {
                         item {
                             Text(
                                 text = "When the maximum version limit per page is reached, older captures will be automatically deleted to make room for new ones.",
@@ -340,7 +421,9 @@ fun WebPageCaptureScreen() {
                                 fontSize = 14.sp,
                                 lineHeight = 20.sp,
                                 textAlign = TextAlign.Start,
-                                modifier = Modifier.padding(horizontal = 15.dp).padding(top = 5.dp),
+                                modifier = Modifier
+                                    .padding(horizontal = 15.dp)
+                                    .padding(top = 5.dp),
                             )
                         }
                     }

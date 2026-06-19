@@ -162,7 +162,33 @@ suspend fun readAllPreferences(
         maxConcurrentRefreshCount = prefs[dsIntKey(AppPreferences.MAX_CONCURRENT_REFRESH_COUNT.key)]
             ?: 15,
         showSyncServerSurveyNotice = prefs[dsBooleanKey(AppPreferences.SHOW_SYNC_SERVER_SURVEY_NOTICE.key)]
-            ?: true)
+            ?: true,
+        useWebCaptures = prefs[dsBooleanKey(AppPreferences.USE_WEB_CAPTURES.key)] ?: false,
+        webCapturesLocation = prefs[dsStringKey(AppPreferences.WEB_CAPTURES_LOCATION.key)] ?: "",
+        webCaptureSaveImages = prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_IMAGES.key)]
+            ?: true,
+        webCaptureSaveFonts = prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_FONTS.key)]
+            ?: true,
+        webCaptureSaveCss = prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_CSS.key)] ?: true,
+        webCaptureExecuteJs = prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_EXECUTE_JS.key)]
+            ?: false,
+        webCaptureSaveAudio = prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_AUDIO.key)]
+            ?: true,
+        webCaptureSaveVideo = prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_VIDEO.key)]
+            ?: true,
+        webCaptureSaveMetadata = prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_METADATA.key)]
+            ?: true,
+        webCaptureWhitelistDomains = prefs[dsStringKey(AppPreferences.WEB_CAPTURE_WHITELIST_DOMAINS.key)]
+            ?: "",
+        webCaptureBlacklistDomains = prefs[dsStringKey(AppPreferences.WEB_CAPTURE_BLACKLIST_DOMAINS.key)]
+            ?: "",
+        webCaptureSaveAsVersions = prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_AS_VERSIONS.key)]
+            ?: false,
+        webCaptureRetainAllVersions = prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_RETAIN_ALL_VERSIONS.key)]
+            ?: false,
+        webCaptureMaxVersions = prefs[dsIntKey(AppPreferences.WEB_CAPTURE_MAX_VERSIONS.key)] ?: 3,
+        webCaptureAutoDeleteDays = prefs[dsIntKey(AppPreferences.WEB_CAPTURE_AUTO_DELETE_DAYS.key)]
+            ?: 30)
 }
 
 suspend fun <T> writePreferenceValue(

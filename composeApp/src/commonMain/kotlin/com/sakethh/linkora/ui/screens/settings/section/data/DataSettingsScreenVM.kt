@@ -162,7 +162,7 @@ class DataSettingsScreenVM(
             }.collectLatest {
                 it.onLoading { exportLogItem ->
                     importExportProgressLogs.add(exportLogItem)
-                }.onSuccess { (rawExportString)->
+                }.onSuccess { (rawExportString) ->
                     try {
                         fileManager.writeRawExportStringToFile(
                             exportLocation = preferencesRepository.getPreferences().currentExportLocation,
@@ -290,19 +290,17 @@ class DataSettingsScreenVM(
         exportLocation: String, exportLocationType: ExportLocationType
     ) {
         viewModelScope.launch {
-
             try {
-
                 val newExportLocation =
                     if (platform == Platform.Desktop) exportLocation else fileManager.pickADirectory()
                         ?: throw NullPointerException(Localization.Key.InvalidExportDir.getLocalizedString())
 
                 preferencesRepository.changePreferenceValue(
                     preferenceKey = stringPreferencesKey(
-                        if (exportLocationType == ExportLocationType.EXPORT) {
-                            AppPreferences.EXPORT_LOCATION.key
-                        } else {
-                            AppPreferences.BACKUP_LOCATION.key
+                        when (exportLocationType) {
+                            ExportLocationType.EXPORT -> AppPreferences.EXPORT_LOCATION.key
+                            ExportLocationType.SNAPSHOT -> AppPreferences.BACKUP_LOCATION.key
+                            ExportLocationType.HOARDER -> AppPreferences.WEB_CAPTURES_LOCATION.key
                         }
                     ), newValue = newExportLocation
                 )

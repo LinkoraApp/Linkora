@@ -155,6 +155,65 @@ class PreferencesImpl(
                     showSyncServerSurveyNotice = value as Boolean
                 )
 
+                AppPreferences.USE_WEB_CAPTURES -> currentPref.copy(
+                    useWebCaptures = value as Boolean
+                )
+
+                AppPreferences.WEB_CAPTURES_LOCATION -> currentPref.copy(
+                    webCapturesLocation = value as String
+                )
+
+                AppPreferences.WEB_CAPTURE_SAVE_IMAGES -> currentPref.copy(
+                    webCaptureSaveImages = value as Boolean
+                )
+
+                AppPreferences.WEB_CAPTURE_SAVE_FONTS -> currentPref.copy(
+                    webCaptureSaveFonts = value as Boolean
+                )
+
+                AppPreferences.WEB_CAPTURE_SAVE_CSS -> currentPref.copy(
+                    webCaptureSaveCss = value as Boolean
+                )
+
+                AppPreferences.WEB_CAPTURE_EXECUTE_JS -> currentPref.copy(
+                    webCaptureExecuteJs = value as Boolean
+                )
+
+                AppPreferences.WEB_CAPTURE_SAVE_AUDIO -> currentPref.copy(
+                    webCaptureSaveAudio = value as Boolean
+                )
+
+                AppPreferences.WEB_CAPTURE_SAVE_VIDEO -> currentPref.copy(
+                    webCaptureSaveVideo = value as Boolean
+                )
+
+                AppPreferences.WEB_CAPTURE_SAVE_METADATA -> currentPref.copy(
+                    webCaptureSaveMetadata = value as Boolean
+                )
+
+                AppPreferences.WEB_CAPTURE_WHITELIST_DOMAINS -> currentPref.copy(
+                    webCaptureWhitelistDomains = value as String
+                )
+
+                AppPreferences.WEB_CAPTURE_BLACKLIST_DOMAINS -> currentPref.copy(
+                    webCaptureBlacklistDomains = value as String
+                )
+
+                AppPreferences.WEB_CAPTURE_SAVE_AS_VERSIONS -> currentPref.copy(
+                    webCaptureSaveAsVersions = value as Boolean
+                )
+
+                AppPreferences.WEB_CAPTURE_RETAIN_ALL_VERSIONS -> currentPref.copy(
+                    webCaptureRetainAllVersions = value as Boolean
+                )
+
+                AppPreferences.WEB_CAPTURE_MAX_VERSIONS -> currentPref.copy(
+                    webCaptureMaxVersions = value as Int
+                )
+
+                AppPreferences.WEB_CAPTURE_AUTO_DELETE_DAYS -> currentPref.copy(
+                    webCaptureAutoDeleteDays = value as Int
+                )
                 else -> currentPref
             }
         }

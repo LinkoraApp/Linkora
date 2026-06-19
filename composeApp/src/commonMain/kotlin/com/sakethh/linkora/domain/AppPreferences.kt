@@ -69,7 +69,22 @@ data class AppPreferences(
     val selectedFont: Font = Font.POPPINS,
     val selectedLinkRefreshType: RefreshLinkType = RefreshLinkType.Both,
     val maxConcurrentRefreshCount: Int = 15,
-    val showSyncServerSurveyNotice: Boolean = false
+    val showSyncServerSurveyNotice: Boolean = false,
+    val useWebCaptures: Boolean = false,
+    val webCapturesLocation: String = "",
+    val webCaptureSaveImages: Boolean = true,
+    val webCaptureSaveFonts: Boolean = true,
+    val webCaptureSaveCss: Boolean = true,
+    val webCaptureExecuteJs: Boolean = false,
+    val webCaptureSaveAudio: Boolean = true,
+    val webCaptureSaveVideo: Boolean = true,
+    val webCaptureSaveMetadata: Boolean = true,
+    val webCaptureWhitelistDomains: String = "",
+    val webCaptureBlacklistDomains: String = "",
+    val webCaptureSaveAsVersions: Boolean = false,
+    val webCaptureRetainAllVersions: Boolean = false,
+    val webCaptureMaxVersions: Int = 3,
+    val webCaptureAutoDeleteDays: Int = 30
 ) {
     companion object {
         val DARK_THEME = booleanPreferencesKey("DARK_THEME")
@@ -133,5 +148,22 @@ data class AppPreferences(
         val PROXY_URL = stringPreferencesKey("PROXY_URL")
         val USE_PROXY = booleanPreferencesKey("USE_PROXY")
         val SHOW_SYNC_SERVER_SURVEY_NOTICE = booleanPreferencesKey("SHOW_SYNC_SERVER_SURVEY_NOTICE")
+
+        val USE_WEB_CAPTURES = booleanPreferencesKey("USE_WEB_CAPTURES")
+        val WEB_CAPTURES_LOCATION = stringPreferencesKey("WEB_CAPTURES_LOCATION")
+        val WEB_CAPTURE_SAVE_IMAGES = booleanPreferencesKey("WEB_CAPTURE_SAVE_IMAGES")
+        val WEB_CAPTURE_SAVE_FONTS = booleanPreferencesKey("WEB_CAPTURE_SAVE_FONTS")
+        val WEB_CAPTURE_SAVE_CSS = booleanPreferencesKey("WEB_CAPTURE_SAVE_CSS")
+        val WEB_CAPTURE_EXECUTE_JS = booleanPreferencesKey("WEB_CAPTURE_EXECUTE_JS")
+        val WEB_CAPTURE_SAVE_AUDIO = booleanPreferencesKey("WEB_CAPTURE_SAVE_AUDIO")
+        val WEB_CAPTURE_SAVE_VIDEO = booleanPreferencesKey("WEB_CAPTURE_SAVE_VIDEO")
+        val WEB_CAPTURE_SAVE_METADATA = booleanPreferencesKey("WEB_CAPTURE_SAVE_METADATA")
+        val WEB_CAPTURE_WHITELIST_DOMAINS = stringPreferencesKey("WEB_CAPTURE_WHITELIST_DOMAINS")
+        val WEB_CAPTURE_BLACKLIST_DOMAINS = stringPreferencesKey("WEB_CAPTURE_BLACKLIST_DOMAINS")
+        val WEB_CAPTURE_SAVE_AS_VERSIONS = booleanPreferencesKey("WEB_CAPTURE_SAVE_AS_VERSIONS")
+        val WEB_CAPTURE_RETAIN_ALL_VERSIONS =
+            booleanPreferencesKey("WEB_CAPTURE_RETAIN_ALL_VERSIONS")
+        val WEB_CAPTURE_MAX_VERSIONS = intPreferencesKey("WEB_CAPTURE_MAX_VERSIONS")
+        val WEB_CAPTURE_AUTO_DELETE_DAYS = intPreferencesKey("WEB_CAPTURE_AUTO_DELETE_DAYS")
     }
 }

@@ -267,7 +267,8 @@ actual object PlatformPreference {
 
     actual suspend fun readAllPreferences(): AppPreferences {
         return AppPreferences(
-            correlation = localStorage.getItem(AppPreferences.SERVER_CORRELATION.key).let {
+            correlation = localStorage.getItem(AppPreferences.SERVER_CORRELATION.key)
+                .let {
                 if (it != null) {
                     Json.decodeFromString<Correlation>(it)
                 } else {
@@ -371,8 +372,37 @@ actual object PlatformPreference {
             selectedLinkRefreshType = localStorage.getItem(AppPreferences.REFRESH_LINK_TYPE.key)
                 ?.let { RefreshLinkType.valueOf(it) } ?: RefreshLinkType.Both,
             maxConcurrentRefreshCount = localStorage.getItem(AppPreferences.MAX_CONCURRENT_REFRESH_COUNT.key)
-                ?.toIntOrNull() ?: 15
-        )
+                ?.toIntOrNull() ?: 15,
+            useWebCaptures = localStorage.getItem(AppPreferences.USE_WEB_CAPTURES.key)
+                ?.toBooleanStrictOrNull() ?: false,
+            webCapturesLocation = localStorage.getItem(AppPreferences.WEB_CAPTURES_LOCATION.key)
+                ?: "",
+            webCaptureSaveImages = localStorage.getItem(AppPreferences.WEB_CAPTURE_SAVE_IMAGES.key)
+                ?.toBooleanStrictOrNull() ?: true,
+            webCaptureSaveFonts = localStorage.getItem(AppPreferences.WEB_CAPTURE_SAVE_FONTS.key)
+                ?.toBooleanStrictOrNull() ?: true,
+            webCaptureSaveCss = localStorage.getItem(AppPreferences.WEB_CAPTURE_SAVE_CSS.key)
+                ?.toBooleanStrictOrNull() ?: true,
+            webCaptureExecuteJs = localStorage.getItem(AppPreferences.WEB_CAPTURE_EXECUTE_JS.key)
+                ?.toBooleanStrictOrNull() ?: false,
+            webCaptureSaveAudio = localStorage.getItem(AppPreferences.WEB_CAPTURE_SAVE_AUDIO.key)
+                ?.toBooleanStrictOrNull() ?: true,
+            webCaptureSaveVideo = localStorage.getItem(AppPreferences.WEB_CAPTURE_SAVE_VIDEO.key)
+                ?.toBooleanStrictOrNull() ?: true,
+            webCaptureSaveMetadata = localStorage.getItem(AppPreferences.WEB_CAPTURE_SAVE_METADATA.key)
+                ?.toBooleanStrictOrNull() ?: true,
+            webCaptureWhitelistDomains = localStorage.getItem(AppPreferences.WEB_CAPTURE_WHITELIST_DOMAINS.key)
+                ?: "",
+            webCaptureBlacklistDomains = localStorage.getItem(AppPreferences.WEB_CAPTURE_BLACKLIST_DOMAINS.key)
+                ?: "",
+            webCaptureSaveAsVersions = localStorage.getItem(AppPreferences.WEB_CAPTURE_SAVE_AS_VERSIONS.key)
+                ?.toBooleanStrictOrNull() ?: false,
+            webCaptureRetainAllVersions = localStorage.getItem(AppPreferences.WEB_CAPTURE_RETAIN_ALL_VERSIONS.key)
+                ?.toBooleanStrictOrNull() ?: false,
+            webCaptureMaxVersions = localStorage.getItem(AppPreferences.WEB_CAPTURE_MAX_VERSIONS.key)
+                ?.toIntOrNull() ?: 3,
+            webCaptureAutoDeleteDays = localStorage.getItem(AppPreferences.WEB_CAPTURE_AUTO_DELETE_DAYS.key)
+                ?.toIntOrNull() ?: 30)
     }
 }
 
