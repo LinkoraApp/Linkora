@@ -108,19 +108,13 @@ actual class FileManager(private val context: Context) {
 
     actual suspend fun pickADirectory(): String? {
         AndroidUIEvent.pushUIEvent(AndroidUIEvent.Type.PickADirectory)
-        return suspendCancellableCoroutine { continuation ->
-            val listenerJob = CoroutineScope(continuation.context).launch {
-                val (uri) = AndroidUIEvent.androidUIEventChannel.first() as AndroidUIEvent.Type.PickedDirectory
-                try {
-                    continuation.resume(uri?.toString())
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    continuation.cancel()
-                }
-            }
-            continuation.invokeOnCancellation {
-                listenerJob.cancel()
-            }
+        return try {
+            val event =
+                AndroidUIEvent.androidUIEventChannel.first() as AndroidUIEvent.Type.PickedDirectory
+            event.uri?.toString()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 
@@ -261,8 +255,7 @@ actual class FileManager(private val context: Context) {
                 val factory = CertificateFactory.getInstance("X.509")
                 val inputStreamBytes = inputStream.readBytes()
                 certInfo = getCertificateInfo(
-                    factory = factory,
-                    inputStream = ByteArrayInputStream(inputStreamBytes)
+                    factory = factory, inputStream = ByteArrayInputStream(inputStreamBytes)
                 )
                 (factory.generateCertificate(ByteArrayInputStream(inputStreamBytes)) as X509Certificate).encoded
             }
