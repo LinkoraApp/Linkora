@@ -18,18 +18,23 @@ import com.sakethh.linkora.Localization
 import com.sakethh.linkora.R
 import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.domain.AppPreferences
+import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.RefreshLinksRepo
+import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
+import com.sakethh.linkora.utils.createNewFile
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.longPreferencesKey
 import com.sakethh.linkora.utils.stringPreferencesKey
 import com.sakethh.linkora.worker.RefreshAllLinksWorker
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.util.UUID
 
 actual class NativeUtils(private val context: Context) {
@@ -143,12 +148,13 @@ actual class NativeUtils(private val context: Context) {
         block()
     }
 
-    actual class WebCapture {
+    actual class WebCapture(private val context: Context) {
         val androidDesktopWebCapture = AndroidDesktopWebCapture()
         actual suspend fun init(): Result<Boolean> =
             androidDesktopWebCapture.init()
 
-        actual suspend fun getHTMLPage(
+        actual suspend fun saveHTMLPage(
+            nativeFolderPath: String,
             url: String,
             userAgent: String,
             timeout: Long,
@@ -162,20 +168,40 @@ actual class NativeUtils(private val context: Context) {
             includeAudioElements: Boolean,
             includeVideoElements: Boolean,
             includeMetadata: Boolean,
-        ): Result<ByteArray> = androidDesktopWebCapture.getHTMLPage(
-            url = url,
-            userAgent = userAgent,
-            timeout = timeout,
-            allowInsecureProtocol = allowInsecureProtocol,
-            ignoreDocErrors = ignoreDocErrors,
-            useCss = useCss,
-            embedFonts = embedFonts,
-            embedImages = embedImages,
-            restrictJs = restrictJs,
-            includeAudioElements = includeAudioElements,
-            includeVideoElements = includeVideoElements,
-            includeMetadata = includeMetadata,
-            logStuff = logStuff
-        )
+        ): Result<Boolean> = withContext(Dispatchers.IO) {
+
+            val (webCaptureFile, _) = createNewFile(
+                context = context,
+                exportLocation = nativeFolderPath,
+                exportFileType = ExportFileType.HTML,
+                exportLocationType = ExportLocationType.WEB_CAPTURE
+            )
+
+            val webCaptureFileDescriptor =
+                context.applicationContext.contentResolver.openFileDescriptor(
+                    webCaptureFile?.uri
+                        ?: return@withContext Result.Failure("Couldn't get the uri for web-capture file that is created"),
+                    "w"
+                )?.detachFd()
+                    ?: return@withContext Result.Failure("Couldn't open the file descriptor for web-capture file that is created")
+
+            androidDesktopWebCapture.saveHTMLPage(
+                url = url,
+                userAgent = userAgent,
+                timeout = timeout,
+                allowInsecureProtocol = allowInsecureProtocol,
+                ignoreDocErrors = ignoreDocErrors,
+                useCss = useCss,
+                embedFonts = embedFonts,
+                embedImages = embedImages,
+                restrictJs = restrictJs,
+                includeAudioElements = includeAudioElements,
+                includeVideoElements = includeVideoElements,
+                includeMetadata = includeMetadata,
+                logStuff = logStuff,
+                fileDescriptor = webCaptureFileDescriptor,
+                filePath = "",
+            )
+        }
     }
 }

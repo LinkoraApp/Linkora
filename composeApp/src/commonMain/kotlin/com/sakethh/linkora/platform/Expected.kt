@@ -56,15 +56,6 @@ expect class FileManager {
         onCompletion: suspend (String) -> Unit
     )
 
-    suspend fun writeByteArrayToFile(
-        exportLocation: String,
-        exportFileType: ExportFileType,
-        exportLocationType: ExportLocationType,
-        byteArray: ByteArray,
-        onCompletion: suspend (String) -> Unit
-    )
-
-
     suspend fun importFromJSONObj(
     ): Flow<Result<JSONExportSchema>>
 
@@ -110,7 +101,8 @@ expect class NativeUtils {
 
     class WebCapture {
         suspend fun init(): Result<Boolean>
-        suspend fun getHTMLPage(
+        suspend fun saveHTMLPage(
+            nativeFolderPath: String,
             url: String,
             userAgent: String,
             timeout: Long,
@@ -124,7 +116,7 @@ expect class NativeUtils {
             includeAudioElements: Boolean,
             includeVideoElements: Boolean,
             includeMetadata: Boolean,
-        ): Result<ByteArray>
+        ): Result<Boolean>
     }
 
     suspend fun onRefreshAllLinks(

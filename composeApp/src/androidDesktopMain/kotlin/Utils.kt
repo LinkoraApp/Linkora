@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import com.fleeksoft.io.ByteArrayInputStream
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
+import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.domain.RefreshLinkType
@@ -22,6 +23,7 @@ import com.sakethh.linkora.ui.domain.Font
 import com.sakethh.linkora.ui.domain.Layout
 import com.sakethh.linkora.ui.domain.SortingType
 import com.sakethh.linkora.ui.navigation.Navigation
+import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.stringPreferencesKey
@@ -30,11 +32,26 @@ import kotlinx.serialization.json.Json
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 import androidx.datastore.preferences.core.booleanPreferencesKey as dsBooleanKey
 import androidx.datastore.preferences.core.intPreferencesKey as dsIntKey
 import androidx.datastore.preferences.core.longPreferencesKey as dsLongKey
 import androidx.datastore.preferences.core.stringPreferencesKey as dsStringKey
+
+fun getFileNameWithTimestamp(
+    exportFileType: ExportFileType,
+    exportLocationType: ExportLocationType
+): String {
+    val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-SSS", Locale.US)
+    val timestamp = simpleDateFormat.format(Date())
+    return when (exportLocationType) {
+        ExportLocationType.EXPORT -> "LinkoraExport"
+        ExportLocationType.SNAPSHOT -> "LinkoraSnapshot"
+        ExportLocationType.WEB_CAPTURE -> "LinkoraHoarding"
+    } + "-$timestamp.${if (exportFileType == ExportFileType.HTML) "html" else "json"}"
+}
+
 
 fun getCertificateInfo(factory: CertificateFactory, inputStream: ByteArrayInputStream): String {
     val certificate = factory.generateCertificate(inputStream) as X509Certificate

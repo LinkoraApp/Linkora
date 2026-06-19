@@ -21,6 +21,7 @@ import com.sakethh.linkora.utils.getSystemEpochSeconds
 import com.sakethh.linkora.utils.ifNot
 import com.sakethh.linkora.utils.replaceFirstPlaceHolderWith
 import getCertificateInfo
+import getFileNameWithTimestamp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
@@ -35,9 +36,6 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 actual class FileManager {
     private suspend fun writeToFile(
@@ -53,14 +51,10 @@ actual class FileManager {
             exportsFolder.mkdirs()
         }
 
-        // kinda repeated in Expected.android, but alright
-        val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-SSS", Locale.US)
-        val timestamp = simpleDateFormat.format(Date())
-        val exportFileName = when (exportLocationType) {
-            ExportLocationType.EXPORT -> "LinkoraExport"
-            ExportLocationType.SNAPSHOT -> "LinkoraSnapshot"
-            ExportLocationType.WEB_CAPTURE -> "LinkoraHoarding"
-        } + "-$timestamp.${if (exportFileType == ExportFileType.HTML) "html" else "json"}"
+        val exportFileName = getFileNameWithTimestamp(
+            exportLocationType = exportLocationType,
+            exportFileType = exportFileType,
+        )
 
         val exportFilePath = Paths.get(exportsFolder.absolutePath, exportFileName)
 
@@ -201,19 +195,13 @@ actual class FileManager {
 
     private suspend fun FlowCollector<Result<JSONExportSchema>>.getJsonObj(
         file: File, fileName: String
-    ) {
+    ) = withContext(Dispatchers.IO) {
         try {
             emit(Result.Loading(message = "Starting data import from JSON file: $fileName"))
 
             val currentSystemEpochSeconds = getSystemEpochSeconds()
 
-            val jsonContent = run {
-                val strBuilder = StringBuilder()
-                file.bufferedReader().forEachLine {
-                    strBuilder.append(it)
-                }
-                strBuilder.toString()
-            }
+            val jsonContent = file.readText()
 
             val basedOnNewExportSchema =
                 jsonContent.substringAfter("\"").substringBefore("\"") == "schemaVersion"
@@ -266,14 +254,11 @@ actual class FileManager {
 
     private suspend fun FlowCollector<Result<String>>.getHtmlStr(file: File) {
         try {
-            val htmlStr = StringBuilder()
             val fileName = file.name
             emit(Result.Loading(message = "Reading the file $fileName"))
-            file.bufferedReader().forEachLine {
-                htmlStr.append(it)
-            }
+            val htmlStr = file.readText()
             emit(Result.Loading(message = "Read the file $fileName"))
-            emit(Result.Success(htmlStr.toString()))
+            emit(Result.Success(htmlStr))
         } catch (e: Exception) {
             emit(Result.Failure(e.message ?: "Import failed"))
         }
@@ -318,33 +303,19 @@ actual class FileManager {
                 )
                 return null
             }
-            val factory = CertificateFactory.getInstance("X.509")
-            val certBytes = sourceFile.readBytes()
-            certInfo = getCertificateInfo(
-                factory = factory, inputStream = ByteArrayInputStream(certBytes)
-            )
-            (factory.generateCertificate(ByteArrayInputStream(certBytes)) as X509Certificate).encoded
+            withContext(Dispatchers.IO) {
+                val factory = CertificateFactory.getInstance("X.509")
+                val certBytes = sourceFile.readBytes()
+                certInfo = getCertificateInfo(
+                    factory = factory, inputStream = ByteArrayInputStream(certBytes)
+                )
+                (factory.generateCertificate(ByteArrayInputStream(certBytes)) as X509Certificate).encoded
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             null
         } finally {
             onCompletion(certInfo)
         }
-    }
-
-    actual suspend fun writeByteArrayToFile(
-        exportLocation: String,
-        exportFileType: ExportFileType,
-        exportLocationType: ExportLocationType,
-        byteArray: ByteArray,
-        onCompletion: suspend (String) -> Unit
-    ) {
-        writeToFile(
-            exportLocation = exportLocation,
-            exportFileType = exportFileType,
-            exportLocationType = exportLocationType,
-            byteArray = byteArray,
-            onCompletion = onCompletion
-        )
     }
 }

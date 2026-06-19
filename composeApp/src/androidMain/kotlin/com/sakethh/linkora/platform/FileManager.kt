@@ -23,28 +23,21 @@ import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.AndroidUIEvent
 import com.sakethh.linkora.utils.Utils
+import com.sakethh.linkora.utils.createNewFile
 import com.sakethh.linkora.utils.getSystemEpochSeconds
 import com.sakethh.linkora.utils.pushSnackbar
 import com.sakethh.linkora.worker.SnapshotWorker
 import getCertificateInfo
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.io.ByteArrayInputStream
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import kotlin.coroutines.coroutineContext
-import kotlin.coroutines.resume
 
 actual class FileManager(private val context: Context) {
 
@@ -55,33 +48,29 @@ actual class FileManager(private val context: Context) {
         byteArray: ByteArray,
         onCompletion: suspend (String) -> Unit
     ) {
-
-        val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-SSS", Locale.US)
-        val timestamp = simpleDateFormat.format(Date())
-        val exportFileName = when (exportLocationType) {
-            ExportLocationType.EXPORT -> "LinkoraExport"
-            ExportLocationType.SNAPSHOT -> "LinkoraSnapshot"
-            ExportLocationType.WEB_CAPTURE -> "LinkoraHoarding"
-        } + "-$timestamp.${if (exportFileType == ExportFileType.HTML) "html" else "json"}"
-
-        val directoryUri = exportLocation.toUri()
-        val directory = DocumentFile.fromTreeUri(context, directoryUri)
-        val newFile = directory?.createFile(
-            if (exportFileType == ExportFileType.HTML) "text/html" else "application/json",
-            exportFileName
+        val (newFile, exportFileName) = createNewFile(
+            context = context,
+            exportLocation = exportLocation,
+            exportFileType = exportFileType,
+            exportLocationType = exportLocationType
         )
-        newFile?.uri?.let { fileUri ->
+        val isSuccess = withContext(Dispatchers.IO) {
             try {
-                context.contentResolver.openOutputStream(fileUri)?.use { outputStream ->
-                    outputStream.write(byteArray)
+                newFile?.uri?.let { fileUri ->
+                    context.contentResolver.openOutputStream(fileUri)?.use { outputStream ->
+                        outputStream.write(byteArray)
+                    }
                 }
-                onCompletion(exportFileName)
+                true
             } catch (e: Exception) {
-                withContext(coroutineContext) {
-                    pushUIEvent(UIEvent.Type.ShowSnackbar(e.message.toString()))
-                }
                 e.printStackTrace()
+                false
             }
+        }
+        if (isSuccess) {
+            onCompletion(exportFileName)
+        } else {
+            pushUIEvent(UIEvent.Type.ShowSnackbar("Failed to write file"))
         }
     }
 
@@ -177,30 +166,24 @@ actual class FileManager(private val context: Context) {
                 }
             )
         )
-        return suspendCancellableCoroutine { continuation ->
-            val listenerJob = CoroutineScope(continuation.context).launch {
-                try {
-                    val (uri) = AndroidUIEvent.androidUIEventChannel.first() as AndroidUIEvent.Type.UriOfTheFileForImporting
-                    if (uri == null) {
-                        // if picking the file didn't go as expected, then just return null
-                        // we can throw and catch and then resume with null but this is aight
-                        continuation.resume(null)
-                        return@launch
-                    }
-                    val dataStr = StringBuilder()
-                    context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                        inputStream.bufferedReader().forEachLine { line ->
-                            dataStr.append(line)
-                        }
-                    }
-                    continuation.resume(dataStr.toString())
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    continuation.cancel()
+
+        val importEvent = try {
+            AndroidUIEvent.androidUIEventChannel.first() as? AndroidUIEvent.Type.UriOfTheFileForImporting
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
+        }
+
+        val uri = importEvent?.uri ?: return null
+
+        return withContext(Dispatchers.IO) {
+            try {
+                context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                    inputStream.bufferedReader().use { it.readText() }
                 }
-            }
-            continuation.invokeOnCancellation {
-                listenerJob.cancel()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
             }
         }
     }
@@ -271,13 +254,15 @@ actual class FileManager(private val context: Context) {
                 return null
             }
             linkoraLog("Importing the certificate")
-            context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                val factory = CertificateFactory.getInstance("X.509")
-                val inputStreamBytes = inputStream.readBytes()
-                certInfo = getCertificateInfo(
-                    factory = factory, inputStream = ByteArrayInputStream(inputStreamBytes)
-                )
-                (factory.generateCertificate(ByteArrayInputStream(inputStreamBytes)) as X509Certificate).encoded
+            withContext(Dispatchers.IO) {
+                context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                    val factory = CertificateFactory.getInstance("X.509")
+                    val inputStreamBytes = inputStream.readBytes()
+                    certInfo = getCertificateInfo(
+                        factory = factory, inputStream = ByteArrayInputStream(inputStreamBytes)
+                    )
+                    (factory.generateCertificate(ByteArrayInputStream(inputStreamBytes)) as X509Certificate).encoded
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -293,20 +278,4 @@ actual class FileManager(private val context: Context) {
 
     actual suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>> =
         emptyFlow()
-
-    actual suspend fun writeByteArrayToFile(
-        exportLocation: String,
-        exportFileType: ExportFileType,
-        exportLocationType: ExportLocationType,
-        byteArray: ByteArray,
-        onCompletion: suspend (String) -> Unit
-    ) {
-        writeToFile(
-            exportLocation = exportLocation,
-            exportFileType = exportFileType,
-            exportLocationType = exportLocationType,
-            byteArray = byteArray,
-            onCompletion = onCompletion
-        )
-    }
 }

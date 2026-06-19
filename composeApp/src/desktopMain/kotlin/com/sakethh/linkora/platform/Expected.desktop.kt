@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
+import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.PermissionStatus
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.PreferenceKey
@@ -14,11 +15,13 @@ import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.RefreshLinksRepo
 import com.sakethh.linkora.linkoraSpecificFolder
+import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.getLocalizedString
+import getFileNameWithTimestamp
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.cio.CIO
@@ -36,6 +39,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
 import readAllPreferences
@@ -107,7 +111,8 @@ actual class NativeUtils {
         val androidDesktopWebCapture = AndroidDesktopWebCapture()
         actual suspend fun init(): Result<Boolean> = androidDesktopWebCapture.init()
 
-        actual suspend fun getHTMLPage(
+        actual suspend fun saveHTMLPage(
+            nativeFolderPath: String,
             url: String,
             userAgent: String,
             timeout: Long,
@@ -121,21 +126,38 @@ actual class NativeUtils {
             includeAudioElements: Boolean,
             includeVideoElements: Boolean,
             includeMetadata: Boolean,
-        ): Result<ByteArray> = androidDesktopWebCapture.getHTMLPage(
-            url = url,
-            userAgent = userAgent,
-            timeout = timeout,
-            allowInsecureProtocol = allowInsecureProtocol,
-            ignoreDocErrors = ignoreDocErrors,
-            useCss = useCss,
-            embedFonts = embedFonts,
-            embedImages = embedImages,
-            restrictJs = restrictJs,
-            includeAudioElements = includeAudioElements,
-            includeVideoElements = includeVideoElements,
-            includeMetadata = includeMetadata,
-            logStuff = logStuff
-        )
+        ): Result<Boolean> {
+            val fileName = getFileNameWithTimestamp(
+                exportFileType = ExportFileType.HTML,
+                exportLocationType = ExportLocationType.WEB_CAPTURE
+            )
+            val captureFile = File(nativeFolderPath, fileName)
+            try {
+                withContext(Dispatchers.IO) {
+                    captureFile.createNewFile()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return Result.Failure(e.message ?: "Couldn't create web-capture file")
+            }
+            return androidDesktopWebCapture.saveHTMLPage(
+                url = url,
+                userAgent = userAgent,
+                timeout = timeout,
+                allowInsecureProtocol = allowInsecureProtocol,
+                ignoreDocErrors = ignoreDocErrors,
+                useCss = useCss,
+                embedFonts = embedFonts,
+                embedImages = embedImages,
+                restrictJs = restrictJs,
+                includeAudioElements = includeAudioElements,
+                includeVideoElements = includeVideoElements,
+                includeMetadata = includeMetadata,
+                logStuff = logStuff,
+                fileDescriptor = -1,
+                filePath = captureFile.absolutePath
+            )
+        }
     }
 }
 
@@ -280,8 +302,7 @@ actual object PlatformPreference {
     actual suspend fun readAllPreferences(): AppPreferences {
         val prefs = dataStore.data.first()
         return readAllPreferences(
-            prefs,
-            externalAction = { externalAction -> externalAction(this) })
+            prefs, externalAction = { externalAction -> externalAction(this) })
     }
 }
 

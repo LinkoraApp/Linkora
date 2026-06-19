@@ -109,15 +109,6 @@ actual class FileManager {
     actual suspend fun getSyncServerCertificate(onCompletion: (provider: String) -> Unit): ByteArray? =
         null
 
-    actual suspend fun writeByteArrayToFile(
-        exportLocation: String,
-        exportFileType: ExportFileType,
-        exportLocationType: ExportLocationType,
-        byteArray: ByteArray,
-        onCompletion: suspend (String) -> Unit
-    ) {
-    }
-
 }
 
 actual class NativeUtils {
@@ -166,7 +157,8 @@ actual class NativeUtils {
             return Result.Failure("huh")
         }
 
-        actual suspend fun getHTMLPage(
+        actual suspend fun saveHTMLPage(
+            nativeFolderPath: String,
             url: String,
             userAgent: String,
             timeout: Long,
@@ -180,7 +172,7 @@ actual class NativeUtils {
             includeAudioElements: Boolean,
             includeVideoElements: Boolean,
             includeMetadata: Boolean,
-        ): Result<ByteArray> {
+        ): Result<Boolean> {
             return Result.Failure("huh")
         }
     }
@@ -272,17 +264,17 @@ actual object PlatformPreference {
         return AppPreferences(
             correlation = localStorage.getItem(AppPreferences.SERVER_CORRELATION.key)
                 .let {
-                if (it != null) {
-                    Json.decodeFromString<Correlation>(it)
-                } else {
-                    val randomCorrelation = Correlation.generateRandomCorrelation()
-                    localStorage.set(
-                        key = AppPreferences.SERVER_CORRELATION.key,
-                        value = Json.encodeToString(randomCorrelation)
-                    )
-                    randomCorrelation
-                }
-            },
+                    if (it != null) {
+                        Json.decodeFromString<Correlation>(it)
+                    } else {
+                        val randomCorrelation = Correlation.generateRandomCorrelation()
+                        localStorage.set(
+                            key = AppPreferences.SERVER_CORRELATION.key,
+                            value = Json.encodeToString(randomCorrelation)
+                        )
+                        randomCorrelation
+                    }
+                },
             showSyncServerSurveyNotice = false,
             useDarkTheme = localStorage.getItem(AppPreferences.DARK_THEME.key)
                 ?.toBooleanStrictOrNull() ?: true,

@@ -30,7 +30,9 @@ object WebCapture {
         }
     }
 
-    external fun getHTMLPage(
+    external fun saveHTMLPage(
+        fileDescriptor: Int,
+        filePath: String,
         url: String,
         userAgent: String,
         timeout: Long,
@@ -44,5 +46,5 @@ object WebCapture {
         includeVideoElements: Boolean,
         includeMetadata: Boolean,
         logStuff: Boolean
-    ): ByteArray
+    ): Boolean
 }

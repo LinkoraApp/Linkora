@@ -1877,8 +1877,8 @@ dependencies = [
 name = "web_capture"
 version = "0.1.0"
 dependencies = [
-    "jni",
-    "monolith",
+ "jni",
+ "monolith",
 ]
 
 [[package]]

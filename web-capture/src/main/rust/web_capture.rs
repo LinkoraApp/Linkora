@@ -1,7 +1,10 @@
-use jni::objects::{JClass, JObject, JString};
-use jni::sys::{jboolean, jbyteArray, jlong};
+use jni::objects::{JClass, JString};
+use jni::sys::{jboolean, jint, jlong};
 use jni::JNIEnv;
 use monolith::core::{create_monolithic_document, MonolithOutputFormat, Options};
+use std::fs::File;
+use std::io::Write;
+use std::os::fd::FromRawFd;
 
 fn get_string_from_jni(env: &mut JNIEnv, string: JString) -> String {
     match env.get_string(&string) {
@@ -14,9 +17,11 @@ fn get_string_from_jni(env: &mut JNIEnv, string: JString) -> String {
 }
 
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_com_sakethh_linkora_web_capture_WebCapture_getHTMLPage(
+pub extern "system" fn Java_com_sakethh_linkora_web_1capture_WebCapture_saveHTMLPage(
     mut env: JNIEnv,
     _class: JClass,
+    file_descriptor: jint,
+    file_path: JString,
     url: JString,
     user_agent: JString,
     timeout: jlong,
@@ -30,11 +35,11 @@ pub extern "system" fn Java_com_sakethh_linkora_web_capture_WebCapture_getHTMLPa
     include_video_elements: jboolean,
     include_metadata: jboolean,
     log_stuff: jboolean,
-) -> jbyteArray {
+) -> jboolean {
     let url: String = get_string_from_jni(&mut env, url);
     let user_agent: String = get_string_from_jni(&mut env, user_agent);
 
-    match get_html_doc(
+    let html_doc = match get_html_doc(
         url,
         user_agent,
         timeout as u64,
@@ -49,19 +54,38 @@ pub extern "system" fn Java_com_sakethh_linkora_web_capture_WebCapture_getHTMLPa
         include_metadata != 0,
         log_stuff != 0,
     ) {
-        Ok(html_doc) => match env.byte_array_from_slice(&html_doc) {
-            Ok(arr) => **arr,
-            Err(e) => {
-                env.throw_new("java/lang/RuntimeException", e.to_string())
-                    .unwrap();
-                JObject::null().into_raw()
-            }
-        },
-        Err(e) => {
-            env.throw_new("java/lang/RuntimeException", &e).unwrap();
-            JObject::null().into_raw()
+        Ok(doc) => doc,
+        Err(err) => {
+            env.throw_new("java/lang/RuntimeException", err.to_string())
+                .unwrap();
+            return 0;
+        }
+    };
+
+    let web_capture_file_creation = if file_descriptor == -1 {
+        // on desktop, we don't need file descriptor
+        let file_path = get_string_from_jni(&mut env, file_path);
+        std::fs::write(file_path, html_doc)
+    } else {
+        // on android, we use file descriptor passed from the app to write the content directly to disk
+        // other way to do this is to share raw byte array back to kotlin, which i obviously did at first,
+        // but that seems to create its own memory, which is not so good
+        let mut web_capture_file = unsafe { File::from_raw_fd(file_descriptor) };
+        web_capture_file.write_all(&*html_doc)
+    };
+
+    match web_capture_file_creation {
+        Ok(_) => {
+            println!("noice");
+        }
+        Err(err) => {
+            env.throw_new("java/lang/RuntimeException", err.to_string())
+                .unwrap();
+            return 0;
         }
     }
+    // rust will close the stuff related to file descriptor once the call exits this block, adios
+    1
 }
 
 fn get_html_doc(

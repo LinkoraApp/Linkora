@@ -60,7 +60,7 @@ class LinkoraApp : Application() {
                             applicationContext.filesDir.resolve(Constants.DATA_STORE_NAME).absolutePath.toPath()
                         })
                 ),
-                webCapture = NativeUtils.WebCapture()
+                webCapture = NativeUtils.WebCapture(applicationContext)
             )
         )
         runBlocking {
