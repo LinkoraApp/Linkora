@@ -124,7 +124,7 @@ fun WebPageCaptureScreen() {
                                     dataSettingsScreenVM.changeExportLocation(
                                         exportLocation = webCaptureLocation,
                                         platform = platform,
-                                        exportLocationType = ExportLocationType.HOARDER
+                                        exportLocationType = ExportLocationType.WEB_CAPTURE
                                     )
                                 }) {
                                 Icon(

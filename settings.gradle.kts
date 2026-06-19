@@ -29,4 +29,4 @@ dependencyResolutionManagement {
 }
 
 include(":composeApp")
-include(":hoarder")
+include(":web-capture")

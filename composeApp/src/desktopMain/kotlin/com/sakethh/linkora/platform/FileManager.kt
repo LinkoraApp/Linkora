@@ -59,7 +59,7 @@ actual class FileManager {
         val exportFileName = when (exportLocationType) {
             ExportLocationType.EXPORT -> "LinkoraExport"
             ExportLocationType.SNAPSHOT -> "LinkoraSnapshot"
-            ExportLocationType.HOARDER -> "LinkoraHoarding"
+            ExportLocationType.WEB_CAPTURE -> "LinkoraHoarding"
         } + "-$timestamp.${if (exportFileType == ExportFileType.HTML) "html" else "json"}"
 
         val exportFilePath = Paths.get(exportsFolder.absolutePath, exportFileName)

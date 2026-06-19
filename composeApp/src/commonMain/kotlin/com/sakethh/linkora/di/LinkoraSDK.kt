@@ -15,7 +15,7 @@ class LinkoraSDK(
     val platformPreference: PlatformPreference,
     val network: Network,
     val dataSyncingNotificationService: NativeUtils.DataSyncingNotificationService,
-    val hoarder: NativeUtils.Hoarder
+    val webCapture: NativeUtils.WebCapture
 ) {
     companion object {
         private lateinit var shared: LinkoraSDK

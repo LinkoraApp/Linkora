@@ -1,11 +1,11 @@
-package com.sakethh.linkora.hoarder
+package com.sakethh.linkora.web_capture
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
-object MonolithHoarder {
+object WebCapture {
 
     private var isLibraryLoaded = false
     private val initMutex = Mutex()
@@ -19,7 +19,7 @@ object MonolithHoarder {
                     Result.success(true)
                 } else {
                     try {
-                        System.loadLibrary("hoarder")
+                        System.loadLibrary("web_capture")
                         isLibraryLoaded = true
                         Result.success(true)
                     } catch (e: Exception) {
@@ -40,6 +40,9 @@ object MonolithHoarder {
         embedFonts: Boolean,
         embedImages: Boolean,
         restrictJs: Boolean,
+        includeAudioElements: Boolean,
+        includeVideoElements: Boolean,
+        includeMetadata: Boolean,
         logStuff: Boolean
     ): ByteArray
 }

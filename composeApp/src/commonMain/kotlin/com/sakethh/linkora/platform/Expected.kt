@@ -108,7 +108,7 @@ expect class FileManager {
 expect class NativeUtils {
     fun onShare(url: String)
 
-    class Hoarder {
+    class WebCapture {
         suspend fun init(): Result<Boolean>
         suspend fun getHTMLPage(
             url: String,
@@ -120,7 +120,10 @@ expect class NativeUtils {
             embedFonts: Boolean,
             embedImages: Boolean,
             restrictJs: Boolean,
-            logStuff: Boolean
+            logStuff: Boolean,
+            includeAudioElements: Boolean,
+            includeVideoElements: Boolean,
+            includeMetadata: Boolean,
         ): Result<ByteArray>
     }
 

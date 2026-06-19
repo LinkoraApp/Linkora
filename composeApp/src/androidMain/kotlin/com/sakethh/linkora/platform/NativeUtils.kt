@@ -1,6 +1,6 @@
 package com.sakethh.linkora.platform
 
-import AndroidDesktopHoarder
+import AndroidDesktopWebCapture
 import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
@@ -143,10 +143,10 @@ actual class NativeUtils(private val context: Context) {
         block()
     }
 
-    actual class Hoarder {
-        val androidDesktopHoarder = AndroidDesktopHoarder()
+    actual class WebCapture {
+        val androidDesktopWebCapture = AndroidDesktopWebCapture()
         actual suspend fun init(): Result<Boolean> =
-            androidDesktopHoarder.init()
+            androidDesktopWebCapture.init()
 
         actual suspend fun getHTMLPage(
             url: String,
@@ -158,10 +158,24 @@ actual class NativeUtils(private val context: Context) {
             embedFonts: Boolean,
             embedImages: Boolean,
             restrictJs: Boolean,
-            logStuff: Boolean
-        ): Result<ByteArray> = androidDesktopHoarder.getHTMLPage(
-            url, userAgent, timeout, allowInsecureProtocol, ignoreDocErrors,
-            useCss, embedFonts, embedImages, restrictJs, logStuff
+            logStuff: Boolean,
+            includeAudioElements: Boolean,
+            includeVideoElements: Boolean,
+            includeMetadata: Boolean,
+        ): Result<ByteArray> = androidDesktopWebCapture.getHTMLPage(
+            url = url,
+            userAgent = userAgent,
+            timeout = timeout,
+            allowInsecureProtocol = allowInsecureProtocol,
+            ignoreDocErrors = ignoreDocErrors,
+            useCss = useCss,
+            embedFonts = embedFonts,
+            embedImages = embedImages,
+            restrictJs = restrictJs,
+            includeAudioElements = includeAudioElements,
+            includeVideoElements = includeVideoElements,
+            includeMetadata = includeMetadata,
+            logStuff = logStuff
         )
     }
 }

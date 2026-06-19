@@ -60,7 +60,7 @@ class LinkoraApp : Application() {
                             applicationContext.filesDir.resolve(Constants.DATA_STORE_NAME).absolutePath.toPath()
                         })
                 ),
-                hoarder = NativeUtils.Hoarder()
+                webCapture = NativeUtils.WebCapture()
             )
         )
         runBlocking {

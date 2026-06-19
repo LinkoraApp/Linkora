@@ -62,7 +62,7 @@ kotlin {
             dependsOn(commonMain.get())
 
             dependencies {
-                implementation(project(":hoarder"))
+                implementation(project(":web-capture"))
                 implementation(libs.androidx.datastore.preferences.core)
             }
         }
@@ -78,7 +78,7 @@ kotlin {
             implementation(libs.androidx.documentfile)
             implementation(libs.ktor.client.android)
             implementation(libs.androidx.datastore.preferences.core)
-            implementation(project(":hoarder"))
+            implementation(project(":web-capture"))
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -120,7 +120,7 @@ kotlin {
             implementation(libs.sqlite.bundled)
             implementation(libs.ktor.client.java)
             implementation(libs.androidx.datastore.preferences.core)
-            implementation(project(":hoarder"))
+            implementation(project(":web-capture"))
         }
         wasmJsMain.dependencies {
             implementation(libs.ktor.client.js)
@@ -194,7 +194,7 @@ android {
     )
 
     sourceSets["main"].jniLibs.srcDirs(
-        rootProject.file("hoarder/build/jniLibs")
+        rootProject.file("web-capture/build/jniLibs")
     )
 
     dependenciesInfo {
@@ -244,7 +244,7 @@ compose.desktop {
 
             val rustTarget = "x86_64-unknown-linux-gnu"
             val rustBuildDir =
-                project(":hoarder").projectDir.resolve("target/$rustTarget/release")
+                project(":web-capture").projectDir.resolve("target/$rustTarget/release")
             jvmArgs += "-Djava.library.path=${rustBuildDir.absolutePath}"
         }
     }
@@ -259,10 +259,10 @@ tasks.withType<JavaExec>().configureEach {
         else -> "unknown"
     }
 
-    val rustBuildDir = project(":hoarder").projectDir.resolve("target/$rustTarget/release")
+    val rustBuildDir = project(":web-capture").projectDir.resolve("target/$rustTarget/release")
 
     systemProperty("java.library.path", rustBuildDir.absolutePath)
-    dependsOn(":hoarder:cargoBuildDesktop")
+    dependsOn(":web-capture:cargoBuildDesktop")
 }
 
 val addNetlifyHeadersToDist = task("addNetlifyHeadersToDist") {
@@ -289,5 +289,5 @@ tasks.named("wasmJsBrowserDistribution") {
 }
 
 tasks.matching { it.name == "preBuild" }.configureEach {
-    dependsOn(":hoarder:cargoBuildAndroid")
+    dependsOn(":web-capture:cargoBuildAndroid")
 }

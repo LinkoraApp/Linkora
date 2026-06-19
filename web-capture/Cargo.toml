@@ -1,12 +1,12 @@
 [package]
-name = "hoarder"
+name = "web_capture"
 version = "0.1.0"
 edition = "2024"
 
 [lib]
-name = "hoarder"
+name = "web_capture"
 crate-type = ["cdylib"]
-path = "src/main/rust/hoarder.rs"
+path = "src/main/rust/web_capture.rs"
 
 [dependencies]
 monolith = "2.10.1"

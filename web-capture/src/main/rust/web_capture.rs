@@ -14,7 +14,7 @@ fn get_string_from_jni(env: &mut JNIEnv, string: JString) -> String {
 }
 
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_com_sakethh_linkora_hoarder_MonolithHoarder_getHTMLPage(
+pub extern "system" fn Java_com_sakethh_linkora_web_capture_WebCapture_getHTMLPage(
     mut env: JNIEnv,
     _class: JClass,
     url: JString,
@@ -26,6 +26,9 @@ pub extern "system" fn Java_com_sakethh_linkora_hoarder_MonolithHoarder_getHTMLP
     embed_fonts: jboolean,
     embed_images: jboolean,
     restrict_js: jboolean,
+    include_audio_elements: jboolean,
+    include_video_elements: jboolean,
+    include_metadata: jboolean,
     log_stuff: jboolean,
 ) -> jbyteArray {
     let url: String = get_string_from_jni(&mut env, url);
@@ -41,6 +44,9 @@ pub extern "system" fn Java_com_sakethh_linkora_hoarder_MonolithHoarder_getHTMLP
         embed_fonts != 0,
         embed_images != 0,
         restrict_js != 0,
+        include_audio_elements != 0,
+        include_video_elements != 0,
+        include_metadata != 0,
         log_stuff != 0,
     ) {
         Ok(html_doc) => match env.byte_array_from_slice(&html_doc) {
@@ -68,6 +74,9 @@ fn get_html_doc(
     embed_fonts: bool,
     embed_images: bool,
     restrict_js: bool,
+    include_audio_elements: bool,
+    include_video_elements: bool,
+    include_metadata: bool,
     log_stuff: bool,
 ) -> Result<Vec<u8>, String> {
     if user_agent.is_empty() {
@@ -87,14 +96,14 @@ fn get_html_doc(
             ignore_errors: ignore_doc_errors,
             insecure: allow_insecure_protocol,
             isolate: false,
-            no_audio: false,
+            no_audio: !include_audio_elements,
             no_css: !use_css,
             no_fonts: !embed_fonts,
             no_frames: false,
             no_images: !embed_images,
             no_js: restrict_js,
-            no_metadata: false,
-            no_video: false,
+            no_metadata: !include_metadata,
+            no_video: !include_video_elements,
             output_format: MonolithOutputFormat::HTML,
             silent: !log_stuff,
             timeout,

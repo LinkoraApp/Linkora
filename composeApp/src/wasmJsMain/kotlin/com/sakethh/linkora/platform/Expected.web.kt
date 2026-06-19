@@ -161,7 +161,7 @@ actual class NativeUtils {
         return null
     }
 
-    actual class Hoarder {
+    actual class WebCapture {
         actual suspend fun init(): Result<Boolean> {
             return Result.Failure("huh")
         }
@@ -176,7 +176,10 @@ actual class NativeUtils {
             embedFonts: Boolean,
             embedImages: Boolean,
             restrictJs: Boolean,
-            logStuff: Boolean
+            logStuff: Boolean,
+            includeAudioElements: Boolean,
+            includeVideoElements: Boolean,
+            includeMetadata: Boolean,
         ): Result<ByteArray> {
             return Result.Failure("huh")
         }

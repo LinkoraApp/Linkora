@@ -300,7 +300,7 @@ class DataSettingsScreenVM(
                         when (exportLocationType) {
                             ExportLocationType.EXPORT -> AppPreferences.EXPORT_LOCATION.key
                             ExportLocationType.SNAPSHOT -> AppPreferences.BACKUP_LOCATION.key
-                            ExportLocationType.HOARDER -> AppPreferences.WEB_CAPTURES_LOCATION.key
+                            ExportLocationType.WEB_CAPTURE -> AppPreferences.WEB_CAPTURES_LOCATION.key
                         }
                     ), newValue = newExportLocation
                 )

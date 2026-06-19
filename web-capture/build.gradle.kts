@@ -58,8 +58,8 @@ tasks.register("cargoBuildDesktop") {
     doLast {
         val currentOs = OperatingSystem.current()
         val (desktopTarget, binaryName) = when {
-            currentOs.isLinux -> "x86_64-unknown-linux-gnu" to "libhoarder.so"
-            currentOs.isWindows -> "x86_64-pc-windows-msvc" to "hoarder.dll"
+            currentOs.isLinux -> "x86_64-unknown-linux-gnu" to "libweb_capture.so"
+            currentOs.isWindows -> "x86_64-pc-windows-msvc" to "web_capture.dll"
             else -> throw GradleException("Unsupported host operating system for building monolith-binding")
         }
 

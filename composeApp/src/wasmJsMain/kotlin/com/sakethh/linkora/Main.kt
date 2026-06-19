@@ -85,7 +85,7 @@ fun main() {
             platformPreference = PlatformPreference,
             network = Network,
             dataSyncingNotificationService = NativeUtils.DataSyncingNotificationService(),
-            hoarder = NativeUtils.Hoarder()
+            webCapture = NativeUtils.WebCapture()
         )
     )
 

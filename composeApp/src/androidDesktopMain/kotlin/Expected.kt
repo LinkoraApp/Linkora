@@ -1,9 +1,9 @@
 import com.sakethh.linkora.domain.Result
-import com.sakethh.linkora.hoarder.MonolithHoarder
+import com.sakethh.linkora.web_capture.WebCapture
 
-class AndroidDesktopHoarder {
+class AndroidDesktopWebCapture {
     suspend fun init(): Result<Boolean> {
-        return MonolithHoarder.init().fold(
+        return WebCapture.init().fold(
             onSuccess = {
                 Result.Success(true)
             },
@@ -21,6 +21,9 @@ class AndroidDesktopHoarder {
         embedFonts: Boolean,
         embedImages: Boolean,
         restrictJs: Boolean,
+        includeAudioElements: Boolean,
+        includeVideoElements: Boolean,
+        includeMetadata: Boolean,
         logStuff: Boolean
     ): Result<ByteArray> {
         return when (val initResult = init()) {
@@ -34,7 +37,7 @@ class AndroidDesktopHoarder {
 
             is Result.Success -> {
                 try {
-                    val htmlByteArray = MonolithHoarder.getHTMLPage(
+                    val htmlByteArray = WebCapture.getHTMLPage(
                         url = url,
                         userAgent = userAgent,
                         timeout = timeout,
@@ -44,7 +47,10 @@ class AndroidDesktopHoarder {
                         embedFonts = embedFonts,
                         embedImages = embedImages,
                         restrictJs = restrictJs,
-                        logStuff = logStuff
+                        logStuff = logStuff,
+                        includeAudioElements = includeAudioElements,
+                        includeVideoElements = includeVideoElements,
+                        includeMetadata = includeMetadata
                     )
                     Result.Success(htmlByteArray)
                 } catch (e: Exception) {

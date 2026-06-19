@@ -553,14 +553,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hoarder"
-version = "0.1.0"
-dependencies = [
- "jni",
- "monolith",
-]
-
-[[package]]
 name = "html5ever"
 version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1879,6 +1871,14 @@ checksum = "a6430a72df5eb332242960fe84b3002a241163998241eb596d4f739b9757061d"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "web_capture"
+version = "0.1.0"
+dependencies = [
+    "jni",
+    "monolith",
 ]
 
 [[package]]
