@@ -402,7 +402,9 @@ actual object PlatformPreference {
             webCaptureMaxVersions = localStorage.getItem(AppPreferences.WEB_CAPTURE_MAX_VERSIONS.key)
                 ?.toIntOrNull() ?: 3,
             webCaptureAutoDeleteDays = localStorage.getItem(AppPreferences.WEB_CAPTURE_AUTO_DELETE_DAYS.key)
-                ?.toIntOrNull() ?: 30)
+                ?.toIntOrNull() ?: 30,
+            webCaptureDeleteOnLinkDelete = localStorage.getItem(AppPreferences.WEB_CAPTURE_DELETE_ON_LINK_DELETE.key)
+                ?.toBooleanStrictOrNull() ?: false)
     }
 }
 

@@ -214,6 +214,11 @@ class PreferencesImpl(
                 AppPreferences.WEB_CAPTURE_AUTO_DELETE_DAYS -> currentPref.copy(
                     webCaptureAutoDeleteDays = value as Int
                 )
+
+                AppPreferences.WEB_CAPTURE_DELETE_ON_LINK_DELETE -> currentPref.copy(
+                    webCaptureDeleteOnLinkDelete = value as Boolean
+                )
+
                 else -> currentPref
             }
         }

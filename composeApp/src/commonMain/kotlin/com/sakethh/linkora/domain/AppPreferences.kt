@@ -84,7 +84,8 @@ data class AppPreferences(
     val webCaptureSaveAsVersions: Boolean = false,
     val webCaptureRetainAllVersions: Boolean = false,
     val webCaptureMaxVersions: Int = 3,
-    val webCaptureAutoDeleteDays: Int = 30
+    val webCaptureAutoDeleteDays: Int = 30,
+    val webCaptureDeleteOnLinkDelete: Boolean = false
 ) {
     companion object {
         val DARK_THEME = booleanPreferencesKey("DARK_THEME")
@@ -165,5 +166,7 @@ data class AppPreferences(
             booleanPreferencesKey("WEB_CAPTURE_RETAIN_ALL_VERSIONS")
         val WEB_CAPTURE_MAX_VERSIONS = intPreferencesKey("WEB_CAPTURE_MAX_VERSIONS")
         val WEB_CAPTURE_AUTO_DELETE_DAYS = intPreferencesKey("WEB_CAPTURE_AUTO_DELETE_DAYS")
+        val WEB_CAPTURE_DELETE_ON_LINK_DELETE =
+            booleanPreferencesKey("WEB_CAPTURE_DELETE_ON_LINK_DELETE")
     }
 }

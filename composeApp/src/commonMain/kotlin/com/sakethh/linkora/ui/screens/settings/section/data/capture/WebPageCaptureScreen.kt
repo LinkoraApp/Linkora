@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AllInclusive
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Save
@@ -79,9 +80,7 @@ fun WebPageCaptureScreen() {
         topAppBarText = Navigation.Settings.Data.WebPageCapturesScreen.toString(),
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
-            modifier = Modifier
-                .animateContentSize()
-                .fillMaxSize()
+            modifier = Modifier.animateContentSize().fillMaxSize()
                 .addEdgeToEdgeScaffoldPadding(paddingValues)
                 .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
             verticalArrangement = Arrangement.spacedBy(30.dp)
@@ -118,54 +117,58 @@ fun WebPageCaptureScreen() {
                                 text = "If the selected directory is moved or deleted, web-captures will silently fail. Make sure the selected directory always exists.",
                                 style = MaterialTheme.typography.titleSmall
                             )
-                        },
-                        textStyle = MaterialTheme.typography.titleSmall,
-                        trailingIcon = {
+                        }, textStyle = MaterialTheme.typography.titleSmall, trailingIcon = {
                             FilledTonalIconButton(
-                                modifier = Modifier
-                                    .pointerHoverIcon(icon = PointerIcon.Hand)
-                                    .pressScaleEffect()
-                                    .padding(end = 5.dp),
-                                onClick = {
+                                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .pressScaleEffect().padding(end = 5.dp), onClick = {
                                     dataSettingsScreenVM.changeExportLocation(
                                         exportLocation = webCaptureLocation,
                                         platform = platform,
                                         exportLocationType = ExportLocationType.HOARDER
                                     )
-                                }
-                            ) {
+                                }) {
                                 Icon(
                                     imageVector = if (platform is Platform.Android) Icons.Default.FolderOpen else Icons.Default.Save,
                                     contentDescription = null
                                 )
                             }
-                        },
-                        readOnly = platform is Platform.Android,
-                        label = {
+                        }, readOnly = platform is Platform.Android, label = {
                             Text(
                                 text = "Current web-captures location",
                                 style = MaterialTheme.typography.titleMedium,
                                 textAlign = TextAlign.Start,
                             )
-                        },
-                        value = webCaptureLocation,
-                        onValueChange = {
+                        }, value = webCaptureLocation, onValueChange = {
                             dataSettingsScreenVM.changeSettingPreferenceValue(
                                 preferenceKey = stringPreferencesKey(AppPreferences.WEB_CAPTURES_LOCATION.key),
                                 newValue = it
                             )
-                        },
-                        modifier = Modifier
-                            .padding(horizontal = 15.dp)
-                            .fillMaxWidth()
+                        }, modifier = Modifier.padding(horizontal = 15.dp).fillMaxWidth()
                     )
                 }
-
+                item {
+                    SettingComponent(
+                        SettingComponentParam(
+                            isIconNeeded = false,
+                            title = "Delete capture with link",
+                            doesDescriptionExists = true,
+                            description = "Automatically delete the capture folder and its contents from your local storage when the corresponding link is deleted from the app.",
+                            isSwitchNeeded = true,
+                            isSwitchEnabled = preferences.webCaptureDeleteOnLinkDelete,
+                            onSwitchStateChange = {
+                                dataSettingsScreenVM.changeSettingPreferenceValue(
+                                    preferenceKey = booleanPreferencesKey(AppPreferences.WEB_CAPTURE_DELETE_ON_LINK_DELETE.key),
+                                    newValue = !preferences.webCaptureDeleteOnLinkDelete
+                                )
+                            },
+                            icon = Icons.Default.DeleteSweep,
+                            shouldFilledIconBeUsed = true
+                        )
+                    )
+                }
                 item {
                     Column(
-                        modifier = Modifier
-                            .padding(horizontal = 15.dp)
-                            .fillMaxWidth(),
+                        modifier = Modifier.padding(horizontal = 15.dp).fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -254,9 +257,7 @@ fun WebPageCaptureScreen() {
 
                 item {
                     Column(
-                        modifier = Modifier
-                            .padding(horizontal = 15.dp)
-                            .fillMaxWidth(),
+                        modifier = Modifier.padding(horizontal = 15.dp).fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(15.dp)
                     ) {
                         TextField(
@@ -272,21 +273,16 @@ fun WebPageCaptureScreen() {
                             },
                             trailingIcon = {
                                 FilledTonalIconButton(
-                                    modifier = Modifier
-                                        .pointerHoverIcon(icon = PointerIcon.Hand)
-                                        .pressScaleEffect()
-                                        .padding(end = 5.dp),
-                                    onClick = {
+                                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                        .pressScaleEffect().padding(end = 5.dp), onClick = {
                                         dataSettingsScreenVM.changeSettingPreferenceValue(
                                             preferenceKey = stringPreferencesKey(AppPreferences.WEB_CAPTURE_WHITELIST_DOMAINS.key),
                                             newValue = whitelistDomains
                                         )
                                         localFocusManager.clearFocus()
-                                    }
-                                ) {
+                                    }) {
                                     Icon(
-                                        imageVector = Icons.Default.Save,
-                                        contentDescription = null
+                                        imageVector = Icons.Default.Save, contentDescription = null
                                     )
                                 }
                             },
@@ -318,21 +314,16 @@ fun WebPageCaptureScreen() {
                             },
                             trailingIcon = {
                                 FilledTonalIconButton(
-                                    modifier = Modifier
-                                        .pointerHoverIcon(icon = PointerIcon.Hand)
-                                        .pressScaleEffect()
-                                        .padding(end = 5.dp),
-                                    onClick = {
+                                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                        .pressScaleEffect().padding(end = 5.dp), onClick = {
                                         dataSettingsScreenVM.changeSettingPreferenceValue(
                                             preferenceKey = stringPreferencesKey(AppPreferences.WEB_CAPTURE_BLACKLIST_DOMAINS.key),
                                             newValue = blacklistDomains
                                         )
                                         localFocusManager.clearFocus()
-                                    }
-                                ) {
+                                    }) {
                                     Icon(
-                                        imageVector = Icons.Default.Save,
-                                        contentDescription = null
+                                        imageVector = Icons.Default.Save, contentDescription = null
                                     )
                                 }
                             },
@@ -421,9 +412,7 @@ fun WebPageCaptureScreen() {
                                 fontSize = 14.sp,
                                 lineHeight = 20.sp,
                                 textAlign = TextAlign.Start,
-                                modifier = Modifier
-                                    .padding(horizontal = 15.dp)
-                                    .padding(top = 5.dp),
+                                modifier = Modifier.padding(horizontal = 15.dp).padding(top = 5.dp),
                             )
                         }
                     }
@@ -457,8 +446,7 @@ private fun AssetStripOption(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier.fillMaxWidth()
-            .clickable(onClick = {
+        modifier = modifier.fillMaxWidth().clickable(onClick = {
                 onCheckedChange(!checked)
             }, indication = null, interactionSource = null)
             .pointerHoverIcon(icon = PointerIcon.Hand),
@@ -481,13 +469,10 @@ private fun SliderOption(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .alpha(if (enabled) 1f else 0.5f)
+        modifier = modifier.fillMaxWidth().alpha(if (enabled) 1f else 0.5f)
     ) {
         Text(
-            text = "$label: $displayValue",
-            style = MaterialTheme.typography.titleMedium
+            text = "$label: $displayValue", style = MaterialTheme.typography.titleMedium
         )
         Slider(
             value = value,
