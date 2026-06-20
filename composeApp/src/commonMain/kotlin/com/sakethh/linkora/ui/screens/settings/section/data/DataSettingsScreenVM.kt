@@ -1,7 +1,9 @@
 package com.sakethh.linkora.ui.screens.settings.section.data
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
@@ -222,6 +224,13 @@ class DataSettingsScreenVM(
         val refreshLinksState = mutableStateOf(
             RefreshLinksState(
                 isInRefreshingState = false, currentIteration = 0
+            )
+        )
+        var webCaptureState by mutableStateOf(
+            WebCaptureState(
+                currentIteration = 0,
+                isInProgress = false,
+                total = 0,
             )
         )
         val totalLinksForRefresh = mutableStateOf(0)

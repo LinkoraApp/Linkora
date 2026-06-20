@@ -84,7 +84,8 @@ class AppVM(
     fileManager: FileManager,
     private val dataSyncingNotificationService: NativeUtils.DataSyncingNotificationService,
     private val snapshotRepo: SnapshotRepo,
-    nativeUtils: NativeUtils
+    nativeUtils: NativeUtils,
+    webCapture: NativeUtils.WebCapture
 ) : ServerManagementViewModel(
     networkRepo = networkRepo,
     preferencesRepository = preferencesRepository,

@@ -39,6 +39,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.room3.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.sakethh.linkora.data.local.LocalDatabase
+import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.AppPreferences
@@ -90,7 +91,13 @@ suspend fun main() {
             platformPreference = PlatformPreference,
             network = Network,
             dataSyncingNotificationService = NativeUtils.DataSyncingNotificationService(),
-            webCapture = NativeUtils.WebCapture()
+            webCapture = NativeUtils.WebCapture(),
+            webCaptureDatabaseManager = WebCaptureDatabaseManager(databaseBuilder = { webCaptureDirPath ->
+                File(webCaptureDirPath, "${WebCaptureDatabase.NAME}.db").run {
+                    Room.databaseBuilder<WebCaptureDatabase>(name = this.absolutePath)
+                        .setDriver(BundledSQLiteDriver()).build()
+                }
+            }),
         )
     )
 
@@ -101,6 +108,18 @@ suspend fun main() {
         languageCode = preferences.preferredAppLanguageCode,
         languageName = preferences.preferredAppLanguageName
     )?.join()
+
+    /* CoroutineScope(Dispatchers.IO).launch {
+         val preferences = DependencyContainer.preferencesRepo.getPreferences()
+         println("Starting bulk capture")
+         BulkWebCaptureService.captureAllWebPages(
+             preferences = preferences,
+             localLinksRepo = DependencyContainer.localLinksRepo,
+             metaDataDao = LinkoraSDK.getInstance().webCaptureDatabaseManager.getDatabase(
+                 preferences.webCapturesLocation
+             ).metaDataDao
+         )
+     }*/
 
     application {
         val windowState = rememberWindowState(

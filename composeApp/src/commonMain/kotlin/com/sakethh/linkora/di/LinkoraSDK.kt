@@ -1,6 +1,7 @@
 package com.sakethh.linkora.di
 
 import com.sakethh.linkora.data.local.LocalDatabase
+import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.Network
@@ -15,7 +16,8 @@ class LinkoraSDK(
     val platformPreference: PlatformPreference,
     val network: Network,
     val dataSyncingNotificationService: NativeUtils.DataSyncingNotificationService,
-    val webCapture: NativeUtils.WebCapture
+    val webCapture: NativeUtils.WebCapture,
+    val webCaptureDatabaseManager: WebCaptureDatabaseManager
 ) {
     companion object {
         private lateinit var shared: LinkoraSDK

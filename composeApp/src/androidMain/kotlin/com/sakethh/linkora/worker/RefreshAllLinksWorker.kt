@@ -11,8 +11,6 @@ import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.model.RefreshLink
-import com.sakethh.linkora.domain.onFailure
-import com.sakethh.linkora.domain.onSuccess
 import com.sakethh.linkora.service.RefreshAllLinksNotificationService
 import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
 import com.sakethh.linkora.ui.screens.settings.section.data.RefreshLinksState
@@ -25,10 +23,9 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -78,7 +75,7 @@ class RefreshAllLinksWorker(appContext: Context, workerParameters: WorkerParamet
         linksProcessedChannel = Channel(Channel.BUFFERED)
         linksProcessedChannelJob = launch {
             linksProcessedChannel?.consumeAsFlow()?.cancellable()
-                ?.collect { refreshedLinkIndex ->
+                ?.collect { refreshedLinkId ->
                     DependencyContainer.preferencesRepo.changePreferenceValue(
                         preferenceKey = longPreferencesKey(AppPreferences.REFRESHED_LINKS_COUNT.key),
                         newValue = ++processedLinksCount
@@ -86,7 +83,7 @@ class RefreshAllLinksWorker(appContext: Context, workerParameters: WorkerParamet
 
                     LinkoraSDK.getInstance().localDatabase.refreshDao.insertAProcessedId(
                         RefreshLink(
-                            refreshedLinkIndex
+                            refreshedLinkId
                         )
                     )
                     DataSettingsScreenVM.refreshLinksState.value =
@@ -120,19 +117,11 @@ class RefreshAllLinksWorker(appContext: Context, workerParameters: WorkerParamet
 
             linksToBeRefreshed.asFlow()
                 .flatMapMerge(concurrency = preferences.maxConcurrentRefreshCount) { link ->
-                    channelFlow {
-                        DependencyContainer.localLinksRepo.refreshLinkMetadata(
-                            link,
-                            refreshLinkType = preferences.selectedLinkRefreshType
-                        )
-                            // TODO: REMOVE `collectLatest` from here
-                            .collectLatest {
-                                it.onSuccess {
-                                    send(link.localId)
-                                }.onFailure {
-                                    send(link.localId)
-                                }
-                            }
+                    DependencyContainer.localLinksRepo.refreshLinkMetadata(
+                        link,
+                        refreshLinkType = preferences.selectedLinkRefreshType
+                    ).map {
+                        link.localId
                     }
                 }.onEach {
                     if (isStopped) {
