@@ -1,11 +1,12 @@
-package com.sakethh.linkora.web_capture
+package com.sakethh.linkora
+
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
-object WebCapture {
+object JVMAndAndroidWebCapture {
 
     private var isLibraryLoaded = false
     private val initMutex = Mutex()

@@ -1,23 +1,72 @@
+@file:OptIn(ExperimentalWasmDsl::class)
+
 import org.gradle.internal.os.OperatingSystem
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    id("java-library")
-    alias(libs.plugins.jetbrains.kotlin.jvm)
+    kotlin("multiplatform")
+    alias(libs.plugins.ksp)
+    id("com.android.library")
+    id("androidx.room3")
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
-}
-
-dependencies {
-    implementation(libs.jetbrains.kotlinx.coroutines.core)
+room3 {
+    schemaDirectory("$projectDir/schemas")
 }
 
 kotlin {
-    compilerOptions {
-        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
+
+    jvm("desktop") {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_21)
+        }
     }
+
+    androidTarget {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_21)
+        }
+    }
+
+    wasmJs {
+        browser()
+    }
+
+    sourceSets {
+        val jvmAndAndroidMain by creating {
+            dependsOn(commonMain.get())
+        }
+        val androidMain by getting {
+            dependsOn(jvmAndAndroidMain)
+        }
+        val desktopMain by getting {
+            dependsOn(jvmAndAndroidMain)
+        }
+        commonMain.dependencies {
+            implementation(libs.jetbrains.kotlinx.coroutines.core)
+            implementation(libs.androidx.room3.runtime)
+        }
+    }
+
+}
+
+android {
+    namespace = "com.sakethh.linkora.web_capture"
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
+
+    defaultConfig {
+        minSdk = libs.versions.android.minSdk.get().toInt()
+    }
+
+    sourceSets["main"].jniLibs.srcDirs(
+        project.layout.buildDirectory.dir("jniLibs")
+    )
+}
+
+dependencies {
+    ksp(libs.androidx.room3.compiler)
+    add("kspWasmJs", libs.androidx.room3.compiler)
 }
 
 private val rustBasePath = layout.projectDirectory.asFile

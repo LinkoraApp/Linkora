@@ -17,7 +17,7 @@ fn get_string_from_jni(env: &mut JNIEnv, string: JString) -> String {
 }
 
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_com_sakethh_linkora_web_1capture_WebCapture_saveHTMLPage(
+pub extern "system" fn Java_com_sakethh_linkora_JVMAndAndroidWebCapture_saveHTMLPage(
     mut env: JNIEnv,
     _class: JClass,
     file_descriptor: jint,

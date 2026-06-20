@@ -78,7 +78,6 @@ kotlin {
             implementation(libs.androidx.documentfile)
             implementation(libs.ktor.client.android)
             implementation(libs.androidx.datastore.preferences.core)
-            implementation(project(":web-capture"))
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -113,6 +112,7 @@ kotlin {
             implementation(libs.adaptive.layout)
             implementation(libs.adaptive.navigation)
             implementation("com.composables:composeunstyled:1.49.6")
+            implementation(project(":web-capture"))
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
@@ -120,7 +120,6 @@ kotlin {
             implementation(libs.sqlite.bundled)
             implementation(libs.ktor.client.java)
             implementation(libs.androidx.datastore.preferences.core)
-            implementation(project(":web-capture"))
         }
         wasmJsMain.dependencies {
             implementation(libs.ktor.client.js)
@@ -191,10 +190,6 @@ android {
 
     sourceSets["main"].res.srcDirs(
         "src/commonMain/resources", "src/androidMain/resources"
-    )
-
-    sourceSets["main"].jniLibs.srcDirs(
-        rootProject.file("web-capture/build/jniLibs")
     )
 
     dependenciesInfo {

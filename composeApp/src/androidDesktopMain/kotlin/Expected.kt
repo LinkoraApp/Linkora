@@ -1,5 +1,5 @@
+import com.sakethh.linkora.WebCapture
 import com.sakethh.linkora.domain.Result
-import com.sakethh.linkora.web_capture.WebCapture
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
