@@ -23,7 +23,6 @@ import com.sakethh.linkora.data.remote.repository.RemoteTagsRepoImpl
 import com.sakethh.linkora.data.remote.repository.sync.RemoteSyncRepoImpl
 import com.sakethh.linkora.network.repository.NetworkRepoImpl
 import com.sakethh.linkora.utils.canPushToServer
-import kotlinx.coroutines.flow.map
 
 object DependencyContainer {
 
@@ -203,7 +202,9 @@ object DependencyContainer {
             localTagsRepo = localTagsRepo,
             withWriterConnection = {
                 LinkoraSDK.getInstance().localDatabase.useWriterConnection(it)
-            })
+            },
+            preferencesRepository = preferencesRepo
+        )
     }
 
     private val remoteMultiActionRepo by lazy {

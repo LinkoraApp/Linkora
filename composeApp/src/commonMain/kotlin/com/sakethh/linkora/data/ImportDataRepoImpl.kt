@@ -4,7 +4,6 @@ import androidx.room3.Transactor
 import androidx.room3.immediateTransaction
 import com.fleeksoft.ksoup.Ksoup
 import com.fleeksoft.ksoup.nodes.Element
-import com.sakethh.linkora.di.DependencyContainer.preferencesRepo
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.model.Folder
@@ -17,15 +16,14 @@ import com.sakethh.linkora.domain.repository.local.LocalFoldersRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.LocalPanelsRepo
 import com.sakethh.linkora.domain.repository.local.LocalTagsRepo
+import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
-import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.LinkoraExports
 import com.sakethh.linkora.utils.catchAsThrowableAndEmitFailure
 import com.sakethh.linkora.utils.getSystemEpochSeconds
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
-import kotlinx.serialization.json.Json
 
 typealias NewFolderIdOfParent = Long?
 
@@ -37,6 +35,7 @@ class ImportDataRepoImpl(
     private val remoteSyncRepo: RemoteSyncRepo,
     private val withWriterConnection: suspend (suspend (Transactor) -> Unit) -> Unit,
     private val canPushToServer: suspend () -> Boolean,
+    private val preferencesRepository: PreferencesRepository
 ) : ImportDataRepo {
     override suspend fun importDataFromObj(jsonExportSchema: JSONExportSchema): Flow<Result<Unit>> {
         return channelFlow<Result<Unit>> {
@@ -262,7 +261,7 @@ class ImportDataRepoImpl(
                                                         else -> currentParentId
                                                     },
                                                     lastModified = eventTimestamp,
-                                                    userAgent = preferencesRepo.getPreferences().primaryJsoupUserAgent
+                                                    userAgent = preferencesRepository.getPreferences().primaryJsoupUserAgent
                                                 )
                                             )
                                         }
