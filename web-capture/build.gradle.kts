@@ -47,6 +47,13 @@ kotlin {
             implementation(libs.jetbrains.kotlinx.coroutines.core)
             implementation(libs.androidx.room3.runtime)
         }
+
+        val desktopTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(libs.kotlinx.coroutines.test.v1110)
+            }
+        }
     }
 
 }
@@ -139,3 +146,13 @@ tasks.matching { it.name == "processJvmResources" || it.name == "jvmProcessResou
     .configureEach {
         dependsOn("cargoBuildDesktop")
     }
+
+tasks.named<Test>("desktopTest") {
+    dependsOn("cargoBuildDesktop")
+
+    val rustBuildDir = projectDir.resolve("target/x86_64-unknown-linux-gnu/release")
+
+    jvmArgs("-Djava.library.path=${rustBuildDir.absolutePath}")
+
+    environment("LD_LIBRARY_PATH", rustBuildDir.absolutePath)
+}
