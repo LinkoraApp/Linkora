@@ -6,7 +6,9 @@ import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
 import com.sakethh.linkora.ui.screens.settings.section.data.RefreshLinksState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.launch
 
 object RefreshAllLinksService {
@@ -21,6 +23,8 @@ object RefreshAllLinksService {
     }
 
     fun invoke(localLinksRepo: LocalLinksRepo) {
+        val preferences = DependencyContainer.preferencesRepo.getPreferences()
+
         linksRefreshJob = CoroutineScope(PlatformIODispatcher).launch {
             localLinksRepo.getAllLinks().let { allLinks ->
                 DataSettingsScreenVM.totalLinksForRefresh.value = allLinks.size
@@ -29,23 +33,23 @@ object RefreshAllLinksService {
                         isInRefreshingState = true, currentIteration = 0
                     )
 
-                allLinks.forEach { link ->
-                    launch {
+                var processedCount = 0
+
+                allLinks.asFlow()
+                    .flatMapMerge(concurrency = preferences.maxConcurrentRefreshCount) { link ->
                         localLinksRepo.refreshLinkMetadata(
-                            link,
-                            DependencyContainer.preferencesRepo.getPreferences().selectedLinkRefreshType
-                        ).collectLatest {
-                            it.onSuccess {
-                                DataSettingsScreenVM.refreshLinksState.value =
-                                    DataSettingsScreenVM.refreshLinksState.value.let { currentLinkRefreshState ->
-                                        currentLinkRefreshState.copy(currentIteration = currentLinkRefreshState.currentIteration + 1)
-                                    }
-                            }
+                            link, preferences.selectedLinkRefreshType
+                        )
+                    }.catch { it.printStackTrace() }.collect { result ->
+                        result.onSuccess {
+                            processedCount++
+                            DataSettingsScreenVM.refreshLinksState.value =
+                                DataSettingsScreenVM.refreshLinksState.value.copy(currentIteration = processedCount)
                         }
                     }
-                }
             }
         }
+
         linksRefreshJob?.invokeOnCompletion {
             DataSettingsScreenVM.refreshLinksState.value =
                 DataSettingsScreenVM.refreshLinksState.value.copy(
