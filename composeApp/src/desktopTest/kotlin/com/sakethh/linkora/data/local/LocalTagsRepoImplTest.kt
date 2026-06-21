@@ -1,12 +1,12 @@
-package com.sakethh.linkora.data
+package com.sakethh.linkora.data.local
 
 import androidx.room3.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
-import com.sakethh.linkora.data.local.LocalDatabase
 import com.sakethh.linkora.data.local.dao.LinksDao
 import com.sakethh.linkora.data.local.dao.TagsDao
 import com.sakethh.linkora.data.local.repository.LocalTagsRepoImpl
 import com.sakethh.linkora.domain.AppPreferences
+import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.dto.server.Correlation
 import com.sakethh.linkora.domain.model.link.Link
@@ -219,7 +219,7 @@ class LocalTagsRepoImplTest {
                 Link(
                     url = "https://l1.com",
                     title = "L1",
-                    linkType = com.sakethh.linkora.domain.LinkType.SAVED_LINK,
+                    linkType = LinkType.SAVED_LINK,
                     idOfLinkedFolder = null,
                     imgURL = "",
                     note = "",
@@ -231,7 +231,7 @@ class LocalTagsRepoImplTest {
                 Link(
                     url = "https://l2.com",
                     title = "L2",
-                    linkType = com.sakethh.linkora.domain.LinkType.SAVED_LINK,
+                    linkType = LinkType.SAVED_LINK,
                     idOfLinkedFolder = null,
                     imgURL = "",
                     note = "",

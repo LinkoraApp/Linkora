@@ -1,4 +1,4 @@
-package com.sakethh.linkora.data
+package com.sakethh.linkora.data.local
 
 import com.sakethh.linkora.data.local.repository.PreferencesImpl
 import com.sakethh.linkora.domain.AppPreferences
