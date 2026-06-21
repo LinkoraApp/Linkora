@@ -24,6 +24,7 @@ kotlinxDatetime = "0.7.1"
 kotlinxSerializationJson = "1.10.0"
 ksoupVersion = "0.2.6"
 ktorClientJs = "3.4.2"
+ktorClientMock = "3.5.0"
 ktorVersion = "3.4.1"
 lifecycleViewmodelCompose = "2.8.2"
 material3Version = "1.11.0-alpha01"
@@ -75,6 +76,7 @@ ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorVer
 ktor-client-java = { module = "io.ktor:ktor-client-java", version.ref = "ktorVersion" }
 ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktorClientJs" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktorVersion" }
+ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktorClientMock" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorVersion" }
 lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
