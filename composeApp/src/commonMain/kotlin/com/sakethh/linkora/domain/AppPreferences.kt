@@ -76,32 +76,19 @@ data class AppPreferences(
         val AMOLED_THEME_STATE = booleanPreferencesKey("AMOLED_THEME_STATE")
         val DYNAMIC_THEMING = booleanPreferencesKey("DYNAMIC_THEMING")
         val JSOUP_USER_AGENT = stringPreferencesKey("JSOUP_USER_AGENT")
-        val SECONDARY_JSOUP_USER_AGENT = stringPreferencesKey("SECONDARY_JSOUP_USER_AGENT")
         val FOLLOW_SYSTEM_THEME = booleanPreferencesKey("FOLLOW_SYSTEM_THEME")
-        val SETTING_COMPONENT_DESCRIPTION_STATE =
-            booleanPreferencesKey("SETTING_COMPONENT_DESCRIPTION_STATE")
-        val CUSTOM_TABS = booleanPreferencesKey("CUSTOM_TABS")
         val AUTO_DETECT_TITLE_FOR_LINK = booleanPreferencesKey("AUTO_DETECT_TITLE_FOR_LINK")
-        val AUTO_CHECK_UPDATES = booleanPreferencesKey("AUTO_CHECK_UPDATES")
         val HOME_SCREEN_VISIBILITY = booleanPreferencesKey("HOME_SCREEN_VISIBILITY")
         val SORTING_PREFERENCE = stringPreferencesKey("SORTING_PREFERENCE")
-        val SEND_CRASH_REPORTS = booleanPreferencesKey("SEND_CRASH_REPORTS")
-        val IS_DATA_MIGRATION_COMPLETED_FROM_V9 =
-            booleanPreferencesKey("IS_DATA_MIGRATION_COMPLETED_FROM_V9")
         val CURRENT_WORK_MANAGER_WORK_UUID = stringPreferencesKey("CURRENT_WORK_MANAGER_WORK_UUID")
-        val SHELF_VISIBLE_STATE = booleanPreferencesKey("SHELF_VISIBLE_STATE")
         val LAST_SELECTED_PANEL_ID = intPreferencesKey("LAST_SELECTED_PANEL_ID")
         val APP_LANGUAGE_NAME = stringPreferencesKey("APP_LANGUAGE_NAME")
         val APP_LANGUAGE_CODE = stringPreferencesKey("APP_LANGUAGE_CODE")
         val USE_REMOTE_LANGUAGE_STRINGS = booleanPreferencesKey("USE_REMOTE_LANGUAGE_STRINGS")
-        val TOTAL_REMOTE_STRINGS = intPreferencesKey("TOTAL_REMOTE_STRINGS")
-        val REMOTE_STRINGS_LAST_UPDATED_ON = longPreferencesKey("REMOTE_STRINGS_LAST_UPDATED_ON")
         val LOCALIZATION_SERVER_URL = stringPreferencesKey("LOCALIZATION_SERVER_URL")
         val ASSOCIATED_IMAGES_IN_LINK_MENU_VISIBILITY =
             booleanPreferencesKey("ASSOCIATED_IMAGES_IN_LINK_MENU_VISIBILITY")
         val CURRENTLY_SELECTED_LINK_VIEW = stringPreferencesKey("CURRENTLY_SELECTED_LINK_VIEW")
-        val BORDER_VISIBILITY_FOR_NON_LIST_VIEWS =
-            booleanPreferencesKey("BORDER_VISIBILITY_FOR_NON_LIST_VIEWS")
         val TITLE_VISIBILITY_FOR_NON_LIST_VIEWS =
             booleanPreferencesKey("TITLE_VISIBILITY_FOR_NON_LIST_VIEWS")
         val BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS =
@@ -133,7 +120,6 @@ data class AppPreferences(
         val BACKUP_AUTO_DELETION_THRESHOLD = intPreferencesKey("BACKUP_AUTO_DELETION_THRESHOLD")
         val COLLECTION_SOURCE_ID = intPreferencesKey("COLLECTION_SOURCE_ID")
         val SELECTED_APP_ICON = stringPreferencesKey("SELECTED_APP_ICON")
-        val CUSTOM_VERSION_APP_LABEL = stringPreferencesKey("CUSTOM_VERSION_APP_LABEL")
         val SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK =
             booleanPreferencesKey("SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK")
         val SHOW_MENU_ON_GRID_LINK_CLICK = booleanPreferencesKey("SHOW_MENU_ON_GRID_LINK_CLICK")
