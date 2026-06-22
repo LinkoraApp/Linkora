@@ -181,6 +181,7 @@ android {
             )
             applicationIdSuffix = ".preview"
             versionNameSuffix = "-preview"
+            matchingFallbacks += listOf("release", "debug")
         }
     }
     compileOptions {

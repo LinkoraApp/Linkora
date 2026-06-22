@@ -15,6 +15,9 @@ room3 {
     schemaDirectory("$projectDir/schemas")
 }
 
+private val rustBasePath = layout.projectDirectory.asFile
+private val jniLibsDir = layout.buildDirectory.dir("jniLibs")
+
 kotlin {
 
     jvm("desktop") {
@@ -58,29 +61,9 @@ kotlin {
 
 }
 
-android {
-    namespace = "com.sakethh.linkora.web_capture"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-    }
-
-    sourceSets["main"].jniLibs.srcDirs(
-        project.layout.buildDirectory.dir("jniLibs")
-    )
-}
-
-dependencies {
-    ksp(libs.androidx.room3.compiler)
-    add("kspWasmJs", libs.androidx.room3.compiler)
-}
-
-private val rustBasePath = layout.projectDirectory.asFile
-private val jniLibsDir = layout.buildDirectory.dir("jniLibs")
-
-tasks.register("cargoBuildAndroid") {
+val cargoBuildAndroid = tasks.register("cargoBuildAndroid") {
     group = "rust"
+    outputs.dir(jniLibsDir)
     doLast {
         val ndkBase = file("${System.getProperty("user.home")}/Android/Sdk/ndk")
         val ndkDir = ndkBase.listFiles()?.maxOrNull()
@@ -107,6 +90,29 @@ tasks.register("cargoBuildAndroid") {
             }
         }
     }
+}
+
+android {
+    namespace = "com.sakethh.linkora.web_capture"
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
+
+    defaultConfig {
+        minSdk = libs.versions.android.minSdk.get().toInt()
+    }
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+        }
+        register("preview") {
+            matchingFallbacks += listOf("release", "debug")
+        }
+    }
+    sourceSets["main"].jniLibs.setSrcDirs(listOf(cargoBuildAndroid))
+}
+
+dependencies {
+    ksp(libs.androidx.room3.compiler)
+    add("kspWasmJs", libs.androidx.room3.compiler)
 }
 
 tasks.register("cargoBuildDesktop") {
@@ -155,4 +161,10 @@ tasks.named<Test>("desktopTest") {
     jvmArgs("-Djava.library.path=${rustBuildDir.absolutePath}")
 
     environment("LD_LIBRARY_PATH", rustBuildDir.absolutePath)
+}
+
+tasks.matching {
+    it.name.startsWith("merge") && it.name.endsWith("JniLibFolders")
+}.configureEach {
+    dependsOn(cargoBuildAndroid)
 }
