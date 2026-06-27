@@ -11,3 +11,7 @@ path = "src/main/rust/web_capture.rs"
 [dependencies]
 monolith = "2.10.1"
 jni = "0.21"
+
+[dev-dependencies]
+tempfile = "3.27.0"
+jni = { version = "0.21", features = ["invocation"] }
