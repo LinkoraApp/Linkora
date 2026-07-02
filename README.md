@@ -7,14 +7,15 @@ with optional self-hosted sync.
 A browser extension is available for saving web links directly to Linkora via the sync-server.
 
 > Linkora on web is currently
-> experimental. [linkora-app.netlify.app](https://linkora-app.netlify.app) is the only site maintained
+> experimental. [linkora-app.netlify.app](https://linkora-app.netlify.app) is the only site
+> maintained
 > by me. Anything else is unrelated.
 
 Other repos in the Linkora ecosystem:
 [sync-server](https://github.com/LinkoraApp/sync-server) | [browser-extension](https://github.com/LinkoraApp/browser-extension) | [proxy](https://github.com/LinkoraApp/proxy)
 
 **Contributing?** See
-the [Contributing Guide](CONTRIBUTING.md) | [Code of Conduct](https://github.com/LinkoraApp/.github/blob/main/CODE_OF_CONDUCT.md)
+the [Code of Conduct](https://github.com/LinkoraApp/.github/blob/main/CODE_OF_CONDUCT.md) | [Contributing Guide](CONTRIBUTING.md) | [Development Guide](DEVELOPMENT.md)
 
 ## Download
 
