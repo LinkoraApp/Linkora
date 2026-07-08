@@ -1,0 +1,5 @@
+- Security token field in sync-server setup now includes a show/hide toggle (by @linky3754)
+- Shared intent title will now be used by default when sharing the links via external apps; force-fetching metadata saves fetched info instead (by @linky3754)
+- App no longer crashes when no browser is installed; instead, a snackbar notification is shown indicating that the browser is missing
+
+And other minor improvements across the codebase.
