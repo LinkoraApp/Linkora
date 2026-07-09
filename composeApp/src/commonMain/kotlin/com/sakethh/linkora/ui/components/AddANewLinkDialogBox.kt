@@ -134,6 +134,7 @@ import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.defaultFolderIds
 import com.sakethh.linkora.utils.defaultImpLinksFolder
 import com.sakethh.linkora.utils.defaultSavedLinksFolder
+import com.sakethh.linkora.utils.extractUrls
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.pushSnackbarOnFailure
 import com.sakethh.linkora.utils.rememberLocalizedString
@@ -392,7 +393,7 @@ private fun TopPartOfAddANewLinkDialogBox(
                 )
             },
             textStyle = MaterialTheme.typography.titleSmall,
-            singleLine = true,
+            singleLine = false,
             shape = RoundedCornerShape(5.dp),
             value = linkTextFieldValue.value,
             onValueChange = {
@@ -890,6 +891,10 @@ private fun BottomPartOfAddANewLinkDialogBox(
                 end = 20.dp, top = 10.dp, start = 20.dp
             ).fillMaxWidth().pressScaleEffect(),
             onClick = {
+
+                val splitLinkTextFieldValue = linkTextFieldValue.value.split("\n");
+                val numUrls = splitLinkTextFieldValue.size
+
                 isDataExtractingForTheLink.value = true
                 val linkType =
                     when (currentFolder?.localId ?: selectedFolderForSavingTheLink.value.localId) {
@@ -897,30 +902,70 @@ private fun BottomPartOfAddANewLinkDialogBox(
                         Constants.IMPORTANT_LINKS_ID -> LinkType.IMPORTANT_LINK
                         else -> LinkType.FOLDER_LINK
                     }
-                performAction(
-                    AddANewLinkDialogBoxAction.AddANewLink(
-                        link = Link(
-                            linkType = linkType,
-                            title = titleTextFieldValue.value.trim(),
-                            url = linkTextFieldValue.value.trim(),
-                            imgURL = imgUrlTextFieldValue.value.trim(),
-                            note = noteTextFieldValue.value,
-                            idOfLinkedFolder = currentFolder?.localId
-                                ?: selectedFolderForSavingTheLink.value.localId,
-                            userAgent = preferences.primaryJsoupUserAgent
-                        ),
-                        linkSaveConfig = LinkSaveConfig(
-                            forceAutoDetectTitle = isAutoDetectTitleEnabled.value || preferences.isAutoDetectTitleForLinksEnabled,
-                            forceSaveWithoutRetrievingData = isForceSaveWithoutFetchingMetaDataEnabled.value || preferences.forceSaveWithoutFetchingAnyMetaData,
-                            useProxy = preferences.useProxy,
-                            skipSavingIfExists = preferences.skipSavingExistingLink,
-                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails
-                        ),
-                        onCompletion = onDismiss,
-                        selectedTags = selectedTags,
-                        pushSnackbarOnSuccess = true
+                if(numUrls == 1){
+                    performAction(
+                        AddANewLinkDialogBoxAction.AddANewLink(
+                            link = Link(
+                                linkType = linkType,
+                                title = titleTextFieldValue.value.trim(),
+                                url = linkTextFieldValue.value.trim(),
+                                imgURL = imgUrlTextFieldValue.value.trim(),
+                                note = noteTextFieldValue.value,
+                                idOfLinkedFolder = currentFolder?.localId
+                                    ?: selectedFolderForSavingTheLink.value.localId,
+                                userAgent = preferences.primaryJsoupUserAgent
+                            ),
+                            linkSaveConfig = LinkSaveConfig(
+                                forceAutoDetectTitle = isAutoDetectTitleEnabled.value || preferences.isAutoDetectTitleForLinksEnabled,
+                                forceSaveWithoutRetrievingData = isForceSaveWithoutFetchingMetaDataEnabled.value || preferences.forceSaveWithoutFetchingAnyMetaData,
+                                useProxy = preferences.useProxy,
+                                skipSavingIfExists = preferences.skipSavingExistingLink,
+                                forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails
+                            ),
+                            onCompletion = onDismiss,
+                            selectedTags = selectedTags,
+                            pushSnackbarOnSuccess = true
+                        )
                     )
-                )
+                }
+                else {
+                    for (linkTextField in splitLinkTextFieldValue) {
+                        if (linkTextField == "") {
+                            continue;
+                        }
+
+                        var extractedUrls = extractUrls(linkTextField)
+
+                        for (extractedUrl in extractedUrls) {
+                            var url = extractedUrl.trim()
+
+                            performAction(
+                                AddANewLinkDialogBoxAction.AddANewLink(
+                                    link = Link(
+                                        linkType = linkType,
+                                        title = titleTextFieldValue.value.trim(),
+                                        url = url,
+                                        imgURL = imgUrlTextFieldValue.value.trim(),
+                                        note = noteTextFieldValue.value,
+                                        idOfLinkedFolder = currentFolder?.localId
+                                            ?: selectedFolderForSavingTheLink.value.localId,
+                                        userAgent = preferences.primaryJsoupUserAgent
+                                    ),
+                                    linkSaveConfig = LinkSaveConfig(
+                                        forceAutoDetectTitle = false,
+                                        forceSaveWithoutRetrievingData = true,
+                                        useProxy = preferences.useProxy,
+                                        skipSavingIfExists = preferences.skipSavingExistingLink,
+                                        forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails
+                                    ),
+                                    onCompletion = onDismiss,
+                                    selectedTags = selectedTags,
+                                    pushSnackbarOnSuccess = true
+                                )
+                            )
+                        }
+                    }
+                }
             }) {
             Text(
                 text = Localization.rememberLocalizedString(Localization.Key.Save),

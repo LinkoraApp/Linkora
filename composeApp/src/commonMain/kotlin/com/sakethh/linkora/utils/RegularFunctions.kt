@@ -33,6 +33,17 @@ import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
+fun extractUrls(text: String): List<String> {
+    if (text.isBlank()) return emptyList()
+
+    val urlPattern = Regex(
+        "(https?|ftp)://[\\w-]+(\\.[\\w-]+)+([\\w.,@?^=%&:/~+#-]*)?",
+        RegexOption.IGNORE_CASE
+    )
+
+    return urlPattern.findAll(text).map { it.value }.toList()
+}
+
 fun <T> wrappedResultFlow(init: suspend (SendChannel<Result<T>>) -> T): Flow<Result<T>> {
     return channelFlow {
         send(Result.Loading())

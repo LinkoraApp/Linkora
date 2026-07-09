@@ -157,6 +157,32 @@ class ShareToSaveActivity : ComponentActivity() {
                     colorScheme = colors,
                     preferredFont = preferences.selectedFont
                 ) {
+                    var sharedUrls = this@ShareToSaveActivity.intent?.getStringExtra(
+                        Intent.EXTRA_TEXT
+                    ).toString().lines();
+
+                    var url = ""
+                    var title = ""
+                    
+                    if(sharedUrls.size > 1) {
+                        var urlStringForDialogBox = sharedUrls[0].toString()
+
+                        for (i in 1 until sharedUrls.size) {
+                            urlStringForDialogBox += "\n\n"
+                            urlStringForDialogBox += sharedUrls[i].toString()
+                        }
+
+                        url = urlStringForDialogBox
+                        preferences.forceSaveWithoutFetchingAnyMetaData = true
+                    }else{
+                        url = this@ShareToSaveActivity.intent?.getStringExtra(
+                            Intent.EXTRA_TEXT
+                        ).toString()
+                        title = this@ShareToSaveActivity.intent?.getStringExtra(
+                            Intent.EXTRA_SUBJECT
+                        ) ?: ""
+                    }
+
                     AddANewLinkDialogBox(
                         preferences = preferences,
                         addNewLinkDialogParams = AddNewLinkDialogParams(
@@ -180,12 +206,8 @@ class ShareToSaveActivity : ComponentActivity() {
                             foldersSearchQueryResult = collectionsScreenVM.foldersSearchQueryResult,
                             rootRegularFolders = collectionsScreenVM.rootRegularFolders,
                             performAction = collectionsScreenVM::performAction,
-                            url = this@ShareToSaveActivity.intent?.getStringExtra(
-                                Intent.EXTRA_TEXT
-                            ).toString(),
-                            title = this@ShareToSaveActivity.intent?.getStringExtra(
-                                Intent.EXTRA_SUBJECT
-                            ) ?: ""
+                            url = url,
+                            title = title
                         ),
                     )
                 }
