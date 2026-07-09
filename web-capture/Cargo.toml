@@ -9,9 +9,11 @@ crate-type = ["cdylib"]
 path = "src/main/rust/web_capture.rs"
 
 [dependencies]
-monolith = "2.10.1"
+monolith = { package = "capture_core", git = "https://github.com/LinkoraApp/capture-core", branch = "base" }
 jni = "0.21"
+tokio = { version = "1.0", features = ["full"] }
+dashmap = "6.2.1"
 
 [dev-dependencies]
-tempfile = "3.27.0"
 jni = { version = "0.21", features = ["invocation"] }
+tempfile = "3.27.0"

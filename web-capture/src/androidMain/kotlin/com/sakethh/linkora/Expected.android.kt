@@ -5,7 +5,7 @@ actual object WebCapture {
         return JVMAndAndroidWebCapture.init()
     }
 
-    actual fun saveHTMLPage(
+    actual suspend fun saveHTMLPage(
         fileDescriptor: Int,
         filePath: String,
         url: String,
@@ -37,7 +37,7 @@ actual object WebCapture {
             includeAudioElements = includeAudioElements,
             includeVideoElements = includeVideoElements,
             includeMetadata = includeMetadata,
-            logStuff = logStuff
+            logStuff = logStuff,
         )
     }
 }

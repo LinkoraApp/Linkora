@@ -5,7 +5,7 @@ actual object WebCapture {
         return Result.failure(IllegalStateException("this is not supposed to be called on the web"))
     }
 
-    actual fun saveHTMLPage(
+    actual suspend fun saveHTMLPage(
         fileDescriptor: Int,
         filePath: String,
         url: String,

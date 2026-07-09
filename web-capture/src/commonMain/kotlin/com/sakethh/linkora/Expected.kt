@@ -10,7 +10,7 @@ expect object WebCaptureDatabaseConstructor : RoomDatabaseConstructor<WebCapture
 expect object WebCapture {
     suspend fun init(): Result<Boolean>
 
-    fun saveHTMLPage(
+    suspend fun saveHTMLPage(
         fileDescriptor: Int,
         filePath: String,
         url: String,

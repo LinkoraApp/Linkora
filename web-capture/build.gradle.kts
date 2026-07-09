@@ -55,6 +55,8 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.kotlinx.coroutines.test.v1110)
+                implementation(libs.ktor.server.core)
+                implementation(libs.ktor.server.cio)
             }
         }
     }
