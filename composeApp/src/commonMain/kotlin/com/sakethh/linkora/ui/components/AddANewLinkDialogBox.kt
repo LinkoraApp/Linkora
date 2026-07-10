@@ -218,6 +218,7 @@ fun AddANewLinkDialogBox(
                         imgUrlTextFieldValue = imgUrlTextFieldValue,
                         currentFolder = addNewLinkDialogParams.currentFolder,
                         preferences = preferences,
+                        shouldAutofocus = addNewLinkDialogParams.shouldAutofocus,
                     )
                     BottomPartOfAddANewLinkDialogBox(
                         onDismiss = addNewLinkDialogParams.onDismiss,
@@ -261,6 +262,7 @@ fun AddANewLinkDialogBox(
                             currentFolder = addNewLinkDialogParams.currentFolder,
                             imgUrlTextFieldValue = imgUrlTextFieldValue,
                             preferences = preferences,
+                            shouldAutofocus = addNewLinkDialogParams.shouldAutofocus,
                         )
                         VerticalDivider(
                             modifier =
@@ -371,6 +373,7 @@ private fun TopPartOfAddANewLinkDialogBox(
     isAutoDetectTitleEnabled: MutableState<Boolean>,
     isForceSaveWithoutFetchingMetaDataEnabled: MutableState<Boolean>,
     currentFolder: Folder?,
+    shouldAutofocus: Boolean,
 ) {
     val focusRequester = remember {
         FocusRequester()
@@ -622,7 +625,9 @@ private fun TopPartOfAddANewLinkDialogBox(
         if (onAndroidMobile) {
             delay(250)
         }
-        focusRequester.requestFocus()
+        if (shouldAutofocus) {
+            focusRequester.requestFocus()
+        }
     }
 }
 

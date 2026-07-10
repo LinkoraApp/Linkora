@@ -50,7 +50,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlin.toString
 
 class ShareToSaveActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -233,16 +232,13 @@ class ShareToSaveActivity : ComponentActivity() {
                             foldersSearchQueryResult = collectionsScreenVM.foldersSearchQueryResult,
                             rootRegularFolders = collectionsScreenVM.rootRegularFolders,
                             performAction = collectionsScreenVM::performAction,
-                            url =
-                            this@ShareToSaveActivity.intent
-                                ?.getStringExtra(
-                                    Intent.EXTRA_TEXT,
-                                )
-                                .toString(),
-                            title =
-                            this@ShareToSaveActivity.intent?.getStringExtra(
+                            url = this@ShareToSaveActivity.intent?.getStringExtra(
+                                Intent.EXTRA_TEXT,
+                            ).toString(),
+                            title = this@ShareToSaveActivity.intent?.getStringExtra(
                                 Intent.EXTRA_SUBJECT,
                             ) ?: "",
+                            shouldAutofocus = false,
                         ),
                     )
                 }
