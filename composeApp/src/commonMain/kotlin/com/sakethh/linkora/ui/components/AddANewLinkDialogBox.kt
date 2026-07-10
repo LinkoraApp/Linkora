@@ -154,7 +154,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddANewLinkDialogBox(
-    addNewLinkDialogParams: AddNewLinkDialogParams, preferences: AppPreferences
+    addNewLinkDialogParams: AddNewLinkDialogParams, preferences: AppPreferences, shouldAutofocus: Boolean = true
 ) {
     val isDataExtractingForTheLink = rememberSaveable {
         mutableStateOf(false)
@@ -214,7 +214,8 @@ fun AddANewLinkDialogBox(
                         isForceSaveWithoutFetchingMetaDataEnabled = isForceSaveWithoutFetchingMetaDataEnabled,
                         imgUrlTextFieldValue = imgUrlTextFieldValue,
                         currentFolder = addNewLinkDialogParams.currentFolder,
-                        preferences = preferences
+                        preferences = preferences,
+                        shouldAutofocus = shouldAutofocus
                     )
                     BottomPartOfAddANewLinkDialogBox(
                         onDismiss = addNewLinkDialogParams.onDismiss,
@@ -256,7 +257,8 @@ fun AddANewLinkDialogBox(
                             isForceSaveWithoutFetchingMetaDataEnabled = isForceSaveWithoutFetchingMetaDataEnabled,
                             currentFolder = addNewLinkDialogParams.currentFolder,
                             imgUrlTextFieldValue = imgUrlTextFieldValue,
-                            preferences = preferences
+                            preferences = preferences,
+                            shouldAutofocus = shouldAutofocus
                         )
                         VerticalDivider(
                             modifier = Modifier.padding(
@@ -350,7 +352,8 @@ private fun TopPartOfAddANewLinkDialogBox(
     imgUrlTextFieldValue: MutableState<String>,
     isAutoDetectTitleEnabled: MutableState<Boolean>,
     isForceSaveWithoutFetchingMetaDataEnabled: MutableState<Boolean>,
-    currentFolder: Folder?
+    currentFolder: Folder?,
+    shouldAutofocus: Boolean = true
 ) {
     val focusRequester = remember {
         FocusRequester()
@@ -545,7 +548,9 @@ private fun TopPartOfAddANewLinkDialogBox(
         if (onAndroidMobile) {
             delay(250)
         }
-        focusRequester.requestFocus()
+        if (shouldAutofocus) {
+            focusRequester.requestFocus()
+        }
     }
 }
 
