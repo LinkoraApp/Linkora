@@ -72,8 +72,7 @@ import com.sakethh.linkora.utils.rememberLocalizedString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ServerSetupScreen(
-) {
+fun ServerSetupScreen() {
     val navController = LocalNavController.current
     val serverManagementViewModel: ServerManagementViewModel = linkoraViewModel()
     val preferences by serverManagementViewModel.preferencesAsFlow.collectAsStateWithLifecycle()
@@ -109,9 +108,11 @@ fun ServerSetupScreen(
         topAppBarText = Navigation.Settings.Data.ServerSetupScreen.toString(),
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().addEdgeToEdgeScaffoldPadding(paddingValues)
+            modifier =
+            Modifier.fillMaxSize()
+                .addEdgeToEdgeScaffoldPadding(paddingValues)
                 .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
-            verticalArrangement = Arrangement.spacedBy(30.dp)
+            verticalArrangement = Arrangement.spacedBy(30.dp),
         ) {
             item {
                 Spacer(Modifier)
@@ -124,7 +125,7 @@ fun ServerSetupScreen(
                     lineHeight = 20.sp,
                     textAlign = TextAlign.Start,
                     modifier = Modifier.padding(start = 15.dp, end = 15.dp),
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
                 )
             }
 
@@ -139,16 +140,19 @@ fun ServerSetupScreen(
                     label = {
                         Text(
                             text = Localization.rememberLocalizedString(Localization.Key.ServerURL),
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleMedium,
                         )
                     },
                     supportingText = {
                         Text(
-                            text = Localization.rememberLocalizedString(Localization.Key.ServerSetupInstruction),
-                            style = MaterialTheme.typography.titleLarge
+                            text =
+                            Localization.rememberLocalizedString(Localization.Key.ServerSetupInstruction),
+                            style = MaterialTheme.typography.titleLarge,
                         )
                     },
-                    readOnly = serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully && serverManagementViewModel.serverSetupState.value.isConnecting.not()
+                    readOnly =
+                    serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully &&
+                        serverManagementViewModel.serverSetupState.value.isConnecting.not(),
                 )
             }
 
@@ -163,40 +167,57 @@ fun ServerSetupScreen(
                     label = {
                         Text(
                             text = Localization.rememberLocalizedString(Localization.Key.SecurityToken),
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleMedium,
                         )
                     },
-                    readOnly = serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully && serverManagementViewModel.serverSetupState.value.isConnecting.not(),
-                    visualTransformation = if (isSecurityTokenVisible.value) VisualTransformation.None else pwdVisualTransformation,
+                    readOnly =
+                    serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully &&
+                        serverManagementViewModel.serverSetupState.value.isConnecting.not(),
+                    visualTransformation =
+                    if (isSecurityTokenVisible.value) {
+                        VisualTransformation.None
+                    } else {
+                        pwdVisualTransformation
+                    },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     trailingIcon = {
                         IconButton(
                             modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
                             onClick = {
                                 isSecurityTokenVisible.value = !isSecurityTokenVisible.value
-                            }) {
+                            },
+                        ) {
                             Icon(
-                                imageVector = if (isSecurityTokenVisible.value) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                contentDescription = null
+                                imageVector =
+                                if (isSecurityTokenVisible.value) {
+                                    Icons.Default.Visibility
+                                } else {
+                                    Icons.Default.VisibilityOff
+                                },
+                                contentDescription = null,
                             )
                         }
-                    }
+                    },
                 )
             }
 
             if (serverManagementViewModel.existingCertificateInfo.value.isNotBlank()) {
                 item {
                     Text(
-                        text = Localization.Key.ServerCertificateAlreadyImported.rememberLocalizedString()
+                        text =
+                        Localization.Key.ServerCertificateAlreadyImported.rememberLocalizedString()
                             .replace(
                                 LinkoraPlaceHolder.First.value,
-                                serverManagementViewModel.existingCertificateInfo.value
+                                serverManagementViewModel.existingCertificateInfo.value,
                             ),
                         style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier.padding(
-                            start = 15.dp, end = 15.dp, top = 5.dp
+                        modifier =
+                        Modifier.padding(
+                            start = 15.dp,
+                            end = 15.dp,
+                            top = 5.dp,
                         ),
-                        softWrap = true
+                        softWrap = true,
                     )
                 }
             }
@@ -205,39 +226,67 @@ fun ServerSetupScreen(
                 Card(modifier = Modifier.animateContentSize().padding(start = 15.dp, end = 15.dp)) {
                     if (!preferences.skipCertCheckForSync) {
                         Text(
-                            modifier = Modifier.padding(
-                                start = 15.dp, end = 15.dp, top = 15.dp, bottom = 5.dp
+                            modifier =
+                            Modifier.padding(
+                                start = 15.dp,
+                                end = 15.dp,
+                                top = 15.dp,
+                                bottom = 5.dp,
                             ),
-                            text = if (importedCertInfo.value.isNotBlank()) Localization.Key.ImportedServerCertificate.rememberLocalizedString()
-                                .replace(
-                                    LinkoraPlaceHolder.First.value,
-                                    importedCertInfo.value
-                                ) else if (isCertificateInProcessing.value) Localization.Key.ProcessingCertificate.rememberLocalizedString() else Localization.Key.ImportServerCertificateDescription.rememberLocalizedString(),
-                            style = MaterialTheme.typography.titleSmall
+                            text =
+                            if (importedCertInfo.value.isNotBlank()) {
+                                Localization.Key.ImportedServerCertificate.rememberLocalizedString()
+                                    .replace(
+                                        LinkoraPlaceHolder.First.value,
+                                        importedCertInfo.value,
+                                    )
+                            } else if (isCertificateInProcessing.value) {
+                                Localization.Key.ProcessingCertificate.rememberLocalizedString()
+                            } else {
+                                Localization.Key.ImportServerCertificateDescription
+                                    .rememberLocalizedString()
+                            },
+                            style = MaterialTheme.typography.titleSmall,
                         )
 
                         if (isCertificateInProcessing.value) {
                             LinearProgressIndicator(
-                                modifier = Modifier.fillMaxWidth().padding(
-                                    start = 15.dp, end = 15.dp, bottom = 15.dp, top = 10.dp
-                                )
+                                modifier =
+                                Modifier.fillMaxWidth()
+                                    .padding(
+                                        start = 15.dp,
+                                        end = 15.dp,
+                                        bottom = 15.dp,
+                                        top = 10.dp,
+                                    ),
                             )
                         } else {
                             ElevatedButton(
                                 onClick = {
-                                    if (!serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully && !serverManagementViewModel.serverSetupState.value.isConnecting) {
-                                        serverManagementViewModel.importSignedCertificate(onStart = {
-                                            isCertificateInProcessing.value = true
-                                        }, onCompletion = {
-                                            importedCertInfo.value = it
-                                            isCertificateInProcessing.value = false
-                                        })
+                                    if (
+                                        !serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully &&
+                                        !serverManagementViewModel.serverSetupState.value.isConnecting
+                                    ) {
+                                        serverManagementViewModel.importSignedCertificate(
+                                            onStart = {
+                                                isCertificateInProcessing.value = true
+                                            },
+                                            onCompletion = {
+                                                importedCertInfo.value = it
+                                                isCertificateInProcessing.value = false
+                                            },
+                                        )
                                     }
                                 },
-                                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                    .fillMaxWidth().padding(
-                                        start = 15.dp, end = 15.dp, bottom = 15.dp
-                                    ).pressScaleEffect()
+                                modifier =
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .fillMaxWidth()
+                                    .padding(
+                                        start = 15.dp,
+                                        end = 15.dp,
+                                        bottom = 15.dp,
+                                    )
+                                    .pressScaleEffect(),
                             ) {
                                 Text(
                                     text = Localization.Key.ImportServerCertificate.rememberLocalizedString(),
@@ -248,28 +297,40 @@ fun ServerSetupScreen(
                         ItemDivider(paddingValues = PaddingValues())
                     }
                     Box(
-                        modifier = Modifier.then(
-                            if (preferences.skipCertCheckForSync) Modifier.background(
-                                MaterialTheme.colorScheme.errorContainer
-                            ) else Modifier
-                        ).padding(
-                            top = 15.dp, bottom = 15.dp
+                        modifier =
+                        Modifier.then(
+                            if (preferences.skipCertCheckForSync) {
+                                Modifier.background(MaterialTheme.colorScheme.errorContainer)
+                            } else {
+                                Modifier
+                            },
                         )
+                            .padding(
+                                top = 15.dp,
+                                bottom = 15.dp,
+                            ),
                     ) {
                         SettingComponent(
                             SettingComponentParam(
-                                title = Localization.Key.ForceBypassCertificateChecking.rememberLocalizedString(),
+                                title =
+                                Localization.Key.ForceBypassCertificateChecking.rememberLocalizedString(),
                                 doesDescriptionExists = true,
-                                description = Localization.Key.ForceBypassCertificateCheckingDescription.rememberLocalizedString(),
+                                description =
+                                Localization.Key.ForceBypassCertificateCheckingDescription
+                                    .rememberLocalizedString(),
                                 isSwitchNeeded = true,
                                 isSwitchEnabled = preferences.skipCertCheckForSync,
                                 onSwitchStateChange = {
-                                    if (!serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully && !serverManagementViewModel.serverSetupState.value.isConnecting) {
+                                    if (
+                                        !serverManagementViewModel.serverSetupState.value
+                                            .isConnectedSuccessfully &&
+                                        !serverManagementViewModel.serverSetupState.value.isConnecting
+                                    ) {
                                         serverManagementViewModel.updateCertificateBypassRule(it)
                                     }
                                 },
                                 isIconNeeded = false,
-                            )
+                            ),
                         )
                     }
                 }
@@ -277,27 +338,29 @@ fun ServerSetupScreen(
 
             item {
                 if (serverManagementViewModel.serverSetupState.value.isConnecting) {
-                    LinearProgressIndicator(
-                        modifier = Modifier.fillMaxWidthWithPadding()
-                    )
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidthWithPadding())
                 } else if (serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully) {
                     InfoCard(
                         info = Localization.rememberLocalizedString(Localization.Key.ServerIsReachable),
-                        paddingValues = PaddingValues(start = 15.dp, end = 15.dp)
+                        paddingValues = PaddingValues(start = 15.dp, end = 15.dp),
                     )
                 } else {
                     Button(
                         onClick = {
                             serverManagementViewModel.testServerConnection(
-                                serverUrl = serverUrl.value, token = securityToken.value
+                                serverUrl = serverUrl.value,
+                                token = securityToken.value,
                             )
                         },
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .fillMaxWidthWithPadding().pressScaleEffect()
+                        modifier =
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .fillMaxWidthWithPadding()
+                            .pressScaleEffect(),
                     ) {
                         Text(
-                            text = Localization.rememberLocalizedString(Localization.Key.TestServerAvailability),
-                            style = MaterialTheme.typography.titleMedium
+                            text =
+                            Localization.rememberLocalizedString(Localization.Key.TestServerAvailability),
+                            style = MaterialTheme.typography.titleMedium,
                         )
                     }
                     Spacer(Modifier.height(50.dp))
@@ -317,7 +380,7 @@ fun ServerSetupScreen(
                     lineHeight = 20.sp,
                     textAlign = TextAlign.Start,
                     modifier = Modifier.padding(start = 15.dp, end = 15.dp),
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
                 )
                 SyncType.entries.forEachIndexed { index, syncType ->
                     if (index > 0) {
@@ -326,31 +389,39 @@ fun ServerSetupScreen(
                         Spacer(Modifier.height(15.dp))
                     }
                     Column(
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .clickable(onClick = {
-                                selectedSyncType.value = syncType
-                            }, indication = null, interactionSource = remember {
-                                MutableInteractionSource()
-                            }).pressScaleEffect().fillMaxWidthWithPadding()
+                        modifier =
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .clickable(
+                                onClick = {
+                                    selectedSyncType.value = syncType
+                                },
+                                indication = null,
+                                interactionSource =
+                                remember {
+                                    MutableInteractionSource()
+                                },
+                            )
+                            .pressScaleEffect()
+                            .fillMaxWidthWithPadding(),
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(
                                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-                                selected = syncType == selectedSyncType.value, onClick = {
+                                selected = syncType == selectedSyncType.value,
+                                onClick = {
                                     selectedSyncType.value = syncType
-                                })
+                                },
+                            )
                             Spacer(Modifier.width(5.dp))
                             Text(
                                 text = syncType.asUIString(),
-                                style = MaterialTheme.typography.titleMedium
+                                style = MaterialTheme.typography.titleMedium,
                             )
                         }
                         Text(
                             text = syncType.description(),
                             style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(start = 15.dp)
+                            modifier = Modifier.padding(start = 15.dp),
                         )
                     }
                 }
@@ -359,23 +430,30 @@ fun ServerSetupScreen(
                 Button(
                     onClick = {
                         serverManagementViewModel.saveServerConnectionAndSync(
-                            serverConnection = ServerConnection(
-                                serverUrl = serverUrl.value.substringBefore(SyncServerRoute.TEST_BEARER.name),
+                            serverConnection =
+                            ServerConnection(
+                                serverUrl =
+                                serverUrl.value.substringBefore(SyncServerRoute.TEST_BEARER.name),
                                 authToken = securityToken.value,
                                 syncType = selectedSyncType.value,
-                            ), onSyncStart = {
+                            ),
+                            onSyncStart = {
                                 showImportLogsFromServer = true
-                            }, onCompletion = {
+                            },
+                            onCompletion = {
                                 showImportLogsFromServer = false
                                 navController.navigateUp()
-                            })
+                            },
+                        )
                     },
-                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .fillMaxWidthWithPadding().pressScaleEffect()
+                    modifier =
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        .fillMaxWidthWithPadding()
+                        .pressScaleEffect(),
                 ) {
                     Text(
                         text = Localization.rememberLocalizedString(Localization.Key.UseThisConnection),
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
                     )
                 }
             }
@@ -391,5 +469,6 @@ fun ServerSetupScreen(
         logs = serverManagementViewModel.dataSyncLogs,
         onCancel = {
             serverManagementViewModel.cancelServerConnectionAndSync()
-        })
+        },
+    )
 }

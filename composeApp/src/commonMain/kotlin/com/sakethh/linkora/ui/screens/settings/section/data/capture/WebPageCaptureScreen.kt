@@ -62,28 +62,32 @@ import com.sakethh.linkora.utils.stringPreferencesKey
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WebPageCaptureScreen() {
-
     val dataSettingsScreenVM = linkoraViewModel<DataSettingsScreenVM>()
     val preferences by dataSettingsScreenVM.preferencesAsFlow.collectAsStateWithLifecycle()
 
     val localFocusManager = LocalFocusManager.current
-    var whitelistDomains by rememberSaveable(preferences.webCaptureWhitelistDomains) {
-        mutableStateOf(preferences.webCaptureWhitelistDomains)
-    }
-    var blacklistDomains by rememberSaveable(preferences.webCaptureBlacklistDomains) {
-        mutableStateOf(preferences.webCaptureBlacklistDomains)
-    }
-    var webCaptureLocation by rememberSaveable(preferences.webCapturesLocation) {
-        mutableStateOf(preferences.webCapturesLocation)
-    }
+    var whitelistDomains by
+        rememberSaveable(preferences.webCaptureWhitelistDomains) {
+            mutableStateOf(preferences.webCaptureWhitelistDomains)
+        }
+    var blacklistDomains by
+        rememberSaveable(preferences.webCaptureBlacklistDomains) {
+            mutableStateOf(preferences.webCaptureBlacklistDomains)
+        }
+    var webCaptureLocation by
+        rememberSaveable(preferences.webCapturesLocation) {
+            mutableStateOf(preferences.webCapturesLocation)
+        }
     SettingsSectionScaffold(
         topAppBarText = Navigation.Settings.Data.WebPageCapturesScreen.toString(),
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
-            modifier = Modifier.animateContentSize().fillMaxSize()
+            modifier =
+            Modifier.animateContentSize()
+                .fillMaxSize()
                 .addEdgeToEdgeScaffoldPadding(paddingValues)
                 .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
-            verticalArrangement = Arrangement.spacedBy(30.dp)
+            verticalArrangement = Arrangement.spacedBy(30.dp),
         ) {
             item {
                 Spacer(modifier = Modifier)
@@ -94,18 +98,19 @@ fun WebPageCaptureScreen() {
                         isIconNeeded = false,
                         title = "Use Web-captures",
                         doesDescriptionExists = true,
-                        description = "Automatically downloads pages as HTML for offline view whenever a new link is saved or refreshed. Works well for text and media, though heavy JS sites may not fully load. Processes entirely on-device, which can be resource-heavy.",
+                        description =
+                        "Automatically downloads pages as HTML for offline view whenever a new link is saved or refreshed. Works well for text and media, though heavy JS sites may not fully load. Processes entirely on-device, which can be resource-heavy.",
                         isSwitchNeeded = true,
                         isSwitchEnabled = preferences.useWebCaptures,
                         onSwitchStateChange = {
                             dataSettingsScreenVM.changeSettingPreferenceValue(
                                 preferenceKey = booleanPreferencesKey(AppPreferences.USE_WEB_CAPTURES.key),
-                                newValue = !preferences.useWebCaptures
+                                newValue = !preferences.useWebCaptures,
                             )
                         },
                         icon = Icons.Default.Web,
-                        shouldFilledIconBeUsed = false
-                    )
+                        shouldFilledIconBeUsed = false,
+                    ),
                 )
             }
 
@@ -114,36 +119,53 @@ fun WebPageCaptureScreen() {
                     TextField(
                         supportingText = {
                             Text(
-                                text = "If the selected directory is moved or deleted, web-captures will silently fail. Make sure the selected directory always exists.",
-                                style = MaterialTheme.typography.titleSmall
+                                text =
+                                "If the selected directory is moved or deleted, web-captures will silently fail. Make sure the selected directory always exists.",
+                                style = MaterialTheme.typography.titleSmall,
                             )
-                        }, textStyle = MaterialTheme.typography.titleSmall, trailingIcon = {
+                        },
+                        textStyle = MaterialTheme.typography.titleSmall,
+                        trailingIcon = {
                             FilledTonalIconButton(
-                                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                    .pressScaleEffect().padding(end = 5.dp), onClick = {
+                                modifier =
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .pressScaleEffect()
+                                    .padding(end = 5.dp),
+                                onClick = {
                                     dataSettingsScreenVM.changeExportLocation(
                                         exportLocation = webCaptureLocation,
                                         platform = platform,
-                                        exportLocationType = ExportLocationType.WEB_CAPTURE
+                                        exportLocationType = ExportLocationType.WEB_CAPTURE,
                                     )
-                                }) {
+                                },
+                            ) {
                                 Icon(
-                                    imageVector = if (platform is Platform.Android) Icons.Default.FolderOpen else Icons.Default.Save,
-                                    contentDescription = null
+                                    imageVector =
+                                    if (platform is Platform.Android) {
+                                        Icons.Default.FolderOpen
+                                    } else {
+                                        Icons.Default.Save
+                                    },
+                                    contentDescription = null,
                                 )
                             }
-                        }, readOnly = platform is Platform.Android, label = {
+                        },
+                        readOnly = platform is Platform.Android,
+                        label = {
                             Text(
                                 text = "Current web-captures location",
                                 style = MaterialTheme.typography.titleMedium,
                                 textAlign = TextAlign.Start,
                             )
-                        }, value = webCaptureLocation, onValueChange = {
+                        },
+                        value = webCaptureLocation,
+                        onValueChange = {
                             dataSettingsScreenVM.changeSettingPreferenceValue(
                                 preferenceKey = stringPreferencesKey(AppPreferences.WEB_CAPTURES_LOCATION.key),
-                                newValue = it
+                                newValue = it,
                             )
-                        }, modifier = Modifier.padding(horizontal = 15.dp).fillMaxWidth()
+                        },
+                        modifier = Modifier.padding(horizontal = 15.dp).fillMaxWidth(),
                     )
                 }
                 item {
@@ -152,24 +174,28 @@ fun WebPageCaptureScreen() {
                             isIconNeeded = false,
                             title = "Delete capture with link",
                             doesDescriptionExists = true,
-                            description = "Automatically delete the capture folder and its contents from your local storage when the corresponding link is deleted from the app.",
+                            description =
+                            "Automatically delete the capture folder and its contents from your local storage when the corresponding link is deleted from the app.",
                             isSwitchNeeded = true,
                             isSwitchEnabled = preferences.webCaptureDeleteOnLinkDelete,
                             onSwitchStateChange = {
                                 dataSettingsScreenVM.changeSettingPreferenceValue(
-                                    preferenceKey = booleanPreferencesKey(AppPreferences.WEB_CAPTURE_DELETE_ON_LINK_DELETE.key),
-                                    newValue = !preferences.webCaptureDeleteOnLinkDelete
+                                    preferenceKey =
+                                    booleanPreferencesKey(
+                                        AppPreferences.WEB_CAPTURE_DELETE_ON_LINK_DELETE.key,
+                                    ),
+                                    newValue = !preferences.webCaptureDeleteOnLinkDelete,
                                 )
                             },
                             icon = Icons.Default.DeleteSweep,
-                            shouldFilledIconBeUsed = true
-                        )
+                            shouldFilledIconBeUsed = true,
+                        ),
                     )
                 }
                 item {
                     Column(
                         modifier = Modifier.padding(horizontal = 15.dp).fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             Text(
@@ -178,7 +204,8 @@ fun WebPageCaptureScreen() {
                                 fontSize = 16.sp,
                             )
                             Text(
-                                text = "Choose which components to embed. Unchecking items reduces file sizes and local storage footprint but may alter page rendering.",
+                                text =
+                                "Choose which components to embed. Unchecking items reduces file sizes and local storage footprint but may alter page rendering.",
                                 style = MaterialTheme.typography.titleSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 lineHeight = 20.sp,
@@ -186,71 +213,85 @@ fun WebPageCaptureScreen() {
                         }
                         Column(
                             modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
                             AssetStripOption(
                                 label = "Include Images",
                                 checked = preferences.webCaptureSaveImages,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey = booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_IMAGES.key),
-                                        newValue = it
+                                        preferenceKey =
+                                        booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_IMAGES.key),
+                                        newValue = it,
                                     )
-                                })
+                                },
+                            )
                             AssetStripOption(
                                 label = "Include Fonts",
                                 checked = preferences.webCaptureSaveFonts,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey = booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_FONTS.key),
-                                        newValue = it
+                                        preferenceKey =
+                                        booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_FONTS.key),
+                                        newValue = it,
                                     )
-                                })
+                                },
+                            )
                             AssetStripOption(
                                 label = "Include CSS Stylesheets",
                                 checked = preferences.webCaptureSaveCss,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey = booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_CSS.key),
-                                        newValue = it
+                                        preferenceKey =
+                                        booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_CSS.key),
+                                        newValue = it,
                                     )
-                                })
+                                },
+                            )
                             AssetStripOption(
                                 label = "Include Audio Elements",
                                 checked = preferences.webCaptureSaveAudio,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey = booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_AUDIO.key),
-                                        newValue = it
+                                        preferenceKey =
+                                        booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_AUDIO.key),
+                                        newValue = it,
                                     )
-                                })
+                                },
+                            )
                             AssetStripOption(
                                 label = "Include Video Elements",
                                 checked = preferences.webCaptureSaveVideo,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey = booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_VIDEO.key),
-                                        newValue = it
+                                        preferenceKey =
+                                        booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_VIDEO.key),
+                                        newValue = it,
                                     )
-                                })
+                                },
+                            )
                             AssetStripOption(
                                 label = "Include Page Metadata",
                                 checked = preferences.webCaptureSaveMetadata,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey = booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_METADATA.key),
-                                        newValue = it
+                                        preferenceKey =
+                                        booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_METADATA.key),
+                                        newValue = it,
                                     )
-                                })
+                                },
+                            )
                             AssetStripOption(
                                 label = "Execute JavaScript",
                                 checked = preferences.webCaptureExecuteJs,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey = booleanPreferencesKey(AppPreferences.WEB_CAPTURE_EXECUTE_JS.key),
-                                        newValue = it
+                                        preferenceKey =
+                                        booleanPreferencesKey(AppPreferences.WEB_CAPTURE_EXECUTE_JS.key),
+                                        newValue = it,
                                     )
-                                })
+                                },
+                            )
                         }
                     }
                 }
@@ -258,7 +299,7 @@ fun WebPageCaptureScreen() {
                 item {
                     Column(
                         modifier = Modifier.padding(horizontal = 15.dp).fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(15.dp)
+                        verticalArrangement = Arrangement.spacedBy(15.dp),
                     ) {
                         TextField(
                             value = whitelistDomains,
@@ -268,38 +309,46 @@ fun WebPageCaptureScreen() {
                             supportingText = {
                                 Text(
                                     text = "Separate multiple domains with commas",
-                                    style = MaterialTheme.typography.titleSmall
+                                    style = MaterialTheme.typography.titleSmall,
                                 )
                             },
                             trailingIcon = {
                                 FilledTonalIconButton(
-                                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                        .pressScaleEffect().padding(end = 5.dp), onClick = {
+                                    modifier =
+                                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                        .pressScaleEffect()
+                                        .padding(end = 5.dp),
+                                    onClick = {
                                         dataSettingsScreenVM.changeSettingPreferenceValue(
-                                            preferenceKey = stringPreferencesKey(AppPreferences.WEB_CAPTURE_WHITELIST_DOMAINS.key),
-                                            newValue = whitelistDomains
+                                            preferenceKey =
+                                            stringPreferencesKey(
+                                                AppPreferences.WEB_CAPTURE_WHITELIST_DOMAINS.key,
+                                            ),
+                                            newValue = whitelistDomains,
                                         )
                                         localFocusManager.clearFocus()
-                                    }) {
+                                    },
+                                ) {
                                     Icon(
-                                        imageVector = Icons.Default.Save, contentDescription = null
+                                        imageVector = Icons.Default.Save,
+                                        contentDescription = null,
                                     )
                                 }
                             },
                             label = {
                                 Text(
                                     text = "Only capture from specific domains",
-                                    style = MaterialTheme.typography.titleSmall
+                                    style = MaterialTheme.typography.titleSmall,
                                 )
                             },
                             placeholder = {
                                 Text(
                                     text = "example.com, wikipedia.org",
-                                    style = MaterialTheme.typography.titleSmall
+                                    style = MaterialTheme.typography.titleSmall,
                                 )
                             },
                             textStyle = MaterialTheme.typography.titleSmall,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         )
                         TextField(
                             value = blacklistDomains,
@@ -309,38 +358,46 @@ fun WebPageCaptureScreen() {
                             supportingText = {
                                 Text(
                                     text = "Separate multiple domains with commas",
-                                    style = MaterialTheme.typography.titleSmall
+                                    style = MaterialTheme.typography.titleSmall,
                                 )
                             },
                             trailingIcon = {
                                 FilledTonalIconButton(
-                                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                        .pressScaleEffect().padding(end = 5.dp), onClick = {
+                                    modifier =
+                                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                        .pressScaleEffect()
+                                        .padding(end = 5.dp),
+                                    onClick = {
                                         dataSettingsScreenVM.changeSettingPreferenceValue(
-                                            preferenceKey = stringPreferencesKey(AppPreferences.WEB_CAPTURE_BLACKLIST_DOMAINS.key),
-                                            newValue = blacklistDomains
+                                            preferenceKey =
+                                            stringPreferencesKey(
+                                                AppPreferences.WEB_CAPTURE_BLACKLIST_DOMAINS.key,
+                                            ),
+                                            newValue = blacklistDomains,
                                         )
                                         localFocusManager.clearFocus()
-                                    }) {
+                                    },
+                                ) {
                                     Icon(
-                                        imageVector = Icons.Default.Save, contentDescription = null
+                                        imageVector = Icons.Default.Save,
+                                        contentDescription = null,
                                     )
                                 }
                             },
                             label = {
                                 Text(
                                     "Never auto capture from",
-                                    style = MaterialTheme.typography.titleSmall
+                                    style = MaterialTheme.typography.titleSmall,
                                 )
                             },
                             placeholder = {
                                 Text(
                                     "github.com, twitter.com",
-                                    style = MaterialTheme.typography.titleSmall
+                                    style = MaterialTheme.typography.titleSmall,
                                 )
                             },
                             textStyle = MaterialTheme.typography.titleSmall,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
                 }
@@ -351,18 +408,20 @@ fun WebPageCaptureScreen() {
                             isIconNeeded = true,
                             title = "Save as versions",
                             doesDescriptionExists = true,
-                            description = "Retain historical page snapshots instead of overwriting the existing file when saving a duplicate link or refreshing.",
+                            description =
+                            "Retain historical page snapshots instead of overwriting the existing file when saving a duplicate link or refreshing.",
                             isSwitchNeeded = true,
                             isSwitchEnabled = preferences.webCaptureSaveAsVersions,
                             onSwitchStateChange = {
                                 dataSettingsScreenVM.changeSettingPreferenceValue(
-                                    preferenceKey = booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_AS_VERSIONS.key),
-                                    newValue = !preferences.webCaptureSaveAsVersions
+                                    preferenceKey =
+                                    booleanPreferencesKey(AppPreferences.WEB_CAPTURE_SAVE_AS_VERSIONS.key),
+                                    newValue = !preferences.webCaptureSaveAsVersions,
                                 )
                             },
                             icon = Icons.Default.History,
-                            shouldFilledIconBeUsed = true
-                        )
+                            shouldFilledIconBeUsed = true,
+                        ),
                     )
                 }
 
@@ -373,18 +432,22 @@ fun WebPageCaptureScreen() {
                                 isIconNeeded = true,
                                 title = "Retain all versions",
                                 doesDescriptionExists = false,
-                                description = "Retain historical page snapshots instead of overwriting the existing file when saving a duplicate link or pulling a fresh updates.",
+                                description =
+                                "Retain historical page snapshots instead of overwriting the existing file when saving a duplicate link or pulling a fresh updates.",
                                 isSwitchNeeded = true,
                                 isSwitchEnabled = preferences.webCaptureRetainAllVersions,
                                 onSwitchStateChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey = booleanPreferencesKey(AppPreferences.WEB_CAPTURE_RETAIN_ALL_VERSIONS.key),
-                                        newValue = !preferences.webCaptureRetainAllVersions
+                                        preferenceKey =
+                                        booleanPreferencesKey(
+                                            AppPreferences.WEB_CAPTURE_RETAIN_ALL_VERSIONS.key,
+                                        ),
+                                        newValue = !preferences.webCaptureRetainAllVersions,
                                     )
                                 },
                                 icon = Icons.Default.AllInclusive,
-                                shouldFilledIconBeUsed = true
-                            )
+                                shouldFilledIconBeUsed = true,
+                            ),
                         )
                     }
                     item {
@@ -394,20 +457,22 @@ fun WebPageCaptureScreen() {
                             value = preferences.webCaptureMaxVersions.toFloat(),
                             onValueChange = {
                                 dataSettingsScreenVM.changeSettingPreferenceValue(
-                                    preferenceKey = intPreferencesKey(AppPreferences.WEB_CAPTURE_MAX_VERSIONS.key),
-                                    newValue = it.toInt()
+                                    preferenceKey =
+                                    intPreferencesKey(AppPreferences.WEB_CAPTURE_MAX_VERSIONS.key),
+                                    newValue = it.toInt(),
                                 )
                             },
                             valueRange = 1f..10f,
                             steps = 8,
                             enabled = !preferences.webCaptureRetainAllVersions,
-                            displayValue = preferences.webCaptureMaxVersions.toString()
+                            displayValue = preferences.webCaptureMaxVersions.toString(),
                         )
                     }
                     if (!preferences.webCaptureRetainAllVersions) {
                         item {
                             Text(
-                                text = "When the maximum version limit per page is reached, older captures will be automatically deleted to make room for new ones.",
+                                text =
+                                "When the maximum version limit per page is reached, older captures will be automatically deleted to make room for new ones.",
                                 style = MaterialTheme.typography.titleSmall,
                                 fontSize = 14.sp,
                                 lineHeight = 20.sp,
@@ -423,7 +488,8 @@ fun WebPageCaptureScreen() {
             }
             item {
                 Text(
-                    text = "Even when web-captures is disabled, you can save individual pages anytime from a link’s menu. Alternatively, use the main screen’s + button to download a page locally without adding a link.",
+                    text =
+                    "Even when web-captures is disabled, you can save individual pages anytime from a link’s menu. Alternatively, use the main screen’s + button to download a page locally without adding a link.",
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 14.sp,
                     lineHeight = 20.sp,
@@ -443,14 +509,21 @@ private fun AssetStripOption(
     label: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier.fillMaxWidth().clickable(onClick = {
-                onCheckedChange(!checked)
-            }, indication = null, interactionSource = null)
+        modifier =
+        modifier
+            .fillMaxWidth()
+            .clickable(
+                onClick = {
+                    onCheckedChange(!checked)
+                },
+                indication = null,
+                interactionSource = null,
+            )
             .pointerHoverIcon(icon = PointerIcon.Hand),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Checkbox(checked = checked, onCheckedChange = onCheckedChange)
         Text(text = label, style = MaterialTheme.typography.bodyMedium)
@@ -466,20 +539,19 @@ private fun SliderOption(
     steps: Int,
     enabled: Boolean,
     displayValue: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier.fillMaxWidth().alpha(if (enabled) 1f else 0.5f)
-    ) {
+    Column(modifier = modifier.fillMaxWidth().alpha(if (enabled) 1f else 0.5f)) {
         Text(
-            text = "$label: $displayValue", style = MaterialTheme.typography.titleMedium
+            text = "$label: $displayValue",
+            style = MaterialTheme.typography.titleMedium,
         )
         Slider(
             value = value,
             onValueChange = { if (enabled) onValueChange(it) },
             valueRange = valueRange,
             steps = steps,
-            enabled = enabled
+            enabled = enabled,
         )
     }
 }

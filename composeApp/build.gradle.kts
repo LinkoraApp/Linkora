@@ -38,7 +38,8 @@ kotlin {
         }
     }
 
-    @OptIn(ExperimentalWasmDsl::class) wasmJs {
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
         browser {
             outputModuleName = "composeApp"
             commonWebpackConfig {
@@ -146,12 +147,21 @@ room3 {
 
 android {
     namespace = "com.sakethh.linkora"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk =
+        libs.versions.android.compileSdk
+            .get()
+            .toInt()
 
     defaultConfig {
         applicationId = "com.sakethh.linkora"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
+        targetSdk =
+            libs.versions.android.targetSdk
+                .get()
+                .toInt()
         versionCode = 51
         versionName = "0.17.2"
     }
@@ -165,7 +175,8 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
             )
         }
         debug {
@@ -177,7 +188,8 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
             )
             applicationIdSuffix = ".preview"
             versionNameSuffix = "-preview"
@@ -190,7 +202,8 @@ android {
     }
 
     sourceSets["main"].res.srcDirs(
-        "src/commonMain/resources", "src/androidMain/resources"
+        "src/commonMain/resources",
+        "src/androidMain/resources",
     )
 
     dependenciesInfo {
@@ -217,16 +230,11 @@ compose.desktop {
                 TargetFormat.AppImage,
                 TargetFormat.Rpm,
                 TargetFormat.Pkg,
-                TargetFormat.Exe
+                TargetFormat.Exe,
             )
             packageName = "Linkora"
             this.vendor = "Saketh Pathike"
-            this.packageVersion = "1.0.16"/*
-
-            This logo (src/desktopMain/resources/logo.*) was painted by `mondstern`.
-            The original post can be found here: https://pixelfed.social/p/mondstern/747494483548287527
-
-             */
+            this.packageVersion = "1.0.16"
 
             windows {
                 this.iconFile.set(project.file("src/desktopMain/resources/logo.ico"))
@@ -249,11 +257,12 @@ compose.desktop {
 tasks.withType<JavaExec>().configureEach {
     val currentOs = OperatingSystem.current()
 
-    val rustTarget = when {
-        currentOs.isLinux -> "x86_64-unknown-linux-gnu"
-        currentOs.isWindows -> "x86_64-pc-windows-msvc"
-        else -> "unknown"
-    }
+    val rustTarget =
+        when {
+            currentOs.isLinux -> "x86_64-unknown-linux-gnu"
+            currentOs.isWindows -> "x86_64-pc-windows-msvc"
+            else -> "unknown"
+        }
 
     val rustBuildDir = project(":web-capture").projectDir.resolve("target/$rustTarget/release")
 
@@ -261,24 +270,25 @@ tasks.withType<JavaExec>().configureEach {
     dependsOn(":web-capture:cargoBuildDesktop")
 }
 
-val addNetlifyHeadersToDist = task("addNetlifyHeadersToDist") {
-    doLast {
-        val prodDistDir =
-            File(layout.projectDirectory.asFile, "/build/dist/wasmJs/productionExecutable")
-        val headersFile = File(prodDistDir, "_headers")
-        if (!headersFile.exists()) {
-            headersFile.createNewFile()
+val addNetlifyHeadersToDist =
+    task("addNetlifyHeadersToDist") {
+        doLast {
+            val prodDistDir =
+                File(layout.projectDirectory.asFile, "/build/dist/wasmJs/productionExecutable")
+            val headersFile = File(prodDistDir, "_headers")
+            if (!headersFile.exists()) {
+                headersFile.createNewFile()
+            }
+            headersFile.writeText(
+                """
+                /*
+                  Cross-Origin-Opener-Policy: same-origin
+                  Cross-Origin-Embedder-Policy: require-corp
+                """.trimIndent(),
+            )
+            println("Wrote Netlify headers to: ${headersFile.absolutePath}")
         }
-        headersFile.writeText(
-            """
-            /*
-              Cross-Origin-Opener-Policy: same-origin
-              Cross-Origin-Embedder-Policy: require-corp
-            """.trimIndent()
-        )
-        println("Wrote Netlify headers to: ${headersFile.absolutePath}")
     }
-}
 
 tasks.named("wasmJsBrowserDistribution") {
     finalizedBy(addNetlifyHeadersToDist)

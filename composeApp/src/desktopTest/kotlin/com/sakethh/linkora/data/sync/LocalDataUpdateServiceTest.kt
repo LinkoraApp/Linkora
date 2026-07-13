@@ -32,7 +32,6 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 class LocalDataUpdateServiceTest {
-
     private lateinit var localFoldersRepo: LocalFoldersRepo
     private lateinit var localLinksRepo: LocalLinksRepo
     private lateinit var localPanelsRepo: LocalPanelsRepo
@@ -57,25 +56,28 @@ class LocalDataUpdateServiceTest {
         localTagsRepo = mockk(relaxed = true)
         remoteSyncRepo = mockk(relaxed = true)
 
-        val mockPrefs = mockk<AppPreferences>(relaxed = true) {
-            every { correlation } returns Correlation(
-                id = myClientCorrelationId,
-                clientName = "TestClient"
-            )
-        }
+        val mockPrefs =
+            mockk<AppPreferences>(relaxed = true) {
+                every { correlation } returns
+                    Correlation(
+                        id = myClientCorrelationId,
+                        clientName = "TestClient",
+                    )
+            }
         coEvery { preferencesRepository.getPreferences() } returns mockPrefs
         coEvery { preferencesRepository.readPreferenceValue<Long>(any()) } returns 0L
         coEvery { preferencesRepository.changePreferenceValue<Long>(any(), any()) } returns Unit
 
-        localDataUpdateService = LocalDataUpdateService(
-            localFoldersRepo = localFoldersRepo,
-            localLinksRepo = localLinksRepo,
-            localPanelsRepo = localPanelsRepo,
-            preferencesRepository = preferencesRepository,
-            localMultiActionRepo = localMultiActionRepo,
-            localTagsRepo = localTagsRepo,
-            remoteSyncRepo = remoteSyncRepo
-        )
+        localDataUpdateService =
+            LocalDataUpdateService(
+                localFoldersRepo = localFoldersRepo,
+                localLinksRepo = localLinksRepo,
+                localPanelsRepo = localPanelsRepo,
+                preferencesRepository = preferencesRepository,
+                localMultiActionRepo = localMultiActionRepo,
+                localTagsRepo = localTagsRepo,
+                remoteSyncRepo = remoteSyncRepo,
+            )
     }
 
     @AfterTest
@@ -84,82 +86,88 @@ class LocalDataUpdateServiceTest {
     }
 
     @Test
-    fun `events with matching correlation id update timestamp but abort local database operations`() =
-        runTest {
-            val tagDto = TagDTO(
+    fun `events with matching correlation id update timestamp but abort local database operations`() = runTest {
+        val tagDto =
+            TagDTO(
                 id = 100L,
                 name = "Kotlin",
                 eventTimestamp = 5000L,
-                correlation = Correlation(id = myClientCorrelationId, clientName = "TestClient")
+                correlation = Correlation(id = myClientCorrelationId, clientName = "TestClient"),
             )
-            val event = WebSocketEvent(
+        val event =
+            WebSocketEvent(
                 operation = SyncServerRoute.CREATE_TAG.name,
-                payload = Json.encodeToJsonElement(tagDto)
+                payload = Json.encodeToJsonElement(tagDto),
             )
 
-            localDataUpdateService.updateLocalDBAccordingToEvent(event)
+        localDataUpdateService.updateLocalDBAccordingToEvent(event)
 
-            coVerify(exactly = 0) { localTagsRepo.createATag(any(), any()) }
-            coVerify(exactly = 1) {
-                preferencesRepository.changePreferenceValue(
-                    match { it.key == AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key },
-                    5000L
-                )
-            }
+        coVerify(exactly = 0) { localTagsRepo.createATag(any(), any()) }
+        coVerify(exactly = 1) {
+            preferencesRepository.changePreferenceValue(
+                match { it.key == AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key },
+                5000L,
+            )
         }
+    }
 
     @Test
-    fun `create folder sync dynamically resolves remote parent folder id to local id before insertion`() =
-        runTest {
-            val folderDto = FolderDTO(
+    fun `create folder sync dynamically resolves remote parent folder id to local id before insertion`() = runTest {
+        val folderDto =
+            FolderDTO(
                 id = 200L,
                 name = "NewRemoteFolder",
                 note = "",
                 parentFolderId = 50L,
                 isArchived = false,
                 eventTimestamp = 6000L,
-                correlation = Correlation(id = "other-client", clientName = "Other")
+                correlation = Correlation(id = "other-client", clientName = "Other"),
             )
-            val event = WebSocketEvent(
+        val event =
+            WebSocketEvent(
                 operation = SyncServerRoute.CREATE_FOLDER.name,
-                payload = Json.encodeToJsonElement(folderDto)
+                payload = Json.encodeToJsonElement(folderDto),
             )
 
-            coEvery { localFoldersRepo.getLocalIdOfAFolder(50L) } returns 5L
-            coEvery {
-                localFoldersRepo.insertANewFolder(
-                    any(),
-                    any(),
-                )
-            } returns flowOf(Result.Success(1))
+        coEvery { localFoldersRepo.getLocalIdOfAFolder(50L) } returns 5L
+        coEvery {
+            localFoldersRepo.insertANewFolder(
+                any(),
+                any(),
+            )
+        } returns flowOf(Result.Success(1))
 
-            localDataUpdateService.updateLocalDBAccordingToEvent(event)
+        localDataUpdateService.updateLocalDBAccordingToEvent(event)
 
-            coVerify(exactly = 1) {
-                localFoldersRepo.insertANewFolder(
-                    match { it.name == "NewRemoteFolder" && it.parentFolderId == 5L && it.remoteId == 200L },
-                    viaSocket = true
-                )
-            }
-            coVerify(exactly = 1) {
-                preferencesRepository.changePreferenceValue(
-                    match { it.key == AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key },
-                    6000L
-                )
-            }
+        coVerify(exactly = 1) {
+            localFoldersRepo.insertANewFolder(
+                match {
+                    it.name == "NewRemoteFolder" && it.parentFolderId == 5L && it.remoteId == 200L
+                },
+                viaSocket = true,
+            )
         }
+        coVerify(exactly = 1) {
+            preferencesRepository.changePreferenceValue(
+                match { it.key == AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key },
+                6000L,
+            )
+        }
+    }
 
     @Test
     fun `delete link safely aborts if remote id cannot be mapped to a local link id`() = runTest {
-        val idBasedDTO = IDBasedDTO(
-            id = 300L,
-            eventTimestamp = 7000L,
-            correlation = Correlation(id = "other-client", clientName = "Other")
-        )
-        val event = WebSocketEvent(
-            operation = SyncServerRoute.DELETE_A_LINK.name,
-            payload = Json.encodeToJsonElement(idBasedDTO)
-        )
+        val idBasedDTO =
+            IDBasedDTO(
+                id = 300L,
+                eventTimestamp = 7000L,
+                correlation = Correlation(id = "other-client", clientName = "Other"),
+            )
+        val event =
+            WebSocketEvent(
+                operation = SyncServerRoute.DELETE_A_LINK.name,
+                payload = Json.encodeToJsonElement(idBasedDTO),
+            )
 
         coEvery { localLinksRepo.getLocalLinkId(300L) } returns null
 
@@ -170,23 +178,25 @@ class LocalDataUpdateServiceTest {
 
     @Test
     fun `update link title successfully maps local id and executes update operation`() = runTest {
-        val updateDto = UpdateTitleOfTheLinkDTO(
-            linkId = 400L,
-            newTitleOfTheLink = "Updated Title",
-            eventTimestamp = 8000L,
-            correlation = Correlation(id = "other-client", clientName = "Other")
-        )
-        val event = WebSocketEvent(
-            operation = SyncServerRoute.UPDATE_LINK_TITLE.name,
-            payload = Json.encodeToJsonElement(updateDto)
-        )
+        val updateDto =
+            UpdateTitleOfTheLinkDTO(
+                linkId = 400L,
+                newTitleOfTheLink = "Updated Title",
+                eventTimestamp = 8000L,
+                correlation = Correlation(id = "other-client", clientName = "Other"),
+            )
+        val event =
+            WebSocketEvent(
+                operation = SyncServerRoute.UPDATE_LINK_TITLE.name,
+                payload = Json.encodeToJsonElement(updateDto),
+            )
 
         coEvery { localLinksRepo.getLocalLinkId(400L) } returns 42L
         coEvery {
             localLinksRepo.updateLinkTitle(
                 any(),
                 any(),
-                any()
+                any(),
             )
         } returns flowOf(Result.Success(Unit))
 
@@ -196,33 +206,35 @@ class LocalDataUpdateServiceTest {
         coVerify(exactly = 1) {
             preferencesRepository.changePreferenceValue(
                 match { it.key == AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key },
-                8000L
+                8000L,
             )
         }
     }
 
     @Test
     fun `add panel folder requires both local folder id and local panel id to execute`() = runTest {
-        val panelFolderDto = PanelFolderDTO(
-            id = 500L,
-            folderId = 600L,
-            panelPosition = 1,
-            folderName = "PF",
-            connectedPanelId = 700L,
-            eventTimestamp = 9000L,
-            correlation = Correlation(id = "other-client", clientName = "Other")
-        )
-        val event = WebSocketEvent(
-            operation = SyncServerRoute.ADD_A_NEW_FOLDER_IN_A_PANEL.name,
-            payload = Json.encodeToJsonElement(panelFolderDto)
-        )
+        val panelFolderDto =
+            PanelFolderDTO(
+                id = 500L,
+                folderId = 600L,
+                panelPosition = 1,
+                folderName = "PF",
+                connectedPanelId = 700L,
+                eventTimestamp = 9000L,
+                correlation = Correlation(id = "other-client", clientName = "Other"),
+            )
+        val event =
+            WebSocketEvent(
+                operation = SyncServerRoute.ADD_A_NEW_FOLDER_IN_A_PANEL.name,
+                payload = Json.encodeToJsonElement(panelFolderDto),
+            )
 
         coEvery { localFoldersRepo.getLocalIdOfAFolder(600L) } returns 6L
         coEvery { localPanelsRepo.getLocalPanelId(700L) } returns 7L
         coEvery {
             localPanelsRepo.addANewFolderInAPanel(
                 any(),
-                any()
+                any(),
             )
         } returns flowOf(Result.Success(Unit))
 
@@ -231,13 +243,13 @@ class LocalDataUpdateServiceTest {
         coVerify(exactly = 1) {
             localPanelsRepo.addANewFolderInAPanel(
                 match { it.folderId == 6L && it.connectedPanelId == 7L && it.remoteId == 500L },
-                viaSocket = true
+                viaSocket = true,
             )
         }
         coVerify(exactly = 1) {
             preferencesRepository.changePreferenceValue(
                 match { it.key == AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key },
-                9000L
+                9000L,
             )
         }
     }

@@ -18,53 +18,63 @@ import com.sakethh.linkora.ui.screens.settings.section.data.sync.ServerManagemen
 import kotlin.reflect.KClass
 
 @Composable
-inline fun <reified T : ViewModel> linkoraViewModel(factory: ViewModelProvider.Factory = LinkoraViewModelFactory): T =
-    viewModel(modelClass = T::class, factory = factory)
+inline fun <reified T : ViewModel> linkoraViewModel(
+    factory: ViewModelProvider.Factory = LinkoraViewModelFactory,
+): T = viewModel(modelClass = T::class, factory = factory)
 
 object LinkoraViewModelFactory : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T {
-        return when (modelClass) {
-            CollectionsScreenVM::class -> CollectionsScreenVM(
+    override fun <T : ViewModel> create(
+        modelClass: KClass<T>,
+        extras: CreationExtras,
+    ): T = when (modelClass) {
+        CollectionsScreenVM::class ->
+            CollectionsScreenVM(
                 localFoldersRepo = DependencyContainer.localFoldersRepo,
                 localLinksRepo = DependencyContainer.localLinksRepo,
                 localTagsRepo = DependencyContainer.localTagsRepo,
                 preferencesRepo = DependencyContainer.preferencesRepo,
             )
 
-            SortingBtmSheetVM::class -> SortingBtmSheetVM(
+        SortingBtmSheetVM::class ->
+            SortingBtmSheetVM(
                 preferencesRepository = DependencyContainer.preferencesRepo,
                 nativeUtils = LinkoraSDK.getInstance().nativeUtils,
                 permissionManager = LinkoraSDK.getInstance().permissionManager,
             )
 
-            SearchScreenVM::class -> SearchScreenVM(
+        SearchScreenVM::class ->
+            SearchScreenVM(
                 localLinksRepo = DependencyContainer.localLinksRepo,
                 localTagsRepo = DependencyContainer.localTagsRepo,
                 localDatabaseUtilsRepo = DependencyContainer.localDatabaseUtilsImpl,
-                preferencesRepository = DependencyContainer.preferencesRepo
+                preferencesRepository = DependencyContainer.preferencesRepo,
             )
 
-            SettingsScreenViewModel::class -> SettingsScreenViewModel(
+        SettingsScreenViewModel::class ->
+            SettingsScreenViewModel(
                 preferencesRepository = DependencyContainer.preferencesRepo,
                 nativeUtils = LinkoraSDK.getInstance().nativeUtils,
-                permissionManager = LinkoraSDK.getInstance().permissionManager
+                permissionManager = LinkoraSDK.getInstance().permissionManager,
             )
 
-            LanguageSettingsScreenVM::class -> DependencyContainer.localizationRepo.let { localizationRepo ->
+        LanguageSettingsScreenVM::class ->
+            DependencyContainer.localizationRepo.let { localizationRepo ->
                 LanguageSettingsScreenVM(
                     preferencesRepository = DependencyContainer.preferencesRepo,
                     localizationRepoLocal = localizationRepo,
                     localizationRepoRemote = localizationRepo,
-                    nativeUtils = LinkoraSDK.getInstance().nativeUtils
+                    nativeUtils = LinkoraSDK.getInstance().nativeUtils,
                 )
             }
 
-            AboutSettingsScreenVM::class -> AboutSettingsScreenVM(
+        AboutSettingsScreenVM::class ->
+            AboutSettingsScreenVM(
                 localLinksRepo = DependencyContainer.localLinksRepo,
-                gitHubReleasesRepo = DependencyContainer.gitHubReleasesRepo
+                gitHubReleasesRepo = DependencyContainer.gitHubReleasesRepo,
             )
 
-            ServerManagementViewModel::class -> ServerManagementViewModel(
+        ServerManagementViewModel::class ->
+            ServerManagementViewModel(
                 DependencyContainer.networkRepo,
                 DependencyContainer.preferencesRepo,
                 DependencyContainer.remoteSyncRepo,
@@ -73,7 +83,8 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
                 network = LinkoraSDK.getInstance().network,
             )
 
-            DataSettingsScreenVM::class -> DataSettingsScreenVM(
+        DataSettingsScreenVM::class ->
+            DataSettingsScreenVM(
                 exportDataRepo = DependencyContainer.exportDataRepo,
                 importDataRepo = DependencyContainer.importDataRepo,
                 linksRepo = DependencyContainer.localLinksRepo,
@@ -82,10 +93,13 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
                 nativeUtils = LinkoraSDK.getInstance().nativeUtils,
                 fileManager = LinkoraSDK.getInstance().fileManager,
                 permissionManager = LinkoraSDK.getInstance().permissionManager,
-                refreshLinksRepo = DependencyContainer.refreshLinksRepo
+                refreshLinksRepo = DependencyContainer.refreshLinksRepo,
             )
 
-            else -> error("Not sure how to create an instance of ${modelClass.simpleName}, maybe it's available in *AssistedFactory")
-        } as T
+        else ->
+            error(
+                "Not sure how to create an instance of ${modelClass.simpleName}, maybe it's available in *AssistedFactory",
+            )
     }
+        as T
 }

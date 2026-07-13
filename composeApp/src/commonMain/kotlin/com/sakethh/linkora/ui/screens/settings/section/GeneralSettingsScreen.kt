@@ -95,15 +95,17 @@ fun GeneralSettingsScreen() {
     }
     val platform = platform
     val onAndroidMobile = Platform.Android.onMobile()
-    val generalSectionData = retain(preferences) {
-        settingsScreenViewModel.generalSection(
-            onAndroidMobile,
-            preferences
-        )
-    }
-    val isLinkoraTopAppBarEnabled by rememberSaveable(preferences.useLinkoraTopDecoratorOnDesktop) {
-        mutableStateOf(preferences.useLinkoraTopDecoratorOnDesktop)
-    }
+    val generalSectionData =
+        retain(preferences) {
+            settingsScreenViewModel.generalSection(
+                onAndroidMobile,
+                preferences,
+            )
+        }
+    val isLinkoraTopAppBarEnabled by
+        rememberSaveable(preferences.useLinkoraTopDecoratorOnDesktop) {
+            mutableStateOf(preferences.useLinkoraTopDecoratorOnDesktop)
+        }
     var tempSelectedAppIcon by rememberSaveable {
         mutableStateOf(preferences.selectedAppIcon)
     }
@@ -117,16 +119,18 @@ fun GeneralSettingsScreen() {
         persistentListOf(
             Navigation.Root.HomeScreen,
             Navigation.Root.SearchScreen,
-            Navigation.Root.CollectionsScreen
+            Navigation.Root.CollectionsScreen,
         )
     }
     SettingsSectionScaffold(
         topAppBarText = Navigation.Settings.GeneralSettingsScreen.toString(),
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().addEdgeToEdgeScaffoldPadding(paddingValues)
+            modifier =
+            Modifier.fillMaxSize()
+                .addEdgeToEdgeScaffoldPadding(paddingValues)
                 .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
-            verticalArrangement = Arrangement.spacedBy(30.dp)
+            verticalArrangement = Arrangement.spacedBy(30.dp),
         ) {
             item {
                 Spacer(Modifier)
@@ -142,20 +146,23 @@ fun GeneralSettingsScreen() {
                             isSwitchEnabled = isLinkoraTopAppBarEnabled,
                             onSwitchStateChange = {
                                 settingsScreenViewModel.changeSettingPreferenceValue(
-                                    preferenceKey = booleanPreferencesKey(
-                                        AppPreferences.DESKTOP_TOP_DECORATOR.key
-                                    ), newValue = it
+                                    preferenceKey =
+                                    booleanPreferencesKey(AppPreferences.DESKTOP_TOP_DECORATOR.key),
+                                    newValue = it,
                                 )
                             },
                             isIconNeeded = true,
-                            icon = Icons.Default.VideoLabel
-                        )
+                            icon = Icons.Default.VideoLabel,
+                        ),
                     )
                 }
             }
-            items(generalSectionData, key = {
-                it.title
-            }) { setting ->
+            items(
+                generalSectionData,
+                key = {
+                    it.title
+                },
+            ) { setting ->
                 SettingComponent(setting)
             }
 
@@ -171,8 +178,8 @@ fun GeneralSettingsScreen() {
                             showInitialNavigationChangerDialogBox = true
                         },
                         isIconNeeded = true,
-                        icon = Icons.Default.Start
-                    )
+                        icon = Icons.Default.Start,
+                    ),
                 )
             }
 
@@ -188,8 +195,8 @@ fun GeneralSettingsScreen() {
                             showFontFamilySwitcherDialogBox = true
                         },
                         isIconNeeded = true,
-                        icon = Icons.Default.TextFields
-                    )
+                        icon = Icons.Default.TextFields,
+                    ),
                 )
             }
             item {
@@ -205,56 +212,64 @@ fun GeneralSettingsScreen() {
                         },
                         icon = Icons.Outlined.PresentToAll,
                         isIconNeeded = true,
-                    )
+                    ),
                 )
             }
             if (platform is Platform.Android) {
                 item {
-                    HorizontalDivider(
-                        modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp)
-                    )
+                    HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp))
                 }
                 item {
                     Text(
                         text = Localization.Key.SelectAnAppIcon.rememberLocalizedString(),
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
-                        fontSize = 16.sp
+                        fontSize = 16.sp,
                     )
                     FlowRow(
                         modifier = Modifier.padding(start = 15.dp, end = 15.dp),
-                        horizontalArrangement = Arrangement.spacedBy(15.dp)
+                        horizontalArrangement = Arrangement.spacedBy(15.dp),
                     ) {
                         AppIconCode.entries.forEach {
                             key(it.name) {
                                 Box(
                                     Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                        .pressScaleEffect().clickable(onClick = {
-                                            showIconSwitchDialogBox = true
-                                            tempSelectedAppIcon = it.name
-                                        }, indication = null, interactionSource = remember {
-                                            MutableInteractionSource()
-                                        }).size(65.dp), contentAlignment = Alignment.Center
+                                        .pressScaleEffect()
+                                        .clickable(
+                                            onClick = {
+                                                showIconSwitchDialogBox = true
+                                                tempSelectedAppIcon = it.name
+                                            },
+                                            indication = null,
+                                            interactionSource =
+                                            remember {
+                                                MutableInteractionSource()
+                                            },
+                                        )
+                                        .size(65.dp),
+                                    contentAlignment = Alignment.Center,
                                 ) {
                                     with(this@FlowRow) {
                                         AnimatedVisibility(
                                             preferences.selectedAppIcon == it.name,
                                             enter = fadeIn(),
-                                            exit = fadeOut()
+                                            exit = fadeOut(),
                                         ) {
                                             Box(
-                                                modifier = Modifier.fillMaxSize().border(
-                                                    width = 5.dp,
-                                                    color = MaterialTheme.colorScheme.primary,
-                                                    shape = CircleShape
-                                                )
+                                                modifier =
+                                                Modifier.fillMaxSize()
+                                                    .border(
+                                                        width = 5.dp,
+                                                        color = MaterialTheme.colorScheme.primary,
+                                                        shape = CircleShape,
+                                                    ),
                                             )
                                         }
                                     }
                                     Image(
                                         painter = painterResource(it.icon),
                                         contentDescription = null,
-                                        modifier = Modifier.clip(CircleShape).size(50.dp)
+                                        modifier = Modifier.clip(CircleShape).size(50.dp),
                                     )
                                 }
                             }
@@ -263,19 +278,26 @@ fun GeneralSettingsScreen() {
                     Text(
                         text = Localization.Key.AppIconCurrentlyInUse.rememberLocalizedString(),
                         style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier.padding(
-                            start = 15.dp, end = 15.dp, top = 15.dp, bottom = 5.dp
+                        modifier =
+                        Modifier.padding(
+                            start = 15.dp,
+                            end = 15.dp,
+                            top = 15.dp,
+                            bottom = 5.dp,
                         ),
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.secondary,
                     )
                     Text(
                         text = preferences.selectedAppIcon,
                         style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(
-                            start = 15.dp, end = 15.dp, bottom = 15.dp
+                        modifier =
+                        Modifier.padding(
+                            start = 15.dp,
+                            end = 15.dp,
+                            bottom = 15.dp,
                         ),
                         fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.secondary,
                     )
                 }
             }
@@ -288,83 +310,101 @@ fun GeneralSettingsScreen() {
         mutableStateOf(false)
     }
     if (showIconSwitchDialogBox) {
-        AlertDialog(modifier = Modifier.animateContentSize(), onDismissRequest = {
-            if (!showIconSwitchingProgressbar) {
-                showIconSwitchDialogBox = false
-            }
-        }, confirmButton = {
-            if (!showIconSwitchingProgressbar) {
-                Button(
-                    onClick = {
-                        showIconSwitchingProgressbar = true
-                        settingsScreenViewModel.onIconChange(
-                            newIconCode = tempSelectedAppIcon, onCompletion = {
-                                showIconSwitchDialogBox = false
-                            })
-                    },
-                    modifier = Modifier.pressScaleEffect().pointerHoverIcon(icon = PointerIcon.Hand)
-                        .fillMaxWidth()
-                ) {
+        AlertDialog(
+            modifier = Modifier.animateContentSize(),
+            onDismissRequest = {
+                if (!showIconSwitchingProgressbar) {
+                    showIconSwitchDialogBox = false
+                }
+            },
+            confirmButton = {
+                if (!showIconSwitchingProgressbar) {
+                    Button(
+                        onClick = {
+                            showIconSwitchingProgressbar = true
+                            settingsScreenViewModel.onIconChange(
+                                newIconCode = tempSelectedAppIcon,
+                                onCompletion = {
+                                    showIconSwitchDialogBox = false
+                                },
+                            )
+                        },
+                        modifier =
+                        Modifier.pressScaleEffect()
+                            .pointerHoverIcon(icon = PointerIcon.Hand)
+                            .fillMaxWidth(),
+                    ) {
+                        Text(
+                            text = Localization.Key.Confirm.rememberLocalizedString(),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                    }
+                } else {
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                }
+            },
+            dismissButton = {
+                if (!showIconSwitchingProgressbar) {
+                    OutlinedButton(
+                        onClick = {
+                            showIconSwitchDialogBox = false
+                        },
+                        modifier =
+                        Modifier.pressScaleEffect()
+                            .pointerHoverIcon(icon = PointerIcon.Hand)
+                            .fillMaxWidth(),
+                    ) {
+                        Text(
+                            text = Localization.Key.Cancel.rememberLocalizedString(),
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                    }
+                }
+            },
+            title = {
+                Column {
+                    AppIconCode.entries
+                        .find {
+                            it.name == tempSelectedAppIcon
+                        }
+                        ?.let {
+                            Image(
+                                painter = painterResource(it.icon),
+                                modifier =
+                                Modifier.clip(RoundedCornerShape(15.dp))
+                                    .border(
+                                        width = 1.5.dp,
+                                        color = MaterialTheme.colorScheme.primary.copy(0.5f),
+                                        shape = RoundedCornerShape(15.dp),
+                                    )
+                                    .size(75.dp),
+                                contentDescription = null,
+                            )
+                            Spacer(modifier = Modifier.height(5.dp))
+                        }
                     Text(
-                        text = Localization.Key.Confirm.rememberLocalizedString(),
-                        style = MaterialTheme.typography.titleMedium
+                        text = Localization.Key.ChangeAppIcon.rememberLocalizedString(),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontSize = 22.sp,
                     )
                 }
-            } else {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-            }
-        }, dismissButton = {
-            if (!showIconSwitchingProgressbar) {
-                OutlinedButton(
-                    onClick = {
-                        showIconSwitchDialogBox = false
-                    },
-                    modifier = Modifier.pressScaleEffect().pointerHoverIcon(icon = PointerIcon.Hand)
-                        .fillMaxWidth()
-                ) {
+            },
+            text = {
+                Column {
                     Text(
-                        text = Localization.Key.Cancel.rememberLocalizedString(),
-                        style = MaterialTheme.typography.titleSmall
+                        text = Localization.Key.ChangeAppIconDesc.rememberLocalizedString(),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontSize = 18.sp,
                     )
+                    if (tempSelectedAppIcon == AppIconCode.must_be_weather.name) {
+                        InfoCard(
+                            paddingValues = PaddingValues(top = 10.dp),
+                            info = Localization.Key.ChangeInAppNameDesc.rememberLocalizedString(),
+                        )
+                    }
                 }
-            }
-        }, title = {
-            Column {
-                AppIconCode.entries.find {
-                    it.name == tempSelectedAppIcon
-                }?.let {
-                    Image(
-                        painter = painterResource(it.icon),
-                        modifier = Modifier.clip(RoundedCornerShape(15.dp)).border(
-                            width = 1.5.dp,
-                            color = MaterialTheme.colorScheme.primary.copy(0.5f),
-                            shape = RoundedCornerShape(15.dp)
-                        ).size(75.dp),
-                        contentDescription = null
-                    )
-                    Spacer(modifier = Modifier.height(5.dp))
-                }
-                Text(
-                    text = Localization.Key.ChangeAppIcon.rememberLocalizedString(),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontSize = 22.sp
-                )
-            }
-        }, text = {
-            Column {
-                Text(
-                    text = Localization.Key.ChangeAppIconDesc.rememberLocalizedString(),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontSize = 18.sp
-                )
-                if (tempSelectedAppIcon == AppIconCode.must_be_weather.name) {
-                    InfoCard(
-                        paddingValues = PaddingValues(top = 10.dp),
-                        info = Localization.Key.ChangeInAppNameDesc.rememberLocalizedString()
-                    )
-                }
-            }
-        })
+            },
+        )
     }
     if (showInitialNavigationChangerDialogBox) {
         val currentlySelectedRoute = rememberSaveable {
@@ -389,12 +429,12 @@ fun GeneralSettingsScreen() {
             },
             onConfirm = {
                 settingsScreenViewModel.changeSettingPreferenceValue(
-                    stringPreferencesKey(
-                        AppPreferences.INITIAL_ROUTE.key
-                    ), currentlySelectedRoute.value
+                    stringPreferencesKey(AppPreferences.INITIAL_ROUTE.key),
+                    currentlySelectedRoute.value,
                 )
                 showInitialNavigationChangerDialogBox = false
-            })
+            },
+        )
     }
     if (showFontFamilySwitcherDialogBox) {
         var tempSelectedFont by rememberSaveable {
@@ -414,12 +454,12 @@ fun GeneralSettingsScreen() {
             },
             onConfirm = {
                 settingsScreenViewModel.changeSettingPreferenceValue(
-                    stringPreferencesKey(
-                        AppPreferences.FONT_TYPE.key
-                    ), tempSelectedFont
+                    stringPreferencesKey(AppPreferences.FONT_TYPE.key),
+                    tempSelectedFont,
                 )
                 showFontFamilySwitcherDialogBox = false
-            })
+            },
+        )
     }
 }
 
@@ -431,57 +471,85 @@ private fun <T> SwitchDialogBox(
     selected: (T) -> Boolean,
     onEntryClick: (T) -> Unit,
     onDismissRequest: () -> Unit,
-    onConfirm: () -> Unit
+    onConfirm: () -> Unit,
 ) {
-    AlertDialog(onDismissRequest = onDismissRequest, confirmButton = {
-        Button(
-            onClick = onConfirm,
-            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
-        ) {
-            Text(
-                text = Localization.Key.Confirm.rememberLocalizedString(),
-                style = MaterialTheme.typography.titleMedium
-            )
-        }
-    }, dismissButton = {
-        OutlinedButton(
-            onClick = onDismissRequest,
-            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
-        ) {
-            Text(
-                text = Localization.Key.Cancel.rememberLocalizedString(),
-                style = MaterialTheme.typography.titleSmall
-            )
-        }
-    }, text = {
-        Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
-            entries.forEach {
-                Row(
-                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
-                        .clickable(onClick = {
-                            onEntryClick(it)
-                        }, indication = null, interactionSource = remember {
-                            MutableInteractionSource()
-                        }).pressScaleEffect(), verticalAlignment = Alignment.CenterVertically
-                ) {
-                    RadioButton(
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-                        selected = selected(it),
-                        onClick = {
-                            onEntryClick(it)
-                        })
-                    Text(
-                        style = if (selected(it)) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall,
-                        text = entryLabel(it),
-                        color = if (selected(it)) MaterialTheme.colorScheme.primary else LocalContentColor.current,
-                        fontSize = 16.sp
-                    )
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth(),
+            ) {
+                Text(
+                    text = Localization.Key.Confirm.rememberLocalizedString(),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+        },
+        dismissButton = {
+            OutlinedButton(
+                onClick = onDismissRequest,
+                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth(),
+            ) {
+                Text(
+                    text = Localization.Key.Cancel.rememberLocalizedString(),
+                    style = MaterialTheme.typography.titleSmall,
+                )
+            }
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
+                entries.forEach {
+                    Row(
+                        modifier =
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .fillMaxWidth()
+                            .clickable(
+                                onClick = {
+                                    onEntryClick(it)
+                                },
+                                indication = null,
+                                interactionSource =
+                                remember {
+                                    MutableInteractionSource()
+                                },
+                            )
+                            .pressScaleEffect(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(
+                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                            selected = selected(it),
+                            onClick = {
+                                onEntryClick(it)
+                            },
+                        )
+                        Text(
+                            style =
+                            if (selected(it)) {
+                                MaterialTheme.typography.titleLarge
+                            } else {
+                                MaterialTheme.typography.titleSmall
+                            },
+                            text = entryLabel(it),
+                            color =
+                            if (selected(it)) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                LocalContentColor.current
+                            },
+                            fontSize = 16.sp,
+                        )
+                    }
                 }
             }
-        }
-    }, title = {
-        Text(
-            text = title, style = MaterialTheme.typography.titleLarge, fontSize = 24.sp
-        )
-    })
+        },
+        title = {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontSize = 24.sp,
+            )
+        },
+    )
 }

@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.Platform
-import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.bottomNavPaddingAcrossPlatforms
 import com.sakethh.linkora.utils.rememberLocalizedString
@@ -41,7 +40,7 @@ fun CreateATagBtmSheet(
     sheetState: SheetState,
     showBtmSheet: Boolean,
     onCancel: () -> Unit,
-    onCreateClick: (tagName: String) -> Unit
+    onCreateClick: (tagName: String) -> Unit,
 ) {
     val focusRequester = remember {
         FocusRequester()
@@ -56,23 +55,27 @@ fun CreateATagBtmSheet(
         LaunchedEffect(Unit) {
             focusRequester.requestFocus()
         }
-        ModalBottomSheet(sheetState = sheetState, onDismissRequest = {
-            if (!showLinearProgressBar) {
-                onCancel()
-            }
-        }) {
+        ModalBottomSheet(
+            sheetState = sheetState,
+            onDismissRequest = {
+                if (!showLinearProgressBar) {
+                    onCancel()
+                }
+            },
+        ) {
             Column(modifier = Modifier.fillMaxWidth().animateContentSize()) {
                 Text(
                     text = Localization.Key.CreateANewTag.rememberLocalizedString(),
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 22.sp,
-                    modifier = Modifier.padding(start = 15.dp)
+                    modifier = Modifier.padding(start = 15.dp),
                 )
                 TextField(
                     enabled = !showLinearProgressBar,
                     label = {
                         Text(
-                            text = Localization.Key.TagName.rememberLocalizedString(), style = MaterialTheme.typography.titleSmall
+                            text = Localization.Key.TagName.rememberLocalizedString(),
+                            style = MaterialTheme.typography.titleSmall,
                         )
                     },
                     textStyle = MaterialTheme.typography.titleSmall,
@@ -80,26 +83,33 @@ fun CreateATagBtmSheet(
                     onValueChange = {
                         newTag = it
                     },
-                    modifier = Modifier.fillMaxWidth().padding(15.dp)
-                        .focusRequester(focusRequester = focusRequester)
+                    modifier =
+                    Modifier.fillMaxWidth()
+                        .padding(15.dp)
+                        .focusRequester(focusRequester = focusRequester),
                 )
                 if (showLinearProgressBar) {
                     LinearProgressIndicator(
-                        modifier = Modifier.fillMaxWidth().padding(
-                            start = 15.dp,
-                            end = 15.dp,
-                            bottom = if (!Platform.Android.onMobile()) 15.dp else 0.dp
-                        )
+                        modifier =
+                        Modifier.fillMaxWidth()
+                            .padding(
+                                start = 15.dp,
+                                end = 15.dp,
+                                bottom = if (!Platform.Android.onMobile()) 15.dp else 0.dp,
+                            ),
                     )
                     return@Column
                 }
                 OutlinedButton(
                     onClick = onCancel,
-                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect()
-                        .fillMaxWidth().padding(
+                    modifier =
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        .pressScaleEffect()
+                        .fillMaxWidth()
+                        .padding(
                             start = 15.dp,
                             end = 15.dp,
-                        )
+                        ),
                 ) {
                     Text(
                         text = Localization.Key.Cancel.rememberLocalizedString(),
@@ -107,16 +117,21 @@ fun CreateATagBtmSheet(
                     )
                 }
                 Button(
-                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
-                        .pressScaleEffect().padding(start = 15.dp, end = 15.dp, bottom = 5.dp)
-                        .bottomNavPaddingAcrossPlatforms(), onClick = {
+                    modifier =
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        .fillMaxWidth()
+                        .pressScaleEffect()
+                        .padding(start = 15.dp, end = 15.dp, bottom = 5.dp)
+                        .bottomNavPaddingAcrossPlatforms(),
+                    onClick = {
                         showLinearProgressBar = true
                         onCreateClick(newTag)
-                    }) {
+                    },
+                ) {
                     Text(
                         text = Localization.Key.Create.rememberLocalizedString(),
                         style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
                     )
                 }
             }

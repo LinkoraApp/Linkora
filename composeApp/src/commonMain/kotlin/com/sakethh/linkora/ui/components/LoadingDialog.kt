@@ -32,19 +32,25 @@ import androidx.compose.ui.unit.sp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoadingDialog(shouldDialogBoxAppear: Boolean, text: String) {
-    val visible = rememberSaveable(shouldDialogBoxAppear) {
-        mutableStateOf(shouldDialogBoxAppear)
-    }
+    val visible =
+        rememberSaveable(shouldDialogBoxAppear) {
+            mutableStateOf(shouldDialogBoxAppear)
+        }
     if (visible.value) {
         BasicAlertDialog(
-            onDismissRequest = { },
-            modifier = Modifier.clip(RoundedCornerShape(20.dp))
-                .background(AlertDialogDefaults.containerColor).border(
-                    1.dp, AlertDialogDefaults.iconContentColor.copy(0.5f), RoundedCornerShape(20.dp)
-                )
+            onDismissRequest = {},
+            modifier =
+            Modifier.clip(RoundedCornerShape(20.dp))
+                .background(AlertDialogDefaults.containerColor)
+                .border(
+                    1.dp,
+                    AlertDialogDefaults.iconContentColor.copy(0.5f),
+                    RoundedCornerShape(20.dp),
+                ),
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Spacer(Modifier.width(20.dp))
                 Box(contentAlignment = Alignment.Center) {
@@ -59,9 +65,7 @@ fun LoadingDialog(shouldDialogBoxAppear: Boolean, text: String) {
                     fontSize = 20.sp,
                     lineHeight = 28.sp,
                     textAlign = TextAlign.Start,
-                    modifier = Modifier.fillMaxWidth().then(
-                        Modifier.padding(20.dp)
-                    ).fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().then(Modifier.padding(20.dp)).fillMaxWidth(),
                 )
             }
         }

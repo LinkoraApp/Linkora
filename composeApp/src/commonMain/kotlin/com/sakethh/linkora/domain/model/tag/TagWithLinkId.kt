@@ -4,6 +4,5 @@ import androidx.room3.Embedded
 
 data class TagWithLinkId(
     val linkId: Long,
-    @Embedded
-    val tag: Tag
+    @Embedded val tag: Tag,
 )

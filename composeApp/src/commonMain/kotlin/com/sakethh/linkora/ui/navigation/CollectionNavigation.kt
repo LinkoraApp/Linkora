@@ -4,9 +4,10 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed interface CollectionNavigation {
-    @Serializable
-    data object Empty : CollectionNavigation
+    @Serializable data object Empty : CollectionNavigation
 
     @Serializable
-    data class Pane(val collectionDetailPaneInfo: String) : CollectionNavigation
+    data class Pane(
+        val collectionDetailPaneInfo: String,
+    ) : CollectionNavigation
 }

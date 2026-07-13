@@ -12,48 +12,58 @@ import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.launch
 
 object RefreshAllLinksService {
-
     private var linksRefreshJob: Job? = null
 
     fun cancel() {
         linksRefreshJob?.cancel()
-        DataSettingsScreenVM.refreshLinksState.value = RefreshLinksState(
-            isInRefreshingState = false, currentIteration = 0
-        )
+        DataSettingsScreenVM.refreshLinksState.value =
+            RefreshLinksState(
+                isInRefreshingState = false,
+                currentIteration = 0,
+            )
     }
 
     fun invoke(localLinksRepo: LocalLinksRepo) {
         val preferences = DependencyContainer.preferencesRepo.getPreferences()
 
-        linksRefreshJob = CoroutineScope(PlatformIODispatcher).launch {
-            localLinksRepo.getAllLinks().let { allLinks ->
-                DataSettingsScreenVM.totalLinksForRefresh.value = allLinks.size
-                DataSettingsScreenVM.refreshLinksState.value =
-                    DataSettingsScreenVM.refreshLinksState.value.copy(
-                        isInRefreshingState = true, currentIteration = 0
-                    )
-
-                var processedCount = 0
-
-                allLinks.asFlow()
-                    .flatMapMerge(concurrency = preferences.maxConcurrentRefreshCount) { link ->
-                        localLinksRepo.refreshLinkMetadata(
-                            link, preferences.selectedLinkRefreshType
+        linksRefreshJob =
+            CoroutineScope(PlatformIODispatcher).launch {
+                localLinksRepo.getAllLinks().let { allLinks ->
+                    DataSettingsScreenVM.totalLinksForRefresh.value = allLinks.size
+                    DataSettingsScreenVM.refreshLinksState.value =
+                        DataSettingsScreenVM.refreshLinksState.value.copy(
+                            isInRefreshingState = true,
+                            currentIteration = 0,
                         )
-                    }.catch { it.printStackTrace() }.collect { result ->
-                        result.onSuccess {
-                            processedCount++
-                            DataSettingsScreenVM.refreshLinksState.value =
-                                DataSettingsScreenVM.refreshLinksState.value.copy(currentIteration = processedCount)
+
+                    var processedCount = 0
+
+                    allLinks
+                        .asFlow()
+                        .flatMapMerge(concurrency = preferences.maxConcurrentRefreshCount) { link ->
+                            localLinksRepo.refreshLinkMetadata(
+                                link,
+                                preferences.selectedLinkRefreshType,
+                            )
                         }
-                    }
+                        .catch { it.printStackTrace() }
+                        .collect { result ->
+                            result.onSuccess {
+                                processedCount++
+                                DataSettingsScreenVM.refreshLinksState.value =
+                                    DataSettingsScreenVM.refreshLinksState.value.copy(
+                                        currentIteration = processedCount,
+                                    )
+                            }
+                        }
+                }
             }
-        }
 
         linksRefreshJob?.invokeOnCompletion {
             DataSettingsScreenVM.refreshLinksState.value =
                 DataSettingsScreenVM.refreshLinksState.value.copy(
-                    isInRefreshingState = false, currentIteration = 0
+                    isInRefreshingState = false,
+                    currentIteration = 0,
                 )
         }
     }

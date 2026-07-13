@@ -45,19 +45,22 @@ fun LinkoraNavHost(
     collectionScreenParams: CollectionScreenParams,
     // An event can be pushed to the UIEvent flow instead of hoisting like this, but fine
     forceSearchActive: Boolean,
-    cancelForceSearchActive: () -> Unit
+    cancelForceSearchActive: () -> Unit,
 ) {
     val localNavController = LocalNavController.current
 
-    val specificPanelManagerScreenVM: SpecificPanelManagerScreenVM = linkoraViewModel(
-        factory = SpecificPanelManagerVMFactory.create(
-            onAndroidMobile = Platform.Android.onMobile(),
-            currentBackStackEntryFlow = localNavController.currentBackStackEntryFlow
+    val specificPanelManagerScreenVM: SpecificPanelManagerScreenVM =
+        linkoraViewModel(
+            factory =
+            SpecificPanelManagerVMFactory.create(
+                onAndroidMobile = Platform.Android.onMobile(),
+                currentBackStackEntryFlow = localNavController.currentBackStackEntryFlow,
+            ),
         )
-    )
 
     NavHost(
-        navController = localNavController, startDestination = startDestination,
+        navController = localNavController,
+        startDestination = startDestination,
         enterTransition = { fadeIn() },
         exitTransition = { fadeOut() },
         popEnterTransition = { fadeIn() },
@@ -69,13 +72,13 @@ fun LinkoraNavHost(
         composable<Navigation.Root.SearchScreen> {
             SearchScreen(
                 forceActiveSearch = forceSearchActive,
-                cancelForceSearchActive = cancelForceSearchActive
+                cancelForceSearchActive = cancelForceSearchActive,
             )
         }
         composable<Navigation.Root.CollectionsScreen> {
             CollectionsScreen(
                 collectionScreenParams = collectionScreenParams,
-                preferences = preferences
+                preferences = preferences,
             )
         }
         composable<Navigation.Collection.CollectionDetailScreen> { navBackStackEntry ->
@@ -83,9 +86,7 @@ fun LinkoraNavHost(
                 navBackStackEntry.toRoute<CollectionNavigation.Pane>().run {
                     Utils.json.decodeFromString<CollectionDetailPaneInfo>(this.collectionDetailPaneInfo)
                 }
-            CollectionDetailScreen(
-                collectionDetailPaneInfo = collectionDetailPaneInfo
-            )
+            CollectionDetailScreen(collectionDetailPaneInfo = collectionDetailPaneInfo)
         }
         composable<Navigation.Root.SettingsScreen> {
             SettingsScreen()
@@ -110,23 +111,27 @@ fun LinkoraNavHost(
         }
         composable<Navigation.Home.PanelsManagerScreen> {
             PanelsManagerScreen(
-                specificPanelManagerScreenParam = SpecificPanelManagerScreenParam(
-                    foldersOfTheSelectedPanel = specificPanelManagerScreenVM.foldersOfTheSelectedPanel,
+                specificPanelManagerScreenParam =
+                SpecificPanelManagerScreenParam(
+                    foldersOfTheSelectedPanel =
+                    specificPanelManagerScreenVM.foldersOfTheSelectedPanel,
                     foldersToIncludeInPanel = specificPanelManagerScreenVM.foldersToIncludeInPanel,
                     foldersSearchQuery = specificPanelManagerScreenVM.foldersSearchQuery.value,
-                    performAction = specificPanelManagerScreenVM::performAction
+                    performAction = specificPanelManagerScreenVM::performAction,
                 ),
-                performAction = specificPanelManagerScreenVM::performAction
+                performAction = specificPanelManagerScreenVM::performAction,
             )
         }
         composable<Navigation.Home.SpecificPanelManagerScreen> {
             SpecificPanelManagerScreen(
-                specificPanelManagerScreenParam = SpecificPanelManagerScreenParam(
-                    foldersOfTheSelectedPanel = specificPanelManagerScreenVM.foldersOfTheSelectedPanel,
+                specificPanelManagerScreenParam =
+                SpecificPanelManagerScreenParam(
+                    foldersOfTheSelectedPanel =
+                    specificPanelManagerScreenVM.foldersOfTheSelectedPanel,
                     foldersToIncludeInPanel = specificPanelManagerScreenVM.foldersToIncludeInPanel,
                     foldersSearchQuery = specificPanelManagerScreenVM.foldersSearchQuery.value,
-                    performAction = specificPanelManagerScreenVM::performAction
-                )
+                    performAction = specificPanelManagerScreenVM::performAction,
+                ),
             )
         }
         composable<Navigation.Settings.AboutScreen> {

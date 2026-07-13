@@ -20,5 +20,5 @@ data class SettingSectionComponentParam(
     val textStyle: @Composable () -> TextStyle = {
         MaterialTheme.typography.titleMedium
     },
-    val bottomSpacing: Dp = 10.dp
+    val bottomSpacing: Dp = 10.dp,
 )

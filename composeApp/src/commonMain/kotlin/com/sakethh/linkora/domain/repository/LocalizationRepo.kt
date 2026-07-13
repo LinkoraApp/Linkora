@@ -7,7 +7,6 @@ import com.sakethh.linkora.domain.model.localization.LocalizedString
 import kotlinx.coroutines.flow.Flow
 
 interface LocalizationRepo {
-
     interface Remote {
         fun getLanguagesFromServer(): Flow<Result<LocalizationInfoDTO>>
 
@@ -21,7 +20,10 @@ interface LocalizationRepo {
 
         suspend fun deleteAllLocalizedStringsForThisLanguage(languageCode: String): Flow<Result<Unit>>
 
-        suspend fun getLocalizedStringValueFor(stringName: String, languageCode: String): String?
+        suspend fun getLocalizedStringValueFor(
+            stringName: String,
+            languageCode: String,
+        ): String?
 
         suspend fun addANewLanguage(localizedLanguage: LocalizedLanguage): Flow<Result<Unit>>
 

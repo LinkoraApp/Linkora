@@ -27,30 +27,31 @@ fun QuickActionItem(
     modifier: Modifier,
     onClick: () -> Unit,
     text: String,
-    icon: ImageVector
+    icon: ImageVector,
 ) {
     Card(
         shape = shape,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
         onClick = onClick,
-        modifier = modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(start = 2.5.dp, end = 2.5.dp)
+        modifier =
+        modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(start = 2.5.dp, end = 2.5.dp),
     ) {
         Column(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth().padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Icon(
                 imageVector = icon,
                 tint = MaterialTheme.colorScheme.onPrimary,
                 contentDescription = null,
-                modifier = Modifier.size(26.dp)
+                modifier = Modifier.size(26.dp),
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = text,
                 style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onPrimary
+                color = MaterialTheme.colorScheme.onPrimary,
             )
         }
     }

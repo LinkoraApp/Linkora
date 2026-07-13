@@ -81,19 +81,22 @@ fun AboutScreen() {
                 createdAt = "",
                 releasePageURL = "",
                 releaseName = "",
-                tagName = ""
-            )
+                tagName = "",
+            ),
         )
     }
     var isOnLatestUpdate by rememberSaveable {
         mutableStateOf(false)
     }
-    SettingsSectionScaffold(
-        topAppBarText = Navigation.Settings.AboutScreen.toString()
-    ) { paddingValues, topAppBarScrollBehaviour ->
+    SettingsSectionScaffold(topAppBarText = Navigation.Settings.AboutScreen.toString()) {
+            paddingValues,
+            topAppBarScrollBehaviour,
+        ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().addEdgeToEdgeScaffoldPadding(paddingValues)
-                .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection)
+            modifier =
+            Modifier.fillMaxSize()
+                .addEdgeToEdgeScaffoldPadding(paddingValues)
+                .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
         ) {
             item {
                 Spacer(Modifier.height(30.dp))
@@ -109,64 +112,76 @@ fun AboutScreen() {
                         icon = Icons.Default.Refresh,
                         title = Localization.Key.CheckForLatestVersion.rememberLocalizedString(),
                         onClick = {
-                            aboutSettingsScreenVM.retrieveLatestVersionData(onLoading = {
-                                shouldVersionCheckerDialogAppear.value = true
-                            }, onCompletion = { githubReleaseDTO ->
-                                if (githubReleaseDTO == null) {
-                                    retrievedAppVersionData.value = GitHubReleaseDTOItem(
-                                        assets = listOf(),
-                                        body = "",
-                                        createdAt = "",
-                                        releasePageURL = "",
-                                        releaseName = "",
-                                        tagName = ""
-                                    )
-                                    isOnLatestUpdate = false
-                                } else {
-                                    retrievedAppVersionData.value = githubReleaseDTO
-                                    isOnLatestUpdate =
-                                        githubReleaseDTO.releaseName != Constants.APP_VERSION_NAME
-                                    isOnLatestUpdate =
-                                        Constants.APP_VERSION_NAME == githubReleaseDTO.releaseName
-                                }
-                                shouldVersionCheckerDialogAppear.value = false
-                                shouldBtmModalSheetBeVisible.value =
-                                    isOnLatestUpdate.not() && githubReleaseDTO != null
-                            })
+                            aboutSettingsScreenVM.retrieveLatestVersionData(
+                                onLoading = {
+                                    shouldVersionCheckerDialogAppear.value = true
+                                },
+                                onCompletion = { githubReleaseDTO ->
+                                    if (githubReleaseDTO == null) {
+                                        retrievedAppVersionData.value =
+                                            GitHubReleaseDTOItem(
+                                                assets = listOf(),
+                                                body = "",
+                                                createdAt = "",
+                                                releasePageURL = "",
+                                                releaseName = "",
+                                                tagName = "",
+                                            )
+                                        isOnLatestUpdate = false
+                                    } else {
+                                        retrievedAppVersionData.value = githubReleaseDTO
+                                        isOnLatestUpdate =
+                                            githubReleaseDTO.releaseName != Constants.APP_VERSION_NAME
+                                        isOnLatestUpdate =
+                                            Constants.APP_VERSION_NAME == githubReleaseDTO.releaseName
+                                    }
+                                    shouldVersionCheckerDialogAppear.value = false
+                                    shouldBtmModalSheetBeVisible.value =
+                                        isOnLatestUpdate.not() &&
+                                        githubReleaseDTO != null
+                                },
+                            )
                         },
                     )
                 } else if (isOnLatestUpdate) {
                     Card(
-                        border = BorderStroke(
-                            1.dp, contentColorFor(MaterialTheme.colorScheme.surface)
+                        border =
+                        BorderStroke(
+                            1.dp,
+                            contentColorFor(MaterialTheme.colorScheme.surface),
                         ),
                         colors = CardDefaults.cardColors(containerColor = AlertDialogDefaults.containerColor),
-                        modifier = Modifier.fillMaxWidth()
-                            .padding(start = 15.dp, end = 15.dp, top = 15.dp)
+                        modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp, top = 15.dp),
                     ) {
                         Row(
-                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(
-                                top = 10.dp, bottom = 10.dp
-                            ), verticalAlignment = Alignment.CenterVertically
+                            modifier =
+                            Modifier.fillMaxWidth()
+                                .wrapContentHeight()
+                                .padding(
+                                    top = 10.dp,
+                                    bottom = 10.dp,
+                                ),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Box(
-                                contentAlignment = Alignment.CenterStart
-                            ) {
+                            Box(contentAlignment = Alignment.CenterStart) {
                                 Icon(
                                     imageVector = Icons.Outlined.CheckCircle,
                                     contentDescription = null,
-                                    modifier = Modifier.padding(
-                                        start = 10.dp, end = 10.dp
-                                    )
+                                    modifier =
+                                    Modifier.padding(
+                                        start = 10.dp,
+                                        end = 10.dp,
+                                    ),
                                 )
                             }
                             Text(
-                                text = Localization.Key.YouAreUsingLatestVersionOfLinkora.rememberLocalizedString(),
+                                text =
+                                Localization.Key.YouAreUsingLatestVersionOfLinkora.rememberLocalizedString(),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontSize = 14.sp,
                                 lineHeight = 18.sp,
                                 textAlign = TextAlign.Start,
-                                modifier = Modifier.padding(end = 15.dp)
+                                modifier = Modifier.padding(end = 15.dp),
                             )
                         }
                     }
@@ -176,7 +191,7 @@ fun AboutScreen() {
                 HorizontalDivider(
                     modifier = Modifier.padding(20.dp),
                     thickness = 0.5.dp,
-                    color = MaterialTheme.colorScheme.outline
+                    color = MaterialTheme.colorScheme.outline,
                 )
             }
             item {
@@ -184,7 +199,7 @@ fun AboutScreen() {
                     text = Localization.Key.Socials.rememberLocalizedString(),
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.padding(start = 15.dp),
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
                 )
             }
             item {
@@ -196,14 +211,15 @@ fun AboutScreen() {
                     onClick = {
                         val url = "https://www.twitter.com/LinkoraApp"
                         aboutSettingsScreenVM.addANewLinkToHistory(
-                            link = Link(
+                            link =
+                            Link(
                                 linkType = LinkType.HISTORY_LINK,
                                 title = Localization.Key.LinkoraOnTwitter.getLocalizedString(),
                                 url = url,
                                 imgURL = "",
                                 note = Localization.Key.LinkoraOnTwitter.getLocalizedString(),
                                 idOfLinkedFolder = null,
-                                userAgent = preferences.primaryJsoupUserAgent
+                                userAgent = preferences.primaryJsoupUserAgent,
                             ),
                             tagIds = emptyList(),
                             useProxy = preferences.useProxy,
@@ -225,18 +241,20 @@ fun AboutScreen() {
                     onClick = {
                         val url = "https://discord.gg/ZDBXNtv8MD"
                         aboutSettingsScreenVM.addANewLinkToHistory(
-                            link = Link(
+                            link =
+                            Link(
                                 linkType = LinkType.HISTORY_LINK,
                                 title = Localization.Key.LinkoraOnDiscord.getLocalizedString(),
                                 url = url,
                                 imgURL = "https://cdn.discordapp.com/assets/og_img_discord_home.png",
                                 note = Localization.Key.LinkoraOnDiscord.getLocalizedString(),
                                 idOfLinkedFolder = null,
-                                userAgent = preferences.primaryJsoupUserAgent
-                            ), tagIds = emptyList(),
+                                userAgent = preferences.primaryJsoupUserAgent,
+                            ),
+                            tagIds = emptyList(),
                             useProxy = preferences.useProxy,
                             skipSavingIfExists = preferences.skipSavingExistingLink,
-                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails
+                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
                         )
                         coroutineScope.launch {
                             uriHandler.openUriOrNotify(url)
@@ -246,9 +264,14 @@ fun AboutScreen() {
             }
             item {
                 HorizontalDivider(
-                    modifier = Modifier.padding(
-                        start = 20.dp, top = 20.dp, end = 20.dp
-                    ), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outline
+                    modifier =
+                    Modifier.padding(
+                        start = 20.dp,
+                        top = 20.dp,
+                        end = 20.dp,
+                    ),
+                    thickness = 0.5.dp,
+                    color = MaterialTheme.colorScheme.outline,
                 )
             }
             item {
@@ -256,7 +279,7 @@ fun AboutScreen() {
                     text = Localization.Key.Development.rememberLocalizedString(),
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.padding(start = 15.dp, bottom = 15.dp, top = 20.dp),
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
                 )
             }
 
@@ -269,18 +292,20 @@ fun AboutScreen() {
                     onClick = {
                         val url = "https://www.github.com/LinkoraApp"
                         aboutSettingsScreenVM.addANewLinkToHistory(
-                            link = Link(
+                            link =
+                            Link(
                                 linkType = LinkType.HISTORY_LINK,
                                 title = Localization.Key.LinkoraOnGithub.getLocalizedString(),
                                 url = url,
                                 imgURL = "https://avatars.githubusercontent.com/u/183308434?s=280&v=4",
                                 note = Localization.Key.LinkoraOnGithub.getLocalizedString(),
                                 idOfLinkedFolder = null,
-                                userAgent = preferences.primaryJsoupUserAgent
-                            ), tagIds = emptyList(),
+                                userAgent = preferences.primaryJsoupUserAgent,
+                            ),
+                            tagIds = emptyList(),
                             useProxy = preferences.useProxy,
                             skipSavingIfExists = preferences.skipSavingExistingLink,
-                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails
+                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
                         )
                         coroutineScope.launch {
                             uriHandler.openUriOrNotify(url)
@@ -293,28 +318,33 @@ fun AboutScreen() {
                 HorizontalDivider(
                     modifier = Modifier.padding(20.dp),
                     thickness = 0.5.dp,
-                    color = MaterialTheme.colorScheme.outline
+                    color = MaterialTheme.colorScheme.outline,
                 )
                 SettingsAppInfoComponent(
                     hasDescription = true,
-                    description = Localization.Key.HaveASuggestionCreateAnIssueOnGithubToImproveLinkora.rememberLocalizedString(),
+                    description =
+                    Localization.Key.HaveASuggestionCreateAnIssueOnGithubToImproveLinkora
+                        .rememberLocalizedString(),
                     icon = Icons.Default.Construction,
                     title = Localization.Key.OpenAGithubIssue.rememberLocalizedString(),
                     onClick = {
                         val url = "https://github.com/sakethpathike/Linkora/issues/new"
                         aboutSettingsScreenVM.addANewLinkToHistory(
-                            link = Link(
+                            link =
+                            Link(
                                 linkType = LinkType.HISTORY_LINK,
                                 title = Localization.Key.LinkoraIssues.getLocalizedString(),
                                 url = url,
-                                imgURL = "https://repository-images.githubusercontent.com/648784316/df5ac80f-8d5a-4d8d-b7b5-6068ee49eb4b",
+                                imgURL =
+                                "https://repository-images.githubusercontent.com/648784316/df5ac80f-8d5a-4d8d-b7b5-6068ee49eb4b",
                                 note = Localization.Key.LinkoraIssuesOnGithub.getLocalizedString(),
                                 idOfLinkedFolder = null,
-                                userAgent = preferences.primaryJsoupUserAgent
-                            ), tagIds = emptyList(),
+                                userAgent = preferences.primaryJsoupUserAgent,
+                            ),
+                            tagIds = emptyList(),
                             useProxy = preferences.useProxy,
                             skipSavingIfExists = preferences.skipSavingExistingLink,
-                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails
+                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
                         )
                         coroutineScope.launch {
                             uriHandler.openUriOrNotify(url)
@@ -324,33 +354,36 @@ fun AboutScreen() {
             }
 
             item {
-
                 HorizontalDivider(
                     modifier = Modifier.padding(20.dp),
                     thickness = 0.5.dp,
-                    color = MaterialTheme.colorScheme.outline
+                    color = MaterialTheme.colorScheme.outline,
                 )
 
                 SettingsAppInfoComponent(
                     hasDescription = true,
-                    description = Localization.Key.TrackRecentChangesAndUpdatesToLinkora.rememberLocalizedString(),
+                    description =
+                    Localization.Key.TrackRecentChangesAndUpdatesToLinkora.rememberLocalizedString(),
                     icon = Icons.Default.TrackChanges,
                     title = Localization.Key.Changelog.rememberLocalizedString(),
                     onClick = {
                         val url = "https://github.com/sakethpathike/Linkora/releases"
                         aboutSettingsScreenVM.addANewLinkToHistory(
-                            link = Link(
+                            link =
+                            Link(
                                 linkType = LinkType.HISTORY_LINK,
                                 title = Localization.Key.LinokraReleases.getLocalizedString(),
                                 url = url,
-                                imgURL = "https://repository-images.githubusercontent.com/648784316/df5ac80f-8d5a-4d8d-b7b5-6068ee49eb4b",
+                                imgURL =
+                                "https://repository-images.githubusercontent.com/648784316/df5ac80f-8d5a-4d8d-b7b5-6068ee49eb4b",
                                 note = Localization.Key.LinokraReleasesOnGitHub.getLocalizedString(),
                                 idOfLinkedFolder = null,
-                                userAgent = preferences.primaryJsoupUserAgent
-                            ), tagIds = emptyList(),
+                                userAgent = preferences.primaryJsoupUserAgent,
+                            ),
+                            tagIds = emptyList(),
                             useProxy = preferences.useProxy,
                             skipSavingIfExists = preferences.skipSavingExistingLink,
-                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails
+                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
                         )
                         coroutineScope.launch {
                             uriHandler.openUriOrNotify(url)
@@ -363,32 +396,36 @@ fun AboutScreen() {
                 HorizontalDivider(
                     modifier = Modifier.padding(20.dp),
                     thickness = 0.5.dp,
-                    color = MaterialTheme.colorScheme.outline
+                    color = MaterialTheme.colorScheme.outline,
                 )
                 Spacer(modifier = Modifier.height(100.dp))
             }
-
         }
         LodingDialogBox(
             shouldDialogBoxAppear = shouldVersionCheckerDialogAppear,
-            text = Localization.Key.RetrievingLatestInformation.rememberLocalizedString()
+            text = Localization.Key.RetrievingLatestInformation.rememberLocalizedString(),
         )
         if (shouldBtmModalSheetBeVisible.value) {
-            ModalBottomSheet(sheetState = btmModalSheetState, onDismissRequest = {
-                coroutineScope.launch {
-                    if (btmModalSheetState.isVisible) {
-                        btmModalSheetState.hide()
-                    }
-                }.invokeOnCompletion {
-                    shouldBtmModalSheetBeVisible.value = false
-                }
-            }) {
+            ModalBottomSheet(
+                sheetState = btmModalSheetState,
+                onDismissRequest = {
+                    coroutineScope
+                        .launch {
+                            if (btmModalSheetState.isVisible) {
+                                btmModalSheetState.hide()
+                            }
+                        }
+                        .invokeOnCompletion {
+                            shouldBtmModalSheetBeVisible.value = false
+                        }
+                },
+            ) {
                 NewVersionUpdateBtmContent(
                     shouldBtmModalSheetBeVisible = shouldBtmModalSheetBeVisible,
                     modalBtmSheetState = btmModalSheetState,
                     latestVersion = retrievedAppVersionData.value.releaseName,
                     urlOfLatestReleasePage = retrievedAppVersionData.value.releasePageURL,
-                    tagName = retrievedAppVersionData.value.tagName
+                    tagName = retrievedAppVersionData.value.tagName,
                 )
             }
         }

@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.Platform
-import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
@@ -41,11 +40,12 @@ fun RenameTagComponent(
     sheetState: SheetState,
     existingName: String,
     onHide: () -> Unit,
-    onSave: (newName: String) -> Unit
+    onSave: (newName: String) -> Unit,
 ) {
-    var newTagName by rememberSaveable(existingName) {
-        mutableStateOf(existingName)
-    }
+    var newTagName by
+        rememberSaveable(existingName) {
+            mutableStateOf(existingName)
+        }
     val tagFieldFocusRequester = remember {
         FocusRequester()
     }
@@ -55,11 +55,13 @@ fun RenameTagComponent(
     val coroutineScope = rememberCoroutineScope()
     val hideComponent: () -> Unit = {
         if (!showLinearProgressBar) {
-            coroutineScope.launch {
-                sheetState.hide()
-            }.invokeOnCompletion {
-                onHide()
-            }
+            coroutineScope
+                .launch {
+                    sheetState.hide()
+                }
+                .invokeOnCompletion {
+                    onHide()
+                }
         }
     }
     if (showComponent) {
@@ -72,7 +74,7 @@ fun RenameTagComponent(
                     text = Localization.Key.RenameTagName.rememberLocalizedString(),
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 24.sp,
-                    modifier = Modifier.padding(start = 15.dp)
+                    modifier = Modifier.padding(start = 15.dp),
                 )
                 TextField(
                     enabled = !showLinearProgressBar,
@@ -81,27 +83,41 @@ fun RenameTagComponent(
                     onValueChange = {
                         newTagName = it
                     },
-                    modifier = Modifier.padding(15.dp).fillMaxWidth()
-                        .focusRequester(tagFieldFocusRequester),
+                    modifier =
+                    Modifier.padding(15.dp).fillMaxWidth().focusRequester(tagFieldFocusRequester),
                     label = {
-                        Text(text = Localization.Key.NewTagName.rememberLocalizedString(), style = MaterialTheme.typography.titleSmall)
-                    })
+                        Text(
+                            text = Localization.Key.NewTagName.rememberLocalizedString(),
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                    },
+                )
                 if (showLinearProgressBar) {
                     LinearProgressIndicator(
-                        modifier = Modifier.fillMaxWidth().padding(
-                            start = 15.dp,
-                            end = 15.dp,
-                            bottom = if (!Platform.Android.onMobile()) 15.dp else 0.dp
-                        )
+                        modifier =
+                        Modifier.fillMaxWidth()
+                            .padding(
+                                start = 15.dp,
+                                end = 15.dp,
+                                bottom = if (!Platform.Android.onMobile()) 15.dp else 0.dp,
+                            ),
                     )
                     return@Column
                 }
                 Button(
-                    modifier = Modifier.pressScaleEffect().pointerHoverIcon(icon = PointerIcon.Hand)
-                        .fillMaxWidth().padding(start = 15.dp, end = 15.dp), onClick = {
+                    modifier =
+                    Modifier.pressScaleEffect()
+                        .pointerHoverIcon(icon = PointerIcon.Hand)
+                        .fillMaxWidth()
+                        .padding(start = 15.dp, end = 15.dp),
+                    onClick = {
                         onSave(newTagName)
-                    }) {
-                    Text(text = Localization.Key.Update.rememberLocalizedString(), style = MaterialTheme.typography.titleMedium)
+                    },
+                ) {
+                    Text(
+                        text = Localization.Key.Update.rememberLocalizedString(),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
                 }
             }
         }

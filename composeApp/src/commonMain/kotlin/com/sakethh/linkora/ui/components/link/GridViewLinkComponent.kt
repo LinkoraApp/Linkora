@@ -1,6 +1,5 @@
 package com.sakethh.linkora.ui.components.link
 
-
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -57,112 +56,154 @@ fun GridViewLinkComponent(
     preferences: AppPreferences,
     linkComponentParam: LinkComponentParam,
     forStaggeredView: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val colorScheme = MaterialTheme.colorScheme
     Card(
-        colors = CardDefaults.cardColors(containerColor = if (linkComponentParam.isSelectionModeEnabled.value) colorScheme.primaryContainer else CardDefaults.cardColors().containerColor),
-        modifier = Modifier.fillMaxWidth()
+        colors =
+        CardDefaults.cardColors(
+            containerColor =
+            if (linkComponentParam.isSelectionModeEnabled.value) {
+                colorScheme.primaryContainer
+            } else {
+                CardDefaults.cardColors().containerColor
+            },
+        ),
+        modifier =
+        Modifier.fillMaxWidth()
             .then(if (!forStaggeredView) Modifier.wrapContentHeight() else Modifier)
-            .pointerHoverIcon(icon = PointerIcon.Hand).combinedClickable(onClick = {
-                if (preferences.showMenuOnGridLinkClick && !linkComponentParam.isSelectionModeEnabled.value) {
-                    linkComponentParam.onMoreIconClick()
-                    return@combinedClickable
-                }
-                linkComponentParam.onLinkClick()
-            }, interactionSource = remember {
-                MutableInteractionSource()
-            }, indication = null, onLongClick = {
-                linkComponentParam.onLongClick()
-            }).pressScaleEffect().padding(start = 4.dp, end = 4.dp, top = 4.dp).then(modifier)
-            .animateContentSize()
+            .pointerHoverIcon(icon = PointerIcon.Hand)
+            .combinedClickable(
+                onClick = {
+                    if (
+                        preferences.showMenuOnGridLinkClick &&
+                        !linkComponentParam.isSelectionModeEnabled.value
+                    ) {
+                        linkComponentParam.onMoreIconClick()
+                        return@combinedClickable
+                    }
+                    linkComponentParam.onLinkClick()
+                },
+                interactionSource =
+                remember {
+                    MutableInteractionSource()
+                },
+                indication = null,
+                onLongClick = {
+                    linkComponentParam.onLongClick()
+                },
+            )
+            .pressScaleEffect()
+            .padding(start = 4.dp, end = 4.dp, top = 4.dp)
+            .then(modifier)
+            .animateContentSize(),
     ) {
         if (linkComponentParam.isItemSelected.value) {
             Box(
-                Modifier.fillMaxWidth().height(150.dp)
-                    .background(MaterialTheme.colorScheme.primary),
-                contentAlignment = Alignment.Center
+                Modifier.fillMaxWidth().height(150.dp).background(MaterialTheme.colorScheme.primary),
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(Icons.Default.CheckCircle, null, tint = colorScheme.onPrimary)
             }
         } else if (linkComponentParam.link.imgURL.trim().isNotBlank()) {
             Box(modifier = if (forStaggeredView) Modifier.fillMaxSize() else Modifier.height(150.dp)) {
                 CoilImage(
-                    modifier = Modifier.fillMaxSize().then(
-                        if (preferences.enableFadedEdgeForNonListViews) Modifier.fadedEdges(
-                            colorScheme
-                        ) else Modifier
-                    ),
+                    modifier =
+                    Modifier.fillMaxSize()
+                        .then(
+                            if (preferences.enableFadedEdgeForNonListViews) {
+                                Modifier.fadedEdges(colorScheme)
+                            } else {
+                                Modifier
+                            },
+                        ),
                     imgURL = linkComponentParam.link.imgURL,
-                    contentScale = if (linkComponentParam.link.imgURL.startsWith("https://pbs.twimg.com/profile_images/") || !forStaggeredView) ContentScale.Crop else ContentScale.Fit,
-                    userAgent = linkComponentParam.link.userAgent
-                        ?: preferences.primaryJsoupUserAgent,
-                    preferences = preferences
+                    contentScale =
+                    if (
+                        linkComponentParam.link.imgURL.startsWith(
+                            "https://pbs.twimg.com/profile_images/",
+                        ) ||
+                        !forStaggeredView
+                    ) {
+                        ContentScale.Crop
+                    } else {
+                        ContentScale.Fit
+                    },
+                    userAgent = linkComponentParam.link.userAgent ?: preferences.primaryJsoupUserAgent,
+                    preferences = preferences,
                 )
-                if (preferences.showVideoTagOnUIIfApplicable && (linkComponentParam.link.mediaType == MediaType.VIDEO || linkComponentParam.link.url.host(
-                        throwOnException = false
-                    ) in getVideoPlatformBaseUrls())
+                if (
+                    preferences.showVideoTagOnUIIfApplicable &&
+                    (
+                        linkComponentParam.link.mediaType == MediaType.VIDEO ||
+                            linkComponentParam.link.url.host(throwOnException = false) in
+                            getVideoPlatformBaseUrls()
+                        )
                 ) {
                     Text(
                         text = MediaType.VIDEO.name,
-                        modifier = Modifier.padding(
+                        modifier =
+                        Modifier.padding(
                             start = 10.dp,
                         )
                             .background(
                                 color = MaterialTheme.colorScheme.secondary.copy(0.25f),
-                                shape = RoundedCornerShape(5.dp)
-                            ).padding(5.dp).align(Alignment.BottomStart),
+                                shape = RoundedCornerShape(5.dp),
+                            )
+                            .padding(5.dp)
+                            .align(Alignment.BottomStart),
                         style = MaterialTheme.typography.titleLarge,
                         fontSize = 8.sp,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
         }
 
-        val showTitle by rememberSaveable(
-            preferences.showTitleInLinkGridView,
-            linkComponentParam.link.title.isNotBlank()
-        ) {
-            mutableStateOf(
-                preferences.showTitleInLinkGridView && linkComponentParam.link.title.isNotBlank()
-            )
-        }
-        val showNote by rememberSaveable(
-            preferences.showNoteInLinkView,
-            linkComponentParam.link.note.isNotBlank()
-        ) {
-            mutableStateOf(
-                preferences.showNoteInLinkView && linkComponentParam.link.note.isNotBlank()
-            )
-        }
-        val showDate by rememberSaveable(
-            preferences.showDateInLinkView,
-            linkComponentParam.link.date != null
-        ) {
-            mutableStateOf(
-                preferences.showDateInLinkView && linkComponentParam.link.date != null
-            )
-        }
+        val showTitle by
+            rememberSaveable(
+                preferences.showTitleInLinkGridView,
+                linkComponentParam.link.title.isNotBlank(),
+            ) {
+                mutableStateOf(
+                    preferences.showTitleInLinkGridView && linkComponentParam.link.title.isNotBlank(),
+                )
+            }
+        val showNote by
+            rememberSaveable(
+                preferences.showNoteInLinkView,
+                linkComponentParam.link.note.isNotBlank(),
+            ) {
+                mutableStateOf(
+                    preferences.showNoteInLinkView && linkComponentParam.link.note.isNotBlank(),
+                )
+            }
+        val showDate by
+            rememberSaveable(
+                preferences.showDateInLinkView,
+                linkComponentParam.link.date != null,
+            ) {
+                mutableStateOf(preferences.showDateInLinkView && linkComponentParam.link.date != null)
+            }
         val showTags by
-        rememberSaveable(preferences.showTagsInLinkView, linkComponentParam.tags != null) {
-            mutableStateOf(
-                preferences.showTagsInLinkView && linkComponentParam.tags != null
-            )
-        }
-        val showHost by rememberSaveable(
-            !linkComponentParam.isSelectionModeEnabled.value,
-            preferences.showHostInLinkListView
-        ) {
-            mutableStateOf(
-                !linkComponentParam.isSelectionModeEnabled.value && preferences.showHostInLinkListView
-            )
-        }
+            rememberSaveable(preferences.showTagsInLinkView, linkComponentParam.tags != null) {
+                mutableStateOf(preferences.showTagsInLinkView && linkComponentParam.tags != null)
+            }
+        val showHost by
+            rememberSaveable(
+                !linkComponentParam.isSelectionModeEnabled.value,
+                preferences.showHostInLinkListView,
+            ) {
+                mutableStateOf(
+                    !linkComponentParam.isSelectionModeEnabled.value && preferences.showHostInLinkListView,
+                )
+            }
         if (showTitle) {
             Text(
                 text = linkComponentParam.link.title,
-                modifier = Modifier.padding(
+                modifier =
+                Modifier.padding(
                     start = 10.dp,
                     top = 10.dp,
                     end = 10.dp,
@@ -170,14 +211,15 @@ fun GridViewLinkComponent(
                 style = MaterialTheme.typography.titleSmall,
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 15.sp,
-                maxLines = 3
+                maxLines = 3,
             )
         }
 
         if (showNote) {
             Text(
                 text = linkComponentParam.link.note,
-                modifier = Modifier.padding(
+                modifier =
+                Modifier.padding(
                     start = 10.dp,
                     top = 10.dp,
                     end = 10.dp,
@@ -186,14 +228,17 @@ fun GridViewLinkComponent(
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurface.copy(0.75f),
-                maxLines = 3
+                maxLines = 3,
             )
         }
 
         if (showDate) {
             Text(
-                modifier = Modifier.padding(
-                    end = 15.dp, top = 10.dp, start = 10.dp
+                modifier =
+                Modifier.padding(
+                    end = 15.dp,
+                    top = 10.dp,
+                    start = 10.dp,
                 ),
                 text = linkComponentParam.link.date ?: "",
                 style = MaterialTheme.typography.titleMedium,
@@ -201,7 +246,7 @@ fun GridViewLinkComponent(
                 textAlign = TextAlign.Start,
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 12.45.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(0.65f)
+                color = MaterialTheme.colorScheme.onSurface.copy(0.65f),
             )
         }
 
@@ -212,7 +257,8 @@ fun GridViewLinkComponent(
                     tags = linkComponentParam.tags ?: emptyList(),
                     onTagClick = {
                         linkComponentParam.onTagClick(it)
-                    })
+                    },
+                )
             }
         }
 
@@ -225,29 +271,37 @@ fun GridViewLinkComponent(
                 text = Localization.Key.FolderPathLabel.rememberLocalizedString(),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.padding(top = 5.dp, start = 10.dp)
+                modifier = Modifier.padding(top = 5.dp, start = 10.dp),
             )
             FoldersRow(
-                modifier = Modifier.fillMaxWidth().padding(
-                    start = 10.dp,
-                ), folders = foldersPath, onFolderClick = { linkComponentParam.onFolderClick(it) })
+                modifier =
+                Modifier.fillMaxWidth()
+                    .padding(
+                        start = 10.dp,
+                    ),
+                folders = foldersPath,
+                onFolderClick = { linkComponentParam.onFolderClick(it) },
+            )
         }
 
         if (showHost) {
             Text(
                 text = linkComponentParam.link.url.host(throwOnException = false),
-                modifier = Modifier.padding(
+                modifier =
+                Modifier.padding(
                     start = 10.dp,
                     top = if (!preferences.showTagsInLinkView) 10.dp else 5.dp,
                     end = 10.dp,
-                ).background(
-                    color = MaterialTheme.colorScheme.primary.copy(0.25f),
-                    shape = RoundedCornerShape(5.dp)
-                ).padding(5.dp),
+                )
+                    .background(
+                        color = MaterialTheme.colorScheme.primary.copy(0.25f),
+                        shape = RoundedCornerShape(5.dp),
+                    )
+                    .padding(5.dp),
                 style = MaterialTheme.typography.titleLarge,
                 fontSize = 10.sp,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
             )
         }
         val addTopSpacing by retain {
@@ -257,14 +311,18 @@ fun GridViewLinkComponent(
         }
         if (!preferences.showMenuOnGridLinkClick) {
             Box(
-                modifier = Modifier.padding(top = if (addTopSpacing) 10.dp else 0.dp)
+                modifier =
+                Modifier.padding(top = if (addTopSpacing) 10.dp else 0.dp)
                     .fillMaxWidth()
                     .background(ButtonDefaults.filledTonalButtonColors().containerColor)
-                    .height(36.dp).clickable(
+                    .height(36.dp)
+                    .clickable(
                         interactionSource = null,
                         indication = null,
-                        onClick = linkComponentParam.onMoreIconClick
-                    ).pointerHoverIcon(PointerIcon.Hand), contentAlignment = Alignment.Center
+                        onClick = linkComponentParam.onMoreIconClick,
+                    )
+                    .pointerHoverIcon(PointerIcon.Hand),
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(imageVector = Icons.Default.MoreHoriz, contentDescription = null)
             }

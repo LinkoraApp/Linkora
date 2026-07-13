@@ -33,7 +33,7 @@ fun RootCollectionSwitcher(
     isRootContentSwitcherBtmSheetVisible: Boolean,
     rootContentSwitcherBtmSheetState: SheetState,
     onHide: () -> Unit,
-    onSourceClick: (id: Int) -> Unit
+    onSourceClick: (id: Int) -> Unit,
 ) {
     if (isRootContentSwitcherBtmSheetVisible) {
         ModalBottomSheet(onDismissRequest = onHide, sheetState = rootContentSwitcherBtmSheetState) {
@@ -42,30 +42,50 @@ fun RootCollectionSwitcher(
                     text = Localization.Key.SelectACollectionSource.rememberLocalizedString(),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(15.dp)
+                    modifier = Modifier.padding(15.dp),
                 )
                 remember {
-                    listOf(0 to Localization.Key.Folders.getLocalizedString(), 1 to Localization.Key.Tags.getLocalizedString())
-                }.forEach { contentType ->
-                    Row(modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth().clickable {
-                        onSourceClick(contentType.first)
-                    }.padding(5.dp), verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-                            selected = contentType.first == preferences.selectedCollectionSourceId,
-                            onClick = {
-                                onSourceClick(contentType.first)
-                            })
-                        Spacer(Modifier.width(5.dp))
-                        Text(
-                            text = contentType.second,
-                            style = if (contentType.first == preferences.selectedCollectionSourceId) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall,
-                            color = if (contentType.first == preferences.selectedCollectionSourceId) LocalContentColor.current else LocalContentColor.current.copy(
-                                0.85f
-                            )
-                        )
-                    }
+                    listOf(
+                        0 to Localization.Key.Folders.getLocalizedString(),
+                        1 to Localization.Key.Tags.getLocalizedString(),
+                    )
                 }
+                    .forEach { contentType ->
+                        Row(
+                            modifier =
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .fillMaxWidth()
+                                .clickable {
+                                    onSourceClick(contentType.first)
+                                }
+                                .padding(5.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(
+                                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                                selected = contentType.first == preferences.selectedCollectionSourceId,
+                                onClick = {
+                                    onSourceClick(contentType.first)
+                                },
+                            )
+                            Spacer(Modifier.width(5.dp))
+                            Text(
+                                text = contentType.second,
+                                style =
+                                if (contentType.first == preferences.selectedCollectionSourceId) {
+                                    MaterialTheme.typography.titleLarge
+                                } else {
+                                    MaterialTheme.typography.titleSmall
+                                },
+                                color =
+                                if (contentType.first == preferences.selectedCollectionSourceId) {
+                                    LocalContentColor.current
+                                } else {
+                                    LocalContentColor.current.copy(0.85f)
+                                },
+                            )
+                        }
+                    }
             }
         }
     }

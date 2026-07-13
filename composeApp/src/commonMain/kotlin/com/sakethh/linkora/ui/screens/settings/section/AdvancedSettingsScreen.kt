@@ -42,15 +42,18 @@ import com.sakethh.linkora.utils.stringPreferencesKey
 fun AdvancedSettingsScreen() {
     val settingsScreenVM: SettingsScreenViewModel = linkoraViewModel()
     val preferences by settingsScreenVM.preferencesAsFlow.collectAsStateWithLifecycle()
-    val primaryJsoupStringAgent = rememberSaveable(preferences.primaryJsoupUserAgent) {
-        mutableStateOf(preferences.primaryJsoupUserAgent)
-    }
-    val localizationServerURL = rememberSaveable(preferences.localizationServerURL) {
-        mutableStateOf(preferences.localizationServerURL)
-    }
-    var proxyServerUrl by rememberSaveable(preferences.proxyUrl) {
-        mutableStateOf(preferences.proxyUrl)
-    }
+    val primaryJsoupStringAgent =
+        rememberSaveable(preferences.primaryJsoupUserAgent) {
+            mutableStateOf(preferences.primaryJsoupUserAgent)
+        }
+    val localizationServerURL =
+        rememberSaveable(preferences.localizationServerURL) {
+            mutableStateOf(preferences.localizationServerURL)
+        }
+    var proxyServerUrl by
+        rememberSaveable(preferences.proxyUrl) {
+            mutableStateOf(preferences.proxyUrl)
+        }
     var isReadOnlyTextFieldForProxyServer by rememberSaveable {
         mutableStateOf(true)
     }
@@ -60,9 +63,10 @@ fun AdvancedSettingsScreen() {
     val isReadOnlyTextFieldForLocalizationServer = rememberSaveable {
         mutableStateOf(true)
     }
-    val useProxy by rememberSaveable(preferences.useProxy) {
-        mutableStateOf(preferences.useProxy)
-    }
+    val useProxy by
+        rememberSaveable(preferences.useProxy) {
+            mutableStateOf(preferences.useProxy)
+        }
     val proxyUrlFocusRequester = remember { FocusRequester() }
     val primaryJsoupUserAgentFocusRequester = remember { FocusRequester() }
     val localizationServerTextFieldFocusRequester = remember { FocusRequester() }
@@ -70,10 +74,12 @@ fun AdvancedSettingsScreen() {
         topAppBarText = Navigation.Settings.AdvancedSettingsScreen.toString(),
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
-            modifier = Modifier.animateContentSize().fillMaxSize()
+            modifier =
+            Modifier.animateContentSize()
+                .fillMaxSize()
                 .addEdgeToEdgeScaffoldPadding(paddingValues)
                 .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
-            verticalArrangement = Arrangement.spacedBy(30.dp)
+            verticalArrangement = Arrangement.spacedBy(30.dp),
         ) {
             item {
                 Spacer(Modifier)
@@ -82,7 +88,8 @@ fun AdvancedSettingsScreen() {
             if (platform != Platform.Web) {
                 item {
                     SettingComponent(
-                        settingComponentParam = SettingComponentParam(
+                        settingComponentParam =
+                        SettingComponentParam(
                             title = Localization.Key.UseAProxyServer.rememberLocalizedString(),
                             doesDescriptionExists = true,
                             description = Localization.Key.UseAProxyServerDesc.rememberLocalizedString(),
@@ -90,14 +97,13 @@ fun AdvancedSettingsScreen() {
                             isSwitchEnabled = useProxy,
                             onSwitchStateChange = {
                                 settingsScreenVM.changeSettingPreferenceValue(
-                                    preferenceKey = booleanPreferencesKey(
-                                        AppPreferences.USE_PROXY.key
-                                    ), newValue = it
+                                    preferenceKey = booleanPreferencesKey(AppPreferences.USE_PROXY.key),
+                                    newValue = it,
                                 )
                             },
                             isIconNeeded = true,
-                            icon = Icons.Default.Route
-                        )
+                            icon = Icons.Default.Route,
+                        ),
                     )
                 }
             }
@@ -105,13 +111,14 @@ fun AdvancedSettingsScreen() {
             if (useProxy || platform == Platform.Web) {
                 item {
                     PreferenceTextField(
-                        textFieldDescText = Localization.Key.UseAProxyServerLongDesc.rememberLocalizedString(),
+                        textFieldDescText =
+                        Localization.Key.UseAProxyServerLongDesc.rememberLocalizedString(),
                         textFieldLabel = Localization.Key.Proxy.rememberLocalizedString(),
                         textFieldValue = proxyServerUrl,
                         onResetButtonClick = {
                             settingsScreenVM.changeSettingPreferenceValue(
                                 stringPreferencesKey(AppPreferences.PROXY_URL.key),
-                                Constants.PROXY_SERVER_URL
+                                Constants.PROXY_SERVER_URL,
                             )
                         },
                         onTextFieldValueChange = {
@@ -127,12 +134,12 @@ fun AdvancedSettingsScreen() {
                             if (isReadOnlyTextFieldForProxyServer) {
                                 settingsScreenVM.changeSettingPreferenceValue(
                                     stringPreferencesKey(AppPreferences.PROXY_URL.key),
-                                    proxyServerUrl
+                                    proxyServerUrl,
                                 )
                             }
                         },
                         focusRequester = proxyUrlFocusRequester,
-                        readonly = isReadOnlyTextFieldForProxyServer
+                        readonly = isReadOnlyTextFieldForProxyServer,
                     )
                 }
             }
@@ -145,7 +152,7 @@ fun AdvancedSettingsScreen() {
                     onResetButtonClick = {
                         settingsScreenVM.changeSettingPreferenceValue(
                             stringPreferencesKey(AppPreferences.JSOUP_USER_AGENT.key),
-                            Constants.DEFAULT_USER_AGENT
+                            Constants.DEFAULT_USER_AGENT,
                         )
                     },
                     onTextFieldValueChange = {
@@ -162,12 +169,12 @@ fun AdvancedSettingsScreen() {
                         if (isReadOnlyTextFieldForPrimaryUserAgent.value) {
                             settingsScreenVM.changeSettingPreferenceValue(
                                 stringPreferencesKey(AppPreferences.JSOUP_USER_AGENT.key),
-                                primaryJsoupStringAgent.value
+                                primaryJsoupStringAgent.value,
                             )
                         }
                     },
                     focusRequester = primaryJsoupUserAgentFocusRequester,
-                    readonly = isReadOnlyTextFieldForPrimaryUserAgent.value
+                    readonly = isReadOnlyTextFieldForPrimaryUserAgent.value,
                 )
             }
 
@@ -179,7 +186,7 @@ fun AdvancedSettingsScreen() {
                     onResetButtonClick = {
                         settingsScreenVM.changeSettingPreferenceValue(
                             stringPreferencesKey(AppPreferences.LOCALIZATION_SERVER_URL.key),
-                            Constants.LOCALIZATION_SERVER_URL
+                            Constants.LOCALIZATION_SERVER_URL,
                         )
                     },
                     onTextFieldValueChange = {
@@ -196,12 +203,12 @@ fun AdvancedSettingsScreen() {
                         if (isReadOnlyTextFieldForLocalizationServer.value) {
                             settingsScreenVM.changeSettingPreferenceValue(
                                 stringPreferencesKey(AppPreferences.LOCALIZATION_SERVER_URL.key),
-                                localizationServerURL.value
+                                localizationServerURL.value,
                             )
                         }
                     },
                     focusRequester = localizationServerTextFieldFocusRequester,
-                    readonly = isReadOnlyTextFieldForLocalizationServer.value
+                    readonly = isReadOnlyTextFieldForLocalizationServer.value,
                 )
             }
             item {

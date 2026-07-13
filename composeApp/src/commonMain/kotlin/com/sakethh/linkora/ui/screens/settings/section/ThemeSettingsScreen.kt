@@ -39,11 +39,15 @@ fun ThemeSettingsScreen() {
         topAppBarText = Localization.Key.Theme.rememberLocalizedString(),
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().addEdgeToEdgeScaffoldPadding(paddingValues)
+            modifier =
+            Modifier.fillMaxSize()
+                .addEdgeToEdgeScaffoldPadding(paddingValues)
                 .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
-            verticalArrangement = Arrangement.spacedBy(30.dp)
+            verticalArrangement = Arrangement.spacedBy(30.dp),
         ) {
-            if (platform is Platform.Android && showFollowSystemThemeOption && !preferences.useDarkTheme) {
+            if (
+                platform is Platform.Android && showFollowSystemThemeOption && !preferences.useDarkTheme
+            ) {
                 item(key = Localization.Key.FollowSystemTheme.defaultValue) {
                     SettingComponent(
                         SettingComponentParam(
@@ -55,11 +59,11 @@ fun ThemeSettingsScreen() {
                             onSwitchStateChange = {
                                 settingsScreenViewModel.changeSettingPreferenceValue(
                                     booleanPreferencesKey(AppPreferences.FOLLOW_SYSTEM_THEME.key),
-                                    it
+                                    it,
                                 )
                             },
-                            isIconNeeded = false
-                        )
+                            isIconNeeded = false,
+                        ),
                     )
                 }
             }
@@ -74,15 +78,19 @@ fun ThemeSettingsScreen() {
                             isSwitchEnabled = preferences.useDarkTheme,
                             onSwitchStateChange = {
                                 settingsScreenViewModel.changeSettingPreferenceValue(
-                                    booleanPreferencesKey(AppPreferences.DARK_THEME.key), it
+                                    booleanPreferencesKey(AppPreferences.DARK_THEME.key),
+                                    it,
                                 )
                             },
-                            isIconNeeded = false
-                        )
+                            isIconNeeded = false,
+                        ),
                     )
                 }
             }
-            if (platform is Platform.Android && (preferences.useDarkTheme || (isSystemInDarkTheme && preferences.useSystemTheme))) {
+            if (
+                platform is Platform.Android &&
+                (preferences.useDarkTheme || (isSystemInDarkTheme && preferences.useSystemTheme))
+            ) {
                 item {
                     SettingComponent(
                         SettingComponentParam(
@@ -94,11 +102,11 @@ fun ThemeSettingsScreen() {
                             onSwitchStateChange = {
                                 settingsScreenViewModel.changeSettingPreferenceValue(
                                     booleanPreferencesKey(AppPreferences.AMOLED_THEME_STATE.key),
-                                    it
+                                    it,
                                 )
                             },
-                            isIconNeeded = false
-                        )
+                            isIconNeeded = false,
+                        ),
                     )
                 }
             }
@@ -114,11 +122,11 @@ fun ThemeSettingsScreen() {
                             onSwitchStateChange = {
                                 settingsScreenViewModel.changeSettingPreferenceValue(
                                     booleanPreferencesKey(AppPreferences.DYNAMIC_THEMING.key),
-                                    it
+                                    it,
                                 )
                             },
-                            isIconNeeded = false
-                        )
+                            isIconNeeded = false,
+                        ),
                     )
                 }
             }

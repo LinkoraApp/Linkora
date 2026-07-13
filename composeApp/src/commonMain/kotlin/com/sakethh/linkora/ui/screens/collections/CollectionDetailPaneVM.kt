@@ -51,63 +51,70 @@ class CollectionDetailPaneVM(
     private val localTagsRepo: LocalTagsRepo,
     private val localDatabaseUtilsRepo: LocalDatabaseUtilsRepo,
     val collectionDetailPaneInfo: CollectionDetailPaneInfo,
-    private val preferencesRepository: PreferencesRepository
+    private val preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
-
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
 
-    private val _linkTagsPairsState = MutableStateFlow(
-        value = PaginationState.retrieving<List<LinkTagsPair>>()
-    )
+    private val _linkTagsPairsState =
+        MutableStateFlow(
+            value = PaginationState.retrieving<List<LinkTagsPair>>(),
+        )
 
-    val linkTagsPairsState = _linkTagsPairsState.asStateInWhileSubscribed(
-        initialValue = PaginationState.retrieving()
-    )
+    val linkTagsPairsState =
+        _linkTagsPairsState.asStateInWhileSubscribed(
+            initialValue = PaginationState.retrieving(),
+        )
 
     enum class LinkTagsPairPaginatorType {
         LinksAssociatedWithATag,
-        FolderBased
+        FolderBased,
     }
 
     val linkTagsPairPaginatorType
         get() = run {
-            if (collectionDetailPaneInfo.collectionType == CollectionType.TAG && collectionDetailPaneInfo.currentTag != null) {
+            if (
+                collectionDetailPaneInfo.collectionType == CollectionType.TAG &&
+                collectionDetailPaneInfo.currentTag != null
+            ) {
                 LinkTagsPairPaginatorType.LinksAssociatedWithATag
             } else {
                 LinkTagsPairPaginatorType.FolderBased
             }
         }
 
-    private val currentInstanceLinkType = when (collectionDetailPaneInfo.currentFolder?.localId) {
-        Constants.SAVED_LINKS_ID -> {
-            LinkType.SAVED_LINK
-        }
+    private val currentInstanceLinkType =
+        when (collectionDetailPaneInfo.currentFolder?.localId) {
+            Constants.SAVED_LINKS_ID -> {
+                LinkType.SAVED_LINK
+            }
 
-        Constants.IMPORTANT_LINKS_ID -> {
-            LinkType.IMPORTANT_LINK
-        }
+            Constants.IMPORTANT_LINKS_ID -> {
+                LinkType.IMPORTANT_LINK
+            }
 
-        Constants.ARCHIVE_ID -> {
-            LinkType.ARCHIVE_LINK
-        }
+            Constants.ARCHIVE_ID -> {
+                LinkType.ARCHIVE_LINK
+            }
 
-        Constants.HISTORY_ID -> {
-            LinkType.HISTORY_LINK
-        }
+            Constants.HISTORY_ID -> {
+                LinkType.HISTORY_LINK
+            }
 
-        else -> {
-            LinkType.FOLDER_LINK
+            else -> {
+                LinkType.FOLDER_LINK
+            }
         }
-    }
 
     fun performAction(collectionPaneAction: CollectionPaneAction) = when (collectionPaneAction) {
-        is CollectionPaneAction.ToggleAllLinksFilter -> toggleAllLinksFilter(collectionPaneAction.filter)
+        is CollectionPaneAction.ToggleAllLinksFilter ->
+            toggleAllLinksFilter(collectionPaneAction.filter)
+
         is CollectionPaneAction.OnFirstVisibleItemIndexChangeOfLinkTagsPair -> {
             if (collectionDetailPaneInfo.currentFolder?.localId == Constants.ALL_LINKS_ID) {
                 updateAllLinksPaginatorFirstVisibleIndex(collectionPaneAction.index)
             } else {
                 updateLinkTagsPaginatorFirstVisibleIndex(
-                    collectionPaneAction.index
+                    collectionPaneAction.index,
                 )
             }
         }
@@ -120,33 +127,40 @@ class CollectionDetailPaneVM(
             }
         }
 
+        is CollectionPaneAction.OnFirstVisibleItemIndexChangeOfRootArchivedFolders ->
+            updateStartingIndexForArchivedRootFoldersPaginator(
+                collectionPaneAction.index,
+            )
 
-        is CollectionPaneAction.OnFirstVisibleItemIndexChangeOfRootArchivedFolders -> updateStartingIndexForArchivedRootFoldersPaginator(
-            collectionPaneAction.index
-        )
+        CollectionPaneAction.RetrieveNextRootArchivedFolderPage ->
+            retrieveNextBatchOfArchivedRootFolders()
 
-        CollectionPaneAction.RetrieveNextRootArchivedFolderPage -> retrieveNextBatchOfArchivedRootFolders()
         is CollectionPaneAction.AddANewLink ->
             viewModelScope.launch {
-                localLinksRepo.addANewLink(
-                    link = collectionPaneAction.link,
-                    selectedTagIds = collectionPaneAction.selectedTags.map {
-                        it.localId
-                    },
-                    linkSaveConfig = collectionPaneAction.linkSaveConfig
-                ).collectLatest {
-                    it.onSuccess {
-                        collectionPaneAction.onCompletion()
-                        if (collectionPaneAction.pushSnackbarOnSuccess) {
-                            Localization.Key.SavedTheLink.pushLocalizedSnackbar(append = it.getRemoteOnlyFailureMsg())
+                localLinksRepo
+                    .addANewLink(
+                        link = collectionPaneAction.link,
+                        selectedTagIds =
+                        collectionPaneAction.selectedTags.map {
+                            it.localId
+                        },
+                        linkSaveConfig = collectionPaneAction.linkSaveConfig,
+                    )
+                    .collectLatest {
+                        it.onSuccess {
+                            collectionPaneAction.onCompletion()
+                            if (collectionPaneAction.pushSnackbarOnSuccess) {
+                                Localization.Key.SavedTheLink.pushLocalizedSnackbar(
+                                    append = it.getRemoteOnlyFailureMsg(),
+                                )
+                            }
                         }
-                    }.onFailure {
-                        collectionPaneAction.onCompletion()
-                        UIEvent.pushUIEvent(UIEvent.Type.ShowSnackbar(it))
+                            .onFailure {
+                                collectionPaneAction.onCompletion()
+                                UIEvent.pushUIEvent(UIEvent.Type.ShowSnackbar(it))
+                            }
                     }
-                }
             }
-
     }
 
     fun retrieveNextBatchOfArchivedRootFolders() {
@@ -161,176 +175,204 @@ class CollectionDetailPaneVM(
         }
     }
 
-    val appPreferencesCombined = preferencesRepository.preferencesAsFlow
-        .map { Pair(it.forceShuffleLinks, it.selectedSortingType) }
-        .distinctUntilChanged()
+    val appPreferencesCombined =
+        preferencesRepository.preferencesAsFlow
+            .map { Pair(it.forceShuffleLinks, it.selectedSortingType) }
+            .distinctUntilChanged()
 
-    val sortingType get() = preferencesRepository.getPreferences().selectedSortingType
-    val shuffleLinks get() = preferencesRepository.getPreferences().forceShuffleLinks
+    val sortingType
+        get() = preferencesRepository.getPreferences().selectedSortingType
 
-    // localDatabaseUtilsRepo#getChildFolderData supports this directly, since it directly queries and returns the result. This can be replaced with it, but this should be fine.
-    fun Flow<Result<List<Link>>>.mapToLinkTagsPair(): Flow<Result<List<LinkTagsPair>>> {
-        return flatMapLatest { result ->
-            when (result) {
-                is Result.Failure -> flowOf(Result.Failure(result.message))
-                is Result.Loading -> flowOf(Result.Loading())
-                is Result.Success -> {
-                    val linksIds = result.data.map { it.localId }
-                    localTagsRepo.getTagsForLinks(linksIds).map { tagsMap ->
+    val shuffleLinks
+        get() = preferencesRepository.getPreferences().forceShuffleLinks
+
+    // localDatabaseUtilsRepo#getChildFolderData supports this directly, since it directly queries and
+    // returns the result. This can be replaced with it, but this should be fine.
+    fun Flow<Result<List<Link>>>.mapToLinkTagsPair(): Flow<Result<List<LinkTagsPair>>> = flatMapLatest { result ->
+        when (result) {
+            is Result.Failure -> flowOf(Result.Failure(result.message))
+
+            is Result.Loading -> flowOf(Result.Loading())
+
+            is Result.Success -> {
+                val linksIds = result.data.map { it.localId }
+                localTagsRepo
+                    .getTagsForLinks(linksIds)
+                    .map { tagsMap ->
                         result.data.map { link ->
                             LinkTagsPair(
-                                link = link, tags = tagsMap[link.localId] ?: emptyList()
+                                link = link,
+                                tags = tagsMap[link.localId] ?: emptyList(),
                             )
                         }
-                    }.flatMapLatest {
+                    }
+                    .flatMapLatest {
                         flowOf(Result.Success(it))
                     }
-                }
             }
         }
     }
 
-    private val _rootArchiveFolders = MutableStateFlow(
-        PaginationState(
-            isRetrieving = true,
-            errorOccurred = false,
-            errorMessage = null,
-            pagesCompleted = false,
-            data = emptyMap<Pair<LastSeenId, LastSeenString>, List<Folder>>()
+    private val _rootArchiveFolders =
+        MutableStateFlow(
+            PaginationState(
+                isRetrieving = true,
+                errorOccurred = false,
+                errorMessage = null,
+                pagesCompleted = false,
+                data = emptyMap<Pair<LastSeenId, LastSeenString>, List<Folder>>(),
+            ),
         )
-    )
-    val rootArchiveFolders = _rootArchiveFolders.asStateInWhileSubscribed(
-        initialValue = PaginationState(
-            isRetrieving = true,
-            errorOccurred = false,
-            errorMessage = null,
-            pagesCompleted = false,
-            data = emptyMap()
+    val rootArchiveFolders =
+        _rootArchiveFolders.asStateInWhileSubscribed(
+            initialValue =
+            PaginationState(
+                isRetrieving = true,
+                errorOccurred = false,
+                errorMessage = null,
+                pagesCompleted = false,
+                data = emptyMap(),
+            ),
         )
-    )
 
-    private val archiveRootFoldersPaginator = Paginator(
-        coroutineScope = viewModelScope,
-        onRetrieve = { lastSeenId, lastSeenString ->
-            localFoldersRepo.getRootFolders(
-                sortingType,
-                isArchived = true,
-                pageSize = Constants.PAGE_SIZE,
-                lastSeenId = lastSeenId,
-                lastSeenName = lastSeenString
-            )
-        },
-        onRetrieved = { currentKey, retrievedData ->
-            _rootArchiveFolders.onRetrieved(
-                currentKey = currentKey,
-                data = retrievedData,
-                shouldShuffle = shuffleLinks,
-                idSelector = { it.localId },
-                stringSelector = { it.name })
-        },
-        onError = _rootArchiveFolders::onError,
-        onRetrieving = _rootArchiveFolders::onRetrieving,
-        onPagesFinished = _rootArchiveFolders::onPagesFinished
-    )
-
-    private val linkTagsPairPaginator = Paginator(
-        coroutineScope = viewModelScope,
-        onRetrieve = { lastSeenId, lastSeenString ->
-            if (linkTagsPairPaginatorType == LinkTagsPairPaginatorType.LinksAssociatedWithATag) {
-                localLinksRepo.getLinks(
-                    tagId = collectionDetailPaneInfo.currentTag?.localId
-                        ?: error("collectionDetailPaneInfo.currentTag?.localId is null"),
-                    sortOption = sortingType,
-                    pageSize = Constants.PAGE_SIZE,
-                    lastSeenTitle = lastSeenString,
-                    lastSeenId = lastSeenId
-                ).run {
-                    if (shuffleLinks) shuffleLinks() else this
-                }.mapToLinkTagsPair()
-            } else {
-                localLinksRepo.getLinks(
-                    linkType = currentInstanceLinkType,
-                    parentFolderId = collectionDetailPaneInfo.currentFolder?.localId
-                        ?: error("collectionDetailPaneInfo.currentFolder?.localId is null"),
-                    sortOption = sortingType,
+    private val archiveRootFoldersPaginator =
+        Paginator(
+            coroutineScope = viewModelScope,
+            onRetrieve = { lastSeenId, lastSeenString ->
+                localFoldersRepo.getRootFolders(
+                    sortingType,
+                    isArchived = true,
                     pageSize = Constants.PAGE_SIZE,
                     lastSeenId = lastSeenId,
-                    lastSeenTitle = lastSeenString
-                ).run {
-                    if (shuffleLinks) shuffleLinks() else this
-                }.mapToLinkTagsPair()
-            }
-        },
-        onRetrieved = { currentKey, retrievedData ->
-            _linkTagsPairsState.onRetrieved(
-                currentKey = currentKey,
-                data = retrievedData,
-                shouldShuffle = shuffleLinks,
-                idSelector = { it.link.localId },
-                stringSelector = { it.link.title })
-        },
-        onError = _linkTagsPairsState::onError,
-        onRetrieving = _linkTagsPairsState::onRetrieving,
-        onPagesFinished = _linkTagsPairsState::onPagesFinished
-    )
+                    lastSeenName = lastSeenString,
+                )
+            },
+            onRetrieved = { currentKey, retrievedData ->
+                _rootArchiveFolders.onRetrieved(
+                    currentKey = currentKey,
+                    data = retrievedData,
+                    shouldShuffle = shuffleLinks,
+                    idSelector = { it.localId },
+                    stringSelector = { it.name },
+                )
+            },
+            onError = _rootArchiveFolders::onError,
+            onRetrieving = _rootArchiveFolders::onRetrieving,
+            onPagesFinished = _rootArchiveFolders::onPagesFinished,
+        )
 
+    private val linkTagsPairPaginator =
+        Paginator(
+            coroutineScope = viewModelScope,
+            onRetrieve = { lastSeenId, lastSeenString ->
+                if (linkTagsPairPaginatorType == LinkTagsPairPaginatorType.LinksAssociatedWithATag) {
+                    localLinksRepo
+                        .getLinks(
+                            tagId =
+                            collectionDetailPaneInfo.currentTag?.localId
+                                ?: error("collectionDetailPaneInfo.currentTag?.localId is null"),
+                            sortOption = sortingType,
+                            pageSize = Constants.PAGE_SIZE,
+                            lastSeenTitle = lastSeenString,
+                            lastSeenId = lastSeenId,
+                        )
+                        .run {
+                            if (shuffleLinks) shuffleLinks() else this
+                        }
+                        .mapToLinkTagsPair()
+                } else {
+                    localLinksRepo
+                        .getLinks(
+                            linkType = currentInstanceLinkType,
+                            parentFolderId =
+                            collectionDetailPaneInfo.currentFolder?.localId
+                                ?: error("collectionDetailPaneInfo.currentFolder?.localId is null"),
+                            sortOption = sortingType,
+                            pageSize = Constants.PAGE_SIZE,
+                            lastSeenId = lastSeenId,
+                            lastSeenTitle = lastSeenString,
+                        )
+                        .run {
+                            if (shuffleLinks) shuffleLinks() else this
+                        }
+                        .mapToLinkTagsPair()
+                }
+            },
+            onRetrieved = { currentKey, retrievedData ->
+                _linkTagsPairsState.onRetrieved(
+                    currentKey = currentKey,
+                    data = retrievedData,
+                    shouldShuffle = shuffleLinks,
+                    idSelector = { it.link.localId },
+                    stringSelector = { it.link.title },
+                )
+            },
+            onError = _linkTagsPairsState::onError,
+            onRetrieving = _linkTagsPairsState::onRetrieving,
+            onPagesFinished = _linkTagsPairsState::onPagesFinished,
+        )
 
-    private val _childFoldersFlat = MutableStateFlow(
-        value = PaginationState.retrieving<List<FlatChildFolderData>>()
-    )
-    val childFoldersFlat = _childFoldersFlat.asStateInWhileSubscribed(
-        initialValue = PaginationState.retrieving()
-    )
+    private val _childFoldersFlat =
+        MutableStateFlow(
+            value = PaginationState.retrieving<List<FlatChildFolderData>>(),
+        )
+    val childFoldersFlat =
+        _childFoldersFlat.asStateInWhileSubscribed(
+            initialValue = PaginationState.retrieving(),
+        )
 
-    private val childFoldersFlatPaginator = Paginator(
-        coroutineScope = viewModelScope,
-        onRetrieve = { _, lastSeenString ->
-            val parts = lastSeenString?.split("|")
+    private val childFoldersFlatPaginator =
+        Paginator(
+            coroutineScope = viewModelScope,
+            onRetrieve = { _, lastSeenString ->
+                val parts = lastSeenString?.split("|")
 
-            val lastTypeOrder = parts?.getOrNull(0)?.toIntOrNull() ?: -1
-            val lastSortStr = parts?.getOrNull(1) ?: ""
-            val lastId = parts?.getOrNull(2)?.toLongOrNull() ?: Constants.EMPTY_LAST_SEEN_ID
+                val lastTypeOrder = parts?.getOrNull(0)?.toIntOrNull() ?: -1
+                val lastSortStr = parts?.getOrNull(1) ?: ""
+                val lastId = parts?.getOrNull(2)?.toLongOrNull() ?: Constants.EMPTY_LAST_SEEN_ID
 
-            localDatabaseUtilsRepo.getChildFolderData(
-                parentFolderId = collectionDetailPaneInfo.currentFolder?.localId
-                    ?: error("childFoldersPaginator: Parent ID is null"),
-                linkType = LinkType.FOLDER_LINK,
-                sortOption = sortingType,
-                pageSize = Constants.PAGE_SIZE,
-                lastTypeOrder = lastTypeOrder,
-                lastSortStr = lastSortStr,
-                lastId = lastId
-            )
-        },
-        onRetrieved = { currentKey, retrievedData ->
-            _childFoldersFlat.onRetrieved(
-                currentKey = currentKey,
-                data = retrievedData,
-                shouldShuffle = shuffleLinks,
+                localDatabaseUtilsRepo.getChildFolderData(
+                    parentFolderId =
+                    collectionDetailPaneInfo.currentFolder?.localId
+                        ?: error("childFoldersPaginator: Parent ID is null"),
+                    linkType = LinkType.FOLDER_LINK,
+                    sortOption = sortingType,
+                    pageSize = Constants.PAGE_SIZE,
+                    lastTypeOrder = lastTypeOrder,
+                    lastSortStr = lastSortStr,
+                    lastId = lastId,
+                )
+            },
+            onRetrieved = { currentKey, retrievedData ->
+                _childFoldersFlat.onRetrieved(
+                    currentKey = currentKey,
+                    data = retrievedData,
+                    shouldShuffle = shuffleLinks,
+                    idSelector = { item ->
+                        item.folderLocalId ?: item.linkLocalId ?: 0L
+                    },
+                    stringSelector = { item ->
+                        val typeOrder = if (item.itemType == "FOLDER") 0 else 1
 
-                idSelector = { item ->
-                    item.folderLocalId ?: item.linkLocalId ?: 0L
-                },
+                        val sortStr = item.folderName ?: item.linkTitle ?: ""
 
-                stringSelector = { item ->
-                    val typeOrder = if (item.itemType == "FOLDER") 0 else 1
+                        val sortId = item.folderLocalId ?: item.linkLocalId ?: 0L
 
-                    val sortStr = item.folderName ?: item.linkTitle ?: ""
-
-                    val sortId = item.folderLocalId ?: item.linkLocalId ?: 0L
-
-                    "$typeOrder|$sortStr|$sortId"
-                })
-        },
-        onError = _childFoldersFlat::onError,
-        onRetrieving = _childFoldersFlat::onRetrieving,
-        onPagesFinished = _childFoldersFlat::onPagesFinished
-    )
-
+                        "$typeOrder|$sortStr|$sortId"
+                    },
+                )
+            },
+            onError = _childFoldersFlat::onError,
+            onRetrieving = _childFoldersFlat::onRetrieving,
+            onPagesFinished = _childFoldersFlat::onPagesFinished,
+        )
 
     private fun updateLinkTagsPaginatorFirstVisibleIndex(index: Long) {
         viewModelScope.launch {
-            if (collectionDetailPaneInfo.currentFolder != null && collectionDetailPaneInfo.currentFolder.localId >= 0) {
+            if (
+                collectionDetailPaneInfo.currentFolder != null &&
+                collectionDetailPaneInfo.currentFolder.localId >= 0
+            ) {
                 childFoldersFlatPaginator.updateFirstVisibleItemIndex(index)
             } else {
                 linkTagsPairPaginator.updateFirstVisibleItemIndex(index)
@@ -346,7 +388,10 @@ class CollectionDetailPaneVM(
 
     private fun retrieveNextLinksPage() {
         viewModelScope.launch {
-            if (collectionDetailPaneInfo.currentFolder != null && collectionDetailPaneInfo.currentFolder.localId >= 0) {
+            if (
+                collectionDetailPaneInfo.currentFolder != null &&
+                collectionDetailPaneInfo.currentFolder.localId >= 0
+            ) {
                 childFoldersFlatPaginator.retrieveNextBatch()
             } else {
                 linkTagsPairPaginator.retrieveNextBatch()
@@ -360,7 +405,6 @@ class CollectionDetailPaneVM(
         }
     }
 
-
     private val _appliedFiltersForAllLinks = mutableStateListOf<LinkType>()
     val appliedFiltersForAllLinks = _appliedFiltersForAllLinks
 
@@ -372,33 +416,37 @@ class CollectionDetailPaneVM(
         }
     }
 
-    private val allLinksPaginator = Paginator(
-        coroutineScope = viewModelScope,
-        onRetrieve = { lastSeenId, lastSeenString ->
-            localLinksRepo.getAllLinks(
-                applyLinkFilters = appliedFiltersForAllLinks.isNotEmpty(),
-                activeLinkFilters = appliedFiltersForAllLinks.toList().map { it.name },
-                sortOption = sortingType,
-                pageSize = Constants.PAGE_SIZE,
-                lastSeenId = lastSeenId,
-                lastSeenName = lastSeenString
-            ).run {
-                if (shuffleLinks) shuffleLinks() else this
-            }.mapToLinkTagsPair()
-        },
-        onRetrieved = { currentKey, retrievedData ->
-            _linkTagsPairsState.onRetrieved(
-                currentKey = currentKey,
-                data = retrievedData,
-                shouldShuffle = shuffleLinks,
-                idSelector = { it.link.localId },
-                stringSelector = { it.link.title })
-        },
-        onError = _linkTagsPairsState::onError,
-        onRetrieving = _linkTagsPairsState::onRetrieving,
-        onPagesFinished = _linkTagsPairsState::onPagesFinished
-    )
-
+    private val allLinksPaginator =
+        Paginator(
+            coroutineScope = viewModelScope,
+            onRetrieve = { lastSeenId, lastSeenString ->
+                localLinksRepo
+                    .getAllLinks(
+                        applyLinkFilters = appliedFiltersForAllLinks.isNotEmpty(),
+                        activeLinkFilters = appliedFiltersForAllLinks.toList().map { it.name },
+                        sortOption = sortingType,
+                        pageSize = Constants.PAGE_SIZE,
+                        lastSeenId = lastSeenId,
+                        lastSeenName = lastSeenString,
+                    )
+                    .run {
+                        if (shuffleLinks) shuffleLinks() else this
+                    }
+                    .mapToLinkTagsPair()
+            },
+            onRetrieved = { currentKey, retrievedData ->
+                _linkTagsPairsState.onRetrieved(
+                    currentKey = currentKey,
+                    data = retrievedData,
+                    shouldShuffle = shuffleLinks,
+                    idSelector = { it.link.localId },
+                    stringSelector = { it.link.title },
+                )
+            },
+            onError = _linkTagsPairsState::onError,
+            onRetrieving = _linkTagsPairsState::onRetrieving,
+            onPagesFinished = _linkTagsPairsState::onPagesFinished,
+        )
 
     init {
         viewModelScope.launch {
@@ -423,26 +471,29 @@ class CollectionDetailPaneVM(
             launch {
                 snapshotFlow {
                     _appliedFiltersForAllLinks.toList()
-                }.transform {
-                    if (collectionDetailPaneInfo.currentFolder?.localId == Constants.ALL_LINKS_ID) {
-                        emit(it)
-                    }
-                }.collectLatest {
-                    allLinksPaginator.cancelAndReset()
-                    _linkTagsPairsState.emit(PaginationState.retrievingOnEmpty())
-                    retrieveNextAllLinksPage()
                 }
+                    .transform {
+                        if (collectionDetailPaneInfo.currentFolder?.localId == Constants.ALL_LINKS_ID) {
+                            emit(it)
+                        }
+                    }
+                    .collectLatest {
+                        allLinksPaginator.cancelAndReset()
+                        _linkTagsPairsState.emit(PaginationState.retrievingOnEmpty())
+                        retrieveNextAllLinksPage()
+                    }
             }
 
             launch {
                 var lastSortingType = sortingType
                 appPreferencesCombined.collectLatest { (shuffleLinks, sortingType) ->
-                    val isSortingTypeChanged = if (sortingType == lastSortingType) {
-                        false
-                    } else {
-                        lastSortingType = sortingType
-                        true
-                    }
+                    val isSortingTypeChanged =
+                        if (sortingType == lastSortingType) {
+                            false
+                        } else {
+                            lastSortingType = sortingType
+                            true
+                        }
 
                     if (isSortingTypeChanged) {
                         linkTagsPairPaginator.cancelAndReset()
@@ -463,7 +514,6 @@ class CollectionDetailPaneVM(
             }
         }
     }
-
 
     private fun emptyCollectableChildFolders() {
         viewModelScope.launch(Dispatchers.Main) {

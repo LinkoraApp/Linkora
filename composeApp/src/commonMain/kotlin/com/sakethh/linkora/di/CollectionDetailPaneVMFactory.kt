@@ -7,19 +7,16 @@ import com.sakethh.linkora.ui.domain.model.CollectionDetailPaneInfo
 import com.sakethh.linkora.ui.screens.collections.CollectionDetailPaneVM
 
 object CollectionDetailPaneVMFactory {
-
-    fun create(collectionDetailPaneInfo: CollectionDetailPaneInfo): ViewModelProvider.Factory {
-        return viewModelFactory {
-            initializer {
-                CollectionDetailPaneVM(
-                    localFoldersRepo = DependencyContainer.localFoldersRepo,
-                    localLinksRepo = DependencyContainer.localLinksRepo,
-                    localTagsRepo = DependencyContainer.localTagsRepo,
-                    localDatabaseUtilsRepo = DependencyContainer.localDatabaseUtilsImpl,
-                    preferencesRepository = DependencyContainer.preferencesRepo,
-                    collectionDetailPaneInfo = collectionDetailPaneInfo,
-                )
-            }
+    fun create(collectionDetailPaneInfo: CollectionDetailPaneInfo): ViewModelProvider.Factory = viewModelFactory {
+        initializer {
+            CollectionDetailPaneVM(
+                localFoldersRepo = DependencyContainer.localFoldersRepo,
+                localLinksRepo = DependencyContainer.localLinksRepo,
+                localTagsRepo = DependencyContainer.localTagsRepo,
+                localDatabaseUtilsRepo = DependencyContainer.localDatabaseUtilsImpl,
+                preferencesRepository = DependencyContainer.preferencesRepo,
+                collectionDetailPaneInfo = collectionDetailPaneInfo,
+            )
         }
     }
 }

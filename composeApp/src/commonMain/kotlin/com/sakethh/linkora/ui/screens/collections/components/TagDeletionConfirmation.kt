@@ -25,14 +25,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.Platform
-import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.rememberLocalizedString
 
 @Composable
 fun TagDeletionConfirmation(
-    showConfirmation: Boolean, onHide: () -> Unit, onDelete: () -> Unit
+    showConfirmation: Boolean,
+    onHide: () -> Unit,
+    onDelete: () -> Unit,
 ) {
     if (showConfirmation) {
         var showLinearProgressBar by rememberSaveable {
@@ -41,7 +42,7 @@ fun TagDeletionConfirmation(
         AlertDialog(
             modifier = Modifier.animateContentSize(),
             onDismissRequest = {
-                if (!showLinearProgressBar){
+                if (!showLinearProgressBar) {
                     onHide()
                 }
             },
@@ -49,12 +50,14 @@ fun TagDeletionConfirmation(
                 if (!showLinearProgressBar) {
                     Button(
                         onClick = onDelete,
-                        modifier = Modifier.pressScaleEffect()
-                            .pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
+                        modifier =
+                        Modifier.pressScaleEffect()
+                            .pointerHoverIcon(icon = PointerIcon.Hand)
+                            .fillMaxWidth(),
                     ) {
                         Text(
                             text = Localization.Key.Delete.getLocalizedString(),
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleMedium,
                         )
                     }
                 }
@@ -63,12 +66,14 @@ fun TagDeletionConfirmation(
                 if (!showLinearProgressBar) {
                     OutlinedButton(
                         onClick = onHide,
-                        modifier = Modifier.pressScaleEffect()
-                            .pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
+                        modifier =
+                        Modifier.pressScaleEffect()
+                            .pointerHoverIcon(icon = PointerIcon.Hand)
+                            .fillMaxWidth(),
                     ) {
                         Text(
                             text = Localization.Key.Cancel.getLocalizedString(),
-                            style = MaterialTheme.typography.titleSmall
+                            style = MaterialTheme.typography.titleSmall,
                         )
                     }
                 }
@@ -77,26 +82,29 @@ fun TagDeletionConfirmation(
                 Icon(
                     imageVector = Icons.Default.Warning,
                     modifier = Modifier.size(48.dp),
-                    contentDescription = null
+                    contentDescription = null,
                 )
             },
             title = {
                 Text(
                     text = Localization.Key.TagDeletionConfirmation.rememberLocalizedString(),
                     style = MaterialTheme.typography.titleMedium,
-                    fontSize = 24.sp
+                    fontSize = 24.sp,
                 )
             },
             text = {
                 if (showLinearProgressBar) {
                     LinearProgressIndicator(
-                        modifier = Modifier.fillMaxWidth().padding(
-                            start = 15.dp,
-                            end = 15.dp,
-                            bottom = if (!Platform.Android.onMobile()) 15.dp else 0.dp
-                        )
+                        modifier =
+                        Modifier.fillMaxWidth()
+                            .padding(
+                                start = 15.dp,
+                                end = 15.dp,
+                                bottom = if (!Platform.Android.onMobile()) 15.dp else 0.dp,
+                            ),
                     )
                 }
-            })
+            },
+        )
     }
 }

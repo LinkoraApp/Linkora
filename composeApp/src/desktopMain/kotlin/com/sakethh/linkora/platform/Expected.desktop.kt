@@ -60,10 +60,7 @@ actual val platform: Platform = Platform.Desktop
 
 actual val showDynamicThemingOption: Boolean = false
 
-
-@Composable
-actual fun PlatformSpecificBackHandler(init: () -> Unit) = Unit
-
+@Composable actual fun PlatformSpecificBackHandler(init: () -> Unit) = Unit
 
 actual fun platformSpecificLogging(string: String) {
     println("Linkora Log : $string")
@@ -71,6 +68,7 @@ actual fun platformSpecificLogging(string: String) {
 
 actual class PermissionManager {
     actual suspend fun permittedToShowNotification(): PermissionStatus = PermissionStatus.Granted
+
     actual suspend fun isStorageAccessPermitted(): PermissionStatus = PermissionStatus.Granted
 }
 
@@ -81,14 +79,12 @@ actual class NativeUtils {
     actual suspend fun onRefreshAllLinks(
         localLinksRepo: LocalLinksRepo,
         preferencesRepository: PreferencesRepository,
-        refreshLinksRepo: RefreshLinksRepo
+        refreshLinksRepo: RefreshLinksRepo,
     ) {
         RefreshAllLinksService.invoke(localLinksRepo)
     }
 
-    actual suspend fun isAnyRefreshingScheduled(): Flow<Boolean?> {
-        return emptyFlow()
-    }
+    actual suspend fun isAnyRefreshingScheduled(): Flow<Boolean?> = emptyFlow()
 
     actual fun cancelRefreshingLinks() {
         RefreshAllLinksService.cancel()
@@ -96,11 +92,14 @@ actual class NativeUtils {
 
     actual class DataSyncingNotificationService {
         actual fun showNotification() = Unit
+
         actual fun clearNotification() = Unit
     }
 
     actual fun onIconChange(
-        allIconCodes: List<String>, newIconCode: String, onCompletion: () -> Unit
+        allIconCodes: List<String>,
+        newIconCode: String,
+        onCompletion: () -> Unit,
     ) = Unit
 
     actual fun <T> platformRunBlocking(block: suspend () -> T): T? = runBlocking {
@@ -109,6 +108,7 @@ actual class NativeUtils {
 
     actual class WebCapture {
         val androidDesktopWebCapture = AndroidDesktopWebCapture()
+
         actual suspend fun init(): Result<Boolean> = androidDesktopWebCapture.init()
 
         actual suspend fun saveHTMLPage(
@@ -127,10 +127,11 @@ actual class NativeUtils {
             includeVideoElements: Boolean,
             includeMetadata: Boolean,
         ): Result<Boolean> {
-            val fileName = getFileNameWithTimestamp(
-                exportFileType = ExportFileType.HTML,
-                exportLocationType = ExportLocationType.WEB_CAPTURE
-            )
+            val fileName =
+                getFileNameWithTimestamp(
+                    exportFileType = ExportFileType.HTML,
+                    exportLocationType = ExportLocationType.WEB_CAPTURE,
+                )
             val captureFile = File(nativeFolderPath, fileName)
             try {
                 withContext(Dispatchers.IO) {
@@ -155,7 +156,7 @@ actual class NativeUtils {
                 includeMetadata = includeMetadata,
                 logStuff = logStuff,
                 fileDescriptor = -1,
-                filePath = captureFile.absolutePath
+                filePath = captureFile.absolutePath,
             )
         }
     }
@@ -167,11 +168,12 @@ actual object Network {
 
     private fun HttpClientConfig<CIOEngineConfig>.installLogger() {
         install(Logging) {
-            logger = object : Logger {
-                override fun log(message: String) {
-                    linkoraLog("HTTP CLIENT:\n$message")
+            logger =
+                object : Logger {
+                    override fun log(message: String) {
+                        linkoraLog("HTTP CLIENT:\n$message")
+                    }
                 }
-            }
             level = LogLevel.ALL
         }
     }
@@ -187,17 +189,16 @@ actual object Network {
         }
     }
 
-    actual val standardClient = HttpClient(CIO) {
-        installContentNegotiation()
-        installLogger()
-    }
+    actual val standardClient =
+        HttpClient(CIO) {
+            installContentNegotiation()
+            installLogger()
+        }
 
     private var syncServerClient: HttpClient? = null
 
-    actual fun getSyncServerClient(): HttpClient {
-        return syncServerClient
-            ?: error(Localization.Key.SyncServerConfigurationError.getLocalizedString())
-    }
+    actual fun getSyncServerClient(): HttpClient = syncServerClient
+        ?: error(Localization.Key.SyncServerConfigurationError.getLocalizedString())
 
     actual fun closeSyncServerClient() {
         syncServerClient?.close()
@@ -214,8 +215,7 @@ actual object Network {
         if (syncServerCert.exists() && !bypassCertCheck) {
             syncServerCert.inputStream().use {
                 try {
-                    signedCertificate =
-                        certificateFactory.generateCertificate(it) as X509Certificate
+                    signedCertificate = certificateFactory.generateCertificate(it) as X509Certificate
                 } catch (e: Exception) {
                     pushUIEvent(UIEvent.Type.ShowSnackbar(e.message.toString()))
                     null
@@ -227,66 +227,69 @@ actual object Network {
             error(Localization.Key.SyncServerConfigurationError.getLocalizedString())
         }
 
-        syncServerClient = HttpClient(CIO) {
-            install(HttpTimeout) {
-                this.socketTimeoutMillis = 240_000
-                this.connectTimeoutMillis = 240_000
-                this.requestTimeoutMillis = 240_000
-            }
-            engine {
-                https {
-                    trustManager = object : X509TrustManager {
-                        override fun checkClientTrusted(
-                            chain: Array<out X509Certificate?>?, authType: String?
-                        ) {
-                        }
+        syncServerClient =
+            HttpClient(CIO) {
+                install(HttpTimeout) {
+                    this.socketTimeoutMillis = 240_000
+                    this.connectTimeoutMillis = 240_000
+                    this.requestTimeoutMillis = 240_000
+                }
+                engine {
+                    https {
+                        trustManager =
+                            object : X509TrustManager {
+                                override fun checkClientTrusted(
+                                    chain: Array<out X509Certificate?>?,
+                                    authType: String?,
+                                ) {}
 
-                        override fun checkServerTrusted(
-                            chain: Array<out X509Certificate?>?, authType: String?
-                        ) {
-                            if (bypassCertCheck) {
-                                linkoraLog("Bypassing checkServerTrusted")
-                                return
+                                override fun checkServerTrusted(
+                                    chain: Array<out X509Certificate?>?,
+                                    authType: String?,
+                                ) {
+                                    if (bypassCertCheck) {
+                                        linkoraLog("Bypassing checkServerTrusted")
+                                        return
+                                    }
+
+                                    if (chain?.isEmpty() == true) {
+                                        throw CertificateException("Certificate chain is empty") as Throwable
+                                    }
+
+                                    val serverCert = chain?.get(0)
+                                    signedCertificate?.let {
+                                        serverCert?.verify(it.publicKey)
+                                    }
+                                    serverCert?.checkValidity()
+                                }
+
+                                override fun getAcceptedIssuers(): Array<out X509Certificate?> = if (bypassCertCheck) arrayOf() else arrayOf(signedCertificate)
                             }
-
-                            if (chain?.isEmpty() == true) {
-                                throw CertificateException("Certificate chain is empty") as Throwable
-                            }
-
-                            val serverCert = chain?.get(0)
-                            signedCertificate?.let {
-                                serverCert?.verify(it.publicKey)
-                            }
-                            serverCert?.checkValidity()
-                        }
-
-                        override fun getAcceptedIssuers(): Array<out X509Certificate?> {
-                            return if (bypassCertCheck) arrayOf() else arrayOf(signedCertificate)
-                        }
-
                     }
                 }
-            }
 
-            installContentNegotiation()
-            installLogger()
+                installContentNegotiation()
+                installLogger()
 
-            install(WebSockets) {
-                pingIntervalMillis = 20_000
+                install(WebSockets) {
+                    pingIntervalMillis = 20_000
+                }
             }
-        }
     }
 }
 
 actual object PlatformPreference {
 
-    private val dataStore = PreferenceDataStoreFactory.createWithPath(
-        produceFile = { "${linkoraSpecificFolder.absolutePath}/${Constants.DATA_STORE_NAME}".toPath() },
-    )
-
+    private val dataStore =
+        PreferenceDataStoreFactory.createWithPath(
+            produceFile = {
+                "${linkoraSpecificFolder.absolutePath}/${Constants.DATA_STORE_NAME}".toPath()
+            },
+        )
 
     actual suspend fun <T> writePreferenceValue(
-        preferenceKey: PreferenceKey<T>, newValue: T
+        preferenceKey: PreferenceKey<T>,
+        newValue: T,
     ) {
         writePreferenceValue(
             dataStore = dataStore,
@@ -295,14 +298,14 @@ actual object PlatformPreference {
         )
     }
 
-    actual suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T? {
-        return readPreferenceValue(dataStore = dataStore, preferenceKey = preferenceKey)
-    }
+    actual suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T? = readPreferenceValue(dataStore = dataStore, preferenceKey = preferenceKey)
 
     actual suspend fun readAllPreferences(): AppPreferences {
         val prefs = dataStore.data.first()
         return readAllPreferences(
-            prefs, externalAction = { externalAction -> externalAction(this) })
+            prefs,
+            externalAction = { externalAction -> externalAction(this) },
+        )
     }
 }
 

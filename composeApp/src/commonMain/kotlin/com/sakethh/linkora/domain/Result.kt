@@ -1,15 +1,20 @@
 package com.sakethh.linkora.domain
 
 sealed interface Result<T> {
-    data class Success<T>(val data: T) : Result<T> {
+    data class Success<T>(
+        val data: T,
+    ) : Result<T> {
         var isRemoteExecutionSuccessful: Boolean = true
         var remoteFailureMessage = ""
     }
 
-    data class Loading<T>(val message: String = "https://open.spotify.com/track/41zVhpZuRDsGYKuxnyGxgV") :
-        Result<T>
+    data class Loading<T>(
+        val message: String = "https://open.spotify.com/track/41zVhpZuRDsGYKuxnyGxgV",
+    ) : Result<T>
 
-    data class Failure<T>(val message: String) : Result<T>
+    data class Failure<T>(
+        val message: String,
+    ) : Result<T>
 }
 
 suspend fun <T> Result<T>.onSuccess(init: suspend (Result.Success<T>) -> Unit): Result<T> {

@@ -7,5 +7,5 @@ import kotlinx.serialization.Serializable
 data class DeleteDuplicateLinksDTO(
     val linkIds: List<Long>,
     val eventTimestamp: Long,
-    val correlation: Correlation? = null
+    val correlation: Correlation? = null,
 )

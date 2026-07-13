@@ -36,63 +36,78 @@ fun SelectableFolderUIComponent(
     isComponentSelected: Boolean,
     forBtmSheetUI: Boolean = false,
 ) {
-    val componentSelectedState = rememberSaveable(inputs = arrayOf(isComponentSelected)) {
-        mutableStateOf(isComponentSelected)
-    }
-    val forBtmSheetUIState = rememberSaveable(inputs = arrayOf(forBtmSheetUI)) {
-        mutableStateOf(forBtmSheetUI)
-    }
+    val componentSelectedState =
+        rememberSaveable(inputs = arrayOf(isComponentSelected)) {
+            mutableStateOf(isComponentSelected)
+        }
+    val forBtmSheetUIState =
+        rememberSaveable(inputs = arrayOf(forBtmSheetUI)) {
+            mutableStateOf(forBtmSheetUI)
+        }
     Column {
         Row(
-            modifier = Modifier
-                .pressScaleEffect()
+            modifier =
+            Modifier.pressScaleEffect()
                 .clickable(onClick = onClick, indication = null, interactionSource = null)
                 .pointerHoverIcon(icon = PointerIcon.Hand)
                 .fillMaxWidth()
                 .requiredHeight(75.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                tint = if (componentSelectedState.value) MaterialTheme.colorScheme.primary else LocalContentColor.current,
+                tint =
+                if (componentSelectedState.value) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    LocalContentColor.current
+                },
                 imageVector = imageVector,
                 contentDescription = null,
-                modifier = Modifier
-                    .padding(
-                        end = 20.dp,
-                        bottom = 20.dp,
-                        top = if (forBtmSheetUIState.value) 0.dp else 20.dp
-                    )
-                    .size(28.dp)
+                modifier =
+                Modifier.padding(
+                    end = 20.dp,
+                    bottom = 20.dp,
+                    top = if (forBtmSheetUIState.value) 0.dp else 20.dp,
+                )
+                    .size(28.dp),
             )
             Text(
                 text = folderName,
-                color = if (componentSelectedState.value) MaterialTheme.colorScheme.primary else LocalContentColor.current,
+                color =
+                if (componentSelectedState.value) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    LocalContentColor.current
+                },
                 style = MaterialTheme.typography.titleSmall,
                 fontSize = 16.sp,
                 lineHeight = 20.sp,
                 maxLines = if (forBtmSheetUIState.value) 6 else 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .fillMaxWidth(0.80f)
+                modifier = Modifier.fillMaxWidth(0.80f),
             )
             if (componentSelectedState.value) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    contentAlignment = Alignment.CenterEnd
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.CenterEnd,
                 ) {
                     Icon(
                         imageVector = Icons.Filled.CheckCircle,
                         contentDescription = null,
                         modifier = Modifier.size(26.dp),
-                        tint = if (componentSelectedState.value) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                        tint =
+                        if (componentSelectedState.value) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            LocalContentColor.current
+                        },
                     )
                 }
             }
         }
         HorizontalDivider(
             thickness = 1.dp,
-            color = MaterialTheme.colorScheme.outline.copy(0.1f)
+            color = MaterialTheme.colorScheme.outline.copy(0.1f),
         )
     }
 }

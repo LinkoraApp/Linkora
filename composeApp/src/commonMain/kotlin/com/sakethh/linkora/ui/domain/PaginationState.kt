@@ -13,24 +13,20 @@ data class PaginationState<T>(
     val data: T,
 ) {
     companion object {
-        fun <T> retrieving(): PaginationState<Map<Pair<LastSeenId, LastSeenString>, T>> {
-            return PaginationState(
-                isRetrieving = true,
-                errorOccurred = false,
-                errorMessage = null,
-                pagesCompleted = false,
-                data = emptyMap()
-            )
-        }
+        fun <T> retrieving(): PaginationState<Map<Pair<LastSeenId, LastSeenString>, T>> = PaginationState(
+            isRetrieving = true,
+            errorOccurred = false,
+            errorMessage = null,
+            pagesCompleted = false,
+            data = emptyMap(),
+        )
 
-        fun <T> retrievingOnEmpty(): PaginationState<Map<Pair<LastSeenId, LastSeenString>, T>> {
-            return PaginationState(
-                isRetrieving = true,
-                errorOccurred = false,
-                errorMessage = null,
-                pagesCompleted = false,
-                data = emptyMap()
-            )
-        }
+        fun <T> retrievingOnEmpty(): PaginationState<Map<Pair<LastSeenId, LastSeenString>, T>> = PaginationState(
+            isRetrieving = true,
+            errorOccurred = false,
+            errorMessage = null,
+            pagesCompleted = false,
+            data = emptyMap(),
+        )
     }
 }

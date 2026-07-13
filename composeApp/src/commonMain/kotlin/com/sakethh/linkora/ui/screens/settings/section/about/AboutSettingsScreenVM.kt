@@ -19,54 +19,61 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class AboutSettingsScreenVM(
-    private val localLinksRepo: LocalLinksRepo, private val gitHubReleasesRepo: GitHubReleasesRepo
+    private val localLinksRepo: LocalLinksRepo,
+    private val gitHubReleasesRepo: GitHubReleasesRepo,
 ) : ViewModel() {
-
-
     fun addANewLinkToHistory(
         link: Link,
         tagIds: List<Long>?,
         useProxy: Boolean,
         skipSavingIfExists: Boolean,
-        forceSaveIfRetrievalFails: Boolean
+        forceSaveIfRetrievalFails: Boolean,
     ) {
         viewModelScope.launch {
-            localLinksRepo.addANewLink(
-                link = link.copy(
-                    linkType = LinkType.HISTORY_LINK,
-                    idOfLinkedFolder = null,
-                ),
-                linkSaveConfig = LinkSaveConfig(
-                    forceAutoDetectTitle = false, forceSaveWithoutRetrievingData = true,
-                    useProxy = useProxy,
-                    skipSavingIfExists = skipSavingIfExists,
-                    forceSaveIfRetrievalFails = forceSaveIfRetrievalFails
-                ),
-                selectedTagIds = tagIds
-            ).collectLatest {
-                it.onSuccess {
-                    if (it.isRemoteExecutionSuccessful.not()) {
-                        pushUIEvent(UIEvent.Type.ShowSnackbar(it.getRemoteOnlyFailureMsg()))
+            localLinksRepo
+                .addANewLink(
+                    link =
+                    link.copy(
+                        linkType = LinkType.HISTORY_LINK,
+                        idOfLinkedFolder = null,
+                    ),
+                    linkSaveConfig =
+                    LinkSaveConfig(
+                        forceAutoDetectTitle = false,
+                        forceSaveWithoutRetrievingData = true,
+                        useProxy = useProxy,
+                        skipSavingIfExists = skipSavingIfExists,
+                        forceSaveIfRetrievalFails = forceSaveIfRetrievalFails,
+                    ),
+                    selectedTagIds = tagIds,
+                )
+                .collectLatest {
+                    it.onSuccess {
+                        if (it.isRemoteExecutionSuccessful.not()) {
+                            pushUIEvent(UIEvent.Type.ShowSnackbar(it.getRemoteOnlyFailureMsg()))
+                        }
                     }
+                    it.pushSnackbarOnFailure()
                 }
-                it.pushSnackbarOnFailure()
-            }
         }
     }
 
     fun retrieveLatestVersionData(
-        onLoading: () -> Unit, onCompletion: (gitHubReleaseDTOItem: GitHubReleaseDTOItem?) -> Unit
+        onLoading: () -> Unit,
+        onCompletion: (gitHubReleaseDTOItem: GitHubReleaseDTOItem?) -> Unit,
     ) {
         viewModelScope.launch {
             gitHubReleasesRepo.getLatestVersionData().collectLatest {
                 it.onLoading {
                     onLoading()
-                }.onSuccess { success ->
-                    onCompletion(success.data)
-                }.onFailure { failureMsg ->
-                    onCompletion(null)
-                    this.pushUIEvent(UIEvent.Type.ShowSnackbar(failureMsg))
                 }
+                    .onSuccess { success ->
+                        onCompletion(success.data)
+                    }
+                    .onFailure { failureMsg ->
+                        onCompletion(null)
+                        this.pushUIEvent(UIEvent.Type.ShowSnackbar(failureMsg))
+                    }
             }
         }
     }

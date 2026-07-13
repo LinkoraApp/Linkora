@@ -5,9 +5,8 @@ import androidx.room3.PrimaryKey
 
 @Entity("localized_strings")
 data class LocalizedString(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val languageCode: String,
     val stringName: String,
-    val stringValue: String
+    val stringValue: String,
 )

@@ -23,7 +23,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,55 +39,74 @@ fun LogsScreen(
     operationTitle: String,
     operationDesc: String,
     logs: List<String>,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
 ) {
     val logsListState = rememberLazyListState()
     if (isVisible) {
-        Scaffold(topBar = {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(15.dp)
-                    .windowInsetsPadding(WindowInsets.statusBars)
-            ) {
-                Text(
-                    text = operationTitle,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontSize = 18.sp
-                )
-                Spacer(Modifier.height(5.dp))
-                Text(
-                    text = operationDesc,
-                    fontSize = 14.sp,
-                    lineHeight = 20.sp,
-                    style = MaterialTheme.typography.titleSmall,
-                )
-                HorizontalDivider(
-                    modifier = Modifier.fillMaxWidth().padding(top = 15.dp, bottom = 15.dp)
-                )
-            }
-        }, bottomBar = {
-            BottomAppBar(modifier = Modifier.fillMaxWidth()) {
-                FilledTonalButton(modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth().padding(15.dp), onClick = {
-                    onCancel()
-                }) {
+        Scaffold(
+            topBar = {
+                Column(
+                    modifier =
+                    Modifier.fillMaxWidth()
+                        .padding(15.dp)
+                        .windowInsetsPadding(WindowInsets.statusBars),
+                ) {
                     Text(
-                        text = Localization.Key.Cancel.rememberLocalizedString(),
-                        style = MaterialTheme.typography.titleMedium
+                        text = operationTitle,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontSize = 18.sp,
+                    )
+                    Spacer(Modifier.height(5.dp))
+                    Text(
+                        text = operationDesc,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.fillMaxWidth().padding(top = 15.dp, bottom = 15.dp),
                     )
                 }
-            }
-        }) {
+            },
+            bottomBar = {
+                BottomAppBar(modifier = Modifier.fillMaxWidth()) {
+                    FilledTonalButton(
+                        modifier =
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .fillMaxWidth()
+                            .padding(15.dp),
+                        onClick = {
+                            onCancel()
+                        },
+                    ) {
+                        Text(
+                            text = Localization.Key.Cancel.rememberLocalizedString(),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                    }
+                }
+            },
+        ) {
             Box(
-                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(it)
-                    .clickable(onClick = {}, indication = null, interactionSource = remember {
-                        MutableInteractionSource()
-                    }).fillMaxSize()
+                modifier =
+                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                    .padding(it)
+                    .clickable(
+                        onClick = {},
+                        indication = null,
+                        interactionSource =
+                        remember {
+                            MutableInteractionSource()
+                        },
+                    )
+                    .fillMaxSize()
                     .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
-                contentAlignment = Alignment.BottomCenter
+                contentAlignment = Alignment.BottomCenter,
             ) {
                 LazyColumn(
                     userScrollEnabled = false,
                     modifier = Modifier.fillMaxSize(),
-                    state = logsListState
+                    state = logsListState,
                 ) {
                     items(logs) {
                         Text(text = it, style = MaterialTheme.typography.titleSmall)

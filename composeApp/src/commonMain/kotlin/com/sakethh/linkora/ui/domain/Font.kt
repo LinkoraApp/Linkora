@@ -6,5 +6,5 @@ enum class Font {
     },
     POPPINS {
         override fun toString(): String = "Poppins"
-    }
+    },
 }

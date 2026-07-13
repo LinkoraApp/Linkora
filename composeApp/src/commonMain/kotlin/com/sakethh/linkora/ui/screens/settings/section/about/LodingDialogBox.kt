@@ -32,22 +32,23 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun LodingDialogBox(
     shouldDialogBoxAppear: MutableState<Boolean>,
-    text: String
+    text: String,
 ) {
     if (shouldDialogBoxAppear.value) {
         BasicAlertDialog(
-            onDismissRequest = { }, modifier = Modifier
-                .clip(RoundedCornerShape(20.dp))
+            onDismissRequest = {},
+            modifier =
+            Modifier.clip(RoundedCornerShape(20.dp))
                 .background(AlertDialogDefaults.containerColor)
                 .border(
                     1.dp,
                     AlertDialogDefaults.iconContentColor.copy(0.5f),
-                    RoundedCornerShape(20.dp)
-                )
+                    RoundedCornerShape(20.dp),
+                ),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Spacer(Modifier.width(20.dp))
                 Box(contentAlignment = Alignment.Center) {
@@ -62,12 +63,7 @@ fun LodingDialogBox(
                     fontSize = 20.sp,
                     lineHeight = 28.sp,
                     textAlign = TextAlign.Start,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .then(
-                            Modifier.padding(20.dp)
-                        )
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().then(Modifier.padding(20.dp)).fillMaxWidth(),
                 )
             }
         }

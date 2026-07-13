@@ -1,17 +1,14 @@
 package com.sakethh.linkora.ui.screens.settings.section
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.unit.dp
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import com.mikepenz.aboutlibraries.ui.compose.produceLibraries
 import com.sakethh.linkora.Localization
-import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.rememberLocalizedString
@@ -28,8 +25,10 @@ fun AboutLibrariesScreen() {
     ) { paddingValues, topAppBarScrollBehaviour ->
         LibrariesContainer(
             libraries,
-            modifier = Modifier.fillMaxSize().addEdgeToEdgeScaffoldPadding(paddingValues)
-                .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection)
+            modifier =
+            Modifier.fillMaxSize()
+                .addEdgeToEdgeScaffoldPadding(paddingValues)
+                .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
         )
     }
 }

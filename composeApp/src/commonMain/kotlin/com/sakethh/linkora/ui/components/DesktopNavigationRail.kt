@@ -52,7 +52,7 @@ fun DesktopNavigationRail(
     isPerformingStartupSync: Boolean,
     getLastSyncedTime: suspend () -> Long,
     isAnySnapshotOngoing: Boolean,
-    performAction: (AppAction) -> Unit
+    performAction: (AppAction) -> Unit,
 ) {
     val localNavController = LocalNavController.current
     val currentBackStackEntryState by localNavController.currentBackStackEntryAsState()
@@ -61,23 +61,36 @@ fun DesktopNavigationRail(
         Box(modifier = Modifier.fillMaxHeight(), contentAlignment = Alignment.Center) {
             Column(
                 modifier = Modifier.align(Alignment.Center),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 rootRouteList.forEach { navRouteItem ->
-                    if (!preferences.isHomeScreenEnabled && navRouteItem.toString() == Navigation.Root.HomeScreen.toString()) return@forEach
+                    if (
+                        !preferences.isHomeScreenEnabled &&
+                        navRouteItem.toString() == Navigation.Root.HomeScreen.toString()
+                    ) {
+                        return@forEach
+                    }
 
                     val isSelected = currentRoute?.hasRoute(navRouteItem::class) == true
                     NavigationRailItem(
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(
-                            start = 15.dp, end = 15.dp, top = 15.dp
-                        ), selected = isSelected, onClick = {
+                        modifier =
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .padding(
+                                start = 15.dp,
+                                end = 15.dp,
+                                top = 15.dp,
+                            ),
+                        selected = isSelected,
+                        onClick = {
                             if (currentRoute?.hasRoute(navRouteItem::class) == false) {
                                 localNavController.navigate(navRouteItem)
                                 onNavigate()
                             }
-                        }, icon = {
+                        },
+                        icon = {
                             Icon(
-                                imageVector = if (isSelected) {
+                                imageVector =
+                                if (isSelected) {
                                     when (navRouteItem) {
                                         Navigation.Root.HomeScreen -> Icons.Filled.Home
                                         Navigation.Root.SearchScreen -> Icons.Filled.Search
@@ -93,43 +106,52 @@ fun DesktopNavigationRail(
                                         Navigation.Root.SettingsScreen -> Icons.Outlined.Settings
                                         else -> return@NavigationRailItem
                                     }
-                                }, contentDescription = null
+                                },
+                                contentDescription = null,
                             )
-                        }, label = {
+                        },
+                        label = {
                             Text(
                                 text = navRouteItem.toString(),
                                 style = MaterialTheme.typography.titleSmall,
                                 maxLines = 1,
-                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                             )
-                        })
+                        },
+                    )
                 }
             }
             Box(
-                Modifier.fillMaxHeight(), contentAlignment = Alignment.BottomCenter
+                Modifier.fillMaxHeight(),
+                contentAlignment = Alignment.BottomCenter,
             ) {
                 if (!Platform.Android.onMobile() && preferences.serverBaseUrl.isNotBlank()) {
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 80.dp)
+                        modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 80.dp),
                     ) {
-                        IconButton(onClick = {
-                            if (!isPerformingStartupSync && !isDataSyncingFromPullRefresh.value) {
-                                performAction(
-                                    AppAction.SaveServerConnectionAndSync(
-                                        serverConnection = preferences.currentSavedServerConfig(),
-                                        timeStampAfter = getLastSyncedTime,
-                                        onSyncStart = {
-                                            isDataSyncingFromPullRefresh.value = true
-                                        },
-                                        onCompletion = {
-                                            isDataSyncingFromPullRefresh.value = false
-                                        })
-                                )
-                            }
-                        }, modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)) {
+                        IconButton(
+                            onClick = {
+                                if (!isPerformingStartupSync && !isDataSyncingFromPullRefresh.value) {
+                                    performAction(
+                                        AppAction.SaveServerConnectionAndSync(
+                                            serverConnection = preferences.currentSavedServerConfig(),
+                                            timeStampAfter = getLastSyncedTime,
+                                            onSyncStart = {
+                                                isDataSyncingFromPullRefresh.value = true
+                                            },
+                                            onCompletion = {
+                                                isDataSyncingFromPullRefresh.value = false
+                                            },
+                                        ),
+                                    )
+                                }
+                            },
+                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                        ) {
                             Icon(
-                                imageVector = Icons.Default.CloudSync, contentDescription = null
+                                imageVector = Icons.Default.CloudSync,
+                                contentDescription = null,
                             )
                         }
                         if (isPerformingStartupSync || isDataSyncingFromPullRefresh.value) {
@@ -141,11 +163,16 @@ fun DesktopNavigationRail(
                 if (preferences.areSnapshotsEnabled && platform == Platform.Desktop) {
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
-                            .alpha(if (!Platform.Android.onMobile() && isAnySnapshotOngoing) 1f else 0.25f)
+                        modifier =
+                        Modifier.align(Alignment.BottomCenter)
+                            .padding(bottom = 20.dp)
+                            .alpha(
+                                if (!Platform.Android.onMobile() && isAnySnapshotOngoing) 1f else 0.25f,
+                            ),
                     ) {
                         Icon(
-                            imageVector = Icons.Default.BackupTable, contentDescription = null
+                            imageVector = Icons.Default.BackupTable,
+                            contentDescription = null,
                         )
 
                         if (isAnySnapshotOngoing) CircularProgressIndicator()

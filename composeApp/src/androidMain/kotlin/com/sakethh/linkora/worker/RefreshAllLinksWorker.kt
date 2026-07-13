@@ -30,32 +30,33 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.util.UUID
 
-class RefreshAllLinksWorker(appContext: Context, workerParameters: WorkerParameters) :
-    CoroutineWorker(appContext, workerParameters) {
-
+class RefreshAllLinksWorker(
+    appContext: Context,
+    workerParameters: WorkerParameters,
+) : CoroutineWorker(appContext, workerParameters) {
     companion object {
-
-        fun cancelLinksRefreshing(appContext: Context, refreshLinksWorkerTag: String) {
-            WorkManager.getInstance(appContext)
-                .cancelWorkById(UUID.fromString(refreshLinksWorkerTag))
-            DataSettingsScreenVM.refreshLinksState.value = RefreshLinksState(
-                isInRefreshingState = false, currentIteration = 0
-            )
+        fun cancelLinksRefreshing(
+            appContext: Context,
+            refreshLinksWorkerTag: String,
+        ) {
+            WorkManager.getInstance(appContext).cancelWorkById(UUID.fromString(refreshLinksWorkerTag))
+            DataSettingsScreenVM.refreshLinksState.value =
+                RefreshLinksState(
+                    isInRefreshingState = false,
+                    currentIteration = 0,
+                )
             linkoraLog("cancelLinksRefreshing")
         }
-
     }
 
     private var refreshAllLinksNotificationService = RefreshAllLinksNotificationService(appContext)
 
-    override suspend fun getForegroundInfo(): ForegroundInfo {
-        return ForegroundInfo(
-            1,
-            NotificationCompat.Builder(applicationContext, "1")
-                .setSmallIcon(R.drawable.ic_stat_name)
-                .build()
-        )
-    }
+    override suspend fun getForegroundInfo(): ForegroundInfo = ForegroundInfo(
+        1,
+        NotificationCompat.Builder(applicationContext, "1")
+            .setSmallIcon(R.drawable.ic_stat_name)
+            .build(),
+    )
 
     private var linksProcessedChannel: Channel<Long>? = null
     private var linksProcessedChannelJob: Job? = null
@@ -64,9 +65,10 @@ class RefreshAllLinksWorker(appContext: Context, workerParameters: WorkerParamet
 
     override suspend fun doWork(): Result = coroutineScope {
         val preferences = DependencyContainer.preferencesRepo.getPreferences()
-        processedLinksCount = DependencyContainer.preferencesRepo.readPreferenceValue(
-            longPreferencesKey(AppPreferences.REFRESHED_LINKS_COUNT.key)
-        ) ?: 0
+        processedLinksCount =
+            DependencyContainer.preferencesRepo.readPreferenceValue(
+                longPreferencesKey(AppPreferences.REFRESHED_LINKS_COUNT.key),
+            ) ?: 0
 
         refreshAllLinksNotificationService.clearNotifications()
         linksProcessedChannel?.cancel()
@@ -74,24 +76,26 @@ class RefreshAllLinksWorker(appContext: Context, workerParameters: WorkerParamet
 
         linksProcessedChannel = Channel(Channel.BUFFERED)
         linksProcessedChannelJob = launch {
-            linksProcessedChannel?.consumeAsFlow()?.cancellable()
-                ?.collect { refreshedLinkId ->
-                    DependencyContainer.preferencesRepo.changePreferenceValue(
-                        preferenceKey = longPreferencesKey(AppPreferences.REFRESHED_LINKS_COUNT.key),
-                        newValue = ++processedLinksCount
-                    )
+            linksProcessedChannel?.consumeAsFlow()?.cancellable()?.collect { refreshedLinkId ->
+                DependencyContainer.preferencesRepo.changePreferenceValue(
+                    preferenceKey = longPreferencesKey(AppPreferences.REFRESHED_LINKS_COUNT.key),
+                    newValue = ++processedLinksCount,
+                )
 
-                    LinkoraSDK.getInstance().localDatabase.refreshDao.insertAProcessedId(
+                LinkoraSDK.getInstance()
+                    .localDatabase
+                    .refreshDao
+                    .insertAProcessedId(
                         RefreshLink(
-                            refreshedLinkId
-                        )
+                            refreshedLinkId,
+                        ),
                     )
-                    DataSettingsScreenVM.refreshLinksState.value =
-                        DataSettingsScreenVM.refreshLinksState.value.copy(
-                            currentIteration = processedLinksCount.toInt()
-                        )
-                    refreshAllLinksNotificationService.showNotification()
-                }
+                DataSettingsScreenVM.refreshLinksState.value =
+                    DataSettingsScreenVM.refreshLinksState.value.copy(
+                        currentIteration = processedLinksCount.toInt(),
+                    )
+                refreshAllLinksNotificationService.showNotification()
+            }
         }
 
         if (isStopped) {
@@ -103,7 +107,7 @@ class RefreshAllLinksWorker(appContext: Context, workerParameters: WorkerParamet
             DataSettingsScreenVM.refreshLinksState.value =
                 DataSettingsScreenVM.refreshLinksState.value.copy(
                     isInRefreshingState = true,
-                    currentIteration = 0
+                    currentIteration = 0,
                 )
             DataSettingsScreenVM.totalLinksForRefresh.value = allLinks.size
 
@@ -115,24 +119,30 @@ class RefreshAllLinksWorker(appContext: Context, workerParameters: WorkerParamet
 
             if (linksToBeRefreshed.isEmpty()) return@coroutineScope Result.success()
 
-            linksToBeRefreshed.asFlow()
+            linksToBeRefreshed
+                .asFlow()
                 .flatMapMerge(concurrency = preferences.maxConcurrentRefreshCount) { link ->
-                    DependencyContainer.localLinksRepo.refreshLinkMetadata(
-                        link,
-                        refreshLinkType = preferences.selectedLinkRefreshType
-                    ).map {
-                        link.localId
-                    }
-                }.onEach {
+                    DependencyContainer.localLinksRepo
+                        .refreshLinkMetadata(
+                            link,
+                            refreshLinkType = preferences.selectedLinkRefreshType,
+                        )
+                        .map {
+                            link.localId
+                        }
+                }
+                .onEach {
                     if (isStopped) {
                         cleanUp()
                         cancel()
                     }
-                }.catch {
+                }
+                .catch {
                     it.printStackTrace()
-                }.collect { processedLinkId ->
+                }
+                .collect { processedLinkId ->
                     linksProcessedChannel?.send(
-                        processedLinkId
+                        processedLinkId,
                     )
                     linkoraLog("Processed $processedLinkId")
                 }
@@ -149,11 +159,12 @@ class RefreshAllLinksWorker(appContext: Context, workerParameters: WorkerParamet
         val preferences = DependencyContainer.preferencesRepo.getPreferences()
         cancelLinksRefreshing(
             applicationContext,
-            refreshLinksWorkerTag = preferences.refreshLinksWorkerTag
+            refreshLinksWorkerTag = preferences.refreshLinksWorkerTag,
         )
         DataSettingsScreenVM.refreshLinksState.value =
             DataSettingsScreenVM.refreshLinksState.value.copy(
-                isInRefreshingState = false, currentIteration = 0
+                isInRefreshingState = false,
+                currentIteration = 0,
             )
         refreshAllLinksNotificationService.clearNotifications()
         linkoraLog("refreshAllLinksNotificationService.clearNotifications")

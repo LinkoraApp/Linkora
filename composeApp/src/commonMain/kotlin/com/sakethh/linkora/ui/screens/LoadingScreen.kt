@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 fun LoadingScreen(paddingValues: PaddingValues) {
     Box(
         modifier = Modifier.padding(paddingValues).fillMaxSize(),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         ContainedLoadingIndicator()
     }

@@ -40,37 +40,53 @@ open class ServerManagementViewModel(
     private val network: Network,
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
-    val serverSetupState = mutableStateOf(
-        ServerSetupState(
-            isConnecting = false, isConnectedSuccessfully = false, isError = false
+    val serverSetupState =
+        mutableStateOf(
+            ServerSetupState(
+                isConnecting = false,
+                isConnectedSuccessfully = false,
+                isError = false,
+            ),
         )
-    )
 
-    fun testServerConnection(serverUrl: String, token: String) {
+    fun testServerConnection(
+        serverUrl: String,
+        token: String,
+    ) {
         viewModelScope.launch {
             try {
-
                 network.closeSyncServerClient()
                 network.configureSyncServerClient(
-                    bypassCertCheck = preferencesRepository.getPreferences().skipCertCheckForSync
+                    bypassCertCheck = preferencesRepository.getPreferences().skipCertCheckForSync,
                 )
 
                 networkRepo.testServerConnection(serverUrl, token).collectLatest {
                     it.onSuccess {
-                        serverSetupState.value = ServerSetupState(
-                            isConnecting = false, isConnectedSuccessfully = true, isError = false
-                        )
+                        serverSetupState.value =
+                            ServerSetupState(
+                                isConnecting = false,
+                                isConnectedSuccessfully = true,
+                                isError = false,
+                            )
                         permissionManager.permittedToShowNotification()
-                    }.onFailure { failureMessage ->
-                        serverSetupState.value = ServerSetupState(
-                            isConnecting = false, isConnectedSuccessfully = false, isError = true
-                        )
-                        pushUIEvent(UIEvent.Type.ShowSnackbar(failureMessage))
-                    }.onLoading {
-                        serverSetupState.value = ServerSetupState(
-                            isConnecting = true, isConnectedSuccessfully = false, isError = false
-                        )
                     }
+                        .onFailure { failureMessage ->
+                            serverSetupState.value =
+                                ServerSetupState(
+                                    isConnecting = false,
+                                    isConnectedSuccessfully = false,
+                                    isError = true,
+                                )
+                            pushUIEvent(UIEvent.Type.ShowSnackbar(failureMessage))
+                        }
+                        .onLoading {
+                            serverSetupState.value =
+                                ServerSetupState(
+                                    isConnecting = true,
+                                    isConnectedSuccessfully = false,
+                                    isError = false,
+                                )
+                        }
                 }
             } catch (e: Exception) {
                 pushUIEvent(UIEvent.Type.ShowSnackbar(e.message.toString()))
@@ -89,45 +105,41 @@ open class ServerManagementViewModel(
         }
         viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
-                preferenceKey = stringPreferencesKey(
-                    AppPreferences.SERVER_URL.key
-                ), newValue = ""
+                preferenceKey = stringPreferencesKey(AppPreferences.SERVER_URL.key),
+                newValue = "",
             )
             preferencesRepository.changePreferenceValue(
-                preferenceKey = stringPreferencesKey(
-                    AppPreferences.SERVER_AUTH_TOKEN.key
-                ), newValue = ""
+                preferenceKey = stringPreferencesKey(AppPreferences.SERVER_AUTH_TOKEN.key),
+                newValue = "",
             )
         }
     }
 
     private var syncServerCertificate: ByteArray? = null
+
     fun saveServerConnectionAndSync(
         serverConnection: ServerConnection,
         timeStampAfter: suspend () -> Long = { 0 },
         onSyncStart: () -> Unit,
-        onCompletion: () -> Unit
+        onCompletion: () -> Unit,
     ) {
         AppVM.pauseSnapshots = true
         saveServerConnectionAndSyncJob?.cancel()
         dataSyncLogs.clear()
         saveServerConnectionAndSyncJob = viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
-                preferenceKey = stringPreferencesKey(
-                    AppPreferences.SERVER_URL.key
-                ), newValue = serverConnection.serverUrl
+                preferenceKey = stringPreferencesKey(AppPreferences.SERVER_URL.key),
+                newValue = serverConnection.serverUrl,
             )
-
 
             preferencesRepository.changePreferenceValue(
                 preferenceKey = stringPreferencesKey(AppPreferences.SERVER_AUTH_TOKEN.key),
-                newValue = serverConnection.authToken
+                newValue = serverConnection.authToken,
             )
 
             preferencesRepository.changePreferenceValue(
-                preferenceKey = stringPreferencesKey(
-                    AppPreferences.SERVER_SYNC_TYPE.key
-                ), newValue = serverConnection.syncType.name
+                preferenceKey = stringPreferencesKey(AppPreferences.SERVER_SYNC_TYPE.key),
+                newValue = serverConnection.syncType.name,
             )
             onSyncStart()
             val preferences = preferencesRepository.getPreferences()
@@ -135,36 +147,44 @@ open class ServerManagementViewModel(
                 remoteSyncRepo.applyUpdatesFromRemote(timeStampAfter()).collectLatest {
                     it.onLoading {
                         dataSyncLogs.add(it)
-                    }.onSuccess {
-                        AppVM.readSocketEvents(remoteSyncRepo, preferences)
-                    }.onFailure { _ ->
-                        it.pushSnackbarOnFailure()
-                        cancel()
                     }
+                        .onSuccess {
+                            AppVM.readSocketEvents(remoteSyncRepo, preferences)
+                        }
+                        .onFailure { _ ->
+                            it.pushSnackbarOnFailure()
+                            cancel()
+                        }
                 }
             }
             if (preferences.canPushToServer()) {
                 with(remoteSyncRepo) {
                     channelFlow {
                         this.pushNonSyncedDataToServer<Unit>()
-                    }.collectLatest {
-                        it.onLoading {
-                            dataSyncLogs.add(it)
-                        }
-                        it.onSuccess {
-                            onCompletion()
-                        }
-                        it.onFailure {
-                            cancel()
-                        }.pushSnackbarOnFailure()
                     }
+                        .collectLatest {
+                            it.onLoading {
+                                dataSyncLogs.add(it)
+                            }
+                            it.onSuccess {
+                                onCompletion()
+                            }
+                            it.onFailure {
+                                cancel()
+                            }
+                                .pushSnackbarOnFailure()
+                        }
                 }
             }
         }
         saveServerConnectionAndSyncJob?.invokeOnCompletion {
             if (it == null) {
                 viewModelScope.launch {
-                    pushUIEvent(UIEvent.Type.ShowSnackbar(Localization.Key.DataSynchronizationCompletedSuccessfully.getLocalizedString()))
+                    pushUIEvent(
+                        UIEvent.Type.ShowSnackbar(
+                            Localization.Key.DataSynchronizationCompletedSuccessfully.getLocalizedString(),
+                        ),
+                    )
                 }
             }
             AppVM.pauseSnapshots = false
@@ -177,57 +197,70 @@ open class ServerManagementViewModel(
     val existingCertificateInfo = mutableStateOf("")
 
     fun deleteTheConnection(onDeleted: () -> Unit) {
-        viewModelScope.launch {
-            preferencesRepository.changePreferenceValue(
-                preferenceKey = stringPreferencesKey(
-                    AppPreferences.SERVER_URL.key
-                ), newValue = ""
-            )
+        viewModelScope
+            .launch {
+                preferencesRepository.changePreferenceValue(
+                    preferenceKey = stringPreferencesKey(AppPreferences.SERVER_URL.key),
+                    newValue = "",
+                )
 
-            preferencesRepository.changePreferenceValue(
-                preferenceKey = stringPreferencesKey(AppPreferences.SERVER_AUTH_TOKEN.key),
-                newValue = ""
-            )
+                preferencesRepository.changePreferenceValue(
+                    preferenceKey = stringPreferencesKey(AppPreferences.SERVER_AUTH_TOKEN.key),
+                    newValue = "",
+                )
 
-            preferencesRepository.changePreferenceValue(
-                preferenceKey = stringPreferencesKey(
-                    AppPreferences.SERVER_SYNC_TYPE.key
-                ), newValue = ""
-            )
+                preferencesRepository.changePreferenceValue(
+                    preferenceKey = stringPreferencesKey(AppPreferences.SERVER_SYNC_TYPE.key),
+                    newValue = "",
+                )
 
-            AppVM.shutdownSocketConnection()
-            network.closeSyncServerClient()
+                AppVM.shutdownSocketConnection()
+                network.closeSyncServerClient()
 
-            pushUIEvent(UIEvent.Type.ShowSnackbar(Localization.getLocalizedString(Localization.Key.DeletedTheServerConnectionSuccessfully)))
-        }.invokeOnCompletion {
-            onDeleted()
-        }
+                pushUIEvent(
+                    UIEvent.Type.ShowSnackbar(
+                        Localization.getLocalizedString(
+                            Localization.Key.DeletedTheServerConnectionSuccessfully,
+                        ),
+                    ),
+                )
+            }
+            .invokeOnCompletion {
+                onDeleted()
+            }
     }
 
     private var certImportJob: Job? = null
 
-    fun importSignedCertificate(onStart: () -> Unit, onCompletion: (filename: String) -> Unit) {
+    fun importSignedCertificate(
+        onStart: () -> Unit,
+        onCompletion: (filename: String) -> Unit,
+    ) {
         syncServerCertificate = null
         onStart()
         certImportJob?.cancel()
         var certInfo = ""
         certImportJob = viewModelScope.launch {
-            syncServerCertificate = fileManager.getSyncServerCertificate(
-                onCompletion = { info ->
-                    certInfo = info
-                })
+            syncServerCertificate =
+                fileManager.getSyncServerCertificate(
+                    onCompletion = { info ->
+                        certInfo = info
+                    },
+                )
             syncServerCertificate?.let { syncServerCertificate ->
                 fileManager.saveSyncServerCertificateInternally(
-                    certificate = syncServerCertificate, onCompletion = {
+                    certificate = syncServerCertificate,
+                    onCompletion = {
                         onCompletion(certInfo)
                         pushUIEvent(
                             UIEvent.Type.ShowSnackbar(
                                 Localization.getLocalizedString(
-                                    Localization.Key.ServerCertificateSavedSuccessfully
-                                )
-                            )
+                                    Localization.Key.ServerCertificateSavedSuccessfully,
+                                ),
+                            ),
                         )
-                    })
+                    },
+                )
             }
         }
     }
@@ -236,7 +269,7 @@ open class ServerManagementViewModel(
         viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
                 preferenceKey = booleanPreferencesKey(AppPreferences.SKIP_CERT_CHECK_FOR_SYNC_SERVER.key),
-                newValue = bypass
+                newValue = bypass,
             )
         }
     }

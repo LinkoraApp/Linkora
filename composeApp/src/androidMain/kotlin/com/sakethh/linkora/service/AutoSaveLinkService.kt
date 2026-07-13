@@ -28,81 +28,104 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class AutoSaveLinkService : Service() {
-    override fun onBind(p0: Intent?): IBinder? {
-        return null
-    }
+    override fun onBind(p0: Intent?): IBinder? = null
 
     private val mainHandler = Handler(Looper.getMainLooper())
 
     private fun toast(msg: String) = mainHandler.post {
         Toast.makeText(
-            applicationContext, msg, Toast.LENGTH_SHORT
-        ).show()
+            applicationContext,
+            msg,
+            Toast.LENGTH_SHORT,
+        )
+            .show()
     }
 
-    private val intentActivityVM = IntentActivityVM(
-        localLinksRepo = DependencyContainer.localLinksRepo,
-        localFoldersRepo = DependencyContainer.localFoldersRepo,
-        localPanelsRepo = DependencyContainer.localPanelsRepo,
-        localTagsRepo = DependencyContainer.localTagsRepo,
-        snapshotRepo = DependencyContainer.snapshotRepo,
-        preferencesRepository = DependencyContainer.preferencesRepo,
-        showToast = ::toast
-    )
+    private val intentActivityVM =
+        IntentActivityVM(
+            localLinksRepo = DependencyContainer.localLinksRepo,
+            localFoldersRepo = DependencyContainer.localFoldersRepo,
+            localPanelsRepo = DependencyContainer.localPanelsRepo,
+            localTagsRepo = DependencyContainer.localTagsRepo,
+            snapshotRepo = DependencyContainer.snapshotRepo,
+            preferencesRepository = DependencyContainer.preferencesRepo,
+            showToast = ::toast,
+        )
 
     private var areSnapshotsEnabled = false
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-
-        val url = intent?.getStringExtra(
-            Intent.EXTRA_TEXT
-        ).toString()
-        val notification = NotificationCompat.Builder(applicationContext, "1")
-            .setSmallIcon(R.drawable.ic_stat_name)
-            .setContentTitle(Localization.Key.AutoSavingTheLinkNotifyLabel.getLocalizedString())
-            .setContentText(
-                Localization.Key.AutoSavingTheLinkNotifyLabel.getLocalizedString()
-                    .replaceFirstPlaceHolderWith(url)
-            )
-            .setPriority(NotificationCompat.PRIORITY_HIGH).build()
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
+        val url =
+            intent
+                ?.getStringExtra(
+                    Intent.EXTRA_TEXT,
+                )
+                .toString()
+        val notification =
+            NotificationCompat.Builder(applicationContext, "1")
+                .setSmallIcon(R.drawable.ic_stat_name)
+                .setContentTitle(Localization.Key.AutoSavingTheLinkNotifyLabel.getLocalizedString())
+                .setContentText(
+                    Localization.Key.AutoSavingTheLinkNotifyLabel.getLocalizedString()
+                        .replaceFirstPlaceHolderWith(url),
+                )
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .build()
 
         startForeground(1, notification)
 
-        CoroutineScope(Dispatchers.Default).launch {
-            val preferences = intentActivityVM.preferencesRepository.getPreferences()
-            areSnapshotsEnabled = preferences.areSnapshotsEnabled
-            intentActivityVM.localLinksRepo.addANewLink(
-                selectedTagIds = null, linkSaveConfig = LinkSaveConfig(
-                    forceAutoDetectTitle = true, forceSaveWithoutRetrievingData = false,
-                    useProxy = preferences.useProxy,
-                    skipSavingIfExists = preferences.skipSavingExistingLink,
-                    forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
-                ), viaSocket = false, link = Link(
-                    linkType = LinkType.SAVED_LINK,
-                    title = "",
-                    url = url,
-                    imgURL = "",
-                    note = "",
-                    idOfLinkedFolder = Constants.SAVED_LINKS_ID,
-                    userAgent = preferences.primaryJsoupUserAgent,
-                )
-            ).collectLatest {
-                withContext(Dispatchers.Main) {
-                    it.onSuccess {
-                        toast(Localization.Key.AutoSavedTheLinkSuccessfully.getLocalizedString())
-                    }.onFailure {
-                        toast(it)
+        CoroutineScope(Dispatchers.Default)
+            .launch {
+                val preferences = intentActivityVM.preferencesRepository.getPreferences()
+                areSnapshotsEnabled = preferences.areSnapshotsEnabled
+                intentActivityVM.localLinksRepo
+                    .addANewLink(
+                        selectedTagIds = null,
+                        linkSaveConfig =
+                        LinkSaveConfig(
+                            forceAutoDetectTitle = true,
+                            forceSaveWithoutRetrievingData = false,
+                            useProxy = preferences.useProxy,
+                            skipSavingIfExists = preferences.skipSavingExistingLink,
+                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
+                        ),
+                        viaSocket = false,
+                        link =
+                        Link(
+                            linkType = LinkType.SAVED_LINK,
+                            title = "",
+                            url = url,
+                            imgURL = "",
+                            note = "",
+                            idOfLinkedFolder = Constants.SAVED_LINKS_ID,
+                            userAgent = preferences.primaryJsoupUserAgent,
+                        ),
+                    )
+                    .collectLatest {
+                        withContext(Dispatchers.Main) {
+                            it.onSuccess {
+                                toast(Localization.Key.AutoSavedTheLinkSuccessfully.getLocalizedString())
+                            }
+                                .onFailure {
+                                    toast(it)
+                                }
+                        }
                     }
+            }
+            .invokeOnCompletion {
+                if (!MainActivity.wasLaunched && areSnapshotsEnabled) {
+                    intentActivityVM.createADataSnapshot(
+                        onCompletion = {
+                            toast(Localization.Key.SnapshotCreatedSuccessfully.getLocalizedString())
+                        },
+                    )
                 }
+                stopSelf()
             }
-        }.invokeOnCompletion {
-            if (!MainActivity.wasLaunched && areSnapshotsEnabled) {
-                intentActivityVM.createADataSnapshot(onCompletion = {
-                    toast(Localization.Key.SnapshotCreatedSuccessfully.getLocalizedString())
-                })
-            }
-            stopSelf()
-        }
 
         return START_STICKY
     }

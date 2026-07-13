@@ -69,13 +69,17 @@ class HomeScreenVM(
     val activePanelAssociatedPanelFolders = _activePanelAssociatedPanelFolders.asStateFlow()
 
     private val _panelFoldersDataFlat =
-        MutableStateFlow<Map<Long, PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<FlatChildFolderData>>>>>(
-            value = emptyMap()
+        MutableStateFlow<
+            Map<
+                Long,
+                PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<FlatChildFolderData>>>,
+                >,
+            >(
+            value = emptyMap(),
         )
 
-    val panelFoldersDataFlat = _panelFoldersDataFlat.asStateInWhileSubscribed(
-        initialValue = emptyMap()
-    )
+    val panelFoldersDataFlat =
+        _panelFoldersDataFlat.asStateInWhileSubscribed(initialValue = emptyMap())
 
     private val panelFolderPaginators = mutableMapOf<Long, Paginator<FlatChildFolderData>>()
 
@@ -91,28 +95,26 @@ class HomeScreenVM(
         }
     }
 
-    private val defaultPanelFolders = listOf(
-        PanelFolder(
-            folderId = Constants.SAVED_LINKS_ID,
-            folderName = Localization.Key.SavedLinks.getLocalizedString(),
-            connectedPanelId = Constants.DEFAULT_PANELS_ID,
-            panelPosition = 0
-        ),
-        PanelFolder(
-            folderId = Constants.IMPORTANT_LINKS_ID,
-            folderName = Localization.Key.ImportantLinks.getLocalizedString(),
-            connectedPanelId = Constants.DEFAULT_PANELS_ID,
-            panelPosition = 0
-        ),
-    )
-
-    private fun defaultPanel(): Panel {
-        return Panel(
-            panelName = Localization.Key.Default.getLocalizedString(),
-            localId = Constants.DEFAULT_PANELS_ID
+    private val defaultPanelFolders =
+        listOf(
+            PanelFolder(
+                folderId = Constants.SAVED_LINKS_ID,
+                folderName = Localization.Key.SavedLinks.getLocalizedString(),
+                connectedPanelId = Constants.DEFAULT_PANELS_ID,
+                panelPosition = 0,
+            ),
+            PanelFolder(
+                folderId = Constants.IMPORTANT_LINKS_ID,
+                folderName = Localization.Key.ImportantLinks.getLocalizedString(),
+                connectedPanelId = Constants.DEFAULT_PANELS_ID,
+                panelPosition = 0,
+            ),
         )
-    }
 
+    private fun defaultPanel(): Panel = Panel(
+        panelName = Localization.Key.Default.getLocalizedString(),
+        localId = Constants.DEFAULT_PANELS_ID,
+    )
 
     private val appPreferencesCombined = preferencesAsFlow.map {
         Pair(it.forceShuffleLinks, it.selectedSortingType)
@@ -125,13 +127,13 @@ class HomeScreenVM(
 
         selectedPanelData = panel
 
-        _activePanelAssociatedFoldersJob = viewModelScope.launch(Dispatchers.Default) {
-            preferencesRepository.changePreferenceValue(
-                preferenceKey = longPreferencesKey(
-                    AppPreferences.LAST_SELECTED_PANEL_ID.key
-                ), newValue = panel.localId
-            )
-        }
+        _activePanelAssociatedFoldersJob =
+            viewModelScope.launch(Dispatchers.Default) {
+                preferencesRepository.changePreferenceValue(
+                    preferenceKey = longPreferencesKey(AppPreferences.LAST_SELECTED_PANEL_ID.key),
+                    newValue = panel.localId,
+                )
+            }
     }
 
     var selectedPanelData by mutableStateOf<Panel?>(null)
@@ -147,45 +149,47 @@ class HomeScreenVM(
     init {
 
         viewModelScope.launch {
-            selectedPanelData = preferencesRepository.readPreferenceValue(
-                longPreferencesKey(
-                    AppPreferences.LAST_SELECTED_PANEL_ID.key
-                )
-            ).let {
-                try {
-                    if (it === null || it == Constants.DEFAULT_PANELS_ID) throw Exception()
-                    localPanelsRepo.getPanel(it)
-                } catch (_: Exception) {
-                    defaultPanel()
-                }
-            }
+            selectedPanelData =
+                preferencesRepository
+                    .readPreferenceValue(longPreferencesKey(AppPreferences.LAST_SELECTED_PANEL_ID.key))
+                    .let {
+                        try {
+                            if (it === null || it == Constants.DEFAULT_PANELS_ID) throw Exception()
+                            localPanelsRepo.getPanel(it)
+                        } catch (_: Exception) {
+                            defaultPanel()
+                        }
+                    }
         }
 
         if (triggerCollectionOfPanels) {
             viewModelScope.launch {
-                localPanelsRepo.getAllThePanels()
-                    .collectLatest {
-                        _existingPanels.emit(listOf(defaultPanel()) + it)
-                    }
+                localPanelsRepo.getAllThePanels().collectLatest {
+                    _existingPanels.emit(listOf(defaultPanel()) + it)
+                }
             }
 
             viewModelScope.launch {
                 snapshotFlow {
                     selectedPanelData
-                }.transform { if (it?.localId != null) emit(it) }.flatMapLatest {
-                    if (triggerCollectionOfPanelFolders) {
-                        if (Constants.DEFAULT_PANELS_ID == it.localId) {
-                            flowOf(defaultPanelFolders)
-                        } else {
-                            localPanelsRepo.getAllTheFoldersFromAPanel(it.localId)
-                        }
-                    } else {
-                        emptyFlow()
-                    }
-                }.distinctUntilChanged().collectLatest { panelFolders ->
-                    freeUpPanelFolderPaginators()
-                    _activePanelAssociatedPanelFolders.emit(panelFolders)
                 }
+                    .transform { if (it?.localId != null) emit(it) }
+                    .flatMapLatest {
+                        if (triggerCollectionOfPanelFolders) {
+                            if (Constants.DEFAULT_PANELS_ID == it.localId) {
+                                flowOf(defaultPanelFolders)
+                            } else {
+                                localPanelsRepo.getAllTheFoldersFromAPanel(it.localId)
+                            }
+                        } else {
+                            emptyFlow()
+                        }
+                    }
+                    .distinctUntilChanged()
+                    .collectLatest { panelFolders ->
+                        freeUpPanelFolderPaginators()
+                        _activePanelAssociatedPanelFolders.emit(panelFolders)
+                    }
             }
 
             viewModelScope.launch {
@@ -194,7 +198,7 @@ class HomeScreenVM(
 
                 combine(
                     appPreferencesCombined,
-                    _activePanelAssociatedPanelFolders
+                    _activePanelAssociatedPanelFolders,
                 ) { (shuffleLinks, sortingType), activePanelFolders ->
                     Triple(shuffleLinks, sortingType, activePanelFolders)
                 }
@@ -232,126 +236,141 @@ class HomeScreenVM(
                                 return@forEach
                             }
 
-                            panelFolderPaginators[folderKey] = Paginator(
-                                coroutineScope = viewModelScope,
-                                onRetrieve = { _, lastSeenString ->
-                                    val parts = lastSeenString?.split("|")
-                                    val lastTypeOrder = parts?.getOrNull(0)?.toIntOrNull() ?: -1
-                                    val lastSortStr = parts?.getOrNull(1) ?: ""
-                                    val lastId = parts?.getOrNull(2)?.toLongOrNull()
-                                        ?: Constants.EMPTY_LAST_SEEN_ID
+                            panelFolderPaginators[folderKey] =
+                                Paginator(
+                                    coroutineScope = viewModelScope,
+                                    onRetrieve = { _, lastSeenString ->
+                                        val parts = lastSeenString?.split("|")
+                                        val lastTypeOrder = parts?.getOrNull(0)?.toIntOrNull() ?: -1
+                                        val lastSortStr = parts?.getOrNull(1) ?: ""
+                                        val lastId =
+                                            parts?.getOrNull(2)?.toLongOrNull()
+                                                ?: Constants.EMPTY_LAST_SEEN_ID
 
-                                    val (targetLinkType, targetParentId) = when (panelFolder.folderId) {
-                                        Constants.SAVED_LINKS_ID -> LinkType.SAVED_LINK to Constants.SAVED_LINKS_ID
-                                        Constants.IMPORTANT_LINKS_ID -> LinkType.IMPORTANT_LINK to Constants.IMPORTANT_LINKS_ID
-                                        else -> LinkType.FOLDER_LINK to panelFolder.folderId
-                                    }
+                                        val (targetLinkType, targetParentId) =
+                                            when (panelFolder.folderId) {
+                                                Constants.SAVED_LINKS_ID ->
+                                                    LinkType.SAVED_LINK to Constants.SAVED_LINKS_ID
 
-                                    localDatabaseUtilsRepo.getChildFolderData(
-                                        parentFolderId = targetParentId,
-                                        linkType = targetLinkType,
-                                        sortOption = sortingType,
-                                        pageSize = Constants.PAGE_SIZE,
-                                        lastTypeOrder = lastTypeOrder,
-                                        lastSortStr = lastSortStr,
-                                        lastId = lastId
-                                    )
-                                },
-                                onRetrieved = { currentKey, retrievedData ->
-                                    val lastItem = retrievedData.lastOrNull()
-                                    val nextId =
-                                        lastItem?.let { it.folderLocalId ?: it.linkLocalId }
-                                            ?: Constants.EMPTY_LAST_SEEN_ID
+                                                Constants.IMPORTANT_LINKS_ID ->
+                                                    LinkType.IMPORTANT_LINK to Constants.IMPORTANT_LINKS_ID
 
-                                    val nextString = lastItem?.let { item ->
-                                        val typeOrder = if (item.itemType == "FOLDER") 0 else 1
-                                        val sortStr = item.folderName ?: item.linkTitle ?: ""
-                                        val sortId = item.folderLocalId ?: item.linkLocalId ?: 0L
-                                        "$typeOrder|$sortStr|$sortId"
-                                    } ?: ""
+                                                else -> LinkType.FOLDER_LINK to panelFolder.folderId
+                                            }
 
-                                    val dataToDisplay =
-                                        if (shuffleLinks) retrievedData.shuffled() else retrievedData
-
-                                    _panelFoldersDataFlat.update { currentState ->
-                                        val updatedOuterMap = LinkedHashMap(currentState)
-
-                                        val existingState = updatedOuterMap[panelFolder.folderId]
-                                            ?: PaginationState(
-                                                isRetrieving = false,
-                                                errorOccurred = false,
-                                                errorMessage = null,
-                                                pagesCompleted = false,
-                                                data = emptyMap()
-                                            )
-
-                                        val updatedInnerData = LinkedHashMap(existingState.data)
-                                        updatedInnerData[currentKey] = dataToDisplay
-
-                                        updatedOuterMap[panelFolder.folderId] = existingState.copy(
-                                            isRetrieving = false,
-                                            pagesCompleted = retrievedData.isEmpty() || retrievedData.size < Constants.PAGE_SIZE,
-                                            data = updatedInnerData
+                                        localDatabaseUtilsRepo.getChildFolderData(
+                                            parentFolderId = targetParentId,
+                                            linkType = targetLinkType,
+                                            sortOption = sortingType,
+                                            pageSize = Constants.PAGE_SIZE,
+                                            lastTypeOrder = lastTypeOrder,
+                                            lastSortStr = lastSortStr,
+                                            lastId = lastId,
                                         )
-                                        updatedOuterMap
-                                    }
+                                    },
+                                    onRetrieved = { currentKey, retrievedData ->
+                                        val lastItem = retrievedData.lastOrNull()
+                                        val nextId =
+                                            lastItem?.let { it.folderLocalId ?: it.linkLocalId }
+                                                ?: Constants.EMPTY_LAST_SEEN_ID
 
-                                    nextId to nextString
-                                },
-                                onError = { error ->
-                                    _panelFoldersDataFlat.update { state ->
-                                        val map = LinkedHashMap(state)
-                                        val folderState = map[panelFolder.folderId]
-                                            ?: PaginationState(
-                                                data = emptyMap(),
-                                                isRetrieving = false,
-                                                errorOccurred = false,
-                                                errorMessage = null,
-                                                pagesCompleted = false
-                                            )
-                                        map[panelFolder.folderId] = folderState.copy(
-                                            isRetrieving = false,
-                                            errorOccurred = true,
-                                            errorMessage = error
-                                        )
-                                        map
+                                        val nextString =
+                                            lastItem?.let { item ->
+                                                val typeOrder = if (item.itemType == "FOLDER") 0 else 1
+                                                val sortStr = item.folderName ?: item.linkTitle ?: ""
+                                                val sortId = item.folderLocalId ?: item.linkLocalId ?: 0L
+                                                "$typeOrder|$sortStr|$sortId"
+                                            } ?: ""
+
+                                        val dataToDisplay =
+                                            if (shuffleLinks) retrievedData.shuffled() else retrievedData
+
+                                        _panelFoldersDataFlat.update { currentState ->
+                                            val updatedOuterMap = LinkedHashMap(currentState)
+
+                                            val existingState =
+                                                updatedOuterMap[panelFolder.folderId]
+                                                    ?: PaginationState(
+                                                        isRetrieving = false,
+                                                        errorOccurred = false,
+                                                        errorMessage = null,
+                                                        pagesCompleted = false,
+                                                        data = emptyMap(),
+                                                    )
+
+                                            val updatedInnerData = LinkedHashMap(existingState.data)
+                                            updatedInnerData[currentKey] = dataToDisplay
+
+                                            updatedOuterMap[panelFolder.folderId] =
+                                                existingState.copy(
+                                                    isRetrieving = false,
+                                                    pagesCompleted =
+                                                    retrievedData.isEmpty() ||
+                                                        retrievedData.size < Constants.PAGE_SIZE,
+                                                    data = updatedInnerData,
+                                                )
+                                            updatedOuterMap
+                                        }
+
+                                        nextId to nextString
+                                    },
+                                    onError = { error ->
+                                        _panelFoldersDataFlat.update { state ->
+                                            val map = LinkedHashMap(state)
+                                            val folderState =
+                                                map[panelFolder.folderId]
+                                                    ?: PaginationState(
+                                                        data = emptyMap(),
+                                                        isRetrieving = false,
+                                                        errorOccurred = false,
+                                                        errorMessage = null,
+                                                        pagesCompleted = false,
+                                                    )
+                                            map[panelFolder.folderId] =
+                                                folderState.copy(
+                                                    isRetrieving = false,
+                                                    errorOccurred = true,
+                                                    errorMessage = error,
+                                                )
+                                            map
+                                        }
+                                    },
+                                    onRetrieving = {
+                                        _panelFoldersDataFlat.update { state ->
+                                            val map = LinkedHashMap(state)
+                                            val folderState =
+                                                map[panelFolder.folderId]
+                                                    ?: PaginationState(
+                                                        data = emptyMap(),
+                                                        isRetrieving = false,
+                                                        errorOccurred = false,
+                                                        errorMessage = null,
+                                                        pagesCompleted = false,
+                                                    )
+                                            map[panelFolder.folderId] = folderState.copy(isRetrieving = true)
+                                            map
+                                        }
+                                    },
+                                    onPagesFinished = {
+                                        _panelFoldersDataFlat.update { state ->
+                                            val map = LinkedHashMap(state)
+                                            val folderState =
+                                                map[panelFolder.folderId]
+                                                    ?: PaginationState(
+                                                        data = emptyMap(),
+                                                        isRetrieving = false,
+                                                        errorOccurred = false,
+                                                        errorMessage = null,
+                                                        pagesCompleted = false,
+                                                    )
+                                            map[panelFolder.folderId] = folderState.copy(pagesCompleted = true)
+                                            map
+                                        }
+                                    },
+                                )
+                                    .also {
+                                        it.retrieveNextBatch()
                                     }
-                                },
-                                onRetrieving = {
-                                    _panelFoldersDataFlat.update { state ->
-                                        val map = LinkedHashMap(state)
-                                        val folderState = map[panelFolder.folderId]
-                                            ?: PaginationState(
-                                                data = emptyMap(),
-                                                isRetrieving = false,
-                                                errorOccurred = false,
-                                                errorMessage = null,
-                                                pagesCompleted = false
-                                            )
-                                        map[panelFolder.folderId] =
-                                            folderState.copy(isRetrieving = true)
-                                        map
-                                    }
-                                },
-                                onPagesFinished = {
-                                    _panelFoldersDataFlat.update { state ->
-                                        val map = LinkedHashMap(state)
-                                        val folderState = map[panelFolder.folderId]
-                                            ?: PaginationState(
-                                                data = emptyMap(),
-                                                isRetrieving = false,
-                                                errorOccurred = false,
-                                                errorMessage = null,
-                                                pagesCompleted = false
-                                            )
-                                        map[panelFolder.folderId] =
-                                            folderState.copy(pagesCompleted = true)
-                                        map
-                                    }
-                                }
-                            ).also {
-                                it.retrieveNextBatch()
-                            }
                         }
                     }
             }
@@ -364,41 +383,50 @@ class HomeScreenVM(
     ) {
         val preferences = preferencesRepository.getPreferences()
         viewModelScope.launch {
-            localLinksRepo.addANewLink(
-                link = link.copy(
-                    linkType = LinkType.HISTORY_LINK, localId = 0
-                ), selectedTagIds = selectedTags?.map {
-                    it.localId
-                }, linkSaveConfig = LinkSaveConfig(
-                    forceAutoDetectTitle = false, forceSaveWithoutRetrievingData = true,
-                    useProxy = preferences.useProxy,
-                    skipSavingIfExists = preferences.skipSavingExistingLink,
-                    forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
+            localLinksRepo
+                .addANewLink(
+                    link =
+                    link.copy(
+                        linkType = LinkType.HISTORY_LINK,
+                        localId = 0,
+                    ),
+                    selectedTagIds =
+                    selectedTags?.map {
+                        it.localId
+                    },
+                    linkSaveConfig =
+                    LinkSaveConfig(
+                        forceAutoDetectTitle = false,
+                        forceSaveWithoutRetrievingData = true,
+                        useProxy = preferences.useProxy,
+                        skipSavingIfExists = preferences.skipSavingExistingLink,
+                        forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
+                    ),
                 )
-            ).collect()
+                .collect()
         }
     }
 
     init {
         val currentHour = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).hour
 
-        currentPhaseOfTheDay.value = when (currentHour) {
-            in 0..11 -> {
-                Localization.Key.GoodMorning.getLocalizedString()
-            }
+        currentPhaseOfTheDay.value =
+            when (currentHour) {
+                in 0..11 -> {
+                    Localization.Key.GoodMorning.getLocalizedString()
+                }
 
-            in 12..15 -> {
-                Localization.Key.GoodAfternoon.getLocalizedString()
-            }
+                in 12..15 -> {
+                    Localization.Key.GoodAfternoon.getLocalizedString()
+                }
 
-            in 16..23 -> {
-                Localization.Key.GoodEvening.getLocalizedString()
-            }
+                in 16..23 -> {
+                    Localization.Key.GoodEvening.getLocalizedString()
+                }
 
-            else -> {
-                Localization.Key.HeyHi.getLocalizedString()
+                else -> {
+                    Localization.Key.HeyHi.getLocalizedString()
+                }
             }
-        }
     }
-
 }

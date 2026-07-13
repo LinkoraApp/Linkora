@@ -42,7 +42,6 @@ import com.sakethh.linkora.utils.AndroidUIEvent
 import com.sakethh.linkora.utils.AndroidUIEvent.pushUIEvent
 
 class MainActivity : ComponentActivity() {
-
     companion object {
         var wasLaunched = false
     }
@@ -56,24 +55,28 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
             val coroutineScope = rememberCoroutineScope()
-            val storageRuntimePermission = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.RequestPermission(),
-                onResult = { permissionGranted ->
-                    coroutineScope.pushUIEvent(
-                        AndroidUIEvent.Type.StoragePermissionGrantedForAndBelowQ(
-                            isGranted = permissionGranted
+            val storageRuntimePermission =
+                rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission(),
+                    onResult = { permissionGranted ->
+                        coroutineScope.pushUIEvent(
+                            AndroidUIEvent.Type.StoragePermissionGrantedForAndBelowQ(
+                                isGranted = permissionGranted,
+                            ),
                         )
-                    )
-                })
-            val notificationRuntimePermission = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.RequestPermission(),
-                onResult = { permissionGranted ->
-                    coroutineScope.pushUIEvent(
-                        AndroidUIEvent.Type.NotificationPermissionState(
-                            isGranted = permissionGranted
+                    },
+                )
+            val notificationRuntimePermission =
+                rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission(),
+                    onResult = { permissionGranted ->
+                        coroutineScope.pushUIEvent(
+                            AndroidUIEvent.Type.NotificationPermissionState(
+                                isGranted = permissionGranted,
+                            ),
                         )
-                    )
-                })
+                    },
+                )
 
             var showNotificationPermissionDialog by rememberSaveable {
                 mutableStateOf(false)
@@ -83,8 +86,8 @@ class MainActivity : ComponentActivity() {
                 rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
                     coroutineScope.pushUIEvent(
                         AndroidUIEvent.Type.UriOfTheFileForImporting(
-                            uri
-                        )
+                            uri,
+                        ),
                     )
                 }
             val localContext = LocalContext.current
@@ -95,7 +98,9 @@ class MainActivity : ComponentActivity() {
                             Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
 
                         val isUriPermissionPersisted =
-                            contentResolver.persistedUriPermissions.any { uriPermission -> uriPermission.uri == uri }
+                            contentResolver.persistedUriPermissions.any { uriPermission ->
+                                uriPermission.uri == uri
+                            }
                         if (isUriPermissionPersisted) {
                             localContext.contentResolver.releasePersistableUriPermission(uri, flags)
                         }
@@ -103,87 +108,133 @@ class MainActivity : ComponentActivity() {
                     }
                     coroutineScope.pushUIEvent(
                         AndroidUIEvent.Type.PickedDirectory(
-                            uri
-                        )
+                            uri,
+                        ),
                     )
                 }
-            val mainVM = viewModel<MainVM>(factory = viewModelFactory {
-                initializer {
-                    MainVM(launchAction = {
-                        when (it) {
-                            Action.LaunchDirectoryPicker -> {
-                                activityResultLauncherForPickingADirectory.launch(null)
-                            }
+            val mainVM =
+                viewModel<MainVM>(
+                    factory =
+                    viewModelFactory {
+                        initializer {
+                            MainVM(
+                                launchAction = {
+                                    when (it) {
+                                        Action.LaunchDirectoryPicker -> {
+                                            activityResultLauncherForPickingADirectory.launch(null)
+                                        }
 
-                            is Action.LaunchFileImport -> {
-                                activityResultLauncherForFileImport.launch(it.fileType)
-                            }
+                                        is Action.LaunchFileImport -> {
+                                            activityResultLauncherForFileImport.launch(it.fileType)
+                                        }
 
-                            Action.LaunchWriteExternalStoragePermission -> {
-                                storageRuntimePermission.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            }
+                                        Action.LaunchWriteExternalStoragePermission -> {
+                                            storageRuntimePermission.launch(
+                                                android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                            )
+                                        }
 
-                            Action.Minimize -> moveTaskToBack(true)
-                            Action.ShowNotificationPermissionDialog -> {
-                                showNotificationPermissionDialog = true
-                            }
+                                        Action.Minimize -> moveTaskToBack(true)
+
+                                        Action.ShowNotificationPermissionDialog -> {
+                                            showNotificationPermissionDialog = true
+                                        }
+                                    }
+                                },
+                            )
                         }
-                    })
-                }
-            })
+                    },
+                )
             val preferences by mainVM.preferencesAsFlow.collectAsStateWithLifecycle()
             CompositionLocalProvider(
                 LocalNavController provides navController,
-                LocalFabController provides retain {
-                    FabStateController()
-                },
-                LocalPlatform provides Platform.Android
+                LocalFabController provides
+                    retain {
+                        FabStateController()
+                    },
+                LocalPlatform provides Platform.Android,
             ) {
                 val context = LocalContext.current
-                val darkColors = DarkColors.copy(
-                    background = if (preferences.useAmoledTheme) Color(0xFF000000) else DarkColors.background,
-                    surface = if (preferences.useAmoledTheme) Color(0xFF000000) else DarkColors.surface
-                )
-                val colors = when {
-                    preferences.useDynamicTheming && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                        if (preferences.useSystemTheme) {
-                            if (isSystemInDarkTheme()) dynamicDarkColorScheme(context).copy(
-                                background = if (preferences.useAmoledTheme) Color(
-                                    0xFF000000
-                                ) else dynamicDarkColorScheme(context).background,
-                                surface = if (preferences.useAmoledTheme) Color(
-                                    0xFF000000
-                                ) else dynamicDarkColorScheme(
-                                    context
-                                ).surface
-                            ) else dynamicLightColorScheme(
-                                context
-                            )
-                        } else {
-                            if (preferences.useDarkTheme) dynamicDarkColorScheme(
-                                context
-                            ).copy(
-                                background = if (preferences.useAmoledTheme) Color(
-                                    0xFF000000
-                                ) else dynamicDarkColorScheme(context).background,
-                                surface = if (preferences.useAmoledTheme) Color(
-                                    0xFF000000
-                                ) else dynamicDarkColorScheme(
-                                    context
-                                ).surface
-                            ) else dynamicLightColorScheme(context)
+                val darkColors =
+                    DarkColors.copy(
+                        background =
+                        if (preferences.useAmoledTheme) Color(0xFF000000) else DarkColors.background,
+                        surface = if (preferences.useAmoledTheme) Color(0xFF000000) else DarkColors.surface,
+                    )
+                val colors =
+                    when {
+                        preferences.useDynamicTheming && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+                            if (preferences.useSystemTheme) {
+                                if (isSystemInDarkTheme()) {
+                                    dynamicDarkColorScheme(context)
+                                        .copy(
+                                            background =
+                                            if (preferences.useAmoledTheme) {
+                                                Color(
+                                                    0xFF000000,
+                                                )
+                                            } else {
+                                                dynamicDarkColorScheme(context).background
+                                            },
+                                            surface =
+                                            if (preferences.useAmoledTheme) {
+                                                Color(
+                                                    0xFF000000,
+                                                )
+                                            } else {
+                                                dynamicDarkColorScheme(
+                                                    context,
+                                                )
+                                                    .surface
+                                            },
+                                        )
+                                } else {
+                                    dynamicLightColorScheme(
+                                        context,
+                                    )
+                                }
+                            } else {
+                                if (preferences.useDarkTheme) {
+                                    dynamicDarkColorScheme(
+                                        context,
+                                    )
+                                        .copy(
+                                            background =
+                                            if (preferences.useAmoledTheme) {
+                                                Color(
+                                                    0xFF000000,
+                                                )
+                                            } else {
+                                                dynamicDarkColorScheme(context).background
+                                            },
+                                            surface =
+                                            if (preferences.useAmoledTheme) {
+                                                Color(
+                                                    0xFF000000,
+                                                )
+                                            } else {
+                                                dynamicDarkColorScheme(
+                                                    context,
+                                                )
+                                                    .surface
+                                            },
+                                        )
+                                } else {
+                                    dynamicLightColorScheme(context)
+                                }
+                            }
                         }
-                    }
 
-                    else -> if (preferences.useSystemTheme) {
-                        if (isSystemInDarkTheme()) darkColors else LightColors
-                    } else {
-                        if (preferences.useDarkTheme) darkColors else LightColors
+                        else ->
+                            if (preferences.useSystemTheme) {
+                                if (isSystemInDarkTheme()) darkColors else LightColors
+                            } else {
+                                if (preferences.useDarkTheme) darkColors else LightColors
+                            }
                     }
-                }
                 LinkoraTheme(
                     colorScheme = colors,
-                    preferredFont = preferences.selectedFont
+                    preferredFont = preferences.selectedFont,
                 ) {
                     Surface {
                         App()
@@ -195,7 +246,8 @@ class MainActivity : ComponentActivity() {
                         },
                         launchRuntimePermission = {
                             notificationRuntimePermission.launch(android.Manifest.permission.POST_NOTIFICATIONS)
-                        })
+                        },
+                    )
                 }
             }
         }
@@ -204,16 +256,18 @@ class MainActivity : ComponentActivity() {
 }
 
 class OpenDocumentTreeWithPermissionsContract : ActivityResultContracts.OpenDocumentTree() {
-    override fun createIntent(context: Context, input: Uri?): Intent {
-        return super.createIntent(context, input).apply {
-            listOf(
-                Intent.FLAG_GRANT_PREFIX_URI_PERMISSION,
-                Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
-                Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION
-            ).forEach {
+    override fun createIntent(
+        context: Context,
+        input: Uri?,
+    ): Intent = super.createIntent(context, input).apply {
+        listOf(
+            Intent.FLAG_GRANT_PREFIX_URI_PERMISSION,
+            Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+            Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION,
+            Intent.FLAG_GRANT_READ_URI_PERMISSION,
+        )
+            .forEach {
                 addFlags(it)
             }
-        }
     }
 }

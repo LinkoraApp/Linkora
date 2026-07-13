@@ -25,6 +25,6 @@ expect object WebCapture {
         includeAudioElements: Boolean,
         includeVideoElements: Boolean,
         includeMetadata: Boolean,
-        logStuff: Boolean
+        logStuff: Boolean,
     ): Boolean
 }

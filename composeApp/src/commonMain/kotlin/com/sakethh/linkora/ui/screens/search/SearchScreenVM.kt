@@ -47,7 +47,7 @@ class SearchScreenVM(
     private val localLinksRepo: LocalLinksRepo,
     private val localDatabaseUtilsRepo: LocalDatabaseUtilsRepo,
     private val localTagsRepo: LocalTagsRepo,
-    private val preferencesRepository: PreferencesRepository
+    private val preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
     private val _searchQuery = mutableStateOf("")
@@ -69,13 +69,13 @@ class SearchScreenVM(
         _searchQuery.value = query
     }
 
-    private val _searchResultsState = MutableStateFlow(
-        value = PaginationState.retrieving<List<FlatSearchResult>>()
-    )
+    private val _searchResultsState =
+        MutableStateFlow(
+            value = PaginationState.retrieving<List<FlatSearchResult>>(),
+        )
 
     val searchResultsState =
         _searchResultsState.asStateInWhileSubscribed(initialValue = PaginationState.retrieving())
-
 
     private val _appliedLinkFilters = mutableStateListOf<LinkType>()
     val appliedLinkFilters = _appliedLinkFilters
@@ -86,100 +86,113 @@ class SearchScreenVM(
     private val _appliedTagFiltering = mutableStateOf(false)
     val appliedTagFiltering by _appliedTagFiltering
 
-    private val searchResultsPaginator = Paginator<FlatSearchResult>(
-        coroutineScope = viewModelScope,
-        onRetrieve = { lastSeenId, lastSeenString ->
-            val currentQuery = _searchQuery.value
-            if (currentQuery.isBlank()) {
-                return@Paginator flowOf(Result.Success(emptyList()))
-            }
+    private val searchResultsPaginator =
+        Paginator<FlatSearchResult>(
+            coroutineScope = viewModelScope,
+            onRetrieve = { lastSeenId, lastSeenString ->
+                val currentQuery = _searchQuery.value
+                if (currentQuery.isBlank()) {
+                    return@Paginator flowOf(Result.Success(emptyList()))
+                }
 
-            // Protocol: "typeOrder|sortStr|sortNum"
-            // TODO: refactor this into a data class
-            val parts = lastSeenString?.split("|")
-            val lastTypeOrder = parts?.getOrNull(0)?.toIntOrNull() ?: -1
-            val lastSortStr = parts?.getOrNull(1) ?: ""
-            val lastSortNum = parts?.getOrNull(2)?.toLongOrNull() ?: 0L
-            val lastId = lastSeenId ?: Constants.EMPTY_LAST_SEEN_ID
+                // Protocol: "typeOrder|sortStr|sortNum"
+                // TODO: refactor this into a data class
+                val parts = lastSeenString?.split("|")
+                val lastTypeOrder = parts?.getOrNull(0)?.toIntOrNull() ?: -1
+                val lastSortStr = parts?.getOrNull(1) ?: ""
+                val lastSortNum = parts?.getOrNull(2)?.toLongOrNull() ?: 0L
+                val lastId = lastSeenId ?: Constants.EMPTY_LAST_SEEN_ID
 
-            val currentSort = preferencesRepository.getPreferences().selectedSortingType
-            val appliedFolderFilters = _appliedFolderFilters.toList()
-            val appliedLinkFilters = _appliedLinkFilters.toList()
-            val isTagFilteringApplied = _appliedTagFiltering.value
-            val shouldShowTags =
-                isTagFilteringApplied || (appliedFolderFilters.isEmpty() && appliedLinkFilters.isEmpty())
-            val shouldShowFolders =
-                appliedFolderFilters.isNotEmpty() || (!isTagFilteringApplied && appliedLinkFilters.isEmpty())
-            val includeArchivedFolders =
-                appliedFolderFilters.contains(FolderType.ARCHIVE_FOLDER) || appliedFolderFilters.isEmpty()
-            val includeRegularFolders =
-                appliedFolderFilters.contains(FolderType.REGULAR_FOLDER) || appliedFolderFilters.isEmpty()
-            val shouldShowLinks =
-                appliedLinkFilters.isNotEmpty() || (!isTagFilteringApplied && appliedFolderFilters.isEmpty())
-            val isLinkTypeFilterActive = appliedLinkFilters.isNotEmpty()
-            val activeLinkTypeFilters =
-                if (appliedLinkFilters.isNotEmpty()) appliedLinkFilters.map { it.name } else listOf(
-                    ""
-                )
-
-            localDatabaseUtilsRepo.search(
-                query = currentQuery.trim(),
-                sortOption = currentSort,
-                pageSize = Constants.PAGE_SIZE,
-                shouldShowTags = shouldShowTags,
-                shouldShowFolders = shouldShowFolders,
-                includeArchivedFolders = includeArchivedFolders,
-                includeRegularFolders = includeRegularFolders,
-                shouldShowLinks = shouldShowLinks,
-                isLinkTypeFilterActive = isLinkTypeFilterActive,
-                activeLinkTypeFilters = activeLinkTypeFilters,
-                lastTypeOrder = lastTypeOrder,
-                lastSortStr = lastSortStr,
-                lastSortNum = lastSortNum,
-                lastId = lastId,
-                assignPath = true
-            )
-        },
-        onRetrieved = { currentKey, orderedData ->
-            val sortOption = preferencesRepository.getPreferences().selectedSortingType
-            _searchResultsState.onRetrieved(
-                currentKey = currentKey,
-                data = orderedData,
-                shouldShuffle = preferencesRepository.getPreferences().forceShuffleLinks,
-
-                idSelector = { item ->
-                    when (item.itemType) {
-                        Constants.TAG -> item.tagLocalId
-                        Constants.FOLDER -> item.folderLocalId
-                        else -> item.linkLocalId
-                    } ?: 0L
-                },
-                stringSelector = { item ->
-
-                    val typeOrder = when (item.itemType) {
-                        Constants.TAG -> 0
-                        Constants.FOLDER -> 1
-                        else -> 2
+                val currentSort = preferencesRepository.getPreferences().selectedSortingType
+                val appliedFolderFilters = _appliedFolderFilters.toList()
+                val appliedLinkFilters = _appliedLinkFilters.toList()
+                val isTagFilteringApplied = _appliedTagFiltering.value
+                val shouldShowTags =
+                    isTagFilteringApplied ||
+                        (appliedFolderFilters.isEmpty() && appliedLinkFilters.isEmpty())
+                val shouldShowFolders =
+                    appliedFolderFilters.isNotEmpty() ||
+                        (!isTagFilteringApplied && appliedLinkFilters.isEmpty())
+                val includeArchivedFolders =
+                    appliedFolderFilters.contains(FolderType.ARCHIVE_FOLDER) ||
+                        appliedFolderFilters.isEmpty()
+                val includeRegularFolders =
+                    appliedFolderFilters.contains(FolderType.REGULAR_FOLDER) ||
+                        appliedFolderFilters.isEmpty()
+                val shouldShowLinks =
+                    appliedLinkFilters.isNotEmpty() ||
+                        (!isTagFilteringApplied && appliedFolderFilters.isEmpty())
+                val isLinkTypeFilterActive = appliedLinkFilters.isNotEmpty()
+                val activeLinkTypeFilters =
+                    if (appliedLinkFilters.isNotEmpty()) {
+                        appliedLinkFilters.map { it.name }
+                    } else {
+                        listOf(
+                            "",
+                        )
                     }
 
-                    val sortStr =
-                        if (sortOption == Sorting.A_TO_Z || sortOption == Sorting.Z_TO_A) {
-                            item.tagName ?: item.folderName ?: item.linkTitle ?: ""
-                        } else ""
+                localDatabaseUtilsRepo.search(
+                    query = currentQuery.trim(),
+                    sortOption = currentSort,
+                    pageSize = Constants.PAGE_SIZE,
+                    shouldShowTags = shouldShowTags,
+                    shouldShowFolders = shouldShowFolders,
+                    includeArchivedFolders = includeArchivedFolders,
+                    includeRegularFolders = includeRegularFolders,
+                    shouldShowLinks = shouldShowLinks,
+                    isLinkTypeFilterActive = isLinkTypeFilterActive,
+                    activeLinkTypeFilters = activeLinkTypeFilters,
+                    lastTypeOrder = lastTypeOrder,
+                    lastSortStr = lastSortStr,
+                    lastSortNum = lastSortNum,
+                    lastId = lastId,
+                    assignPath = true,
+                )
+            },
+            onRetrieved = { currentKey, orderedData ->
+                val sortOption = preferencesRepository.getPreferences().selectedSortingType
+                _searchResultsState.onRetrieved(
+                    currentKey = currentKey,
+                    data = orderedData,
+                    shouldShuffle = preferencesRepository.getPreferences().forceShuffleLinks,
+                    idSelector = { item ->
+                        when (item.itemType) {
+                            Constants.TAG -> item.tagLocalId
+                            Constants.FOLDER -> item.folderLocalId
+                            else -> item.linkLocalId
+                        } ?: 0L
+                    },
+                    stringSelector = { item ->
+                        val typeOrder =
+                            when (item.itemType) {
+                                Constants.TAG -> 0
+                                Constants.FOLDER -> 1
+                                else -> 2
+                            }
 
-                    val sortNum =
-                        if (sortOption == Sorting.NEW_TO_OLD || sortOption == Sorting.OLD_TO_NEW) {
-                            item.tagLocalId ?: item.folderLocalId ?: item.linkLocalId ?: 0L
-                        } else 0L
+                        val sortStr =
+                            if (sortOption == Sorting.A_TO_Z || sortOption == Sorting.Z_TO_A) {
+                                item.tagName ?: item.folderName ?: item.linkTitle ?: ""
+                            } else {
+                                ""
+                            }
 
-                    "$typeOrder|$sortStr|$sortNum"
-                }
-            )
-        },
-        onError = _searchResultsState::onError,
-        onRetrieving = _searchResultsState::onRetrieving,
-        onPagesFinished = _searchResultsState::onPagesFinished
-    )
+                        val sortNum =
+                            if (sortOption == Sorting.NEW_TO_OLD || sortOption == Sorting.OLD_TO_NEW) {
+                                item.tagLocalId ?: item.folderLocalId ?: item.linkLocalId ?: 0L
+                            } else {
+                                0L
+                            }
+
+                        "$typeOrder|$sortStr|$sortNum"
+                    },
+                )
+            },
+            onError = _searchResultsState::onError,
+            onRetrieving = _searchResultsState::onRetrieving,
+            onPagesFinished = _searchResultsState::onPagesFinished,
+        )
 
     init {
         viewModelScope.launch {
@@ -193,21 +206,24 @@ class SearchScreenVM(
                 },
                 snapshotFlow { _appliedFolderFilters.toList() },
                 snapshotFlow { _appliedLinkFilters.toList() },
-                snapshotFlow { _appliedTagFiltering.value }) { query, _, _, _, _, _ ->
+                snapshotFlow { _appliedTagFiltering.value },
+            ) { query, _, _, _, _, _ ->
                 query
-            }.collectLatest { query ->
-                searchResultsPaginator.cancelAndReset()
-
-                _searchResultsState.update {
-                    it.copy(isRetrieving = true, data = emptyMap(), pagesCompleted = false)
-                }
-
-                if (query.isNotBlank()) {
-                    retrieveNextSearchPage() // will always start as a "new instance", since we canceled and reset the state above
-                } else {
-                    _searchResultsState.update { it.copy(isRetrieving = false) }
-                }
             }
+                .collectLatest { query ->
+                    searchResultsPaginator.cancelAndReset()
+
+                    _searchResultsState.update {
+                        it.copy(isRetrieving = true, data = emptyMap(), pagesCompleted = false)
+                    }
+
+                    if (query.isNotBlank()) {
+                        retrieveNextSearchPage() // will always start as a "new instance", since we canceled
+                        // and reset the state above
+                    } else {
+                        _searchResultsState.update { it.copy(isRetrieving = false) }
+                    }
+                }
         }
     }
 
@@ -243,92 +259,111 @@ class SearchScreenVM(
         }
     }
 
-    fun addANewLinkToHistory(link: Link, tagIds: List<Long>?) {
+    fun addANewLinkToHistory(
+        link: Link,
+        tagIds: List<Long>?,
+    ) {
         viewModelScope.launch {
             val preferences = preferencesRepository.getPreferences()
-            localLinksRepo.addANewLink(
-                link = link.copy(
-                    linkType = LinkType.HISTORY_LINK,
-                    idOfLinkedFolder = null,
-                ), linkSaveConfig = LinkSaveConfig(
-                    forceAutoDetectTitle = false, forceSaveWithoutRetrievingData = true,
-                    useProxy = preferences.useProxy,
-                    skipSavingIfExists = preferences.skipSavingExistingLink,
-                    forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
-                ), selectedTagIds = tagIds
-            ).collectLatest {
-                it.onSuccess {
-                    if (it.isRemoteExecutionSuccessful.not()) {
-                        pushUIEvent(UIEvent.Type.ShowSnackbar(it.getRemoteOnlyFailureMsg()))
+            localLinksRepo
+                .addANewLink(
+                    link =
+                    link.copy(
+                        linkType = LinkType.HISTORY_LINK,
+                        idOfLinkedFolder = null,
+                    ),
+                    linkSaveConfig =
+                    LinkSaveConfig(
+                        forceAutoDetectTitle = false,
+                        forceSaveWithoutRetrievingData = true,
+                        useProxy = preferences.useProxy,
+                        skipSavingIfExists = preferences.skipSavingExistingLink,
+                        forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
+                    ),
+                    selectedTagIds = tagIds,
+                )
+                .collectLatest {
+                    it.onSuccess {
+                        if (it.isRemoteExecutionSuccessful.not()) {
+                            pushUIEvent(UIEvent.Type.ShowSnackbar(it.getRemoteOnlyFailureMsg()))
+                        }
                     }
+                    it.pushSnackbarOnFailure()
                 }
-                it.pushSnackbarOnFailure()
-            }
         }
     }
 
-    private val _historyLinkTagsPairsState = MutableStateFlow(
-        PaginationState.retrieving<List<LinkTagsPair>>()
-    )
+    private val _historyLinkTagsPairsState =
+        MutableStateFlow(
+            PaginationState.retrieving<List<LinkTagsPair>>(),
+        )
 
-    val historyLinkTagsPairsState = _historyLinkTagsPairsState.asStateInWhileSubscribed(
-        initialValue = PaginationState.retrieving()
-    )
+    val historyLinkTagsPairsState =
+        _historyLinkTagsPairsState.asStateInWhileSubscribed(
+            initialValue = PaginationState.retrieving(),
+        )
 
-    private val historyLinksPaginator = Paginator<LinkTagsPair>(
-        coroutineScope = viewModelScope,
-        onRetrieve = { lastSeenId, lastSeenString ->
-            combine(
-                preferencesAsFlow.map {
-                    it.selectedSortingType
-                },
-                preferencesAsFlow.map {
-                    it.forceShuffleLinks
-                },
-            ) { selectedSortingType, forceShuffleLinks ->
-                forceShuffleLinks to selectedSortingType
-            }.flatMapLatest { (forceShuffleLinks, selectedSortingType) ->
-                localLinksRepo.getLinks(
-                    linkType = LinkType.HISTORY_LINK,
-                    sortOption = selectedSortingType,
-                    pageSize = Constants.PAGE_SIZE,
-                    lastSeenId = lastSeenId,
-                    lastSeenTitle = lastSeenString
-                ).flatMapLatest { result ->
-                    when (result) {
-                        is Result.Failure -> flowOf(Result.Failure(result.message))
-                        is Result.Loading -> flowOf(Result.Loading())
-                        is Result.Success -> {
-                            // we need the original order to calculate the next cursor
-                            val linkIds = result.data.map { it.localId }
-
-                            localTagsRepo.getTagsForLinks(linkIds).map { tagsForLinks ->
-                                val pairs = result.data.map { link ->
-                                    LinkTagsPair(
-                                        link = link,
-                                        tags = tagsForLinks[link.localId] ?: emptyList()
-                                    )
-                                }
-                                Result.Success(pairs)
-                            }
-                        }
-                    }
+    private val historyLinksPaginator =
+        Paginator<LinkTagsPair>(
+            coroutineScope = viewModelScope,
+            onRetrieve = { lastSeenId, lastSeenString ->
+                combine(
+                    preferencesAsFlow.map {
+                        it.selectedSortingType
+                    },
+                    preferencesAsFlow.map {
+                        it.forceShuffleLinks
+                    },
+                ) { selectedSortingType, forceShuffleLinks ->
+                    forceShuffleLinks to selectedSortingType
                 }
-            }
-        },
-        onRetrieved = { currentKey, retrievedData ->
-            _historyLinkTagsPairsState.onRetrieved(
-                currentKey = currentKey,
-                data = retrievedData,
-                shouldShuffle = preferencesRepository.getPreferences().forceShuffleLinks,
-                idSelector = { it.link.localId },
-                stringSelector = { it.link.title }
-            )
-        },
-        onError = _historyLinkTagsPairsState::onError,
-        onRetrieving = _historyLinkTagsPairsState::onRetrieving,
-        onPagesFinished = _historyLinkTagsPairsState::onPagesFinished
-    )
+                    .flatMapLatest { (forceShuffleLinks, selectedSortingType) ->
+                        localLinksRepo
+                            .getLinks(
+                                linkType = LinkType.HISTORY_LINK,
+                                sortOption = selectedSortingType,
+                                pageSize = Constants.PAGE_SIZE,
+                                lastSeenId = lastSeenId,
+                                lastSeenTitle = lastSeenString,
+                            )
+                            .flatMapLatest { result ->
+                                when (result) {
+                                    is Result.Failure -> flowOf(Result.Failure(result.message))
+
+                                    is Result.Loading -> flowOf(Result.Loading())
+
+                                    is Result.Success -> {
+                                        // we need the original order to calculate the next cursor
+                                        val linkIds = result.data.map { it.localId }
+
+                                        localTagsRepo.getTagsForLinks(linkIds).map { tagsForLinks ->
+                                            val pairs =
+                                                result.data.map { link ->
+                                                    LinkTagsPair(
+                                                        link = link,
+                                                        tags = tagsForLinks[link.localId] ?: emptyList(),
+                                                    )
+                                                }
+                                            Result.Success(pairs)
+                                        }
+                                    }
+                                }
+                            }
+                    }
+            },
+            onRetrieved = { currentKey, retrievedData ->
+                _historyLinkTagsPairsState.onRetrieved(
+                    currentKey = currentKey,
+                    data = retrievedData,
+                    shouldShuffle = preferencesRepository.getPreferences().forceShuffleLinks,
+                    idSelector = { it.link.localId },
+                    stringSelector = { it.link.title },
+                )
+            },
+            onError = _historyLinkTagsPairsState::onError,
+            onRetrieving = _historyLinkTagsPairsState::onRetrieving,
+            onPagesFinished = _historyLinkTagsPairsState::onPagesFinished,
+        )
 
     fun retrieveNextBatchOfHistoryLinks() {
         viewModelScope.launch {

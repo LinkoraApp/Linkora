@@ -1,6 +1,5 @@
 package com.sakethh.linkora
 
-
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -14,7 +13,6 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 object JVMAndAndroidWebCapture {
-    
     fun interface OnThrown {
         fun onThrown(message: String)
     }
@@ -37,7 +35,7 @@ object JVMAndAndroidWebCapture {
                         spawnResultDaemon(
                             onThrown = { msg ->
                                 spawnFailure = msg
-                            }
+                            },
                         )
                         if (spawnFailure != null) {
                             throw IllegalStateException(spawnFailure)
@@ -69,7 +67,7 @@ object JVMAndAndroidWebCapture {
                         }
                         var killFailure: String? = null
                         killResultDaemon(
-                            onThrown = OnThrown { msg -> killFailure = msg }
+                            onThrown = OnThrown { msg -> killFailure = msg },
                         )
                         val failure = killFailure
                         if (failure != null) {
@@ -88,10 +86,13 @@ object JVMAndAndroidWebCapture {
 
     /**
      * Rust will call this on capture completion (only after [spawnResultDaemon]'s initialization).
-     * Purely reports written-or-not; doesn't catch panics or anything else,
-     * that's onThrown's job at the saveHTMLPage call site.
-     * */
-    private fun onCaptureResult(opKey: String, success: Boolean) {
+     * Purely reports written-or-not; doesn't catch panics or anything else, that's onThrown's job at
+     * the saveHTMLPage call site.
+     */
+    private fun onCaptureResult(
+        opKey: String,
+        success: Boolean,
+    ) {
         val continuation = pendingCaptures.remove(opKey)
         if (continuation?.isActive == true) {
             continuation.resume(success)
@@ -115,19 +116,20 @@ object JVMAndAndroidWebCapture {
         includeVideoElements: Boolean,
         includeMetadata: Boolean,
         logStuff: Boolean,
-        onMonolithCancellationFailure: () -> Unit = {}
+        onMonolithCancellationFailure: () -> Unit = {},
     ): Boolean = suspendCancellableCoroutine { continuation ->
         if (!isLibraryLoaded) {
             throw IllegalStateException("Native library is not loaded or was nuked")
         }
 
-        @OptIn(ExperimentalUuidApi::class) val opKey = Uuid.random().toHexString()
+        @OptIn(ExperimentalUuidApi::class)
+        val opKey = Uuid.random().toHexString()
         pendingCaptures[opKey] = continuation
 
         continuation.invokeOnCancellation {
             cancelWebCapture(
                 key = opKey,
-                onThrown = { onMonolithCancellationFailure() }
+                onThrown = { onMonolithCancellationFailure() },
             )
             pendingCaptures.remove(opKey)
         }
@@ -154,10 +156,9 @@ object JVMAndAndroidWebCapture {
                 if (cont?.isActive == true) {
                     cont.resumeWithException(IllegalStateException(message))
                 }
-            }
+            },
         )
     }
-
 
     private external fun saveHTMLPage(
         fileDescriptor: Int,
@@ -179,11 +180,12 @@ object JVMAndAndroidWebCapture {
         onThrown: OnThrown,
     )
 
-    private external fun spawnResultDaemon(
-        onThrown: OnThrown
-    )
+    private external fun spawnResultDaemon(onThrown: OnThrown)
 
     private external fun killResultDaemon(onThrown: OnThrown)
 
-    private external fun cancelWebCapture(key: String, onThrown: OnThrown)
+    private external fun cancelWebCapture(
+        key: String,
+        onThrown: OnThrown,
+    )
 }

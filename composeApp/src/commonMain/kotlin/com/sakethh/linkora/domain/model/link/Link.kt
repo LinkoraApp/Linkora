@@ -18,10 +18,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
-@Entity(tableName = "links",
-    indices = [
-        Index(value = ["title"], name = "idx_links_title")
-    ])
+@Entity(
+    tableName = "links",
+    indices = [Index(value = ["title"], name = "idx_links_title")],
+)
 @Serializable
 data class Link(
     val linkType: LinkType,
@@ -29,26 +29,27 @@ data class Link(
     val remoteId: Long? = null,
     val title: String,
     val url: String,
-    @SerialName("baseURL") // called baseUrl, but in some non-ui cases it kinda acts like host. back then I showed baseUrl instead of just host, so stuck with it
+    @SerialName(
+        "baseURL",
+    ) // called baseUrl, but in some non-ui cases it kinda acts like host. back then I showed
+    // baseUrl instead of just host, so stuck with it
     @ColumnInfo(name = "baseURL")
-    val host: String = if (url.isATwitterUrl()) "twitter.com" else url.host(throwOnException = false),
+    val host: String =
+        if (url.isATwitterUrl()) "twitter.com" else url.host(throwOnException = false),
     val imgURL: String,
     val note: String,
     val idOfLinkedFolder: Long?,
     val userAgent: String? = Constants.DEFAULT_USER_AGENT,
     val mediaType: MediaType = MediaType.IMAGE,
-    val lastModified: Long = getSystemEpochSeconds()
+    val lastModified: Long = getSystemEpochSeconds(),
 ) {
-
-
-    @Ignore
-    @Transient
+    @Ignore @Transient
     val date: String? = epochToReadableDateTime(lastModified)
 
-    @Ignore
-    @Transient
+    @Ignore @Transient
     var path: List<Folder>? = null
 
-    class Invalid(message: String = Localization.getLocalizedString(Localization.Key.InvalidLink)) :
-        Throwable(message)
+    class Invalid(
+        message: String = Localization.getLocalizedString(Localization.Key.InvalidLink),
+    ) : Throwable(message)
 }

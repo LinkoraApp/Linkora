@@ -25,7 +25,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -38,12 +37,12 @@ fun PreferenceTextField(
     onTextFieldValueChange: (String) -> Unit,
     onConfirmButtonClick: () -> Unit,
     focusRequester: FocusRequester,
-    readonly: Boolean
+    readonly: Boolean,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(start = 25.dp, end = 15.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         ProvideTextStyle(value = MaterialTheme.typography.titleSmall) {
             OutlinedTextField(
@@ -52,9 +51,11 @@ fun PreferenceTextField(
                         text = textFieldDescText,
                         style = MaterialTheme.typography.titleSmall,
                         lineHeight = 18.sp,
-                        modifier = Modifier.padding(
-                            top = 5.dp, bottom = 5.dp
-                        )
+                        modifier =
+                        Modifier.padding(
+                            top = 5.dp,
+                            bottom = 5.dp,
+                        ),
                     )
                 },
                 value = textFieldValue,
@@ -65,25 +66,33 @@ fun PreferenceTextField(
                 modifier = Modifier.fillMaxWidth(0.8f).focusRequester(focusRequester),
                 label = {
                     Text(
-                        text = textFieldLabel, style = MaterialTheme.typography.titleSmall
+                        text = textFieldLabel,
+                        style = MaterialTheme.typography.titleSmall,
                     )
-                })
+                },
+            )
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             FilledTonalIconToggleButton(
                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-                checked = !readonly, onCheckedChange = {
+                checked = !readonly,
+                onCheckedChange = {
                     onConfirmButtonClick()
-                }) {
+                },
+            ) {
                 Icon(
                     imageVector = if (readonly) Icons.Default.Edit else Icons.Default.Check,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
             Spacer(modifier = Modifier.height(15.dp))
-            FilledTonalIconButton(modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand), onClick = onResetButtonClick) {
+            FilledTonalIconButton(
+                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                onClick = onResetButtonClick,
+            ) {
                 Icon(
-                    imageVector = Icons.Default.Restore, contentDescription = null
+                    imageVector = Icons.Default.Restore,
+                    contentDescription = null,
                 )
             }
         }

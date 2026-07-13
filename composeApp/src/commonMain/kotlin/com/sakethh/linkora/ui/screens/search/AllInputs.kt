@@ -8,5 +8,5 @@ data class AllInputs(
     val sortingType: String,
     val appliedFolderFilters: List<FolderType>,
     val appliedLinkFilters: List<LinkType>,
-    val isTagFilterApplied: Boolean
+    val isTagFilterApplied: Boolean,
 )

@@ -79,44 +79,56 @@ fun SettingsScreen() {
     val topAppBarScrollState = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val uriHandler = LocalUriHandler.current
     val coroutineScope = rememberCoroutineScope()
-    Scaffold(topBar = {
-        Column {
-            LargeTopAppBar(
-                scrollBehavior = topAppBarScrollState, title = {
-                    Text(
-                        text = Localization.rememberLocalizedString(Localization.Key.Settings),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontSize = 22.sp
-                    )
-                })
-        }
-    }) { it ->
+    Scaffold(
+        topBar = {
+            Column {
+                LargeTopAppBar(
+                    scrollBehavior = topAppBarScrollState,
+                    title = {
+                        Text(
+                            text = Localization.rememberLocalizedString(Localization.Key.Settings),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontSize = 22.sp,
+                        )
+                    },
+                )
+            }
+        },
+    ) { it ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().addEdgeToEdgeScaffoldPadding(it)
-                .nestedScroll(topAppBarScrollState.nestedScrollConnection)
+            modifier =
+            Modifier.fillMaxSize()
+                .addEdgeToEdgeScaffoldPadding(it)
+                .nestedScroll(topAppBarScrollState.nestedScrollConnection),
         ) {
             item {
                 Column(
-                    modifier = Modifier.padding(
-                        start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp
-                    ).clip(
-                        RoundedCornerShape(15.dp)
-                    ).fillMaxWidth().background(MaterialTheme.colorScheme.primaryContainer)
-                        .padding(top = 7.5.dp)
+                    modifier =
+                    Modifier.padding(
+                        start = 15.dp,
+                        end = 15.dp,
+                        top = 7.5.dp,
+                        bottom = 7.5.dp,
+                    )
+                        .clip(RoundedCornerShape(15.dp))
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .padding(top = 7.5.dp),
                 ) {
                     AppVersionLabel()
                     Row(
                         modifier = Modifier.padding(start = 10.dp, top = 5.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         FilledIconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                .pressScaleEffect(), onClick = {
+                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(),
+                            onClick = {
                                 coroutineScope.launch {
                                     uriHandler.openUriOrNotify("https://www.github.com/LinkoraApp")
                                 }
-                            }) {
+                            },
+                        ) {
                             Icon(
                                 painter = painterResource(Res.drawable.github),
                                 contentDescription = null,
@@ -124,12 +136,13 @@ fun SettingsScreen() {
                             )
                         }
                         FilledIconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                .pressScaleEffect(), onClick = {
+                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(),
+                            onClick = {
                                 coroutineScope.launch {
                                     uriHandler.openUriOrNotify("https://discord.gg/ZDBXNtv8MD")
                                 }
-                            }) {
+                            },
+                        ) {
                             Icon(
                                 painter = painterResource(Res.drawable.discord),
                                 contentDescription = null,
@@ -137,12 +150,13 @@ fun SettingsScreen() {
                             )
                         }
                         FilledIconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                .pressScaleEffect(), onClick = {
+                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(),
+                            onClick = {
                                 coroutineScope.launch {
                                     uriHandler.openUriOrNotify("https://www.twitter.com/LinkoraApp")
                                 }
-                            }) {
+                            },
+                        ) {
                             Icon(
                                 painter = painterResource(Res.drawable.twitter),
                                 contentDescription = null,
@@ -151,8 +165,12 @@ fun SettingsScreen() {
                         }
                     }
                     ItemDivider(
-                        paddingValues = PaddingValues(
-                            start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp
+                        paddingValues =
+                        PaddingValues(
+                            start = 15.dp,
+                            end = 15.dp,
+                            top = 7.5.dp,
+                            bottom = 7.5.dp,
                         ),
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         colorOpacity = 0.25f,
@@ -164,15 +182,17 @@ fun SettingsScreen() {
                                 uriHandler.openUriOrNotify("https://github.com/LinkoraApp/localization-server")
                             }
                         },
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .padding(start = 15.dp).pressScaleEffect()
+                        modifier =
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .padding(start = 15.dp)
+                            .pressScaleEffect(),
                     ) {
                         Icon(imageVector = Icons.Default.Translate, contentDescription = null)
                         Spacer(modifier = Modifier.width(6.5.dp))
                         Text(
                             text = Localization.rememberLocalizedString(Localization.Key.Translate),
                             style = MaterialTheme.typography.titleMedium,
-                            fontSize = 16.5.sp
+                            fontSize = 16.5.sp,
                         )
                     }
                     Button(
@@ -181,32 +201,38 @@ fun SettingsScreen() {
                                 uriHandler.openUriOrNotify("https://ko-fi.com/sakethpathike")
                             }
                         },
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .padding(start = 15.dp).pressScaleEffect()
+                        modifier =
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .padding(start = 15.dp)
+                            .pressScaleEffect(),
                     ) {
                         Icon(imageVector = Icons.Default.Coffee, contentDescription = null)
                         Spacer(modifier = Modifier.width(6.5.dp))
                         Text(
                             text = Localization.rememberLocalizedString(Localization.Key.BuyMeACoffee),
                             style = MaterialTheme.typography.titleMedium,
-                            fontSize = 16.5.sp
+                            fontSize = 16.5.sp,
                         )
                     }
                     Button(
                         onClick = {
                             coroutineScope.launch {
-                                uriHandler.openUriOrNotify("https://play.google.com/store/apps/details?id=com.sakethh.linkora")
+                                uriHandler.openUriOrNotify(
+                                    "https://play.google.com/store/apps/details?id=com.sakethh.linkora",
+                                )
                             }
                         },
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .padding(start = 15.dp, bottom = 15.dp).pressScaleEffect()
+                        modifier =
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .padding(start = 15.dp, bottom = 15.dp)
+                            .pressScaleEffect(),
                     ) {
                         Icon(imageVector = Icons.Default.RateReview, contentDescription = null)
                         Spacer(modifier = Modifier.width(6.5.dp))
                         Text(
                             text = Localization.Key.RateOnPlayLabel.rememberLocalizedString(),
                             style = MaterialTheme.typography.titleMedium,
-                            fontSize = 16.5.sp
+                            fontSize = 16.5.sp,
                         )
                     }
                 }
@@ -217,8 +243,8 @@ fun SettingsScreen() {
                         onClick = it.onClick,
                         sectionTitle = it.sectionTitle,
                         sectionIcon = it.sectionIcon,
-                        shouldArrowIconAppear = it.shouldArrowIconAppear
-                    )
+                        shouldArrowIconAppear = it.shouldArrowIconAppear,
+                    ),
                 )
             }
             item {
@@ -236,82 +262,82 @@ fun AppVersionLabel(modifier: Modifier = Modifier.padding(top = 7.5.dp, start = 
             style = MaterialTheme.typography.labelSmall,
             fontSize = 22.sp,
             modifier = Modifier.alignByBaseline(),
-            color = MaterialTheme.colorScheme.onPrimaryContainer
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
         )
         Text(
             text = Constants.APP_VERSION_NAME,
             style = MaterialTheme.typography.labelSmall,
             fontSize = 12.5.sp,
             modifier = Modifier.alignByBaseline().padding(start = 2.5.dp),
-            color = MaterialTheme.colorScheme.onPrimaryContainer
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
         )
     }
 }
 
-private fun settingsScreenOptions(navController: NavController): List<SettingSectionComponentParam> {
-    return listOf(
-        SettingSectionComponentParam(
-            onClick = {
-                navController.navigate(Navigation.Settings.ThemeSettingsScreen)
-            },
-            sectionTitle = Localization.getLocalizedString(Localization.Key.Theme),
-            sectionIcon = Icons.Default.ColorLens
-        ),
-        SettingSectionComponentParam(
-            onClick = {
-                navController.navigate(Navigation.Settings.GeneralSettingsScreen)
-            },
-            sectionTitle = Localization.getLocalizedString(Localization.Key.General),
-            sectionIcon = Icons.Default.SettingsInputSvideo
-        ),
-        SettingSectionComponentParam(
-            onClick = {
-                navController.navigate(Navigation.Settings.AdvancedSettingsScreen)
-            },
-            sectionTitle = Localization.getLocalizedString(Localization.Key.Advanced),
-            sectionIcon = Icons.Default.Build
-        ),
-        SettingSectionComponentParam(
-            onClick = {
-                navController.navigate(Navigation.Settings.LayoutSettingsScreen)
-            },
-            sectionTitle = Localization.getLocalizedString(Localization.Key.Layout),
-            sectionIcon = Icons.Default.Dashboard
-        ),
-        SettingSectionComponentParam(
-            onClick = {
-                navController.navigate(Navigation.Settings.LanguageSettingsScreen)
-            },
-            sectionTitle = Localization.getLocalizedString(Localization.Key.Language),
-            sectionIcon = Icons.Default.Language
-        ),
-        SettingSectionComponentParam(
-            onClick = {
-                navController.navigate(Navigation.Settings.DataSettingsScreen)
-            },
-            sectionTitle = Localization.getLocalizedString(Localization.Key.Data),
-            sectionIcon = Icons.Default.Storage
-        ),
-        /*SettingSectionComponentParam(
-            onClick = {
+private fun settingsScreenOptions(
+    navController: NavController,
+): List<SettingSectionComponentParam> = listOf(
+    SettingSectionComponentParam(
+        onClick = {
+            navController.navigate(Navigation.Settings.ThemeSettingsScreen)
+        },
+        sectionTitle = Localization.getLocalizedString(Localization.Key.Theme),
+        sectionIcon = Icons.Default.ColorLens,
+    ),
+    SettingSectionComponentParam(
+        onClick = {
+            navController.navigate(Navigation.Settings.GeneralSettingsScreen)
+        },
+        sectionTitle = Localization.getLocalizedString(Localization.Key.General),
+        sectionIcon = Icons.Default.SettingsInputSvideo,
+    ),
+    SettingSectionComponentParam(
+        onClick = {
+            navController.navigate(Navigation.Settings.AdvancedSettingsScreen)
+        },
+        sectionTitle = Localization.getLocalizedString(Localization.Key.Advanced),
+        sectionIcon = Icons.Default.Build,
+    ),
+    SettingSectionComponentParam(
+        onClick = {
+            navController.navigate(Navigation.Settings.LayoutSettingsScreen)
+        },
+        sectionTitle = Localization.getLocalizedString(Localization.Key.Layout),
+        sectionIcon = Icons.Default.Dashboard,
+    ),
+    SettingSectionComponentParam(
+        onClick = {
+            navController.navigate(Navigation.Settings.LanguageSettingsScreen)
+        },
+        sectionTitle = Localization.getLocalizedString(Localization.Key.Language),
+        sectionIcon = Icons.Default.Language,
+    ),
+    SettingSectionComponentParam(
+        onClick = {
+            navController.navigate(Navigation.Settings.DataSettingsScreen)
+        },
+        sectionTitle = Localization.getLocalizedString(Localization.Key.Data),
+        sectionIcon = Icons.Default.Storage,
+    ),
+      /*SettingSectionComponentParam(
+          onClick = {
 
-            },
-            sectionTitle = Localization.getLocalizedString(Localization.Key.Privacy),
-            sectionIcon = Icons.Default.PrivacyTip
-        ),*/
-        SettingSectionComponentParam(
-            onClick = {
-                navController.navigate(Navigation.Settings.AboutScreen)
-            },
-            sectionTitle = Localization.getLocalizedString(Localization.Key.About),
-            sectionIcon = Icons.Default.Info
-        ),
-        SettingSectionComponentParam(
-            onClick = {
-                navController.navigate(Navigation.Settings.AcknowledgementScreen)
-            },
-            sectionTitle = Localization.getLocalizedString(Localization.Key.Acknowledgments),
-            sectionIcon = Icons.Default.Group
-        ),
-    )
-}
+          },
+          sectionTitle = Localization.getLocalizedString(Localization.Key.Privacy),
+          sectionIcon = Icons.Default.PrivacyTip
+      ),*/
+    SettingSectionComponentParam(
+        onClick = {
+            navController.navigate(Navigation.Settings.AboutScreen)
+        },
+        sectionTitle = Localization.getLocalizedString(Localization.Key.About),
+        sectionIcon = Icons.Default.Info,
+    ),
+    SettingSectionComponentParam(
+        onClick = {
+            navController.navigate(Navigation.Settings.AcknowledgementScreen)
+        },
+        sectionTitle = Localization.getLocalizedString(Localization.Key.Acknowledgments),
+        sectionIcon = Icons.Default.Group,
+    ),
+)

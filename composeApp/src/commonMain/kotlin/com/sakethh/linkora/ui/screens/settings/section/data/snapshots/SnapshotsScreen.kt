@@ -66,30 +66,33 @@ import kotlinx.coroutines.launch
 fun SnapshotsScreen() {
     val dataSettingsScreenVM: DataSettingsScreenVM = linkoraViewModel()
     val preferences by dataSettingsScreenVM.preferencesAsFlow.collectAsStateWithLifecycle()
-    var backupLocation by rememberSaveable(preferences.currentBackupLocation) {
-        mutableStateOf(preferences.currentBackupLocation)
-    }
+    var backupLocation by
+        rememberSaveable(preferences.currentBackupLocation) {
+            mutableStateOf(preferences.currentBackupLocation)
+        }
 
     var backupAutoDeleteThreshold by
-    rememberSaveable(preferences.backupAutoDeleteThreshold) {
-        mutableIntStateOf(preferences.backupAutoDeleteThreshold)
-    }
+        rememberSaveable(preferences.backupAutoDeleteThreshold) {
+            mutableIntStateOf(preferences.backupAutoDeleteThreshold)
+        }
     val localFocusManager = LocalFocusManager.current
 
     val isBackupAutoDeletionEnabled by
-    rememberSaveable(preferences.backupAutoDeletionEnabled) {
-        mutableStateOf(preferences.backupAutoDeletionEnabled)
-    }
+        rememberSaveable(preferences.backupAutoDeletionEnabled) {
+            mutableStateOf(preferences.backupAutoDeletionEnabled)
+        }
     val platform = platform
     val coroutineScope = rememberCoroutineScope()
     SettingsSectionScaffold(
         topAppBarText = Navigation.Settings.Data.SnapshotsScreen.toString(),
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
-            modifier = Modifier.animateContentSize().fillMaxSize()
+            modifier =
+            Modifier.animateContentSize()
+                .fillMaxSize()
                 .addEdgeToEdgeScaffoldPadding(paddingValues)
                 .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
-            verticalArrangement = Arrangement.spacedBy(30.dp)
+            verticalArrangement = Arrangement.spacedBy(30.dp),
         ) {
             item {
                 Spacer(modifier = Modifier)
@@ -100,26 +103,29 @@ fun SnapshotsScreen() {
                         isIconNeeded = true,
                         title = Localization.rememberLocalizedString(Localization.Key.UseSnapshots),
                         doesDescriptionExists = true,
-                        description = Localization.rememberLocalizedString(Localization.Key.UseSnapshotsDescription),
+                        description =
+                        Localization.rememberLocalizedString(Localization.Key.UseSnapshotsDescription),
                         isSwitchNeeded = true,
                         isSwitchEnabled = preferences.areSnapshotsEnabled,
                         onSwitchStateChange = {
                             var isStorageAccessPermitted = false
-                            coroutineScope.launch {
-                                isStorageAccessPermitted =
-                                    dataSettingsScreenVM.isStoragePermissionGranted()
-                            }.invokeOnCompletion { _ ->
-                                if (isStorageAccessPermitted.not() && platform is Platform.Android) return@invokeOnCompletion
-                                dataSettingsScreenVM.changeSettingPreferenceValue(
-                                    preferenceKey = booleanPreferencesKey(
-                                        AppPreferences.USE_SNAPSHOTS.key
-                                    ), newValue = it
-                                )
-                            }
+                            coroutineScope
+                                .launch {
+                                    isStorageAccessPermitted = dataSettingsScreenVM.isStoragePermissionGranted()
+                                }
+                                .invokeOnCompletion { _ ->
+                                    if (isStorageAccessPermitted.not() && platform is Platform.Android) {
+                                        return@invokeOnCompletion
+                                    }
+                                    dataSettingsScreenVM.changeSettingPreferenceValue(
+                                        preferenceKey = booleanPreferencesKey(AppPreferences.USE_SNAPSHOTS.key),
+                                        newValue = it,
+                                    )
+                                }
                         },
                         icon = Icons.Default.BackupTable,
-                        shouldFilledIconBeUsed = true
-                    )
+                        shouldFilledIconBeUsed = true,
+                    ),
                 )
             }
             if (preferences.areSnapshotsEnabled) {
@@ -128,54 +134,84 @@ fun SnapshotsScreen() {
                         supportingText = {
                             if (platform is Platform.Android) {
                                 Text(
-                                    text = Localization.rememberLocalizedString(Localization.Key.SnapshotsBackupLocationWarning),
-                                    style = MaterialTheme.typography.titleSmall
+                                    text =
+                                    Localization.rememberLocalizedString(
+                                        Localization.Key.SnapshotsBackupLocationWarning,
+                                    ),
+                                    style = MaterialTheme.typography.titleSmall,
                                 )
                             }
-                        }, textStyle = MaterialTheme.typography.titleSmall, trailingIcon = {
+                        },
+                        textStyle = MaterialTheme.typography.titleSmall,
+                        trailingIcon = {
                             FilledTonalIconButton(
-                                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                    .pressScaleEffect().padding(end = 5.dp), onClick = {
+                                modifier =
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .pressScaleEffect()
+                                    .padding(end = 5.dp),
+                                onClick = {
                                     dataSettingsScreenVM.changeExportLocation(
                                         exportLocation = backupLocation,
                                         platform = platform,
-                                        exportLocationType = ExportLocationType.SNAPSHOT
+                                        exportLocationType = ExportLocationType.SNAPSHOT,
                                     )
-                                }) {
+                                },
+                            ) {
                                 Icon(
-                                    imageVector = if (platform is Platform.Android) Icons.Default.FolderOpen else Icons.Default.Save,
-                                    contentDescription = null
+                                    imageVector =
+                                    if (platform is Platform.Android) {
+                                        Icons.Default.FolderOpen
+                                    } else {
+                                        Icons.Default.Save
+                                    },
+                                    contentDescription = null,
                                 )
                             }
-                        }, readOnly = platform is Platform.Android, label = {
+                        },
+                        readOnly = platform is Platform.Android,
+                        label = {
                             Text(
-                                text = Localization.rememberLocalizedString(Localization.Key.SnapshotsBackupLocation),
+                                text =
+                                Localization.rememberLocalizedString(
+                                    Localization.Key.SnapshotsBackupLocation,
+                                ),
                                 style = MaterialTheme.typography.titleMedium,
                                 textAlign = TextAlign.Start,
                             )
-                        }, value = backupLocation, onValueChange = {
+                        },
+                        value = backupLocation,
+                        onValueChange = {
                             backupLocation = it
-                        }, modifier = Modifier.padding(
+                        },
+                        modifier =
+                        Modifier.padding(
                             start = 15.dp,
                             end = 15.dp,
-                        ).fillMaxWidth()
+                        )
+                            .fillMaxWidth(),
                     )
                 }
                 item {
                     SettingComponent(
                         SettingComponentParam(
                             isIconNeeded = true,
-                            title = Localization.rememberLocalizedString(Localization.Key.EnableAutoDeleteSnapshots),
+                            title =
+                            Localization.rememberLocalizedString(
+                                Localization.Key.EnableAutoDeleteSnapshots,
+                            ),
                             doesDescriptionExists = true,
-                            description = Localization.rememberLocalizedString(Localization.Key.EnableAutoDeleteSnapshotsDescription),
+                            description =
+                            Localization.rememberLocalizedString(
+                                Localization.Key.EnableAutoDeleteSnapshotsDescription,
+                            ),
                             isSwitchNeeded = true,
                             isSwitchEnabled = isBackupAutoDeletionEnabled,
                             onSwitchStateChange = {
                                 dataSettingsScreenVM.updateAutoDeletionBackupsState(it)
                             },
                             icon = Icons.Default.AutoDelete,
-                            shouldFilledIconBeUsed = true
-                        )
+                            shouldFilledIconBeUsed = true,
+                        ),
                     )
                 }
 
@@ -184,44 +220,54 @@ fun SnapshotsScreen() {
                         TextField(
                             supportingText = {
                                 Text(
-                                    text = Localization.rememberLocalizedString(Localization.Key.SnapshotsFileLimitWarning),
-                                    style = MaterialTheme.typography.titleSmall
+                                    text =
+                                    Localization.rememberLocalizedString(
+                                        Localization.Key.SnapshotsFileLimitWarning,
+                                    ),
+                                    style = MaterialTheme.typography.titleSmall,
                                 )
                             },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             textStyle = MaterialTheme.typography.titleSmall,
                             trailingIcon = {
                                 FilledTonalIconButton(
-                                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                        .pressScaleEffect().padding(end = 5.dp), onClick = {
+                                    modifier =
+                                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                        .pressScaleEffect()
+                                        .padding(end = 5.dp),
+                                    onClick = {
                                         dataSettingsScreenVM.updateAutoDeletionBackupsThreshold(
-                                            backupAutoDeleteThreshold
+                                            backupAutoDeleteThreshold,
                                         )
                                         localFocusManager.clearFocus(force = true)
-                                    }) {
+                                    },
+                                ) {
                                     Icon(
-                                        imageVector = Icons.Default.Save, contentDescription = null
+                                        imageVector = Icons.Default.Save,
+                                        contentDescription = null,
                                     )
                                 }
                             },
                             label = {
                                 Text(
-                                    text = Localization.rememberLocalizedString(Localization.Key.SnapshotsFileLimit),
+                                    text =
+                                    Localization.rememberLocalizedString(Localization.Key.SnapshotsFileLimit),
                                     style = MaterialTheme.typography.titleMedium,
                                     textAlign = TextAlign.Start,
                                 )
                             },
                             value = backupAutoDeleteThreshold.toString(),
                             onValueChange = {
-                                backupAutoDeleteThreshold = try {
-                                    it.toInt()
-                                } catch (_: Exception) {
-                                    0
-                                } catch (_: Error) {
-                                    0
-                                }
+                                backupAutoDeleteThreshold =
+                                    try {
+                                        it.toInt()
+                                    } catch (_: Exception) {
+                                        0
+                                    } catch (_: Error) {
+                                        0
+                                    }
                             },
-                            modifier = Modifier.padding(start = 15.dp, end = 15.dp).fillMaxWidth()
+                            modifier = Modifier.padding(start = 15.dp, end = 15.dp).fillMaxWidth(),
                         )
                     }
                 }
@@ -231,59 +277,81 @@ fun SnapshotsScreen() {
                             text = Localization.rememberLocalizedString(Localization.Key.ExportAs),
                             style = MaterialTheme.typography.titleMedium,
                             fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
                         )
                         Spacer(Modifier.height(15.dp))
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(5.dp)
-                        ) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                             remember {
                                 SnapshotFormat.entries
-                            }.let {
-                                it.forEachIndexed { index, snapshotFormat ->
-                                    val checked =
-                                        snapshotFormat.id.toString() == preferences.snapshotExportFormatID
-                                    ToggleButton(
-                                        shape = when (index) {
-                                            0 -> RoundedCornerShape(
-                                                topStart = 15.dp,
-                                                bottomStart = 15.dp,
-                                                topEnd = 5.dp,
-                                                bottomEnd = 5.dp
-                                            )
+                            }
+                                .let {
+                                    it.forEachIndexed { index, snapshotFormat ->
+                                        val checked =
+                                            snapshotFormat.id.toString() == preferences.snapshotExportFormatID
+                                        ToggleButton(
+                                            shape =
+                                            when (index) {
+                                                0 ->
+                                                    RoundedCornerShape(
+                                                        topStart = 15.dp,
+                                                        bottomStart = 15.dp,
+                                                        topEnd = 5.dp,
+                                                        bottomEnd = 5.dp,
+                                                    )
 
-                                            it.lastIndex -> RoundedCornerShape(
-                                                topStart = 5.dp,
-                                                bottomStart = 5.dp,
-                                                topEnd = 15.dp,
-                                                bottomEnd = 15.dp
-                                            )
+                                                it.lastIndex ->
+                                                    RoundedCornerShape(
+                                                        topStart = 5.dp,
+                                                        bottomStart = 5.dp,
+                                                        topEnd = 15.dp,
+                                                        bottomEnd = 15.dp,
+                                                    )
 
-                                            else -> RoundedCornerShape(5.dp)
-                                        }, checked = checked, onCheckedChange = {
-                                            dataSettingsScreenVM.changeSettingPreferenceValue(
-                                                preferenceKey = stringPreferencesKey(
-                                                    AppPreferences.SNAPSHOTS_EXPORT_TYPE.key
-                                                ), newValue = snapshotFormat.id.toString()
+                                                else -> RoundedCornerShape(5.dp)
+                                            },
+                                            checked = checked,
+                                            onCheckedChange = {
+                                                dataSettingsScreenVM.changeSettingPreferenceValue(
+                                                    preferenceKey =
+                                                    stringPreferencesKey(AppPreferences.SNAPSHOTS_EXPORT_TYPE.key),
+                                                    newValue = snapshotFormat.id.toString(),
+                                                )
+                                            },
+                                        ) {
+                                            Text(
+                                                text = snapshotFormat.localizedValue,
+                                                style =
+                                                if (checked) {
+                                                    MaterialTheme.typography.titleMedium
+                                                } else {
+                                                    MaterialTheme.typography.titleSmall
+                                                },
+                                                color =
+                                                if (checked) {
+                                                    MaterialTheme.colorScheme.onPrimary
+                                                } else {
+                                                    LocalContentColor.current
+                                                },
                                             )
-                                        }) {
-                                        Text(
-                                            text = snapshotFormat.localizedValue,
-                                            style = if (checked) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleSmall,
-                                            color = if (checked) MaterialTheme.colorScheme.onPrimary else LocalContentColor.current
-                                        )
+                                        }
                                     }
                                 }
-                            }
                         }
                     }
                 }
             }
             item {
                 Text(
-                    text = if (platform !is Platform.Android) Localization.rememberLocalizedString(
-                        Localization.Key.SnapshotsExportDescriptionDesktop
-                    ) else Localization.rememberLocalizedString(Localization.Key.SnapshotsExportDescriptionAndroid),
+                    text =
+                    if (platform !is Platform.Android) {
+                        Localization.rememberLocalizedString(
+                            Localization.Key.SnapshotsExportDescriptionDesktop,
+                        )
+                    } else {
+                        Localization.rememberLocalizedString(
+                            Localization.Key.SnapshotsExportDescriptionAndroid,
+                        )
+                    },
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 14.sp,
                     lineHeight = 20.sp,

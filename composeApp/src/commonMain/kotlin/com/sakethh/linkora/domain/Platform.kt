@@ -6,8 +6,7 @@ import com.sakethh.linkora.utils.supportsWideDisplay
 
 sealed interface Platform {
     data object Android : Platform {
-        @Composable
-        fun onMobile(): Boolean = platform == Android || !supportsWideDisplay()
+        @Composable fun onMobile(): Boolean = platform == Android || !supportsWideDisplay()
     }
 
     data object Desktop : Platform

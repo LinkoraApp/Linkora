@@ -17,14 +17,19 @@ import com.sakethh.linkora.domain.ComposableContent
 
 @Composable
 fun ToggleButton(
-    shape: Shape, checked: Boolean, onCheckedChange: (Boolean) -> Unit, content: ComposableContent
+    shape: Shape,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    content: ComposableContent,
 ) {
     Box(
-        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).clip(shape).clickable { onCheckedChange(!checked) }.background(
-            MaterialTheme.colorScheme.primary.copy(
-                if (checked) 1f else 0.125f
-            )
-        ).padding(10.dp), contentAlignment = Alignment.Center
+        modifier =
+        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+            .clip(shape)
+            .clickable { onCheckedChange(!checked) }
+            .background(MaterialTheme.colorScheme.primary.copy(if (checked) 1f else 0.125f))
+            .padding(10.dp),
+        contentAlignment = Alignment.Center,
     ) {
         content()
     }

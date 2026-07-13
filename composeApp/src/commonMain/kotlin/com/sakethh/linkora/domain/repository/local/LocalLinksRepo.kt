@@ -14,44 +14,47 @@ interface LocalLinksRepo {
         link: Link,
         selectedTagIds: List<Long>?,
         linkSaveConfig: LinkSaveConfig,
-        viaSocket: Boolean = false
+        viaSocket: Boolean = false,
     ): Flow<Result<Unit>>
 
-    suspend fun addANewLinkLocally(
-        link: Link,
-    ): Long
+    suspend fun addANewLinkLocally(link: Link): Long
 
     suspend fun addMultipleLinks(links: List<Link>): List<Long>
 
     suspend fun getLinks(
-        linkType: LinkType, parentFolderId: Long, sortOption: String,
+        linkType: LinkType,
+        parentFolderId: Long,
+        sortOption: String,
         pageSize: Int,
         lastSeenTitle: String?,
-        lastSeenId: Long?
+        lastSeenId: Long?,
     ): Flow<Result<List<Link>>>
 
     suspend fun getLinks(
-        tagId: Long, sortOption: String,
+        tagId: Long,
+        sortOption: String,
         pageSize: Int,
         lastSeenTitle: String?,
-        lastSeenId: Long?
+        lastSeenId: Long?,
     ): Flow<Result<List<Link>>>
 
     fun getLinksAsNonResultFlow(
-        linkType: LinkType, parentFolderId: Long, sortOption: String
+        linkType: LinkType,
+        parentFolderId: Long,
+        sortOption: String,
     ): Flow<List<Link>>
-
 
     suspend fun getLinks(
         linkType: LinkType,
         sortOption: String,
         pageSize: Int,
         lastSeenTitle: String?,
-        lastSeenId: Long?
+        lastSeenId: Long?,
     ): Flow<Result<List<Link>>>
 
     fun getLinksAsNonResultFlow(
-        linkType: LinkType, sortOption: String
+        linkType: LinkType,
+        sortOption: String,
     ): Flow<List<Link>>
 
     suspend fun getAllLinks(sortOption: String): Flow<Result<List<Link>>>
@@ -60,50 +63,79 @@ interface LocalLinksRepo {
 
     suspend fun deleteALinkNote(linkId: Long): Flow<Result<Unit>>
 
-    suspend fun deleteALink(linkId: Long, viaSocket: Boolean = false): Flow<Result<Unit>>
-    suspend fun deleteMultipleLinks(
-        linkIds: List<Long>, viaSocket: Boolean = false
+    suspend fun deleteALink(
+        linkId: Long,
+        viaSocket: Boolean = false,
     ): Flow<Result<Unit>>
 
-    suspend fun archiveALink(linkId: Long, viaSocket: Boolean = false): Flow<Result<Unit>>
+    suspend fun deleteMultipleLinks(
+        linkIds: List<Long>,
+        viaSocket: Boolean = false,
+    ): Flow<Result<Unit>>
+
+    suspend fun archiveALink(
+        linkId: Long,
+        viaSocket: Boolean = false,
+    ): Flow<Result<Unit>>
+
     suspend fun updateLinkNote(
-        linkId: Long, newNote: String, viaSocket: Boolean = false
+        linkId: Long,
+        newNote: String,
+        viaSocket: Boolean = false,
     ): Flow<Result<Unit>>
 
     suspend fun updateLinkTitle(
-        linkId: Long, newTitle: String, viaSocket: Boolean = false
+        linkId: Long,
+        newTitle: String,
+        viaSocket: Boolean = false,
     ): Flow<Result<Unit>>
 
     suspend fun isInArchive(url: String): Flow<Result<Boolean>>
 
-    fun search(query: String, sortOption: String): Flow<Result<List<Link>>>
+    fun search(
+        query: String,
+        sortOption: String,
+    ): Flow<Result<List<Link>>>
 
     suspend fun getLinksOfThisFolderAsList(folderID: Long): List<Link>
 
     suspend fun getAllLinks(): List<Link>
+
     fun getAllLinksAsFlow(): Flow<List<Link>>
 
     suspend fun updateALink(
         link: Link,
         updatedLinkTagsPair: LinkTagsPair?,
-        viaSocket: Boolean = false
+        viaSocket: Boolean = false,
     ): Flow<Result<Unit>>
 
     suspend fun refreshLinkMetadata(
         link: Link,
-        refreshLinkType: RefreshLinkType
+        refreshLinkType: RefreshLinkType,
     ): Flow<Result<Unit>>
 
     suspend fun getLocalLinkId(remoteID: Long): Long?
+
     suspend fun getRemoteLinkId(localId: Long): Long?
 
     suspend fun getALink(localLinkId: Long): Link
 
     suspend fun getLatestId(): Long
+
     suspend fun getUnSyncedLinks(): List<Link>
-    suspend fun changeIdOfALink(existingId: Long, newId: Long)
-    suspend fun doesLinkExist(linkType: LinkType, url: String): Boolean
+
+    suspend fun changeIdOfALink(
+        existingId: Long,
+        newId: Long,
+    )
+
+    suspend fun doesLinkExist(
+        linkType: LinkType,
+        url: String,
+    ): Boolean
+
     suspend fun deleteDuplicateLinks(viaSocket: Boolean = false): Flow<Result<Unit>>
+
     suspend fun deleteLinksLocally(linksIds: List<Long>): Flow<Result<Unit>>
 
     fun getAllLinks(
@@ -112,13 +144,15 @@ interface LocalLinksRepo {
         sortOption: String,
         pageSize: Int,
         lastSeenName: String?,
-        lastSeenId: Long?
+        lastSeenId: Long?,
     ): Flow<Result<List<Link>>>
 
     suspend fun isLinksTableEmpty(): Boolean
+
     suspend fun forceSetDefaultFolderToInternalIds(viaSocket: Boolean = false): Flow<Result<Unit>>
 
     suspend fun scrapeLinkData(
-        linkUrl: String, userAgent: String
+        linkUrl: String,
+        userAgent: String,
     ): ScrapedLinkInfo
 }

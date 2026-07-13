@@ -1,13 +1,13 @@
 package com.sakethh.linkora.data
 
-import com.sakethh.linkora.utils.catchAsExceptionAndEmitFailure
-import com.sakethh.linkora.utils.wrappedResultFlow
 import com.sakethh.linkora.data.local.dao.LocalizationDao
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.dto.localization.LocalizationInfoDTO
 import com.sakethh.linkora.domain.model.localization.LocalizedLanguage
 import com.sakethh.linkora.domain.model.localization.LocalizedString
 import com.sakethh.linkora.domain.repository.LocalizationRepo
+import com.sakethh.linkora.utils.catchAsExceptionAndEmitFailure
+import com.sakethh.linkora.utils.wrappedResultFlow
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
@@ -20,99 +20,92 @@ import kotlinx.serialization.json.Json
 class LocalizationRepoImpl(
     private val standardClient: HttpClient,
     private val localizationServerURL: suspend () -> String,
-    private val localizationDao: LocalizationDao
-) :
-    LocalizationRepo.Remote, LocalizationRepo.Local {
-    override fun getLanguagesFromServer(): Flow<Result<LocalizationInfoDTO>> {
-        return flow {
-            emit(Result.Loading())
-            standardClient.get(localizationServerURL() + "info").bodyAsText().let {
-                emit(Result.Success(Json.decodeFromString<LocalizationInfoDTO>(it)))
-            }
-        }.catchAsExceptionAndEmitFailure()
+    private val localizationDao: LocalizationDao,
+) : LocalizationRepo.Remote,
+    LocalizationRepo.Local {
+    override fun getLanguagesFromServer(): Flow<Result<LocalizationInfoDTO>> = flow {
+        emit(Result.Loading())
+        standardClient.get(localizationServerURL() + "info").bodyAsText().let {
+            emit(Result.Success(Json.decodeFromString<LocalizationInfoDTO>(it)))
+        }
     }
+        .catchAsExceptionAndEmitFailure()
 
-    override suspend fun getLanguagePackFromServer(languageCode: String): Flow<Result<List<LocalizedString>>> {
-        return flow {
-            emit(Result.Loading())
-            standardClient.get(localizationServerURL() + languageCode).bodyAsText().let {
+    override suspend fun getLanguagePackFromServer(
+        languageCode: String,
+    ): Flow<Result<List<LocalizedString>>> = flow {
+        emit(Result.Loading())
+        standardClient
+            .get(localizationServerURL() + languageCode)
+            .bodyAsText()
+            .let {
                 Json.decodeFromString<Map<String, String>>(it)
-            }.map {
+            }
+            .map {
                 LocalizedString(
-                    languageCode = languageCode, stringName = it.key, stringValue = it.value
+                    languageCode = languageCode,
+                    stringName = it.key,
+                    stringValue = it.value,
                 )
-            }.let {
+            }
+            .let {
                 emit(Result.Success(it))
             }
-        }.catchAsExceptionAndEmitFailure()
+    }
+        .catchAsExceptionAndEmitFailure()
+
+    override suspend fun addLocalizedStrings(
+        localizedStrings: List<LocalizedString>,
+    ): Flow<Result<Unit>> = wrappedResultFlow {
+        localizationDao.addLocalizedStrings(localizedStrings)
     }
 
-    override suspend fun addLocalizedStrings(localizedStrings: List<LocalizedString>): Flow<Result<Unit>> {
-        return wrappedResultFlow {
-            localizationDao.addLocalizedStrings(localizedStrings)
-        }
-    }
+    override suspend fun doesStringsPackForThisLanguageExists(languageCode: String): Boolean = localizationDao.doesStringsPackForThisLanguageExists(languageCode)
 
-    override suspend fun doesStringsPackForThisLanguageExists(languageCode: String): Boolean {
-        return localizationDao.doesStringsPackForThisLanguageExists(languageCode)
-    }
-
-    override suspend fun deleteAllLocalizedStringsForThisLanguage(languageCode: String): Flow<Result<Unit>> {
-        return wrappedResultFlow {
-            localizationDao.deleteAllLocalizedStringsForThisLanguage(languageCode)
-        }
+    override suspend fun deleteAllLocalizedStringsForThisLanguage(
+        languageCode: String,
+    ): Flow<Result<Unit>> = wrappedResultFlow {
+        localizationDao.deleteAllLocalizedStringsForThisLanguage(languageCode)
     }
 
     override suspend fun getLocalizedStringValueFor(
         stringName: String,
-        languageCode: String
-    ): String? {
-        return localizationDao.getLocalizedStringValueFor(stringName, languageCode)
+        languageCode: String,
+    ): String? = localizationDao.getLocalizedStringValueFor(stringName, languageCode)
+
+    override suspend fun addANewLanguage(localizedLanguage: LocalizedLanguage): Flow<Result<Unit>> = wrappedResultFlow {
+        localizationDao.addANewLanguage(localizedLanguage)
     }
 
-    override suspend fun addANewLanguage(localizedLanguage: LocalizedLanguage): Flow<Result<Unit>> {
-        return wrappedResultFlow {
-            localizationDao.addANewLanguage(localizedLanguage)
-        }
+    override suspend fun addNewLanguages(languages: List<LocalizedLanguage>): Flow<Result<Unit>> = wrappedResultFlow {
+        localizationDao.addNewLanguages(languages)
     }
 
-    override suspend fun addNewLanguages(languages: List<LocalizedLanguage>): Flow<Result<Unit>> {
-        return wrappedResultFlow {
-            localizationDao.addNewLanguages(languages)
-        }
+    override suspend fun deleteALanguage(localizedLanguage: LocalizedLanguage): Flow<Result<Unit>> = wrappedResultFlow {
+        localizationDao.deleteALanguage(localizedLanguage)
     }
 
-    override suspend fun deleteALanguage(localizedLanguage: LocalizedLanguage): Flow<Result<Unit>> {
-        return wrappedResultFlow {
-            localizationDao.deleteALanguage(localizedLanguage)
-        }
+    override suspend fun deleteALanguage(languageName: String): Flow<Result<Unit>> = wrappedResultFlow {
+        localizationDao.deleteALanguage(languageName)
     }
 
-    override suspend fun deleteALanguage(languageName: String): Flow<Result<Unit>> {
-        return wrappedResultFlow {
-            localizationDao.deleteALanguage(languageName)
-        }
+    override suspend fun deleteALanguageBasedOnLanguageCode(
+        languageCode: String,
+    ): Flow<Result<Unit>> = wrappedResultFlow {
+        localizationDao.deleteALanguageBasedOnLanguageCode(languageCode)
     }
 
-    override suspend fun deleteALanguageBasedOnLanguageCode(languageCode: String): Flow<Result<Unit>> {
-        return wrappedResultFlow {
-            localizationDao.deleteALanguageBasedOnLanguageCode(languageCode)
-        }
-    }
+    override suspend fun getLanguageNameForTheCode(languageCode: String): String = localizationDao.getLanguageNameForTheCode(languageCode)
 
-    override suspend fun getLanguageNameForTheCode(languageCode: String): String {
-        return localizationDao.getLanguageNameForTheCode(languageCode)
-    }
+    override suspend fun getLanguageCodeForTheLanguageNamed(languageName: String): String = localizationDao.getLanguageCodeForTheLanguageNamed(languageName)
 
-    override suspend fun getLanguageCodeForTheLanguageNamed(languageName: String): String {
-        return localizationDao.getLanguageCodeForTheLanguageNamed(languageName)
-    }
-
-    override fun getAllLanguages(): Flow<Result<List<LocalizedLanguage>>> {
-        return localizationDao.getAllLanguages().map {
+    override fun getAllLanguages(): Flow<Result<List<LocalizedLanguage>>> = localizationDao
+        .getAllLanguages()
+        .map {
             Result.Success(it)
-        }.onStart {
+        }
+        .onStart {
             Result.Loading<List<LocalizedLanguage>>()
-        }.catchAsExceptionAndEmitFailure()
-    }
+        }
+        .catchAsExceptionAndEmitFailure()
 }

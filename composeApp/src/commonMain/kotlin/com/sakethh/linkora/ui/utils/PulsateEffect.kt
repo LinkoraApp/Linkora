@@ -11,31 +11,33 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 
 enum class OnClickState {
-    IDLE, GESTURED
+    IDLE,
+    GESTURED,
 }
 
 fun Modifier.pressScaleEffect(targetValue: Float = 0.98f) = composed {
     val composableState = remember {
         mutableStateOf(OnClickState.IDLE)
     }
-    val scaleValue = animateFloatAsState(
-        label = "",
-        targetValue = if (composableState.value == OnClickState.IDLE) 1.0f else targetValue
-    )
-    this
-        .graphicsLayer {
-            scaleX = scaleValue.value
-            scaleY = scaleValue.value
-        }
+    val scaleValue =
+        animateFloatAsState(
+            label = "",
+            targetValue = if (composableState.value == OnClickState.IDLE) 1.0f else targetValue,
+        )
+    this.graphicsLayer {
+        scaleX = scaleValue.value
+        scaleY = scaleValue.value
+    }
         .pointerInput(composableState.value) {
             awaitPointerEventScope {
-                composableState.value = if (composableState.value == OnClickState.IDLE) {
-                    awaitFirstDown(false)
-                    OnClickState.GESTURED
-                } else {
-                    waitForUpOrCancellation()
-                    OnClickState.IDLE
-                }
+                composableState.value =
+                    if (composableState.value == OnClickState.IDLE) {
+                        awaitFirstDown(false)
+                        OnClickState.GESTURED
+                    } else {
+                        waitForUpOrCancellation()
+                        OnClickState.IDLE
+                    }
             }
         }
 }

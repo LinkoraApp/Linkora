@@ -12,9 +12,8 @@ import androidx.room3.RoomDatabase
 
 @Entity(tableName = "metadata")
 data class MetaDataEntity(
-    @PrimaryKey
-    val link: String,
-    val uuid: String
+    @PrimaryKey val link: String,
+    val uuid: String,
 )
 
 @Dao
@@ -32,7 +31,6 @@ interface MetaDataDao {
 @Database(entities = [MetaDataEntity::class], version = 1)
 @ConstructedBy(WebCaptureDatabaseConstructor::class)
 abstract class WebCaptureDatabase : RoomDatabase() {
-
     companion object {
         const val NAME = "WebCapture"
     }

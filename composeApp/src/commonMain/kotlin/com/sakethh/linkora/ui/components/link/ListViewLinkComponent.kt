@@ -79,28 +79,52 @@ fun ListViewLinkComponent(
     val localClipBoardManager = LocalClipboardManager.current
     val platform = LocalPlatform.current
     Column(
-        modifier = Modifier.background(
-            if (linkComponentParam.isItemSelected.value) MaterialTheme.colorScheme.primary.copy(
-                0.25f
-            ) else Color.Transparent
-        ).pointerHoverIcon(icon = PointerIcon.Hand).combinedClickable(interactionSource = remember {
-            MutableInteractionSource()
-        }, indication = null, onClick = {
-            linkComponentParam.onLinkClick()
-        }, onLongClick = {
-            linkComponentParam.onLongClick()
-        }).padding(start = 15.dp, top = 15.dp).fillMaxWidth().wrapContentHeight().pressScaleEffect()
-            .animateContentSize().then(modifier), verticalArrangement = Arrangement.SpaceBetween
+        modifier =
+        Modifier.background(
+            if (linkComponentParam.isItemSelected.value) {
+                MaterialTheme.colorScheme.primary.copy(0.25f)
+            } else {
+                Color.Transparent
+            },
+        )
+            .pointerHoverIcon(icon = PointerIcon.Hand)
+            .combinedClickable(
+                interactionSource =
+                remember {
+                    MutableInteractionSource()
+                },
+                indication = null,
+                onClick = {
+                    linkComponentParam.onLinkClick()
+                },
+                onLongClick = {
+                    linkComponentParam.onLongClick()
+                },
+            )
+            .padding(start = 15.dp, top = 15.dp)
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .pressScaleEffect()
+            .animateContentSize()
+            .then(modifier),
+        verticalArrangement = Arrangement.SpaceBetween,
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(end = 15.dp).wrapContentHeight(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
                 text = linkComponentParam.link.title,
                 style = MaterialTheme.typography.titleSmall,
                 fontSize = 16.sp,
-                modifier = Modifier.fillMaxWidth(if (!linkComponentParam.isSelectionModeEnabled.value && titleOnlyView) 1f else 0.65f)
+                modifier =
+                Modifier.fillMaxWidth(
+                    if (!linkComponentParam.isSelectionModeEnabled.value && titleOnlyView) {
+                        1f
+                    } else {
+                        0.65f
+                    },
+                )
                     .padding(end = 15.dp),
                 maxLines = 4,
                 lineHeight = 20.sp,
@@ -110,48 +134,53 @@ fun ListViewLinkComponent(
             if (!linkComponentParam.isItemSelected.value && !titleOnlyView) {
                 if (linkComponentParam.link.imgURL.isNotEmpty()) {
                     CoilImage(
-                        modifier = Modifier.width(95.dp).height(60.dp)
-                            .clip(RoundedCornerShape(15.dp)),
+                        modifier = Modifier.width(95.dp).height(60.dp).clip(RoundedCornerShape(15.dp)),
                         imgURL = linkComponentParam.link.imgURL,
-                        userAgent = linkComponentParam.link.userAgent
-                            ?: preferences.primaryJsoupUserAgent,
+                        userAgent = linkComponentParam.link.userAgent ?: preferences.primaryJsoupUserAgent,
                         alignment = imageAlignment,
-                        preferences = preferences
+                        preferences = preferences,
                     )
                 } else {
                     Box(
-                        modifier = Modifier.width(95.dp).height(60.dp)
+                        modifier =
+                        Modifier.width(95.dp)
+                            .height(60.dp)
                             .clip(RoundedCornerShape(15.dp))
                             .background(MaterialTheme.colorScheme.primary),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             tint = MaterialTheme.colorScheme.onPrimary,
                             imageVector = Icons.Rounded.ImageNotSupported,
                             contentDescription = null,
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(32.dp),
                         )
                     }
                 }
             } else if (linkComponentParam.isItemSelected.value) {
                 Box(
-                    modifier = Modifier.width(95.dp).height(60.dp).clip(RoundedCornerShape(15.dp))
+                    modifier =
+                    Modifier.width(95.dp)
+                        .height(60.dp)
+                        .clip(RoundedCornerShape(15.dp))
                         .background(MaterialTheme.colorScheme.primary),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         tint = MaterialTheme.colorScheme.onPrimary,
                         imageVector = Icons.Rounded.CheckCircle,
                         contentDescription = null,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(32.dp),
                     )
                 }
             }
         }
         if (linkComponentParam.link.note.isNotBlank() && preferences.showNoteInLinkView) {
             Text(
-                modifier = Modifier.padding(
-                    end = 15.dp, top = 10.dp
+                modifier =
+                Modifier.padding(
+                    end = 15.dp,
+                    top = 10.dp,
                 ),
                 text = linkComponentParam.link.note,
                 style = MaterialTheme.typography.titleSmall,
@@ -159,13 +188,15 @@ fun ListViewLinkComponent(
                 textAlign = TextAlign.Start,
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(0.75f)
+                color = MaterialTheme.colorScheme.onSurface.copy(0.75f),
             )
         }
         if (preferences.showDateInLinkView && linkComponentParam.link.date != null) {
             Text(
-                modifier = Modifier.padding(
-                    end = 15.dp, top = 10.dp
+                modifier =
+                Modifier.padding(
+                    end = 15.dp,
+                    top = 10.dp,
                 ),
                 text = linkComponentParam.link.date,
                 style = MaterialTheme.typography.titleMedium,
@@ -173,33 +204,42 @@ fun ListViewLinkComponent(
                 textAlign = TextAlign.Start,
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 12.45.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(0.65f)
+                color = MaterialTheme.colorScheme.onSurface.copy(0.65f),
             )
         }
 
         if (preferences.showTagsInLinkView && linkComponentParam.tags != null) {
-            TagsRow(tags = linkComponentParam.tags, onTagClick = {
-                linkComponentParam.onTagClick(it)
-            })
+            TagsRow(
+                tags = linkComponentParam.tags,
+                onTagClick = {
+                    linkComponentParam.onTagClick(it)
+                },
+            )
         }
 
         if (preferences.showHostInLinkListView) {
             Text(
-                modifier = Modifier.padding(
+                modifier =
+                Modifier.padding(
                     top = if (linkComponentParam.tags != null) 5.dp else 15.dp,
                     end = 15.dp,
-                    bottom = if (linkComponentParam.isSelectionModeEnabled.value) 15.dp else 0.dp
-                ).background(
-                    color = MaterialTheme.colorScheme.primary.copy(0.1f),
-                    shape = RoundedCornerShape(5.dp)
-                ).padding(5.dp),
-                text = linkComponentParam.link.host.replace("www.", "").replace("http://", "")
+                    bottom = if (linkComponentParam.isSelectionModeEnabled.value) 15.dp else 0.dp,
+                )
+                    .background(
+                        color = MaterialTheme.colorScheme.primary.copy(0.1f),
+                        shape = RoundedCornerShape(5.dp),
+                    )
+                    .padding(5.dp),
+                text =
+                linkComponentParam.link.host
+                    .replace("www.", "")
+                    .replace("http://", "")
                     .replace("https://", ""),
                 style = MaterialTheme.typography.titleLarge,
                 maxLines = 1,
                 textAlign = TextAlign.Start,
                 overflow = TextOverflow.Ellipsis,
-                fontSize = 12.sp
+                fontSize = 12.sp,
             )
         } else {
             Spacer(modifier = Modifier.height(10.dp))
@@ -214,34 +254,35 @@ fun ListViewLinkComponent(
                 text = Localization.Key.FolderPathLabel.rememberLocalizedString(),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.padding(top = 15.dp)
+                modifier = Modifier.padding(top = 15.dp),
             )
             FoldersRow(
-                modifier = Modifier.fillMaxWidth().padding(
-                    bottom = if (linkComponentParam.isSelectionModeEnabled.value) 15.dp else 0.dp
-                ),
+                modifier =
+                Modifier.fillMaxWidth()
+                    .padding(
+                        bottom = if (linkComponentParam.isSelectionModeEnabled.value) 15.dp else 0.dp,
+                    ),
                 folders = foldersPath,
-                onFolderClick = { linkComponentParam.onFolderClick(it) })
+                onFolderClick = { linkComponentParam.onFolderClick(it) },
+            )
         }
 
         Row(
             modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
                 if (!linkComponentParam.isSelectionModeEnabled.value) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         IconButton(
                             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
                             onClick = {
-                                localClipBoardManager.setText(
-                                    AnnotatedString(linkComponentParam.link.url)
-                                )
-                            }) {
+                                localClipBoardManager.setText(AnnotatedString(linkComponentParam.link.url))
+                            },
+                        ) {
                             Icon(
-                                imageVector = Icons.Outlined.ContentCopy, contentDescription = null
+                                imageVector = Icons.Outlined.ContentCopy,
+                                contentDescription = null,
                             )
                         }
                         if (platform is Platform.Android) {
@@ -249,7 +290,8 @@ fun ListViewLinkComponent(
                                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
                                 onClick = {
                                     onShare(linkComponentParam.link.url)
-                                }) {
+                                },
+                            ) {
                                 Icon(imageVector = Icons.Outlined.Share, contentDescription = null)
                             }
                         }
@@ -257,9 +299,11 @@ fun ListViewLinkComponent(
                             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
                             onClick = {
                                 linkComponentParam.onMoreIconClick()
-                            }) {
+                            },
+                        ) {
                             Icon(
-                                imageVector = Icons.Filled.MoreVert, contentDescription = null
+                                imageVector = Icons.Filled.MoreVert,
+                                contentDescription = null,
                             )
                         }
                     }
@@ -269,12 +313,12 @@ fun ListViewLinkComponent(
         AnimatedVisibility(
             visible = linkComponentParam.isSelectionModeEnabled.value.not(),
             enter = fadeIn(),
-            exit = fadeOut()
+            exit = fadeOut(),
         ) {
             ItemDivider(
                 colorOpacity = 0.25f,
                 color = MaterialTheme.colorScheme.outline,
-                paddingValues = PaddingValues(top = 2.5.dp, bottom = 2.5.dp, end = 10.dp)
+                paddingValues = PaddingValues(top = 2.5.dp, bottom = 2.5.dp, end = 10.dp),
             )
         }
     }
@@ -285,35 +329,42 @@ fun TagsRow(
     modifier: Modifier = Modifier.padding(top = 5.dp, end = 15.dp).fillMaxWidth(),
     tags: List<Tag>,
     onTagClick: (Tag) -> Unit,
-    chipColorOpacity: Float = 0.5f
+    chipColorOpacity: Float = 0.5f,
 ) {
     LazyRow(
-        modifier = modifier, horizontalArrangement = Arrangement.spacedBy(10.dp)
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         items(tags) { tag ->
             AssistChip(
-                colors = AssistChipDefaults.assistChipColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(
-                        chipColorOpacity
-                    )
-                ), border = AssistChipDefaults.assistChipBorder(
+                colors =
+                AssistChipDefaults.assistChipColors(
+                    containerColor =
+                    MaterialTheme.colorScheme.secondaryContainer.copy(chipColorOpacity),
+                ),
+                border =
+                AssistChipDefaults.assistChipBorder(
                     enabled = true,
-                    borderColor = MaterialTheme.colorScheme.secondaryContainer.copy(chipColorOpacity)
-                ), onClick = {
+                    borderColor = MaterialTheme.colorScheme.secondaryContainer.copy(chipColorOpacity),
+                ),
+                onClick = {
                     onTagClick(tag)
-                }, label = {
+                },
+                label = {
                     Text(
                         text = tag.name,
                         style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                     )
-                }, leadingIcon = {
+                },
+                leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Tag,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
                     )
-                }, modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                },
+                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
             )
         }
     }
@@ -322,38 +373,47 @@ fun TagsRow(
 @Composable
 fun FoldersRow(
     modifier: Modifier,
-    folders: List<Folder>, // this can be changed to a persistent list since we guarantee that the path doesn't change once the list is built.
+    folders: List<
+        Folder,
+        >, // this can be changed to a persistent list since we guarantee that the path doesn't
+    // change once the list is built.
     onFolderClick: (Folder) -> Unit,
-    chipColorOpacity: Float = 0.5f
+    chipColorOpacity: Float = 0.5f,
 ) {
     LazyRow(
         modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         itemsIndexed(folders) { index, folder ->
             AssistChip(
-                colors = AssistChipDefaults.assistChipColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(
-                        chipColorOpacity
-                    )
-                ), border = AssistChipDefaults.assistChipBorder(
+                colors =
+                AssistChipDefaults.assistChipColors(
+                    containerColor =
+                    MaterialTheme.colorScheme.secondaryContainer.copy(chipColorOpacity),
+                ),
+                border =
+                AssistChipDefaults.assistChipBorder(
                     enabled = true,
-                    borderColor = MaterialTheme.colorScheme.secondaryContainer.copy(chipColorOpacity)
-                ), onClick = {
+                    borderColor = MaterialTheme.colorScheme.secondaryContainer.copy(chipColorOpacity),
+                ),
+                onClick = {
                     onFolderClick(folder)
-                }, label = {
+                },
+                label = {
                     Text(
                         text = folder.name,
                         style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                     )
-                }, leadingIcon = {
+                },
+                leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Folder,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
                     )
-                }, modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                },
+                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
             )
             if (index < folders.size - 1) {
                 Icon(imageVector = Icons.Default.ChevronRight, contentDescription = null)

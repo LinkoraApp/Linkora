@@ -23,7 +23,6 @@ import com.sakethh.linkora.Localization
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.rememberLocalizedString
 
-
 data class AddANewPanelParam(
     val isDialogBoxVisible: MutableState<Boolean>,
     val onCreateClick: (shelfName: String, onCompletion: () -> Unit) -> Unit,
@@ -41,73 +40,89 @@ fun AddANewPanelDialogBox(addANewPanelParam: AddANewPanelParam) {
         val isInProgress = rememberSaveable {
             mutableStateOf(false)
         }
-        AlertDialog(title = {
-            Text(
-                text = Localization.Key.AddANewPanel.rememberLocalizedString(),
-                style = MaterialTheme.typography.titleMedium,
-                fontSize = 22.sp,
-                lineHeight = 28.sp
-            )
-        }, onDismissRequest = {
-            if (isInProgress.value.not()) {
-                addANewPanelParam.isDialogBoxVisible.value = false
-            }
-        }, text = {
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
-                maxLines = 1,
-                label = {
-                    Text(
-                        text = Localization.Key.PanelName.rememberLocalizedString(),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontSize = 12.sp
-                    )
-                },
-                textStyle = MaterialTheme.typography.titleSmall,
-                singleLine = true,
-                value = customShelfName.value,
-                onValueChange = {
-                    customShelfName.value = it
-                },
-                readOnly = isInProgress.value
-            )
-            LaunchedEffect(Unit) {
-                focusRequester.requestFocus()
-            }
-        }, confirmButton = {
-            if (isInProgress.value) return@AlertDialog
-            Button(
-                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
-                    .pressScaleEffect(), onClick = {
-                    isInProgress.value = true
-                    addANewPanelParam.onCreateClick(
-                        customShelfName.value, {
-                            addANewPanelParam.isDialogBoxVisible.value = false
-                            isInProgress.value = false
-                        })
-                }) {
+        AlertDialog(
+            title = {
                 Text(
                     text = Localization.Key.AddANewPanel.rememberLocalizedString(),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontSize = 16.sp
+                    style = MaterialTheme.typography.titleMedium,
+                    fontSize = 22.sp,
+                    lineHeight = 28.sp,
                 )
-            }
-        }, dismissButton = {
-            if (isInProgress.value.not()) {
-                androidx.compose.material3.OutlinedButton(
-                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
-                        .pressScaleEffect(), onClick = {
-                        addANewPanelParam.isDialogBoxVisible.value = false
-                    }) {
+            },
+            onDismissRequest = {
+                if (isInProgress.value.not()) {
+                    addANewPanelParam.isDialogBoxVisible.value = false
+                }
+            },
+            text = {
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                    maxLines = 1,
+                    label = {
+                        Text(
+                            text = Localization.Key.PanelName.rememberLocalizedString(),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontSize = 12.sp,
+                        )
+                    },
+                    textStyle = MaterialTheme.typography.titleSmall,
+                    singleLine = true,
+                    value = customShelfName.value,
+                    onValueChange = {
+                        customShelfName.value = it
+                    },
+                    readOnly = isInProgress.value,
+                )
+                LaunchedEffect(Unit) {
+                    focusRequester.requestFocus()
+                }
+            },
+            confirmButton = {
+                if (isInProgress.value) return@AlertDialog
+                Button(
+                    modifier =
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        .fillMaxWidth()
+                        .pressScaleEffect(),
+                    onClick = {
+                        isInProgress.value = true
+                        addANewPanelParam.onCreateClick(
+                            customShelfName.value,
+                            {
+                                addANewPanelParam.isDialogBoxVisible.value = false
+                                isInProgress.value = false
+                            },
+                        )
+                    },
+                ) {
                     Text(
-                        text = Localization.Key.Cancel.rememberLocalizedString(),
+                        text = Localization.Key.AddANewPanel.rememberLocalizedString(),
                         style = MaterialTheme.typography.titleSmall,
-                        fontSize = 16.sp
+                        fontSize = 16.sp,
                     )
                 }
-            } else {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-            }
-        })
+            },
+            dismissButton = {
+                if (isInProgress.value.not()) {
+                    androidx.compose.material3.OutlinedButton(
+                        modifier =
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .fillMaxWidth()
+                            .pressScaleEffect(),
+                        onClick = {
+                            addANewPanelParam.isDialogBoxVisible.value = false
+                        },
+                    ) {
+                        Text(
+                            text = Localization.Key.Cancel.rememberLocalizedString(),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontSize = 16.sp,
+                        )
+                    }
+                } else {
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                }
+            },
+        )
     }
 }

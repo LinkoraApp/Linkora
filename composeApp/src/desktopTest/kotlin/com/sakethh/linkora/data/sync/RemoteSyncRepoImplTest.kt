@@ -55,7 +55,6 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class RemoteSyncRepoImplTest {
-
     private lateinit var localFoldersRepo: LocalFoldersRepo
     private lateinit var localLinksRepo: LocalLinksRepo
     private lateinit var localPanelsRepo: LocalPanelsRepo
@@ -98,12 +97,14 @@ class RemoteSyncRepoImplTest {
         localDatabaseUtilsRepo = mockk(relaxed = true)
         network = mockk(relaxed = true)
 
-        val mockPrefs = mockk<AppPreferences>(relaxed = true) {
-            every { correlation } returns Correlation(
-                id = "test-correlation",
-                clientName = "test-client"
-            )
-        }
+        val mockPrefs =
+            mockk<AppPreferences>(relaxed = true) {
+                every { correlation } returns
+                    Correlation(
+                        id = "test-correlation",
+                        clientName = "test-client",
+                    )
+            }
         coEvery { preferencesRepository.getPreferences() } returns mockPrefs
         coEvery { preferencesRepository.readPreferenceValue<Long>(any()) } returns 0L
         coEvery { preferencesRepository.changePreferenceValue<Long>(any(), any()) } returns Unit
@@ -115,38 +116,40 @@ class RemoteSyncRepoImplTest {
             respond(
                 content = """{"eventTimestamp": 2000, "message": "Success"}""",
                 status = HttpStatusCode.OK,
-                headers = headersOf(HttpHeaders.ContentType, "application/json")
+                headers = headersOf(HttpHeaders.ContentType, "application/json"),
             )
         }
-        val httpClient = HttpClient(mockEngine) {
-            install(ContentNegotiation) {
-                json(Json { ignoreUnknownKeys = true })
+        val httpClient =
+            HttpClient(mockEngine) {
+                install(ContentNegotiation) {
+                    json(Json { ignoreUnknownKeys = true })
+                }
             }
-        }
         coEvery { network.getSyncServerClient() } returns httpClient
 
-        remoteSyncRepoImpl = RemoteSyncRepoImpl(
-            localFoldersRepo = localFoldersRepo,
-            localLinksRepo = localLinksRepo,
-            localPanelsRepo = localPanelsRepo,
-            authToken = { "mock-token" },
-            baseUrl = { "https://server.linkora.com/api/" },
-            websocketScheme = { "wss://" },
-            pendingSyncQueueRepo = pendingSyncQueueRepo,
-            remoteFoldersRepo = remoteFoldersRepo,
-            remoteLinksRepo = remoteLinksRepo,
-            remotePanelsRepo = remotePanelsRepo,
-            preferencesRepository = preferencesRepository,
-            localMultiActionRepo = localMultiActionRepo,
-            remoteMultiActionRepo = remoteMultiActionRepo,
-            linksDao = linksDao,
-            foldersDao = foldersDao,
-            localTagsRepo = localTagsRepo,
-            remoteTagsRepo = remoteTagsRepo,
-            tagsDao = tagsDao,
-            localDatabaseUtilsRepo = localDatabaseUtilsRepo,
-            network = network
-        )
+        remoteSyncRepoImpl =
+            RemoteSyncRepoImpl(
+                localFoldersRepo = localFoldersRepo,
+                localLinksRepo = localLinksRepo,
+                localPanelsRepo = localPanelsRepo,
+                authToken = { "mock-token" },
+                baseUrl = { "https://server.linkora.com/api/" },
+                websocketScheme = { "wss://" },
+                pendingSyncQueueRepo = pendingSyncQueueRepo,
+                remoteFoldersRepo = remoteFoldersRepo,
+                remoteLinksRepo = remoteLinksRepo,
+                remotePanelsRepo = remotePanelsRepo,
+                preferencesRepository = preferencesRepository,
+                localMultiActionRepo = localMultiActionRepo,
+                remoteMultiActionRepo = remoteMultiActionRepo,
+                linksDao = linksDao,
+                foldersDao = foldersDao,
+                localTagsRepo = localTagsRepo,
+                remoteTagsRepo = remoteTagsRepo,
+                tagsDao = tagsDao,
+                localDatabaseUtilsRepo = localDatabaseUtilsRepo,
+                network = network,
+            )
     }
 
     @AfterTest
@@ -155,19 +158,20 @@ class RemoteSyncRepoImplTest {
     }
 
     @Test
-    fun `pushNonSyncedDataToServer sweeps all local tables and constructs exact DTO payloads for the queue`() =
-        runTest {
-            val folder = Folder(
+    fun `pushNonSyncedDataToServer sweeps all local tables and constructs exact DTO payloads for the queue`() = runTest {
+        val folder =
+            Folder(
                 name = "UnsyncedFolder",
                 note = "",
                 parentFolderId = null,
                 localId = 1L,
                 remoteId = null,
                 isArchived = false,
-                lastModified = 1000L
+                lastModified = 1000L,
             )
-            val tag = Tag(localId = 2L, name = "UnsyncedTag", lastModified = 1000L)
-            val link = Link(
+        val tag = Tag(localId = 2L, name = "UnsyncedTag", lastModified = 1000L)
+        val link =
+            Link(
                 url = "https://x.com",
                 title = "L",
                 linkType = LinkType.SAVED_LINK,
@@ -177,77 +181,97 @@ class RemoteSyncRepoImplTest {
                 localId = 3L,
                 mediaType = MediaType.IMAGE,
                 lastModified = 1000L,
-                userAgent = ""
+                userAgent = "",
             )
-            val panel = Panel(localId = 4L, panelName = "UnsyncedPanel", lastModified = 1000L)
-            val panelFolder = PanelFolder(
+        val panel = Panel(localId = 4L, panelName = "UnsyncedPanel", lastModified = 1000L)
+        val panelFolder =
+            PanelFolder(
                 localId = 5L,
                 folderId = 1L,
                 connectedPanelId = 4L,
                 panelPosition = 0,
                 folderName = "PF",
-                lastModified = 1000L
+                lastModified = 1000L,
             )
 
-            coEvery { localFoldersRepo.getUnSyncedFolders() } returns listOf(folder)
-            coEvery { tagsDao.getUnsyncedTags() } returns listOf(tag)
-            coEvery { localLinksRepo.getUnSyncedLinks() } returns listOf(link)
-            coEvery { localPanelsRepo.getUnSyncedPanels() } returns listOf(panel)
-            coEvery { localPanelsRepo.getUnSyncedPanelFolders() } returns listOf(panelFolder)
-            coEvery { tagsDao.getTags(any()) } returns emptyList() // No tags connected to the link
-            coEvery { pendingSyncQueueRepo.getAllItemsFromQueue() } returns emptyList() // Prevent loop in pushPendingSyncQueueToServer
+        coEvery { localFoldersRepo.getUnSyncedFolders() } returns listOf(folder)
+        coEvery { tagsDao.getUnsyncedTags() } returns listOf(tag)
+        coEvery { localLinksRepo.getUnSyncedLinks() } returns listOf(link)
+        coEvery { localPanelsRepo.getUnSyncedPanels() } returns listOf(panel)
+        coEvery { localPanelsRepo.getUnSyncedPanelFolders() } returns listOf(panelFolder)
+        coEvery { tagsDao.getTags(any()) } returns emptyList() // No tags connected to the link
+        coEvery { pendingSyncQueueRepo.getAllItemsFromQueue() } returns
+            emptyList() // Prevent loop in pushPendingSyncQueueToServer
 
-            val channel = Channel<Result<Unit>>(Channel.UNLIMITED)
+        val channel = Channel<Result<Unit>>(Channel.UNLIMITED)
 
-            with(remoteSyncRepoImpl) {
-                channel.pushNonSyncedDataToServer()
-            }
-
-            coVerify(exactly = 1) {
-                pendingSyncQueueRepo.addInQueue(match {
-                    it.operation == SyncServerRoute.CREATE_FOLDER.name && it.payload.contains(
-                        "UnsyncedFolder"
-                    )
-                })
-            }
-            coVerify(exactly = 1) {
-                pendingSyncQueueRepo.addInQueue(match {
-                    it.operation == SyncServerRoute.CREATE_TAG.name && it.payload.contains(
-                        "UnsyncedTag"
-                    )
-                })
-            }
-            coVerify(exactly = 1) {
-                pendingSyncQueueRepo.addInQueue(match {
-                    it.operation == SyncServerRoute.CREATE_A_NEW_LINK.name && it.payload.contains(
-                        "https://x.com"
-                    )
-                })
-            }
-            coVerify(exactly = 1) {
-                pendingSyncQueueRepo.addInQueue(match {
-                    it.operation == SyncServerRoute.ADD_A_NEW_PANEL.name && it.payload.contains(
-                        "UnsyncedPanel"
-                    )
-                })
-            }
-            coVerify(exactly = 1) {
-                pendingSyncQueueRepo.addInQueue(match {
-                    it.operation == SyncServerRoute.ADD_A_NEW_FOLDER_IN_A_PANEL.name && it.payload.contains(
-                        "connectedPanelId\":4"
-                    )
-                })
-            }
+        with(remoteSyncRepoImpl) {
+            channel.pushNonSyncedDataToServer()
         }
+
+        coVerify(exactly = 1) {
+            pendingSyncQueueRepo.addInQueue(
+                match {
+                    it.operation == SyncServerRoute.CREATE_FOLDER.name &&
+                        it.payload.contains(
+                            "UnsyncedFolder",
+                        )
+                },
+            )
+        }
+        coVerify(exactly = 1) {
+            pendingSyncQueueRepo.addInQueue(
+                match {
+                    it.operation == SyncServerRoute.CREATE_TAG.name &&
+                        it.payload.contains(
+                            "UnsyncedTag",
+                        )
+                },
+            )
+        }
+        coVerify(exactly = 1) {
+            pendingSyncQueueRepo.addInQueue(
+                match {
+                    it.operation == SyncServerRoute.CREATE_A_NEW_LINK.name &&
+                        it.payload.contains(
+                            "https://x.com",
+                        )
+                },
+            )
+        }
+        coVerify(exactly = 1) {
+            pendingSyncQueueRepo.addInQueue(
+                match {
+                    it.operation == SyncServerRoute.ADD_A_NEW_PANEL.name &&
+                        it.payload.contains(
+                            "UnsyncedPanel",
+                        )
+                },
+            )
+        }
+        coVerify(exactly = 1) {
+            pendingSyncQueueRepo.addInQueue(
+                match {
+                    it.operation == SyncServerRoute.ADD_A_NEW_FOLDER_IN_A_PANEL.name &&
+                        it.payload.contains(
+                            "connectedPanelId\":4",
+                        )
+                },
+            )
+        }
+    }
 
     @Test
     fun `deleteEverything completely wipes the local SQLite database via utils repo`() = runTest {
-        val result = remoteSyncRepoImpl.deleteEverything(deleteOnRemote = true)
-            .filterNot { it is Result.Loading }.first()
+        val result =
+            remoteSyncRepoImpl
+                .deleteEverything(deleteOnRemote = true)
+                .filterNot { it is Result.Loading }
+                .first()
 
         assertTrue(
             result is Result.Success,
-            "Expected successful flow emission from postFlow / wrappedResultFlow"
+            "Expected successful flow emission from postFlow / wrappedResultFlow",
         )
 
         coVerify(exactly = 1) { localDatabaseUtilsRepo.resetDatabase() }
@@ -255,14 +279,14 @@ class RemoteSyncRepoImplTest {
         coVerify(exactly = 1) {
             preferencesRepository.changePreferenceValue(
                 match { it.key == AppPreferences.LAST_SELECTED_PANEL_ID.key },
-                any<Long>()
+                any<Long>(),
             )
         }
 
         coVerify(exactly = 1) {
             preferencesRepository.changePreferenceValue(
                 match { it.key == AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key },
-                2000L
+                2000L,
             )
         }
     }

@@ -48,22 +48,25 @@ fun ServerManagementBottomSheet(
     val navController = LocalNavController.current
     val coroutineScope = rememberCoroutineScope()
     if (isVisible.value) {
-        ModalBottomSheet(sheetState = sheetState, onDismissRequest = {
-            coroutineScope.launch {
-                sheetState.hide()
-            }.invokeOnCompletion {
-                isVisible.value = false
-            }
-        }) {
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth().bottomNavPaddingAcrossPlatforms()
-            ) {
+        ModalBottomSheet(
+            sheetState = sheetState,
+            onDismissRequest = {
+                coroutineScope
+                    .launch {
+                        sheetState.hide()
+                    }
+                    .invokeOnCompletion {
+                        isVisible.value = false
+                    }
+            },
+        ) {
+            LazyColumn(modifier = Modifier.fillMaxWidth().bottomNavPaddingAcrossPlatforms()) {
                 item {
                     Text(
                         text = Localization.rememberLocalizedString(Localization.Key.ManageConnectedServer),
                         style = MaterialTheme.typography.titleMedium,
                         fontSize = 18.sp,
-                        modifier = Modifier.fillMaxWidth().padding(end = 25.dp, start = 15.dp)
+                        modifier = Modifier.fillMaxWidth().padding(end = 25.dp, start = 15.dp),
                     )
                 }
                 item {
@@ -72,21 +75,22 @@ fun ServerManagementBottomSheet(
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidthWithPadding(),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(imageVector = Icons.Default.SettingsRemote, contentDescription = null)
                         Spacer(Modifier.width(15.dp))
                         Column {
                             Text(
-                                text = Localization.rememberLocalizedString(Localization.Key.CurrentlyConnectedTo),
+                                text =
+                                Localization.rememberLocalizedString(Localization.Key.CurrentlyConnectedTo),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.secondary
+                                color = MaterialTheme.colorScheme.secondary,
                             )
                             Spacer(Modifier.height(2.dp))
                             Text(
                                 text = preferences.serverBaseUrl,
-                                style = MaterialTheme.typography.titleMedium
+                                style = MaterialTheme.typography.titleMedium,
                             )
                         }
                     }
@@ -95,7 +99,7 @@ fun ServerManagementBottomSheet(
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidthWithPadding(),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(imageVector = Icons.Default.SyncAlt, contentDescription = null)
                         Spacer(Modifier.width(15.dp))
@@ -104,12 +108,12 @@ fun ServerManagementBottomSheet(
                                 text = Localization.rememberLocalizedString(Localization.Key.SyncType),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.secondary
+                                color = MaterialTheme.colorScheme.secondary,
                             )
                             Spacer(Modifier.height(2.dp))
                             Text(
                                 text = preferences.serverSyncType.asUIString(),
-                                style = MaterialTheme.typography.titleMedium
+                                style = MaterialTheme.typography.titleMedium,
                             )
                         }
                     }
@@ -117,34 +121,46 @@ fun ServerManagementBottomSheet(
                 item {
                     Spacer(Modifier.height(30.dp))
                     FilledTonalButton(
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .fillMaxWidthWithPadding(), onClick = {
+                        modifier =
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidthWithPadding(),
+                        onClick = {
                             navController.navigate(Navigation.Settings.Data.ServerSetupScreen)
-                        }) {
+                        },
+                    ) {
                         Text(
-                            text = Localization.rememberLocalizedString(Localization.Key.EditServerConfiguration),
-                            style = MaterialTheme.typography.titleSmall
+                            text =
+                            Localization.rememberLocalizedString(Localization.Key.EditServerConfiguration),
+                            style = MaterialTheme.typography.titleSmall,
                         )
                     }
                 }
                 item {
                     Button(
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .fillMaxWidthWithPadding(), colors = ButtonDefaults.buttonColors(
+                        modifier =
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidthWithPadding(),
+                        colors =
+                        ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.errorContainer,
-                            contentColor = MaterialTheme.colorScheme.onErrorContainer
-                        ), onClick = {
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                        ),
+                        onClick = {
                             removeTheConnection {
-                                coroutineScope.launch {
-                                    sheetState.hide()
-                                }.invokeOnCompletion {
-                                    isVisible.value = false
-                                }
+                                coroutineScope
+                                    .launch {
+                                        sheetState.hide()
+                                    }
+                                    .invokeOnCompletion {
+                                        isVisible.value = false
+                                    }
                             }
-                        }) {
+                        },
+                    ) {
                         Text(
-                            text = Localization.rememberLocalizedString(Localization.Key.DeleteTheServerConnection),
-                            style = MaterialTheme.typography.titleSmall
+                            text =
+                            Localization.rememberLocalizedString(
+                                Localization.Key.DeleteTheServerConnection,
+                            ),
+                            style = MaterialTheme.typography.titleSmall,
                         )
                     }
                 }

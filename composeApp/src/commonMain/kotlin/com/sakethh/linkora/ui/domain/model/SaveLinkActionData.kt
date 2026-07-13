@@ -7,5 +7,5 @@ data class SaveLinkActionData(
     val titleTextFieldValue: String,
     val noteTextFieldValue: String,
     val selectedFolderName: String,
-    val selectedFolderID: Long
+    val selectedFolderID: Long,
 )

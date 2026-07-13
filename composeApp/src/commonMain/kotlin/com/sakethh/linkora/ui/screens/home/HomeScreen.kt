@@ -97,80 +97,103 @@ fun HomeScreen() {
     val panelsBtmSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val panels = homeScreenVM.existingPanels.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
-    val activePanelAssociatedPanelFolders by homeScreenVM.activePanelAssociatedPanelFolders.collectAsStateWithLifecycle()
-    val pagerState = rememberPagerState(pageCount = {
-        activePanelAssociatedPanelFolders.size
-    })
+    val activePanelAssociatedPanelFolders by
+        homeScreenVM.activePanelAssociatedPanelFolders.collectAsStateWithLifecycle()
+    val pagerState =
+        rememberPagerState(
+            pageCount = {
+                activePanelAssociatedPanelFolders.size
+            },
+        )
     val localUriHandler = LocalUriHandler.current
     val panelFoldersDataFlat by homeScreenVM.panelFoldersDataFlat.collectAsStateWithLifecycle()
-    Scaffold(topBar = {
-        Column(
-            modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars).animateContentSize()
-                .fillMaxWidth()
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().padding(5.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+    Scaffold(
+        topBar = {
+            Column(
+                modifier =
+                Modifier.windowInsetsPadding(WindowInsets.statusBars)
+                    .animateContentSize()
+                    .fillMaxWidth(),
             ) {
-                Text(
-                    text = homeScreenVM.currentPhaseOfTheDay.value,
-                    color = MaterialTheme.colorScheme.secondary,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(start = 5.dp)
-                )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = {
-                        navController.navigate(Navigation.Home.PanelsManagerScreen)
-                    }, modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)) {
-                        Icon(imageVector = Icons.Default.Tune, contentDescription = null)
-                    }
-                    SortingIconButton()
-                }
-            }
-            if (homeScreenVM.selectedPanelData != null) {
-                Text(
-                    text = Localization.Key.SelectedPanel.rememberLocalizedString(),
-                    color = MaterialTheme.colorScheme.primary.copy(0.9f),
-                    style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier.padding(start = 10.dp, bottom = 5.dp)
-                )
-
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .clickable(onClick = {
-                            shouldPanelsBtmSheetBeVisible.value = true
-                            coroutineScope.launch {
-                                panelsBtmSheetState.show()
-                            }
-                        }, indication = null, interactionSource = remember {
-                            MutableInteractionSource()
-                        }).pressScaleEffect().pointerHoverIcon(icon = PointerIcon.Hand)
-                        .fillMaxWidth().padding(start = 5.dp, end = 5.dp),
+                    modifier = Modifier.fillMaxWidth().padding(5.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    Spacer(Modifier.width(5.dp))
-                    FilledTonalIconButton(onClick = {
-                        shouldPanelsBtmSheetBeVisible.value = true
-                        coroutineScope.launch {
-                            panelsBtmSheetState.show()
-                        }
-                    }, modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).size(22.dp)) {
-                        Icon(imageVector = Icons.Default.ArrowDownward, contentDescription = null)
-                    }
-                    Spacer(Modifier.width(10.dp))
                     Text(
-                        text = homeScreenVM.selectedPanelData!!.panelName,
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontSize = 20.sp,
-                        modifier = Modifier.fillMaxWidth(0.8f)
+                        text = homeScreenVM.currentPhaseOfTheDay.value,
+                        color = MaterialTheme.colorScheme.secondary,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(start = 5.dp),
                     )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(
+                            onClick = {
+                                navController.navigate(Navigation.Home.PanelsManagerScreen)
+                            },
+                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                        ) {
+                            Icon(imageVector = Icons.Default.Tune, contentDescription = null)
+                        }
+                        SortingIconButton()
+                    }
+                }
+                if (homeScreenVM.selectedPanelData != null) {
+                    Text(
+                        text = Localization.Key.SelectedPanel.rememberLocalizedString(),
+                        color = MaterialTheme.colorScheme.primary.copy(0.9f),
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.padding(start = 10.dp, bottom = 5.dp),
+                    )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier =
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .clickable(
+                                onClick = {
+                                    shouldPanelsBtmSheetBeVisible.value = true
+                                    coroutineScope.launch {
+                                        panelsBtmSheetState.show()
+                                    }
+                                },
+                                indication = null,
+                                interactionSource =
+                                remember {
+                                    MutableInteractionSource()
+                                },
+                            )
+                            .pressScaleEffect()
+                            .pointerHoverIcon(icon = PointerIcon.Hand)
+                            .fillMaxWidth()
+                            .padding(start = 5.dp, end = 5.dp),
+                    ) {
+                        Spacer(Modifier.width(5.dp))
+                        FilledTonalIconButton(
+                            onClick = {
+                                shouldPanelsBtmSheetBeVisible.value = true
+                                coroutineScope.launch {
+                                    panelsBtmSheetState.show()
+                                }
+                            },
+                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).size(22.dp),
+                        ) {
+                            Icon(imageVector = Icons.Default.ArrowDownward, contentDescription = null)
+                        }
+                        Spacer(Modifier.width(10.dp))
+                        Text(
+                            text = homeScreenVM.selectedPanelData!!.panelName,
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontSize = 20.sp,
+                            modifier = Modifier.fillMaxWidth(0.8f),
+                        )
+                    }
                 }
             }
-        }
-    }) { paddingValues ->
+        },
+    ) { paddingValues ->
         if (activePanelAssociatedPanelFolders.isEmpty() && homeScreenVM.selectedPanelData == null) {
             LoadingScreen(paddingValues = PaddingValues(25.dp))
             return@Scaffold
@@ -183,30 +206,41 @@ fun HomeScreen() {
             ScrollableTabRow(
                 modifier = Modifier.fillMaxWidth(),
                 selectedTabIndex = pagerState.currentPage,
-                divider = {}) {
+                divider = {},
+            ) {
                 activePanelAssociatedPanelFolders.forEachIndexed { index, panelFolder ->
-                    Tab(selected = pagerState.currentPage == index, onClick = {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(index)
-                        }.start()
-                    }, modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)) {
+                    Tab(
+                        selected = pagerState.currentPage == index,
+                        onClick = {
+                            coroutineScope
+                                .launch {
+                                    pagerState.animateScrollToPage(index)
+                                }
+                                .start()
+                        },
+                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                    ) {
                         Text(
                             text = panelFolder.folderName,
                             style = MaterialTheme.typography.titleLarge,
                             fontSize = 18.sp,
                             modifier = Modifier.padding(15.dp),
-                            color = if (pagerState.currentPage == index) primaryContentColor else MaterialTheme.colorScheme.onSurface.copy(
-                                0.70f
-                            )
+                            color =
+                            if (pagerState.currentPage == index) {
+                                primaryContentColor
+                            } else {
+                                MaterialTheme.colorScheme.onSurface.copy(0.70f)
+                            },
                         )
                     }
                 }
             }
             HorizontalDivider()
             HorizontalPager(state = pagerState) { pageIndex ->
-                val panelFolderId = retain(activePanelAssociatedPanelFolders[pageIndex].folderId) {
-                    activePanelAssociatedPanelFolders[pageIndex].folderId
-                }
+                val panelFolderId =
+                    retain(activePanelAssociatedPanelFolders[pageIndex].folderId) {
+                        activePanelAssociatedPanelFolders[pageIndex].folderId
+                    }
                 CollectionLayoutManager(
                     screenType = ScreenType.FOLDERS_AND_LINKS,
                     flatChildFolderDataState = panelFoldersDataFlat[panelFolderId],
@@ -217,22 +251,21 @@ fun HomeScreen() {
                             UIEvent.Type.ShowMenuBtmSheet(
                                 menuBtmSheetFor = MenuBtmSheetType.Folder.RegularFolder,
                                 selectedLinkForMenuBtmSheet = null,
-                                selectedFolderForMenuBtmSheet = it
-                            )
+                                selectedFolderForMenuBtmSheet = it,
+                            ),
                         )
                     },
                     onFolderClick = { folder ->
-                        val collectionDetailPaneInfo = CollectionDetailPaneInfo(
-                            currentFolder = folder,
-                            currentTag = null,
-                            collectionType = CollectionType.FOLDER,
-                        )
+                        val collectionDetailPaneInfo =
+                            CollectionDetailPaneInfo(
+                                currentFolder = folder,
+                                currentTag = null,
+                                collectionType = CollectionType.FOLDER,
+                            )
                         navController.navigate(
                             Navigation.Collection.CollectionDetailScreen(
-                                Json.encodeToString(
-                                    collectionDetailPaneInfo
-                                )
-                            )
+                                Json.encodeToString(collectionDetailPaneInfo),
+                            ),
                         )
                     },
                     linkMoreIconClick = {
@@ -240,13 +273,14 @@ fun HomeScreen() {
                             UIEvent.Type.ShowMenuBtmSheet(
                                 menuBtmSheetFor = it.link.linkType.asMenuBtmSheetType(),
                                 selectedLinkForMenuBtmSheet = it,
-                                selectedFolderForMenuBtmSheet = null
-                            )
+                                selectedFolderForMenuBtmSheet = null,
+                            ),
                         )
                     },
                     onLinkClick = {
                         homeScreenVM.addLinkToHistory(
-                            link = it.link, selectedTags = it.tags
+                            link = it.link,
+                            selectedTags = it.tags,
                         )
                         coroutineScope.launch {
                             localUriHandler.openUriOrNotify(it.link.url)
@@ -258,17 +292,16 @@ fun HomeScreen() {
                     nestedScrollConnection = null,
                     emptyDataText = Localization.Key.NoItemsFound.rememberLocalizedString(),
                     onAttachedTagClick = {
-                        val collectionDetailPaneInfo = CollectionDetailPaneInfo(
-                            currentFolder = null,
-                            currentTag = it,
-                            collectionType = CollectionType.TAG,
-                        )
+                        val collectionDetailPaneInfo =
+                            CollectionDetailPaneInfo(
+                                currentFolder = null,
+                                currentTag = it,
+                                collectionType = CollectionType.TAG,
+                            )
                         navController.navigate(
                             Navigation.Collection.CollectionDetailScreen(
-                                Json.encodeToString(
-                                    collectionDetailPaneInfo
-                                )
-                            )
+                                Json.encodeToString(collectionDetailPaneInfo),
+                            ),
                         )
                     },
                     onTagClick = {},
@@ -278,7 +311,8 @@ fun HomeScreen() {
                     },
                     onFirstVisibleItemIndexChange = {
                         homeScreenVM.onFirstVisibleItemIndexChange(
-                            folderId = panelFolderId, itemIndex = it
+                            folderId = panelFolderId,
+                            itemIndex = it,
                         )
                     },
                     flatSearchResultState = null,
@@ -288,54 +322,73 @@ fun HomeScreen() {
         }
     }
     if (shouldPanelsBtmSheetBeVisible.value) {
-        ModalBottomSheet(onDismissRequest = {
-            shouldPanelsBtmSheetBeVisible.value = false
-            coroutineScope.launch {
-                panelsBtmSheetState.hide()
-            }
-        }, sheetState = panelsBtmSheetState) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                shouldPanelsBtmSheetBeVisible.value = false
+                coroutineScope.launch {
+                    panelsBtmSheetState.hide()
+                }
+            },
+            sheetState = panelsBtmSheetState,
+        ) {
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
                 item {
                     Text(
                         text = Localization.Key.SelectAPanel.rememberLocalizedString(),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(15.dp)
+                        modifier = Modifier.padding(15.dp),
                     )
                 }
                 items(panels.value) { panel ->
                     Row(
-                        modifier = Modifier.fillMaxWidth().clickable {
-                            homeScreenVM.selectedPanelData = panel
-                            homeScreenVM.updatePanelFolders(homeScreenVM.selectedPanelData!!)
-                            coroutineScope.launch {
-                                panelsBtmSheetState.hide()
-                            }.invokeOnCompletion {
-                                shouldPanelsBtmSheetBeVisible.value = false
+                        modifier =
+                        Modifier.fillMaxWidth()
+                            .clickable {
+                                homeScreenVM.selectedPanelData = panel
+                                homeScreenVM.updatePanelFolders(homeScreenVM.selectedPanelData!!)
+                                coroutineScope
+                                    .launch {
+                                        panelsBtmSheetState.hide()
+                                    }
+                                    .invokeOnCompletion {
+                                        shouldPanelsBtmSheetBeVisible.value = false
+                                    }
                             }
-                        }.pointerHoverIcon(icon = PointerIcon.Hand).padding(5.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .pointerHoverIcon(icon = PointerIcon.Hand)
+                            .padding(5.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         RadioButton(
                             selected = homeScreenVM.selectedPanelData!!.localId == panel.localId,
                             onClick = {
                                 homeScreenVM.selectedPanelData = panel
                                 homeScreenVM.updatePanelFolders(homeScreenVM.selectedPanelData!!)
-                                coroutineScope.launch {
-                                    panelsBtmSheetState.hide()
-                                }.invokeOnCompletion {
-                                    shouldPanelsBtmSheetBeVisible.value = false
-                                }
+                                coroutineScope
+                                    .launch {
+                                        panelsBtmSheetState.hide()
+                                    }
+                                    .invokeOnCompletion {
+                                        shouldPanelsBtmSheetBeVisible.value = false
+                                    }
                             },
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
                         )
                         Spacer(Modifier.width(5.dp))
                         Text(
                             text = panel.panelName,
-                            style = if (homeScreenVM.selectedPanelData!!.localId == panel.localId) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall,
-                            color = if (homeScreenVM.selectedPanelData!!.localId == panel.localId) LocalContentColor.current else LocalContentColor.current.copy(
-                                0.85f
-                            )
+                            style =
+                            if (homeScreenVM.selectedPanelData!!.localId == panel.localId) {
+                                MaterialTheme.typography.titleLarge
+                            } else {
+                                MaterialTheme.typography.titleSmall
+                            },
+                            color =
+                            if (homeScreenVM.selectedPanelData!!.localId == panel.localId) {
+                                LocalContentColor.current
+                            } else {
+                                LocalContentColor.current.copy(0.85f)
+                            },
                         )
                     }
                 }

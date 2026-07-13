@@ -5,6 +5,5 @@ import androidx.room3.PrimaryKey
 
 @Entity
 data class RefreshLink(
-    @PrimaryKey
-    val refreshedLinkId: Long
+    @PrimaryKey val refreshedLinkId: Long,
 )

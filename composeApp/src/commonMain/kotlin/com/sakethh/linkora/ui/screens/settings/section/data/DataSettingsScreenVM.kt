@@ -56,7 +56,7 @@ class DataSettingsScreenVM(
     private val nativeUtils: NativeUtils,
     private val fileManager: FileManager,
     private val permissionManager: PermissionManager,
-    private val refreshLinksRepo: RefreshLinksRepo
+    private val refreshLinksRepo: RefreshLinksRepo,
 ) : SettingsScreenViewModel(preferencesRepository, nativeUtils, permissionManager) {
     val importExportProgressLogs = mutableStateListOf<String>()
 
@@ -76,21 +76,26 @@ class DataSettingsScreenVM(
         importFileType: ImportFileType,
         onStart: () -> Unit,
         onCompletion: () -> Unit,
-        importFileSelectionMethod: Pair<ImportFileSelectionMethod, String>
+        importFileSelectionMethod: Pair<ImportFileSelectionMethod, String>,
     ) {
         onStart()
         AppVM.pauseSnapshots = true
         importExportJob?.cancel()
         importExportJob =
-            viewModelScope.launch(Dispatchers.Default + CoroutineExceptionHandler { _, throwable ->
-                throwable.pushSnackbar(viewModelScope)
-            }) {
+            viewModelScope.launch(
+                Dispatchers.Default +
+                    CoroutineExceptionHandler { _, throwable ->
+                        throwable.pushSnackbar(viewModelScope)
+                    },
+            ) {
                 if (importFileType == FileType.JSON) {
                     when (importFileSelectionMethod.first) {
                         ImportFileSelectionMethod.FilePicker -> fileManager.importFromJSONObj()
-                        ImportFileSelectionMethod.FileLocationString -> fileManager.importFromJSONObj(
-                            fileLocation = importFileSelectionMethod.second
-                        )
+
+                        ImportFileSelectionMethod.FileLocationString ->
+                            fileManager.importFromJSONObj(
+                                fileLocation = importFileSelectionMethod.second,
+                            )
                     }.collectData { data ->
                         importDataRepo.importDataFromObj(data)
                     }
@@ -99,10 +104,11 @@ class DataSettingsScreenVM(
                 if (importFileType == FileType.HTML) {
                     when (importFileSelectionMethod.first) {
                         ImportFileSelectionMethod.FilePicker -> fileManager.importFromHTMLString()
-                        ImportFileSelectionMethod.FileLocationString -> fileManager.importFromHTMLString(
-                            fileLocation =
-                                importFileSelectionMethod.second
-                        )
+
+                        ImportFileSelectionMethod.FileLocationString ->
+                            fileManager.importFromHTMLString(
+                                fileLocation = importFileSelectionMethod.second,
+                            )
                     }.collectData { data ->
                         importDataRepo.importDataFromHTML(data)
                     }
@@ -121,29 +127,36 @@ class DataSettingsScreenVM(
         this.flatMapLatest { result ->
             when (result) {
                 is Result.Failure -> flowOf(result)
+
                 is Result.Loading -> flowOf(result)
+
                 is Result.Success -> {
                     onSuccess(result.data)
                 }
             }
-        }.collectLatest {
-            it.onLoading { importLogItem ->
-                importExportProgressLogs.add(importLogItem)
-            }.onSuccess {
-                pushUIEvent(UIEvent.Type.ShowSnackbar(Localization.Key.SuccessfullyImportedTheData.getLocalizedString()))
-            }.pushSnackbarOnFailure()
         }
+            .collectLatest {
+                it.onLoading { importLogItem ->
+                    importExportProgressLogs.add(importLogItem)
+                }
+                    .onSuccess {
+                        pushUIEvent(
+                            UIEvent.Type.ShowSnackbar(
+                                Localization.Key.SuccessfullyImportedTheData.getLocalizedString(),
+                            ),
+                        )
+                    }
+                    .pushSnackbarOnFailure()
+            }
     }
 
-    suspend fun isStoragePermissionGranted(): Boolean {
-        return permissionManager.isStorageAccessPermitted() is PermissionStatus.Granted
-    }
+    suspend fun isStoragePermissionGranted(): Boolean = permissionManager.isStorageAccessPermitted() is PermissionStatus.Granted
 
     fun exportDataToAFile(
         platform: Platform,
         exportFileType: ExportFileType,
         onStart: () -> Unit,
-        onCompletion: () -> Unit
+        onCompletion: () -> Unit,
     ) {
         importExportJob?.cancel()
         importExportJob = viewModelScope.launch {
@@ -161,26 +174,34 @@ class DataSettingsScreenVM(
                 exportDataRepo.rawExportDataAsJSON()
             } else {
                 exportDataRepo.rawExportDataAsHTML()
-            }.collectLatest {
-                it.onLoading { exportLogItem ->
-                    importExportProgressLogs.add(exportLogItem)
-                }.onSuccess { (rawExportString) ->
-                    try {
-                        fileManager.writeRawExportStringToFile(
-                            exportLocation = preferencesRepository.getPreferences().currentExportLocation,
-                            exportFileType = exportFileType,
-                            rawExportString = rawExportString,
-                            onCompletion = {
-                                pushUIEvent(UIEvent.Type.ShowSnackbar(Localization.Key.ExportedSuccessfully.getLocalizedString()))
-                            },
-                            exportLocationType = ExportLocationType.EXPORT
-                        )
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        pushUIEvent(UIEvent.Type.ShowSnackbar(message = e.message.toString()))
-                    }
-                }.pushSnackbarOnFailure()
             }
+                .collectLatest {
+                    it.onLoading { exportLogItem ->
+                        importExportProgressLogs.add(exportLogItem)
+                    }
+                        .onSuccess { (rawExportString) ->
+                            try {
+                                fileManager.writeRawExportStringToFile(
+                                    exportLocation =
+                                    preferencesRepository.getPreferences().currentExportLocation,
+                                    exportFileType = exportFileType,
+                                    rawExportString = rawExportString,
+                                    onCompletion = {
+                                        pushUIEvent(
+                                            UIEvent.Type.ShowSnackbar(
+                                                Localization.Key.ExportedSuccessfully.getLocalizedString(),
+                                            ),
+                                        )
+                                    },
+                                    exportLocationType = ExportLocationType.EXPORT,
+                                )
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                pushUIEvent(UIEvent.Type.ShowSnackbar(message = e.message.toString()))
+                            }
+                        }
+                        .pushSnackbarOnFailure()
+                }
         }
         importExportJob?.invokeOnCompletion { cause ->
             onCompletion()
@@ -193,65 +214,79 @@ class DataSettingsScreenVM(
         importExportJob?.cancel()
     }
 
-    fun deleteEntireDatabase(deleteEverythingFromRemote: Boolean, onCompletion: () -> Unit) {
+    fun deleteEntireDatabase(
+        deleteEverythingFromRemote: Boolean,
+        onCompletion: () -> Unit,
+    ) {
         AppVM.pauseSnapshots = true
         var remoteOperationFailed: Boolean? = null
-        viewModelScope.launch {
-            remoteSyncRepo.deleteEverything(deleteOnRemote = deleteEverythingFromRemote)
-                .collectLatest {
-                    it.onFailure {
-                        remoteOperationFailed = true
+        viewModelScope
+            .launch {
+                remoteSyncRepo
+                    .deleteEverything(deleteOnRemote = deleteEverythingFromRemote)
+                    .collectLatest {
+                        it.onFailure {
+                            remoteOperationFailed = true
+                        }
+                        it.onSuccess {
+                            remoteOperationFailed = it.isRemoteExecutionSuccessful == false
+                        }
                     }
-                    it.onSuccess {
-                        remoteOperationFailed = it.isRemoteExecutionSuccessful == false
-                    }
-                }
-        }.invokeOnCompletion {
-            viewModelScope.launch {
-                pushUIEvent(
-                    UIEvent.Type.ShowSnackbar(
-                        if (remoteOperationFailed == null || !remoteOperationFailed) Localization.Key.DeletedEntireDataPermanently.getLocalizedString()
-                        else Localization.Key.RemoteDataDeletionFailure.getLocalizedString()
-                    )
-                )
             }
-            AppVM.pauseSnapshots = false
-            onCompletion()
-        }
+            .invokeOnCompletion {
+                viewModelScope.launch {
+                    pushUIEvent(
+                        UIEvent.Type.ShowSnackbar(
+                            if (remoteOperationFailed == null || !remoteOperationFailed) {
+                                Localization.Key.DeletedEntireDataPermanently.getLocalizedString()
+                            } else {
+                                Localization.Key.RemoteDataDeletionFailure.getLocalizedString()
+                            },
+                        ),
+                    )
+                }
+                AppVM.pauseSnapshots = false
+                onCompletion()
+            }
     }
 
     companion object {
-        val refreshLinksState = mutableStateOf(
-            RefreshLinksState(
-                isInRefreshingState = false, currentIteration = 0
+        val refreshLinksState =
+            mutableStateOf(
+                RefreshLinksState(
+                    isInRefreshingState = false,
+                    currentIteration = 0,
+                ),
             )
-        )
-        var webCaptureState by mutableStateOf(
-            WebCaptureState(
-                currentIteration = 0,
-                isInProgress = false,
-                total = 0,
+        var webCaptureState by
+            mutableStateOf(
+                WebCaptureState(
+                    currentIteration = 0,
+                    isInProgress = false,
+                    total = 0,
+                ),
             )
-        )
         val totalLinksForRefresh = mutableStateOf(0)
     }
 
     fun refreshAllLinks() {
         AppVM.pauseSnapshots = true
-        viewModelScope.launch {
-            launch {
-                permissionManager.permittedToShowNotification()
+        viewModelScope
+            .launch {
+                launch {
+                    permissionManager.permittedToShowNotification()
+                }
+                launch {
+                    nativeUtils.onRefreshAllLinks(
+                        localLinksRepo = linksRepo,
+                        preferencesRepository = preferencesRepository,
+                        refreshLinksRepo = refreshLinksRepo,
+                    )
+                }
             }
-            launch {
-                nativeUtils.onRefreshAllLinks(
-                    localLinksRepo = linksRepo,
-                    preferencesRepository = preferencesRepository,
-                    refreshLinksRepo = refreshLinksRepo
-                )
+            .invokeOnCompletion {
+                AppVM.pauseSnapshots = false
             }
-        }.invokeOnCompletion {
-            AppVM.pauseSnapshots = false
-        }
     }
 
     fun cancelRefreshingAllLinks() {
@@ -260,58 +295,82 @@ class DataSettingsScreenVM(
         }
     }
 
-    fun forceSetDefaultFolderToInternalIds(onStart: () -> Unit, onCompletion: () -> Unit) {
+    fun forceSetDefaultFolderToInternalIds(
+        onStart: () -> Unit,
+        onCompletion: () -> Unit,
+    ) {
         onStart()
-        viewModelScope.launch {
-            linksRepo.forceSetDefaultFolderToInternalIds().collectLatest {
-                it.pushSnackbarOnFailure()
+        viewModelScope
+            .launch {
+                linksRepo.forceSetDefaultFolderToInternalIds().collectLatest {
+                    it.pushSnackbarOnFailure()
+                }
             }
-        }.invokeOnCompletion {
-            onCompletion()
-        }
+            .invokeOnCompletion {
+                onCompletion()
+            }
     }
 
-    fun deleteDuplicates(onStart: () -> Unit, onCompletion: () -> Unit) {
+    fun deleteDuplicates(
+        onStart: () -> Unit,
+        onCompletion: () -> Unit,
+    ) {
         AppVM.pauseSnapshots = true
-        viewModelScope.launch {
-            linksRepo.deleteDuplicateLinks().collectLatest {
-                it.onSuccess {
-                    onCompletion()
-                    pushUIEvent(UIEvent.Type.ShowSnackbar(Localization.Key.DeletedDuplicatedLinksSuccessfully.getLocalizedString() + it.getRemoteOnlyFailureMsg()))
-                }
-                it.onLoading {
-                    onStart()
-                }
-                it.onFailure {
-                    onCompletion()
-                    pushUIEvent(UIEvent.Type.ShowSnackbar(it))
+        viewModelScope
+            .launch {
+                linksRepo.deleteDuplicateLinks().collectLatest {
+                    it.onSuccess {
+                        onCompletion()
+                        pushUIEvent(
+                            UIEvent.Type.ShowSnackbar(
+                                Localization.Key.DeletedDuplicatedLinksSuccessfully.getLocalizedString() +
+                                    it.getRemoteOnlyFailureMsg(),
+                            ),
+                        )
+                    }
+                    it.onLoading {
+                        onStart()
+                    }
+                    it.onFailure {
+                        onCompletion()
+                        pushUIEvent(UIEvent.Type.ShowSnackbar(it))
+                    }
                 }
             }
-        }.invokeOnCompletion {
-            AppVM.pauseSnapshots = false
-            AppVM.forceSnapshot()
-        }
+            .invokeOnCompletion {
+                AppVM.pauseSnapshots = false
+                AppVM.forceSnapshot()
+            }
     }
 
     fun changeExportLocation(
         platform: Platform,
         // on desktop, exportLocation can be taken as direct string input, so this is fine
-        exportLocation: String, exportLocationType: ExportLocationType
+        exportLocation: String,
+        exportLocationType: ExportLocationType,
     ) {
         viewModelScope.launch {
             try {
                 val newExportLocation =
-                    if (platform == Platform.Desktop) exportLocation else fileManager.pickADirectory()
-                        ?: throw NullPointerException(Localization.Key.InvalidExportDir.getLocalizedString())
+                    if (platform == Platform.Desktop) {
+                        exportLocation
+                    } else {
+                        fileManager.pickADirectory()
+                            ?: throw NullPointerException(
+                                Localization.Key.InvalidExportDir.getLocalizedString(),
+                            )
+                    }
 
                 preferencesRepository.changePreferenceValue(
-                    preferenceKey = stringPreferencesKey(
+                    preferenceKey =
+                    stringPreferencesKey(
                         when (exportLocationType) {
                             ExportLocationType.EXPORT -> AppPreferences.EXPORT_LOCATION.key
                             ExportLocationType.SNAPSHOT -> AppPreferences.BACKUP_LOCATION.key
                             ExportLocationType.WEB_CAPTURE -> AppPreferences.WEB_CAPTURES_LOCATION.key
-                        }
-                    ), newValue = newExportLocation
+                        },
+                    ),
+                    newValue = newExportLocation,
                 )
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -323,9 +382,11 @@ class DataSettingsScreenVM(
     fun updateAutoDeletionBackupsState(isEnabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
-                preferenceKey = booleanPreferencesKey(
-                    AppPreferences.BACKUP_AUTO_DELETION_ENABLED.key
-                ), newValue = isEnabled
+                preferenceKey =
+                booleanPreferencesKey(
+                    AppPreferences.BACKUP_AUTO_DELETION_ENABLED.key,
+                ),
+                newValue = isEnabled,
             )
         }
     }
@@ -333,9 +394,11 @@ class DataSettingsScreenVM(
     fun updateAutoDeletionBackupsThreshold(count: Int) {
         viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
-                preferenceKey = intPreferencesKey(
-                    AppPreferences.BACKUP_AUTO_DELETION_THRESHOLD.key
-                ), newValue = count
+                preferenceKey =
+                intPreferencesKey(
+                    AppPreferences.BACKUP_AUTO_DELETION_THRESHOLD.key,
+                ),
+                newValue = count,
             )
         }
     }

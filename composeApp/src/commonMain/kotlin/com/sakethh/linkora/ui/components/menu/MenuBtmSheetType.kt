@@ -9,39 +9,27 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed interface MenuBtmSheetType {
-
     @Serializable
     sealed interface Folder : MenuBtmSheetType {
-        @Serializable
-        data object RegularFolder : Folder
+        @Serializable data object RegularFolder : Folder
 
-        @Serializable
-        data object ArchiveFolder : Folder
+        @Serializable data object ArchiveFolder : Folder
     }
 
     @Serializable
     sealed interface Link : MenuBtmSheetType {
-        @Serializable
-        data object SavedLink : Link
+        @Serializable data object SavedLink : Link
 
-        @Serializable
-        data object FolderLink : Link
+        @Serializable data object FolderLink : Link
 
-        @Serializable
-        data object HistoryLink : Link
+        @Serializable data object HistoryLink : Link
 
-        @Serializable
-        data object ImportantLink : Link
+        @Serializable data object ImportantLink : Link
 
-        @Serializable
-        data object ArchiveLink : Link
+        @Serializable data object ArchiveLink : Link
     }
 }
 
-fun menuBtmSheetLinkEntries(): List<MenuBtmSheetType.Link> {
-    return listOf(SavedLink, FolderLink, HistoryLink, ImportantLink, ArchiveLink)
-}
+fun menuBtmSheetLinkEntries(): List<MenuBtmSheetType.Link> = listOf(SavedLink, FolderLink, HistoryLink, ImportantLink, ArchiveLink)
 
-fun menuBtmSheetFolderEntries(): List<MenuBtmSheetType.Folder> {
-    return listOf(MenuBtmSheetType.Folder.RegularFolder, MenuBtmSheetType.Folder.ArchiveFolder)
-}
+fun menuBtmSheetFolderEntries(): List<MenuBtmSheetType.Folder> = listOf(MenuBtmSheetType.Folder.RegularFolder, MenuBtmSheetType.Folder.ArchiveFolder)

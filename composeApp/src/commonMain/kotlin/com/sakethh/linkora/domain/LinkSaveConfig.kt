@@ -5,16 +5,15 @@ data class LinkSaveConfig(
     val forceSaveWithoutRetrievingData: Boolean,
     val useProxy: Boolean,
     val skipSavingIfExists: Boolean,
-    val forceSaveIfRetrievalFails: Boolean
+    val forceSaveIfRetrievalFails: Boolean,
 ) {
     companion object {
-        fun forceSaveWithoutRetrieving(): LinkSaveConfig {
-            return LinkSaveConfig(
-                forceAutoDetectTitle = false, forceSaveWithoutRetrievingData = true,
-                useProxy = false,
-                skipSavingIfExists = true,
-                forceSaveIfRetrievalFails = true
-            )
-        }
+        fun forceSaveWithoutRetrieving(): LinkSaveConfig = LinkSaveConfig(
+            forceAutoDetectTitle = false,
+            forceSaveWithoutRetrievingData = true,
+            useProxy = false,
+            skipSavingIfExists = true,
+            forceSaveIfRetrievalFails = true,
+        )
     }
 }

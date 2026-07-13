@@ -31,7 +31,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ExportDataRepoImplTest {
-
     private lateinit var database: LocalDatabase
     private lateinit var foldersDao: FoldersDao
     private lateinit var linksDao: LinksDao
@@ -46,10 +45,11 @@ class ExportDataRepoImplTest {
     @BeforeTest
     fun setup() {
         clearAllMocks()
-        database = Room.inMemoryDatabaseBuilder<LocalDatabase>()
-            .setDriver(BundledSQLiteDriver())
-            .setQueryCoroutineContext(Dispatchers.Unconfined)
-            .build()
+        database =
+            Room.inMemoryDatabaseBuilder<LocalDatabase>()
+                .setDriver(BundledSQLiteDriver())
+                .setQueryCoroutineContext(Dispatchers.Unconfined)
+                .build()
 
         foldersDao = database.foldersDao
         linksDao = database.linksDao
@@ -60,25 +60,34 @@ class ExportDataRepoImplTest {
         localTagsRepo = mockk<LocalTagsRepo>(relaxed = true)
 
         coEvery { localLinksRepo.getAllLinks() } coAnswers { linksDao.getAllLinks() }
-        coEvery { localFoldersRepo.getAllFoldersAsList() } coAnswers { foldersDao.getAllFoldersAsList() }
-        coEvery { localLinksRepo.getLinksOfThisFolderAsList(any()) } coAnswers {
-            linksDao.getLinksOfThisFolderAsList(
-                firstArg()
-            )
-        }
-        coEvery { localFoldersRepo.getChildFoldersOfThisParentIDAsList(any()) } coAnswers {
-            foldersDao.getChildFoldersAsList(
-                firstArg()
-            )
-        }
-        coEvery { localFoldersRepo.getAllRootFoldersAsList() } coAnswers { foldersDao.getAllRootFoldersAsList() }
+        coEvery { localFoldersRepo.getAllFoldersAsList() } coAnswers
+            {
+                foldersDao.getAllFoldersAsList()
+            }
+        coEvery { localLinksRepo.getLinksOfThisFolderAsList(any()) } coAnswers
+            {
+                linksDao.getLinksOfThisFolderAsList(
+                    firstArg(),
+                )
+            }
+        coEvery { localFoldersRepo.getChildFoldersOfThisParentIDAsList(any()) } coAnswers
+            {
+                foldersDao.getChildFoldersAsList(
+                    firstArg(),
+                )
+            }
+        coEvery { localFoldersRepo.getAllRootFoldersAsList() } coAnswers
+            {
+                foldersDao.getAllRootFoldersAsList()
+            }
 
-        exportDataRepo = ExportDataRepoImpl(
-            localLinksRepo,
-            localFoldersRepo,
-            localPanelsRepo,
-            localTagsRepo
-        )
+        exportDataRepo =
+            ExportDataRepoImpl(
+                localLinksRepo,
+                localFoldersRepo,
+                localPanelsRepo,
+                localTagsRepo,
+            )
     }
 
     @AfterTest
@@ -86,7 +95,10 @@ class ExportDataRepoImplTest {
         database.close()
     }
 
-    private fun extractFolderBlock(html: String, folderName: String): String {
+    private fun extractFolderBlock(
+        html: String,
+        folderName: String,
+    ): String {
         val startHeader = "<DT><H3>$folderName</H3>"
         val startIndex = html.indexOf(startHeader)
         if (startIndex == -1) return ""
@@ -115,42 +127,46 @@ class ExportDataRepoImplTest {
 
     @Test
     fun `html export nests child folders inside parent folders up to depth 4`() = runTest {
-        val f1Id = foldersDao.insertANewFolder(
-            Folder(
-                name = "L1",
-                note = "",
-                parentFolderId = null,
-                isArchived = false,
-                lastModified = 0
+        val f1Id =
+            foldersDao.insertANewFolder(
+                Folder(
+                    name = "L1",
+                    note = "",
+                    parentFolderId = null,
+                    isArchived = false,
+                    lastModified = 0,
+                ),
             )
-        )
-        val f2Id = foldersDao.insertANewFolder(
-            Folder(
-                name = "L2",
-                note = "",
-                parentFolderId = f1Id,
-                isArchived = false,
-                lastModified = 0
+        val f2Id =
+            foldersDao.insertANewFolder(
+                Folder(
+                    name = "L2",
+                    note = "",
+                    parentFolderId = f1Id,
+                    isArchived = false,
+                    lastModified = 0,
+                ),
             )
-        )
-        val f3Id = foldersDao.insertANewFolder(
-            Folder(
-                name = "L3",
-                note = "",
-                parentFolderId = f2Id,
-                isArchived = false,
-                lastModified = 0
+        val f3Id =
+            foldersDao.insertANewFolder(
+                Folder(
+                    name = "L3",
+                    note = "",
+                    parentFolderId = f2Id,
+                    isArchived = false,
+                    lastModified = 0,
+                ),
             )
-        )
-        val f4Id = foldersDao.insertANewFolder(
-            Folder(
-                name = "L4",
-                note = "",
-                parentFolderId = f3Id,
-                isArchived = false,
-                lastModified = 0
+        val f4Id =
+            foldersDao.insertANewFolder(
+                Folder(
+                    name = "L4",
+                    note = "",
+                    parentFolderId = f3Id,
+                    isArchived = false,
+                    lastModified = 0,
+                ),
             )
-        )
 
         linksDao.addANewLink(
             Link(
@@ -161,8 +177,8 @@ class ExportDataRepoImplTest {
                 lastModified = 0,
                 userAgent = "",
                 note = "",
-                imgURL = ""
-            )
+                imgURL = "",
+            ),
         )
         linksDao.addANewLink(
             Link(
@@ -173,8 +189,8 @@ class ExportDataRepoImplTest {
                 lastModified = 0,
                 userAgent = "",
                 note = "",
-                imgURL = ""
-            )
+                imgURL = "",
+            ),
         )
         linksDao.addANewLink(
             Link(
@@ -185,8 +201,8 @@ class ExportDataRepoImplTest {
                 lastModified = 0,
                 userAgent = "",
                 note = "",
-                imgURL = ""
-            )
+                imgURL = "",
+            ),
         )
 
         val results = exportDataRepo.rawExportDataAsHTML().toList()
@@ -216,24 +232,26 @@ class ExportDataRepoImplTest {
 
     @Test
     fun `html export isolates root links to prevent leakage into unrelated folders`() = runTest {
-        val rootAId = foldersDao.insertANewFolder(
-            Folder(
-                name = "RootA",
-                note = "",
-                parentFolderId = null,
-                isArchived = false,
-                lastModified = 0
+        val rootAId =
+            foldersDao.insertANewFolder(
+                Folder(
+                    name = "RootA",
+                    note = "",
+                    parentFolderId = null,
+                    isArchived = false,
+                    lastModified = 0,
+                ),
             )
-        )
-        val rootBId = foldersDao.insertANewFolder(
-            Folder(
-                name = "RootB",
-                note = "",
-                parentFolderId = null,
-                isArchived = false,
-                lastModified = 0
+        val rootBId =
+            foldersDao.insertANewFolder(
+                Folder(
+                    name = "RootB",
+                    note = "",
+                    parentFolderId = null,
+                    isArchived = false,
+                    lastModified = 0,
+                ),
             )
-        )
 
         linksDao.addANewLink(
             Link(
@@ -244,8 +262,8 @@ class ExportDataRepoImplTest {
                 lastModified = 0,
                 userAgent = "",
                 note = "",
-                imgURL = ""
-            )
+                imgURL = "",
+            ),
         )
         linksDao.addANewLink(
             Link(
@@ -256,8 +274,8 @@ class ExportDataRepoImplTest {
                 lastModified = 0,
                 userAgent = "",
                 note = "",
-                imgURL = ""
-            )
+                imgURL = "",
+            ),
         )
 
         val results = exportDataRepo.rawExportDataAsHTML().toList()
@@ -281,8 +299,8 @@ class ExportDataRepoImplTest {
                 note = "",
                 parentFolderId = null,
                 isArchived = false,
-                lastModified = 0
-            )
+                lastModified = 0,
+            ),
         )
         // 9999L parent does not exist, so it is not a root folder, nor a valid child.
         foldersDao.insertANewFolder(
@@ -291,8 +309,8 @@ class ExportDataRepoImplTest {
                 note = "",
                 parentFolderId = 9999L,
                 isArchived = false,
-                lastModified = 0
-            )
+                lastModified = 0,
+            ),
         )
 
         val results = exportDataRepo.rawExportDataAsHTML().toList()
@@ -313,8 +331,8 @@ class ExportDataRepoImplTest {
                 lastModified = 0,
                 userAgent = "",
                 note = "",
-                imgURL = ""
-            )
+                imgURL = "",
+            ),
         )
         // 9999L linked folder does not exist.
         linksDao.addANewLink(
@@ -326,8 +344,8 @@ class ExportDataRepoImplTest {
                 lastModified = 0,
                 userAgent = "",
                 note = "",
-                imgURL = ""
-            )
+                imgURL = "",
+            ),
         )
 
         val results = exportDataRepo.rawExportDataAsHTML().toList()
@@ -348,211 +366,214 @@ class ExportDataRepoImplTest {
     }
 
     @Test
-    fun `html export correctly separates archived folders from regular folders into distinct overarching blocks`() =
-        runTest {
-            foldersDao.insertANewFolder(
-                Folder(
-                    name = "RegularRoot",
-                    note = "",
-                    parentFolderId = null,
-                    isArchived = false,
-                    lastModified = 0
-                )
-            )
-            foldersDao.insertANewFolder(
-                Folder(
-                    name = "ArchivedRoot",
-                    note = "",
-                    parentFolderId = null,
-                    isArchived = true,
-                    lastModified = 0
-                )
-            )
+    fun `html export correctly separates archived folders from regular folders into distinct overarching blocks`() = runTest {
+        foldersDao.insertANewFolder(
+            Folder(
+                name = "RegularRoot",
+                note = "",
+                parentFolderId = null,
+                isArchived = false,
+                lastModified = 0,
+            ),
+        )
+        foldersDao.insertANewFolder(
+            Folder(
+                name = "ArchivedRoot",
+                note = "",
+                parentFolderId = null,
+                isArchived = true,
+                lastModified = 0,
+            ),
+        )
 
-            val results = exportDataRepo.rawExportDataAsHTML().toList()
-            val htmlOutput = (results.last() as Result.Success).data
+        val results = exportDataRepo.rawExportDataAsHTML().toList()
+        val htmlOutput = (results.last() as Result.Success).data
 
-            val regularSectionBlock =
-                extractFolderBlock(htmlOutput, LinkoraExports.REGULAR_FOLDERS__LINKORA_EXPORT.name)
-            val archivedSectionBlock =
-                extractFolderBlock(htmlOutput, LinkoraExports.ARCHIVED_FOLDERS__LINKORA_EXPORT.name)
+        val regularSectionBlock =
+            extractFolderBlock(htmlOutput, LinkoraExports.REGULAR_FOLDERS__LINKORA_EXPORT.name)
+        val archivedSectionBlock =
+            extractFolderBlock(htmlOutput, LinkoraExports.ARCHIVED_FOLDERS__LINKORA_EXPORT.name)
 
-            assertTrue(regularSectionBlock.contains("RegularRoot"))
-            assertFalse(regularSectionBlock.contains("ArchivedRoot"))
+        assertTrue(regularSectionBlock.contains("RegularRoot"))
+        assertFalse(regularSectionBlock.contains("ArchivedRoot"))
 
-            assertTrue(archivedSectionBlock.contains("ArchivedRoot"))
-            assertFalse(archivedSectionBlock.contains("RegularRoot"))
-        }
-
-    @Test
-    fun `html export categorizes predefined default link types seamlessly into exact top level sections`() =
-        runTest {
-            linksDao.addANewLink(
-                Link(
-                    linkType = LinkType.SAVED_LINK,
-                    title = "Saved",
-                    url = "http://saved.com",
-                    idOfLinkedFolder = Constants.SAVED_LINKS_ID,
-                    lastModified = 0,
-                    userAgent = "",
-                    note = "",
-                    imgURL = ""
-                )
-            )
-            linksDao.addANewLink(
-                Link(
-                    linkType = LinkType.IMPORTANT_LINK,
-                    title = "Important",
-                    url = "http://important.com",
-                    idOfLinkedFolder = Constants.IMPORTANT_LINKS_ID,
-                    lastModified = 0,
-                    userAgent = "",
-                    note = "",
-                    imgURL = ""
-                )
-            )
-            linksDao.addANewLink(
-                Link(
-                    linkType = LinkType.HISTORY_LINK,
-                    title = "History",
-                    url = "http://history.com",
-                    idOfLinkedFolder = Constants.HISTORY_ID,
-                    lastModified = 0,
-                    userAgent = "",
-                    note = "",
-                    imgURL = ""
-                )
-            )
-            linksDao.addANewLink(
-                Link(
-                    linkType = LinkType.ARCHIVE_LINK,
-                    title = "Archive",
-                    url = "http://archive.com",
-                    idOfLinkedFolder = Constants.ARCHIVE_ID,
-                    lastModified = 0,
-                    userAgent = "",
-                    note = "",
-                    imgURL = ""
-                )
-            )
-
-            val results = exportDataRepo.rawExportDataAsHTML().toList()
-            val htmlOutput = (results.last() as Result.Success).data
-
-            assertTrue(
-                extractFolderBlock(
-                    htmlOutput,
-                    LinkoraExports.SAVED_LINKS__LINKORA_EXPORT.name
-                ).contains("http://saved.com")
-            )
-            assertTrue(
-                extractFolderBlock(
-                    htmlOutput,
-                    LinkoraExports.IMPORTANT_LINKS__LINKORA_EXPORT.name
-                ).contains("http://important.com")
-            )
-            assertTrue(
-                extractFolderBlock(
-                    htmlOutput,
-                    LinkoraExports.HISTORY_LINKS__LINKORA_EXPORT.name
-                ).contains("http://history.com")
-            )
-            assertTrue(
-                extractFolderBlock(
-                    htmlOutput,
-                    LinkoraExports.ARCHIVED_LINKS__LINKORA_EXPORT.name
-                ).contains("http://archive.com")
-            )
-        }
+        assertTrue(archivedSectionBlock.contains("ArchivedRoot"))
+        assertFalse(archivedSectionBlock.contains("RegularRoot"))
+    }
 
     @Test
-    fun `json export accurately maintains parent ids and linked folder ids mapping across deep hierarchies`() =
-        runTest {
-            val f1Id = foldersDao.insertANewFolder(
+    fun `html export categorizes predefined default link types seamlessly into exact top level sections`() = runTest {
+        linksDao.addANewLink(
+            Link(
+                linkType = LinkType.SAVED_LINK,
+                title = "Saved",
+                url = "http://saved.com",
+                idOfLinkedFolder = Constants.SAVED_LINKS_ID,
+                lastModified = 0,
+                userAgent = "",
+                note = "",
+                imgURL = "",
+            ),
+        )
+        linksDao.addANewLink(
+            Link(
+                linkType = LinkType.IMPORTANT_LINK,
+                title = "Important",
+                url = "http://important.com",
+                idOfLinkedFolder = Constants.IMPORTANT_LINKS_ID,
+                lastModified = 0,
+                userAgent = "",
+                note = "",
+                imgURL = "",
+            ),
+        )
+        linksDao.addANewLink(
+            Link(
+                linkType = LinkType.HISTORY_LINK,
+                title = "History",
+                url = "http://history.com",
+                idOfLinkedFolder = Constants.HISTORY_ID,
+                lastModified = 0,
+                userAgent = "",
+                note = "",
+                imgURL = "",
+            ),
+        )
+        linksDao.addANewLink(
+            Link(
+                linkType = LinkType.ARCHIVE_LINK,
+                title = "Archive",
+                url = "http://archive.com",
+                idOfLinkedFolder = Constants.ARCHIVE_ID,
+                lastModified = 0,
+                userAgent = "",
+                note = "",
+                imgURL = "",
+            ),
+        )
+
+        val results = exportDataRepo.rawExportDataAsHTML().toList()
+        val htmlOutput = (results.last() as Result.Success).data
+
+        assertTrue(
+            extractFolderBlock(
+                htmlOutput,
+                LinkoraExports.SAVED_LINKS__LINKORA_EXPORT.name,
+            )
+                .contains("http://saved.com"),
+        )
+        assertTrue(
+            extractFolderBlock(
+                htmlOutput,
+                LinkoraExports.IMPORTANT_LINKS__LINKORA_EXPORT.name,
+            )
+                .contains("http://important.com"),
+        )
+        assertTrue(
+            extractFolderBlock(
+                htmlOutput,
+                LinkoraExports.HISTORY_LINKS__LINKORA_EXPORT.name,
+            )
+                .contains("http://history.com"),
+        )
+        assertTrue(
+            extractFolderBlock(
+                htmlOutput,
+                LinkoraExports.ARCHIVED_LINKS__LINKORA_EXPORT.name,
+            )
+                .contains("http://archive.com"),
+        )
+    }
+
+    @Test
+    fun `json export accurately maintains parent ids and linked folder ids mapping across deep hierarchies`() = runTest {
+        val f1Id =
+            foldersDao.insertANewFolder(
                 Folder(
                     name = "Root",
                     note = "",
                     parentFolderId = null,
                     isArchived = false,
-                    lastModified = 0
-                )
+                    lastModified = 0,
+                ),
             )
-            val f2Id = foldersDao.insertANewFolder(
+        val f2Id =
+            foldersDao.insertANewFolder(
                 Folder(
                     name = "Child",
                     note = "",
                     parentFolderId = f1Id,
                     isArchived = false,
-                    lastModified = 0
-                )
-            )
-
-            linksDao.addANewLink(
-                Link(
-                    linkType = LinkType.FOLDER_LINK,
-                    title = "Link2",
-                    url = "http://2.com",
-                    idOfLinkedFolder = f2Id,
                     lastModified = 0,
-                    userAgent = "",
-                    note = "",
-                    imgURL = ""
-                )
+                ),
             )
 
-            val results = exportDataRepo.rawExportDataAsJSON().toList()
-            val rawJsonString = (results.last() as Result.Success).data
-            val parsedJson = Json.decodeFromString<JSONExportSchema>(rawJsonString)
+        linksDao.addANewLink(
+            Link(
+                linkType = LinkType.FOLDER_LINK,
+                title = "Link2",
+                url = "http://2.com",
+                idOfLinkedFolder = f2Id,
+                lastModified = 0,
+                userAgent = "",
+                note = "",
+                imgURL = "",
+            ),
+        )
 
-            assertEquals(JSONExportSchema.VERSION, parsedJson.schemaVersion)
+        val results = exportDataRepo.rawExportDataAsJSON().toList()
+        val rawJsonString = (results.last() as Result.Success).data
+        val parsedJson = Json.decodeFromString<JSONExportSchema>(rawJsonString)
 
-            val exportedRoot = parsedJson.folders.find { it.name == "Root" }
-            val exportedChild = parsedJson.folders.find { it.name == "Child" }
-            val exportedLink = parsedJson.links.find { it.url == "http://2.com" }
+        assertEquals(JSONExportSchema.VERSION, parsedJson.schemaVersion)
 
-            assertTrue(exportedRoot != null)
-            assertTrue(exportedChild != null)
-            assertTrue(exportedLink != null)
+        val exportedRoot = parsedJson.folders.find { it.name == "Root" }
+        val exportedChild = parsedJson.folders.find { it.name == "Child" }
+        val exportedLink = parsedJson.links.find { it.url == "http://2.com" }
 
-            assertEquals(null, exportedRoot.parentFolderId)
-            assertEquals(exportedRoot.localId, exportedChild.parentFolderId)
-            assertEquals(exportedChild.localId, exportedLink.idOfLinkedFolder)
-        }
+        assertTrue(exportedRoot != null)
+        assertTrue(exportedChild != null)
+        assertTrue(exportedLink != null)
+
+        assertEquals(null, exportedRoot.parentFolderId)
+        assertEquals(exportedRoot.localId, exportedChild.parentFolderId)
+        assertEquals(exportedChild.localId, exportedLink.idOfLinkedFolder)
+    }
 
     @Test
-    fun `json export strips out remote ids preventing cross contamination across instances`() =
-        runTest {
-            val f1Id = foldersDao.insertANewFolder(
+    fun `json export strips out remote ids preventing cross contamination across instances`() = runTest {
+        val f1Id =
+            foldersDao.insertANewFolder(
                 Folder(
                     name = "Root",
                     note = "",
                     parentFolderId = null,
                     isArchived = false,
                     lastModified = 0,
-                    remoteId = 999L
-                )
+                    remoteId = 999L,
+                ),
             )
-            linksDao.addANewLink(
-                Link(
-                    linkType = LinkType.FOLDER_LINK,
-                    title = "Link",
-                    url = "http://a.com",
-                    idOfLinkedFolder = f1Id,
-                    lastModified = 0,
-                    userAgent = "",
-                    note = "",
-                    imgURL = "",
-                    remoteId = 888L
-                )
-            )
+        linksDao.addANewLink(
+            Link(
+                linkType = LinkType.FOLDER_LINK,
+                title = "Link",
+                url = "http://a.com",
+                idOfLinkedFolder = f1Id,
+                lastModified = 0,
+                userAgent = "",
+                note = "",
+                imgURL = "",
+                remoteId = 888L,
+            ),
+        )
 
-            val results = exportDataRepo.rawExportDataAsJSON().toList()
-            val rawJsonString = (results.last() as Result.Success).data
-            val parsedJson = Json.decodeFromString<JSONExportSchema>(rawJsonString)
+        val results = exportDataRepo.rawExportDataAsJSON().toList()
+        val rawJsonString = (results.last() as Result.Success).data
+        val parsedJson = Json.decodeFromString<JSONExportSchema>(rawJsonString)
 
-            assertEquals(null, parsedJson.folders.first().remoteId)
-            assertEquals(null, parsedJson.links.first().remoteId)
-        }
+        assertEquals(null, parsedJson.folders.first().remoteId)
+        assertEquals(null, parsedJson.links.first().remoteId)
+    }
 
     @Test
     fun `json export successfully serializes empty database`() = runTest {

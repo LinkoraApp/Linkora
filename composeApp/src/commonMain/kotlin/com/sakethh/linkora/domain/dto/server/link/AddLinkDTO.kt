@@ -1,6 +1,5 @@
 package com.sakethh.linkora.domain.dto.server.link
 
-import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.MediaType
 import com.sakethh.linkora.domain.dto.server.Correlation
@@ -21,5 +20,5 @@ data class AddLinkDTO(
     val correlation: Correlation? = null,
     val eventTimestamp: Long,
     val tags: List<Long>,
-    val offlineSyncItemId: Long = 0
+    val offlineSyncItemId: Long = 0,
 )

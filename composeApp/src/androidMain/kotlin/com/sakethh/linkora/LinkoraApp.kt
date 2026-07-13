@@ -21,19 +21,23 @@ import kotlinx.coroutines.runBlocking
 import okio.Path.Companion.toPath
 
 class LinkoraApp : Application() {
-
     override fun onCreate() {
         super.onCreate()
         LinkoraSDK.set(
-            linkoraSdk = LinkoraSDK(
+            linkoraSdk =
+            LinkoraSDK(
                 nativeUtils = NativeUtils(applicationContext),
                 fileManager = FileManager(applicationContext),
                 permissionManager = PermissionManager(applicationContext),
-                localDatabase = run {
+                localDatabase =
+                run {
                     val dbFile = applicationContext.getDatabasePath(LocalDatabase.NAME)
                     Room.databaseBuilder<LocalDatabase>(
-                        applicationContext, name = dbFile.absolutePath
-                    ).setDriver(BundledSQLiteDriver()).setQueryCoroutineContext(Dispatchers.IO)
+                        applicationContext,
+                        name = dbFile.absolutePath,
+                    )
+                        .setDriver(BundledSQLiteDriver())
+                        .setQueryCoroutineContext(Dispatchers.IO)
                         .addMigrations(
                             LocalDatabase.MIGRATION_1_2,
                             LocalDatabase.MIGRATION_2_3,
@@ -47,21 +51,30 @@ class LinkoraApp : Application() {
                             LocalDatabase.MIGRATION_10_11,
                             LocalDatabase.MIGRATION_11_12,
                             LocalDatabase.MIGRATION_12_13,
-                            LocalDatabase.MIGRATION_13_14
-                        ).build()
+                            LocalDatabase.MIGRATION_13_14,
+                        )
+                        .build()
                 },
-                dataSyncingNotificationService = NativeUtils.DataSyncingNotificationService(
-                    applicationContext
+                dataSyncingNotificationService =
+                NativeUtils.DataSyncingNotificationService(
+                    applicationContext,
                 ),
                 network = Network(applicationContext),
-                platformPreference = PlatformPreference(
-                    dataStore = PreferenceDataStoreFactory.createWithPath(
+                platformPreference =
+                PlatformPreference(
+                    dataStore =
+                    PreferenceDataStoreFactory.createWithPath(
                         produceFile = {
-                            applicationContext.filesDir.resolve(Constants.DATA_STORE_NAME).absolutePath.toPath()
-                        })
+                            applicationContext.filesDir
+                                .resolve(Constants.DATA_STORE_NAME)
+                                .absolutePath
+                                .toPath()
+                        },
+                    ),
                 ),
-                webCapture = NativeUtils.WebCapture(applicationContext)
-            )
+                webCapture = NativeUtils.WebCapture(applicationContext),
+                webCaptureDatabaseManager = TODO(),
+            ),
         )
         runBlocking {
             DependencyContainer.preferencesRepo.loadPersistedPreferences()
@@ -70,16 +83,20 @@ class LinkoraApp : Application() {
                 preferences,
                 languageCode = preferences.preferredAppLanguageCode,
                 languageName = preferences.preferredAppLanguageName,
-            )?.join()
+            )
+                ?.join()
         }
         createNotificationChannel()
     }
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationChannel = NotificationChannel(
-                "1", "Data Syncing", NotificationManager.IMPORTANCE_HIGH
-            )
+            val notificationChannel =
+                NotificationChannel(
+                    "1",
+                    "Data Syncing",
+                    NotificationManager.IMPORTANCE_HIGH,
+                )
             notificationChannel.description =
                 "Used to notify about the data syncing status, link refreshes, and auto-save status."
             val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager

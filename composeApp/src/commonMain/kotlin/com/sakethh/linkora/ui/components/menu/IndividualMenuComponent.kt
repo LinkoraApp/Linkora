@@ -27,7 +27,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.domain.Platform
-import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -39,33 +38,37 @@ fun IndividualMenuComponent(
     inPanelsScreen: Boolean = false,
     isSelected: Boolean = false,
     onRenameClick: () -> Unit = {},
-    onDeleteClick: () -> Unit = {}
+    onDeleteClick: () -> Unit = {},
 ) {
     Row(
-        modifier = Modifier
-            .background(
-                if (isSelected && !Platform.Android.onMobile()) MaterialTheme.colorScheme.primary.copy(
-                    0.1f
-                ) else Color.Transparent
-            )
+        modifier =
+        Modifier.background(
+            if (isSelected && !Platform.Android.onMobile()) {
+                MaterialTheme.colorScheme.primary.copy(0.1f)
+            } else {
+                Color.Transparent
+            },
+        )
             .pointerHoverIcon(icon = PointerIcon.Hand)
             .combinedClickable(
-                interactionSource = null, indication = null,
+                interactionSource = null,
+                indication = null,
                 onClick = {
                     onClick()
-                })
+                },
+            )
             .pressScaleEffect()
             .padding(end = 10.dp)
             .wrapContentHeight()
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(
                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(10.dp),
                 onClick = { onClick() },
-                colors = IconButtonDefaults.filledTonalIconButtonColors()
+                colors = IconButtonDefaults.filledTonalIconButtonColors(),
             ) {
                 Icon(imageVector = elementImageVector, contentDescription = null)
             }
@@ -75,24 +78,24 @@ fun IndividualMenuComponent(
                 fontSize = 16.sp,
                 modifier = Modifier.fillMaxWidth(if (inPanelsScreen) 0.4f else 1f),
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
             )
         }
         if (inPanelsScreen) {
             Row {
                 IconButton(
                     modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-                    onClick = onRenameClick
+                    onClick = onRenameClick,
                 ) {
                     Icon(
                         imageVector = Icons.Default.DriveFileRenameOutline,
-                        contentDescription = null
+                        contentDescription = null,
                     )
                 }
 
                 IconButton(
                     modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-                    onClick = onDeleteClick
+                    onClick = onDeleteClick,
                 ) {
                     Icon(imageVector = Icons.Default.Delete, contentDescription = null)
                 }

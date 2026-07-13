@@ -26,25 +26,26 @@ class LanguageSettingsScreenVM(
     preferencesRepository: PreferencesRepository,
     private val localizationRepoRemote: LocalizationRepo.Remote,
     private val localizationRepoLocal: LocalizationRepo.Local,
-    private val nativeUtils: NativeUtils
+    private val nativeUtils: NativeUtils,
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
-    private val _availableLanguages = MutableStateFlow(
-        emptyList<LocalizedLanguage>()
-    )
+    private val _availableLanguages = MutableStateFlow(emptyList<LocalizedLanguage>())
     val availableLanguages = _availableLanguages.asStateFlow()
 
-    fun doesLanguagePackExists(exists: MutableState<Boolean>, languageCode: String) =
-        nativeUtils.platformRunBlocking {
-            exists.value = localizationRepoLocal.doesStringsPackForThisLanguageExists(languageCode)
-        }
+    fun doesLanguagePackExists(
+        exists: MutableState<Boolean>,
+        languageCode: String,
+    ) = nativeUtils.platformRunBlocking {
+        exists.value = localizationRepoLocal.doesStringsPackForThisLanguageExists(languageCode)
+    }
 
-    val languageSettingsState = mutableStateOf(
-        LanguageSettingsState(
-            fetchingStrings = false,
-            fetchingLanguageInfo = false
+    val languageSettingsState =
+        mutableStateOf(
+            LanguageSettingsState(
+                fetchingStrings = false,
+                fetchingLanguageInfo = false,
+            ),
         )
-    )
 
     private fun resetState() {
         languageSettingsState.value =
@@ -55,24 +56,33 @@ class LanguageSettingsScreenVM(
         viewModelScope.launch {
             localizationRepoRemote.getLanguagesFromServer().collect {
                 it.onSuccess {
-                    localizationRepoLocal.addNewLanguages(it.data.availableLanguages.filter { it.languageCode != "en" }
-                        .map {
-                            LocalizedLanguage(
-                                languageCode = it.languageCode,
-                                languageName = it.localizedName,
-                                localizedStringsCount = it.localizedStringsCount,
-                                contributionLink = ""
-                            )
-                        }).collectLatest {
-                        it.onSuccess {
-                            resetState()
-                            pushUIEvent(UIEvent.Type.ShowSnackbar(Localization.Key.SavedAvailableLanguagesInfoLocally.getLocalizedString()))
+                    localizationRepoLocal
+                        .addNewLanguages(
+                            it.data.availableLanguages
+                                .filter { it.languageCode != "en" }
+                                .map {
+                                    LocalizedLanguage(
+                                        languageCode = it.languageCode,
+                                        languageName = it.localizedName,
+                                        localizedStringsCount = it.localizedStringsCount,
+                                        contributionLink = "",
+                                    )
+                                },
+                        )
+                        .collectLatest {
+                            it.onSuccess {
+                                resetState()
+                                pushUIEvent(
+                                    UIEvent.Type.ShowSnackbar(
+                                        Localization.Key.SavedAvailableLanguagesInfoLocally.getLocalizedString(),
+                                    ),
+                                )
+                            }
+                            it.onFailure {
+                                resetState()
+                                pushUIEvent(UIEvent.Type.ShowSnackbar(it))
+                            }
                         }
-                        it.onFailure {
-                            resetState()
-                            pushUIEvent(UIEvent.Type.ShowSnackbar(it))
-                        }
-                    }
                 }
                 it.onLoading {
                     languageSettingsState.value =
@@ -101,16 +111,18 @@ class LanguageSettingsScreenVM(
 
     fun deleteALanguagePack(language: LocalizedLanguage) {
         viewModelScope.launch {
-            localizationRepoLocal.deleteAllLocalizedStringsForThisLanguage(language.languageCode)
+            localizationRepoLocal
+                .deleteAllLocalizedStringsForThisLanguage(language.languageCode)
                 .collectLatest {
                     it.onSuccess {
                         pushUIEvent(
                             UIEvent.Type.ShowSnackbar(
-                                Localization.Key.DeletedTheStringsPack.getLocalizedString().replace(
-                                    LinkoraPlaceHolder.First.value,
-                                    language.languageName.inDoubleQuotes()
-                                )
-                            )
+                                Localization.Key.DeletedTheStringsPack.getLocalizedString()
+                                    .replace(
+                                        LinkoraPlaceHolder.First.value,
+                                        language.languageName.inDoubleQuotes(),
+                                    ),
+                            ),
                         )
                     }
                     it.onFailure {
@@ -130,12 +142,13 @@ class LanguageSettingsScreenVM(
                             resetState()
                             pushUIEvent(
                                 UIEvent.Type.ShowSnackbar(
-                                    message = Localization.Key.DownloadedLanguageStrings.getLocalizedString()
+                                    message =
+                                    Localization.Key.DownloadedLanguageStrings.getLocalizedString()
                                         .replace(
                                             LinkoraPlaceHolder.First.value,
-                                            language.languageName.inDoubleQuotes()
-                                        )
-                                )
+                                            language.languageName.inDoubleQuotes(),
+                                        ),
+                                ),
                             )
                         }
                         it.onFailure {

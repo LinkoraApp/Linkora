@@ -54,9 +54,11 @@ fun AcknowledgementScreen() {
         topAppBarText = Navigation.Settings.AcknowledgementScreen.toString(),
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().addEdgeToEdgeScaffoldPadding(paddingValues)
+            modifier =
+            Modifier.fillMaxSize()
+                .addEdgeToEdgeScaffoldPadding(paddingValues)
                 .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
-            verticalArrangement = Arrangement.spacedBy(30.dp)
+            verticalArrangement = Arrangement.spacedBy(30.dp),
         ) {
             item {
                 Spacer(modifier = Modifier.height(15.dp))
@@ -71,7 +73,7 @@ fun AcknowledgementScreen() {
                     btnText = Localization.Key.LOLCATplOnDiscord.rememberLocalizedString(),
                     image = Res.drawable.LOLCATpl_logo,
                     btnRedirectUrl = "https://discord.com/users/494115165927637007",
-                    text = Localization.Key.LOLCATplAck.rememberLocalizedString()
+                    text = Localization.Key.LOLCATplAck.rememberLocalizedString(),
                 )
             }
             item {
@@ -81,8 +83,8 @@ fun AcknowledgementScreen() {
                             navController.navigate(Navigation.Settings.AboutLibraries)
                         },
                         sectionIcon = Icons.Default.Info,
-                        sectionTitle = Localization.Key.AboutLibraries.rememberLocalizedString()
-                    )
+                        sectionTitle = Localization.Key.AboutLibraries.rememberLocalizedString(),
+                    ),
                 )
             }
             item {
@@ -102,18 +104,23 @@ private fun AcknowledgeComponent(
     val localUriHandler = LocalUriHandler.current
     val coroutineScope = rememberCoroutineScope()
     Column(
-        modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp)
-            .clip(RoundedCornerShape(15.dp)).border(
+        modifier =
+        Modifier.fillMaxWidth()
+            .padding(start = 15.dp, end = 15.dp)
+            .clip(RoundedCornerShape(15.dp))
+            .border(
                 width = 1.dp,
                 color = MaterialTheme.colorScheme.primary.copy(0.5f),
-                shape = RoundedCornerShape(15.dp)
-            )
+                shape = RoundedCornerShape(15.dp),
+            ),
     ) {
         Image(
             painter = painterResource(image),
             contentDescription = null,
-            modifier = Modifier.padding(start = 15.dp, top = 15.dp, bottom = 10.dp)
-                .clip(RoundedCornerShape(15.dp)).size(65.dp)
+            modifier =
+            Modifier.padding(start = 15.dp, top = 15.dp, bottom = 10.dp)
+                .clip(RoundedCornerShape(15.dp))
+                .size(65.dp),
         )
         Text(
             text = text,
@@ -122,7 +129,7 @@ private fun AcknowledgeComponent(
             lineHeight = 22.sp,
             textAlign = TextAlign.Start,
             modifier = Modifier.padding(start = 15.dp, end = 15.dp),
-            softWrap = true
+            softWrap = true,
         )
         FilledTonalButton(
             onClick = {
@@ -130,9 +137,11 @@ private fun AcknowledgeComponent(
                     localUriHandler.openUriOrNotify(btnRedirectUrl)
                 }
             },
-            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
+            modifier =
+            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                .fillMaxWidth()
                 .padding(start = 15.dp, top = 10.dp, end = 15.dp)
-                .pressScaleEffect()
+                .pressScaleEffect(),
         ) {
             Text(
                 text = btnText,

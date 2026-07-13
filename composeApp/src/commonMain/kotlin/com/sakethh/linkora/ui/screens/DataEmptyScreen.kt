@@ -17,11 +17,11 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun DataEmptyScreen(
     text: String,
-    paddingValues: PaddingValues = PaddingValues(top = 75.dp, start = 15.dp)
+    paddingValues: PaddingValues = PaddingValues(top = 75.dp, start = 15.dp),
 ) {
     Box(
         modifier = Modifier.padding(paddingValues).fillMaxSize(),
-        contentAlignment = Alignment.CenterStart
+        contentAlignment = Alignment.CenterStart,
     ) {
         Column {
             Text(
@@ -29,7 +29,7 @@ fun DataEmptyScreen(
                 style = MaterialTheme.typography.titleMedium,
                 fontSize = 32.sp,
                 textAlign = TextAlign.Start,
-                modifier = Modifier.fillMaxSize().padding(end = 50.dp)
+                modifier = Modifier.fillMaxSize().padding(end = 50.dp),
             )
         }
     }

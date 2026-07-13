@@ -10,14 +10,12 @@ import kotlinx.serialization.json.Json
 data class FlatChildFolderData(
     val itemType: String,
     val lastModified: Long,
-
     val folderName: String? = null,
     val folderNote: String? = null,
     val folderParentId: Long? = null,
     val folderLocalId: Long? = null,
     val folderRemoteId: Long? = null,
     val folderIsArchived: Boolean? = null,
-
     val linkType: LinkType? = null,
     val linkLocalId: Long? = null,
     val linkRemoteId: Long? = null,
@@ -29,8 +27,7 @@ data class FlatChildFolderData(
     val linkIdOfLinkedFolder: Long? = null,
     val linkUserAgent: String? = null,
     val linkMediaType: MediaType? = null,
-
-    val linkTagsJson: String? = null
+    val linkTagsJson: String? = null,
 ) {
     val asFolder: Folder by lazy {
         Folder(
@@ -40,19 +37,32 @@ data class FlatChildFolderData(
             localId = folderLocalId!!,
             remoteId = folderRemoteId,
             isArchived = folderIsArchived!!,
-            lastModified = lastModified
+            lastModified = lastModified,
         )
     }
 
     val asLinkTagsPair: LinkTagsPair by lazy {
-        val link = Link(
-            linkType = linkType!!, localId = linkLocalId!!, remoteId = linkRemoteId,
-            title = linkTitle!!, url = linkUrl!!, host = linkHost!!, imgURL = linkImgUrl!!,
-            note = linkNote!!, idOfLinkedFolder = linkIdOfLinkedFolder,
-            userAgent = linkUserAgent, mediaType = linkMediaType!!, lastModified = lastModified
-        )
-        val tags = if (linkTagsJson.isNullOrBlank()) emptyList()
-        else Json.decodeFromString<List<Tag>>(linkTagsJson)
+        val link =
+            Link(
+                linkType = linkType!!,
+                localId = linkLocalId!!,
+                remoteId = linkRemoteId,
+                title = linkTitle!!,
+                url = linkUrl!!,
+                host = linkHost!!,
+                imgURL = linkImgUrl!!,
+                note = linkNote!!,
+                idOfLinkedFolder = linkIdOfLinkedFolder,
+                userAgent = linkUserAgent,
+                mediaType = linkMediaType!!,
+                lastModified = lastModified,
+            )
+        val tags =
+            if (linkTagsJson.isNullOrBlank()) {
+                emptyList()
+            } else {
+                Json.decodeFromString<List<Tag>>(linkTagsJson)
+            }
 
         LinkTagsPair(link = link, tags = tags)
     }

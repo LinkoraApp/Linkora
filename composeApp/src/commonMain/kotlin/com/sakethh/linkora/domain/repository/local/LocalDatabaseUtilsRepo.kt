@@ -18,7 +18,7 @@ interface LocalDatabaseUtilsRepo {
         pageSize: Int,
         lastTypeOrder: Int?,
         lastSortStr: String?,
-        lastId: Long?
+        lastId: Long?,
     ): Flow<Result<List<FlatChildFolderData>>>
 
     fun search(
@@ -36,6 +36,6 @@ interface LocalDatabaseUtilsRepo {
         lastTypeOrder: Int,
         lastSortStr: String,
         lastSortNum: Long,
-        lastId: Long
+        lastId: Long,
     ): Flow<Result<List<FlatSearchResult>>>
 }

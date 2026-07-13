@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SettingsAppInfoComponent(
@@ -37,7 +36,7 @@ fun SettingsAppInfoComponent(
     icon: ImageVector?,
     title: String,
     onClick: () -> Unit,
-    paddingValues: PaddingValues? = null
+    paddingValues: PaddingValues? = null,
 ) {
     if (hasDescription) {
         Text(
@@ -46,29 +45,40 @@ fun SettingsAppInfoComponent(
             fontSize = 16.sp,
             textAlign = TextAlign.Start,
             lineHeight = 20.sp,
-            modifier = Modifier.padding(start = 15.dp, end = 15.dp)
+            modifier = Modifier.padding(start = 15.dp, end = 15.dp),
         )
     }
 
     Card(
-        shape = RoundedCornerShape(10.dp), modifier = Modifier.padding(
+        shape = RoundedCornerShape(10.dp),
+        modifier =
+        Modifier.padding(
             top = paddingValues?.calculateTopPadding() ?: 20.dp,
             end = paddingValues?.calculateEndPadding(LayoutDirection.Ltr) ?: 20.dp,
-            start = paddingValues?.calculateStartPadding(LayoutDirection.Ltr) ?: 20.dp
-        ).wrapContentHeight().fillMaxWidth().pointerHoverIcon(icon = PointerIcon.Hand).combinedClickable(interactionSource = remember {
-            MutableInteractionSource()
-        }, indication = null, onClick = {
-            onClick()
-        }, onLongClick = {
-
-        }).pressScaleEffect()
+            start = paddingValues?.calculateStartPadding(LayoutDirection.Ltr) ?: 20.dp,
+        )
+            .wrapContentHeight()
+            .fillMaxWidth()
+            .pointerHoverIcon(icon = PointerIcon.Hand)
+            .combinedClickable(
+                interactionSource =
+                remember {
+                    MutableInteractionSource()
+                },
+                indication = null,
+                onClick = {
+                    onClick()
+                },
+                onLongClick = {},
+            )
+            .pressScaleEffect(),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (icon != null) {
                 Icon(
                     modifier = Modifier.padding(20.dp),
                     imageVector = icon,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
             Text(
@@ -76,7 +86,7 @@ fun SettingsAppInfoComponent(
                 style = MaterialTheme.typography.titleSmall,
                 fontSize = 16.sp,
                 lineHeight = 20.sp,
-                modifier = Modifier.padding(end = 15.dp)
+                modifier = Modifier.padding(end = 15.dp),
             )
         }
     }

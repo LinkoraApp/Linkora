@@ -37,13 +37,16 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.util.UUID
 
-actual class NativeUtils(private val context: Context) {
+actual class NativeUtils(
+    private val context: Context,
+) {
     actual fun onShare(url: String) {
-        val intent = Intent().apply {
-            action = Intent.ACTION_SEND
-            putExtra(Intent.EXTRA_TEXT, url)
-            type = "text/plain"
-        }
+        val intent =
+            Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, url)
+                type = "text/plain"
+            }
         val shareIntent = Intent.createChooser(intent, null)
         shareIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         context.startActivity(shareIntent)
@@ -52,25 +55,33 @@ actual class NativeUtils(private val context: Context) {
     actual suspend fun onRefreshAllLinks(
         localLinksRepo: LocalLinksRepo,
         preferencesRepository: PreferencesRepository,
-        refreshLinksRepo: RefreshLinksRepo
+        refreshLinksRepo: RefreshLinksRepo,
     ) {
         val workManager = WorkManager.getInstance(context)
-        val request = OneTimeWorkRequestBuilder<RefreshAllLinksWorker>().setConstraints(
-            Constraints(requiredNetworkType = NetworkType.CONNECTED)
-        ).setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST).build()
+        val request =
+            OneTimeWorkRequestBuilder<RefreshAllLinksWorker>()
+                .setConstraints(
+                    Constraints(requiredNetworkType = NetworkType.CONNECTED),
+                )
+                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                .build()
 
         preferencesRepository.changePreferenceValue(
-            preferenceKey = stringPreferencesKey(
-                AppPreferences.CURRENT_WORK_MANAGER_WORK_UUID.key
-            ), newValue = request.id.toString()
+            preferenceKey =
+            stringPreferencesKey(
+                AppPreferences.CURRENT_WORK_MANAGER_WORK_UUID.key,
+            ),
+            newValue = request.id.toString(),
         )
         preferencesRepository.changePreferenceValue(
             preferenceKey = longPreferencesKey(AppPreferences.REFRESHED_LINKS_COUNT.key),
-            newValue = 0
+            newValue = 0,
         )
         refreshLinksRepo.deleteAllIds()
         workManager.enqueueUniqueWork(
-            request.id.toString(), ExistingWorkPolicy.KEEP, request
+            request.id.toString(),
+            ExistingWorkPolicy.KEEP,
+            request,
         )
     }
 
@@ -92,22 +103,30 @@ actual class NativeUtils(private val context: Context) {
     actual fun cancelRefreshingLinks() {
         RefreshAllLinksWorker.cancelLinksRefreshing(
             context,
-            refreshLinksWorkerTag = DependencyContainer.preferencesRepo.getPreferences().refreshLinksWorkerTag
+            refreshLinksWorkerTag =
+            DependencyContainer.preferencesRepo.getPreferences().refreshLinksWorkerTag,
         )
     }
 
-    actual class DataSyncingNotificationService(private val context: Context) {
-
+    actual class DataSyncingNotificationService(
+        private val context: Context,
+    ) {
         private val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         actual fun showNotification() {
             val notification =
-                NotificationCompat.Builder(context, "1").setSmallIcon(R.drawable.ic_stat_name)
+                NotificationCompat.Builder(context, "1")
+                    .setSmallIcon(R.drawable.ic_stat_name)
                     .setContentTitle(Localization.Key.SyncingDataLabel.getLocalizedString())
                     .setProgress(
-                        0, 0, true
-                    ).setPriority(NotificationCompat.PRIORITY_LOW).setSilent(true).build()
+                        0,
+                        0,
+                        true,
+                    )
+                    .setPriority(NotificationCompat.PRIORITY_LOW)
+                    .setSilent(true)
+                    .build()
 
             notificationManager.notify(1, notification)
         }
@@ -121,14 +140,16 @@ actual class NativeUtils(private val context: Context) {
     private val packageName = context.applicationContext.packageName
 
     actual fun onIconChange(
-        allIconCodes: List<String>, newIconCode: String, onCompletion: () -> Unit
+        allIconCodes: List<String>,
+        newIconCode: String,
+        onCompletion: () -> Unit,
     ) {
         allIconCodes.forEach {
             if (it != newIconCode) {
                 packageManager.setComponentEnabledSetting(
                     ComponentName(packageName, "$packageName.$it"),
                     PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                    PackageManager.DONT_KILL_APP
+                    PackageManager.DONT_KILL_APP,
                 )
             }
         }
@@ -138,7 +159,7 @@ actual class NativeUtils(private val context: Context) {
         packageManager.setComponentEnabledSetting(
             newAppIconComponent,
             PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-            PackageManager.DONT_KILL_APP
+            PackageManager.DONT_KILL_APP,
         )
 
         onCompletion()
@@ -148,10 +169,12 @@ actual class NativeUtils(private val context: Context) {
         block()
     }
 
-    actual class WebCapture(private val context: Context) {
+    actual class WebCapture(
+        private val context: Context,
+    ) {
         val androidDesktopWebCapture = AndroidDesktopWebCapture()
-        actual suspend fun init(): Result<Boolean> =
-            androidDesktopWebCapture.init()
+
+        actual suspend fun init(): Result<Boolean> = androidDesktopWebCapture.init()
 
         actual suspend fun saveHTMLPage(
             nativeFolderPath: String,
@@ -169,21 +192,27 @@ actual class NativeUtils(private val context: Context) {
             includeVideoElements: Boolean,
             includeMetadata: Boolean,
         ): Result<Boolean> = withContext(Dispatchers.IO) {
-
-            val (webCaptureFile, _) = createNewFile(
-                context = context,
-                exportLocation = nativeFolderPath,
-                exportFileType = ExportFileType.HTML,
-                exportLocationType = ExportLocationType.WEB_CAPTURE
-            )
+            val (webCaptureFile, _) =
+                createNewFile(
+                    context = context,
+                    exportLocation = nativeFolderPath,
+                    exportFileType = ExportFileType.HTML,
+                    exportLocationType = ExportLocationType.WEB_CAPTURE,
+                )
 
             val webCaptureFileDescriptor =
-                context.applicationContext.contentResolver.openFileDescriptor(
-                    webCaptureFile?.uri
-                        ?: return@withContext Result.Failure("Couldn't get the uri for web-capture file that is created"),
-                    "w"
-                )?.detachFd()
-                    ?: return@withContext Result.Failure("Couldn't open the file descriptor for web-capture file that is created")
+                context.applicationContext.contentResolver
+                    .openFileDescriptor(
+                        webCaptureFile?.uri
+                            ?: return@withContext Result.Failure(
+                                "Couldn't get the uri for web-capture file that is created",
+                            ),
+                        "w",
+                    )
+                    ?.detachFd()
+                    ?: return@withContext Result.Failure(
+                        "Couldn't open the file descriptor for web-capture file that is created",
+                    )
 
             androidDesktopWebCapture.saveHTMLPage(
                 url = url,

@@ -5,13 +5,15 @@ import androidx.compose.material3.SheetState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
-import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.RefreshLinkType
+import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
 
 @Stable
-data class MenuBtmSheetParam @OptIn(ExperimentalMaterial3Api::class) constructor(
+data class MenuBtmSheetParam
+@OptIn(ExperimentalMaterial3Api::class)
+constructor(
     val onDismiss: () -> Unit,
     val linkTagsPair: LinkTagsPair?,
     val folder: Folder?,
@@ -30,5 +32,5 @@ data class MenuBtmSheetParam @OptIn(ExperimentalMaterial3Api::class) constructor
     val shouldShowArchiveOption: () -> Boolean,
     val showProgressBarDuringRemoteSave: MutableState<Boolean>,
     val onTagClick: (Tag) -> Unit,
-    val showNote: MutableState<Boolean> = mutableStateOf(false)
+    val showNote: MutableState<Boolean> = mutableStateOf(false),
 )

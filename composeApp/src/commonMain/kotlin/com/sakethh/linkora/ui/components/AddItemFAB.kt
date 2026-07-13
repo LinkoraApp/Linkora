@@ -58,169 +58,128 @@ data class AddItemFABParam(
 )
 
 @Composable
-fun AddItemFab(
-    addItemFABParam: AddItemFABParam
-) {
-    val currentIconForMainFAB by remember(addItemFABParam.isMainFabRotated) {
-        mutableStateOf(
-            if (addItemFABParam.isMainFabRotated) {
-                Icons.Default.AddLink
-            } else {
-                Icons.Default.Add
-            }
-        )
-    }
+fun AddItemFab(addItemFABParam: AddItemFABParam) {
+    val currentIconForMainFAB by
+        remember(addItemFABParam.isMainFabRotated) {
+            mutableStateOf(
+                if (addItemFABParam.isMainFabRotated) {
+                    Icons.Default.AddLink
+                } else {
+                    Icons.Default.Add
+                },
+            )
+        }
     val coroutineScope = rememberCoroutineScope()
     Column {
         Row(
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.align(Alignment.End),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             AnimatedVisibility(
-                visible = addItemFABParam.isMainFabRotated, enter = fadeIn(
-                    tween(
-                        200
-                    )
-                ), exit = fadeOut(
-                    tween(
-                        200
-                    )
-                )
+                visible = addItemFABParam.isMainFabRotated,
+                enter = fadeIn(tween(200)),
+                exit = fadeOut(tween(200)),
             ) {
                 Text(
                     text = Localization.Key.CreateANewTag.rememberLocalizedString(),
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 20.sp,
-                    modifier = Modifier.padding(
-                        end = 15.dp
-                    )
+                    modifier = Modifier.padding(end = 15.dp),
                 )
             }
             AnimatedVisibility(
                 visible = addItemFABParam.isMainFabRotated,
-                enter = androidx.compose.animation.scaleIn(
-                    animationSpec = tween(
-                        300
-                    )
-                ),
-                exit = androidx.compose.animation.scaleOut(
-                    tween(300)
-                )
+                enter = androidx.compose.animation.scaleIn(animationSpec = tween(300)),
+                exit = androidx.compose.animation.scaleOut(tween(300)),
             ) {
                 FloatingActionButton(
-                    modifier = Modifier.pressScaleEffect()
-                        .pointerHoverIcon(icon = PointerIcon.Hand), onClick = {
+                    modifier = Modifier.pressScaleEffect().pointerHoverIcon(icon = PointerIcon.Hand),
+                    onClick = {
                         addItemFABParam.hideReducedTransparencyBox()
                         addItemFABParam.onCreateATagClick()
                         addItemFABParam.undoMainFabRotation()
                         coroutineScope.launch {
                             addItemFABParam.rotationAnimatable.snapTo(-180f)
                         }
-                    }) {
+                    },
+                ) {
                     Icon(
-                        imageVector = Icons.Default.Tag, contentDescription = null
+                        imageVector = Icons.Default.Tag,
+                        contentDescription = null,
                     )
                 }
             }
-
         }
-        Spacer(
-            modifier = Modifier.height(
-                15.dp
-            )
-        )
+        Spacer(modifier = Modifier.height(15.dp))
 
         Row(
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.align(Alignment.End),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             AnimatedVisibility(
-                visible = addItemFABParam.isMainFabRotated, enter = fadeIn(
-                    tween(
-                        200
-                    )
-                ), exit = fadeOut(
-                    tween(
-                        200
-                    )
-                )
+                visible = addItemFABParam.isMainFabRotated,
+                enter = fadeIn(tween(200)),
+                exit = fadeOut(tween(200)),
             ) {
                 Text(
                     text = Localization.rememberLocalizedString(Localization.Key.CreateANewFolder),
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 20.sp,
-                    modifier = Modifier.padding(
-                        end = 15.dp
-                    )
+                    modifier = Modifier.padding(end = 15.dp),
                 )
             }
             AnimatedVisibility(
                 visible = addItemFABParam.isMainFabRotated,
-                enter = androidx.compose.animation.scaleIn(
-                    animationSpec = tween(
-                        300
-                    )
-                ),
-                exit = androidx.compose.animation.scaleOut(
-                    tween(300)
-                )
+                enter = androidx.compose.animation.scaleIn(animationSpec = tween(300)),
+                exit = androidx.compose.animation.scaleOut(tween(300)),
             ) {
                 FloatingActionButton(
-                    modifier = Modifier.pressScaleEffect()
-                        .pointerHoverIcon(icon = PointerIcon.Hand), onClick = {
+                    modifier = Modifier.pressScaleEffect().pointerHoverIcon(icon = PointerIcon.Hand),
+                    onClick = {
                         addItemFABParam.hideReducedTransparencyBox()
                         addItemFABParam.onShowDialogForNewFolder()
                         addItemFABParam.undoMainFabRotation()
                         coroutineScope.launch {
                             addItemFABParam.rotationAnimatable.snapTo(-180f)
                         }
-                    }) {
+                    },
+                ) {
                     Icon(
-                        imageVector = Icons.Default.CreateNewFolder, contentDescription = null
+                        imageVector = Icons.Default.CreateNewFolder,
+                        contentDescription = null,
                     )
                 }
             }
-
         }
-        Spacer(
-            modifier = Modifier.height(
-                15.dp
-            )
-        )
+        Spacer(modifier = Modifier.height(15.dp))
         Row(
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.align(Alignment.End),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             AnimatedVisibility(
-                visible = addItemFABParam.isMainFabRotated, enter = fadeIn(
-                    tween(
-                        300
-                    )
-                ), exit = fadeOut(
-                    tween(
-                        300
-                    )
-                )
+                visible = addItemFABParam.isMainFabRotated,
+                enter = fadeIn(tween(300)),
+                exit = fadeOut(tween(300)),
             ) {
                 Text(
                     text = Localization.rememberLocalizedString(Localization.Key.AddANewLink),
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 20.sp,
-                    modifier = Modifier.padding(
-                        end = 15.dp
-                    )
+                    modifier = Modifier.padding(end = 15.dp),
                 )
             }
             FloatingActionButton(
-                modifier = Modifier.rotate(
-                    addItemFABParam.rotationAnimatable.value
-                ).pressScaleEffect().pointerHoverIcon(icon = PointerIcon.Hand), onClick = {
+                modifier =
+                Modifier.rotate(addItemFABParam.rotationAnimatable.value)
+                    .pressScaleEffect()
+                    .pointerHoverIcon(icon = PointerIcon.Hand),
+                onClick = {
                     if (addItemFABParam.isMainFabRotated) {
                         addItemFABParam.hideReducedTransparencyBox()
                         addItemFABParam.onShowAddLinkDialog()
@@ -230,23 +189,32 @@ fun AddItemFab(
                         }
                     } else {
                         coroutineScope.launch {
-                            kotlinx.coroutines.awaitAll(async {
-                                addItemFABParam.rotationAnimatable.animateTo(
-                                    180f, animationSpec = tween(500)
-                                )
-                            }, async {
-                                addItemFABParam.showReducedTransparencyBox()
-                                kotlinx.coroutines.delay(10L)
-                                addItemFABParam.rotateMainFab()
-                            })
+                            kotlinx.coroutines.awaitAll(
+                                async {
+                                    addItemFABParam.rotationAnimatable.animateTo(
+                                        180f,
+                                        animationSpec = tween(500),
+                                    )
+                                },
+                                async {
+                                    addItemFABParam.showReducedTransparencyBox()
+                                    kotlinx.coroutines.delay(10L)
+                                    addItemFABParam.rotateMainFab()
+                                },
+                            )
                         }
                     }
-                }) {
-                AnimatedContent(targetState = currentIconForMainFAB, transitionSpec = {
-                    fadeIn(tween(500)) togetherWith fadeOut(tween(250))
-                }) {
+                },
+            ) {
+                AnimatedContent(
+                    targetState = currentIconForMainFAB,
+                    transitionSpec = {
+                        fadeIn(tween(500)) togetherWith fadeOut(tween(250))
+                    },
+                ) {
                     Icon(
-                        imageVector = it, contentDescription = null
+                        imageVector = it,
+                        contentDescription = null,
                     )
                 }
             }

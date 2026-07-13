@@ -11,12 +11,10 @@ import kotlin.jvm.Transient
 
 data class FlatSearchResult(
     val itemType: String,
-
     val tagLocalId: Long? = null,
     val tagRemoteId: Long? = null,
     val tagName: String? = null,
     val tagLastModified: Long? = null,
-
     val folderName: String? = null,
     val folderNote: String? = null,
     val folderParentId: Long? = null,
@@ -24,7 +22,6 @@ data class FlatSearchResult(
     val folderRemoteId: Long? = null,
     val folderIsArchived: Boolean? = null,
     val folderLastModified: Long? = null,
-
     val linkType: LinkType? = null,
     val linkLocalId: Long? = null,
     val linkRemoteId: Long? = null,
@@ -37,52 +34,64 @@ data class FlatSearchResult(
     val linkUserAgent: String? = null,
     val linkMediaType: MediaType? = null,
     val linkLastModified: Long? = null,
-
-    val linkTagsJson: String? = null
+    val linkTagsJson: String? = null,
 ) {
-
-    @Ignore
-    @Transient
+    @Ignore @Transient
     var path: List<Folder>? = null
-
 
     val asTag: Tag by lazy {
         Tag(
-            localId = tagLocalId!!, remoteId = tagRemoteId,
-            name = tagName!!, lastModified = tagLastModified!!
+            localId = tagLocalId!!,
+            remoteId = tagRemoteId,
+            name = tagName!!,
+            lastModified = tagLastModified!!,
         )
     }
 
     val asFolder: Folder by lazy {
         Folder(
-            name = folderName!!, note = folderNote!!, parentFolderId = folderParentId,
-            localId = folderLocalId!!, remoteId = folderRemoteId,
-            isArchived = folderIsArchived!!, lastModified = folderLastModified!!
-        ).also {
-            it.path = path
-        }
+            name = folderName!!,
+            note = folderNote!!,
+            parentFolderId = folderParentId,
+            localId = folderLocalId!!,
+            remoteId = folderRemoteId,
+            isArchived = folderIsArchived!!,
+            lastModified = folderLastModified!!,
+        )
+            .also {
+                it.path = path
+            }
     }
 
     val asLinkTagsPair: LinkTagsPair by lazy {
-        val link = Link(
-            linkType = linkType!!,
-            localId = linkLocalId!!,
-            remoteId = linkRemoteId,
-            title = linkTitle!!,
-            url = linkUrl!!,
-            host = linkHost!!,
-            imgURL = linkImgUrl!!,
-            note = linkNote!!,
-            idOfLinkedFolder = linkIdOfLinkedFolder,
-            userAgent = linkUserAgent,
-            mediaType = linkMediaType!!,
-            lastModified = linkLastModified!!
-        )
-        val tags = if (linkTagsJson.isNullOrBlank() || linkTagsJson == "[]") emptyList()
-        else Json.decodeFromString<List<Tag>>(linkTagsJson)
+        val link =
+            Link(
+                linkType = linkType!!,
+                localId = linkLocalId!!,
+                remoteId = linkRemoteId,
+                title = linkTitle!!,
+                url = linkUrl!!,
+                host = linkHost!!,
+                imgURL = linkImgUrl!!,
+                note = linkNote!!,
+                idOfLinkedFolder = linkIdOfLinkedFolder,
+                userAgent = linkUserAgent,
+                mediaType = linkMediaType!!,
+                lastModified = linkLastModified!!,
+            )
+        val tags =
+            if (linkTagsJson.isNullOrBlank() || linkTagsJson == "[]") {
+                emptyList()
+            } else {
+                Json.decodeFromString<List<Tag>>(linkTagsJson)
+            }
 
-        LinkTagsPair(link = link.also {
-            it.path = path
-        }, tags = tags)
+        LinkTagsPair(
+            link =
+            link.also {
+                it.path = path
+            },
+            tags = tags,
+        )
     }
 }

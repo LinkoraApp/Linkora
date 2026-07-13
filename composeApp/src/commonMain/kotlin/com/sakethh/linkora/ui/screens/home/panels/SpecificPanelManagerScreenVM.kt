@@ -8,7 +8,6 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination.Companion.hasRoute
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
-import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.panel.Panel
 import com.sakethh.linkora.domain.model.panel.PanelFolder
@@ -42,7 +41,7 @@ class SpecificPanelManagerScreenVM(
     private val localPanelsRepo: LocalPanelsRepo,
     private val preferencesRepository: PreferencesRepository,
     currentBackStackEntryFlow: Flow<NavBackStackEntry>,
-    onAndroidMobile: Boolean
+    onAndroidMobile: Boolean,
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
 
@@ -73,58 +72,77 @@ class SpecificPanelManagerScreenVM(
             listOf(Navigation.Home.PanelsManagerScreen, Navigation.Home.SpecificPanelManagerScreen)
 
         viewModelScope.launch {
-            currentBackStackEntryFlow.transform { navBackStackEntry ->
-                if ((onAndroidMobile && navBackStackEntry.destination.hasRoute(
-                        panelRoutes[1]::class
-                    )) || (!onAndroidMobile && panelRoutes.any {
-                        navBackStackEntry.destination.hasRoute(it::class)
-                    })
-                ) {
-                    emit(Unit)
-                } else {
-                    linkoraLog("specificPanelManagerScreenDataJob?.cancel()")
-                    specificPanelManagerScreenDataJob?.cancel()
-                    // We don't emit anything here because we don't want the emission
-                    // or the other side effects that `updateSpecificPanelManagerScreenData` triggers.
-                    // This logic exists purely by choice. just because I can do it
-                    // doesn't mean i should... but i'm doing it anyway.
-                    // but anyway, you get the idea.
-                    // A clearer approach would be to apply conditions directly in the collection
+            currentBackStackEntryFlow
+                .transform { navBackStackEntry ->
+                    if (
+                        (
+                            onAndroidMobile &&
+                                navBackStackEntry.destination.hasRoute(
+                                    panelRoutes[1]::class,
+                                )
+                            ) ||
+                        (
+                            !onAndroidMobile &&
+                                panelRoutes.any {
+                                    navBackStackEntry.destination.hasRoute(it::class)
+                                }
+                            )
+                    ) {
+                        emit(Unit)
+                    } else {
+                        linkoraLog("specificPanelManagerScreenDataJob?.cancel()")
+                        specificPanelManagerScreenDataJob?.cancel()
+                        // We don't emit anything here because we don't want the emission
+                        // or the other side effects that `updateSpecificPanelManagerScreenData` triggers.
+                        // This logic exists purely by choice. just because I can do it
+                        // doesn't mean i should... but i'm doing it anyway.
+                        // but anyway, you get the idea.
+                        // A clearer approach would be to apply conditions directly in the collection
+                    }
                 }
-            }.collectLatest {
-                linkoraLog("updateSpecificPanelManagerScreenData()")
-                updateSpecificPanelManagerScreenData()
-            }
+                .collectLatest {
+                    linkoraLog("updateSpecificPanelManagerScreenData()")
+                    updateSpecificPanelManagerScreenData()
+                }
         }
     }
 
     fun performAction(panelAction: PanelsAction) {
         when (panelAction) {
-            is PanelsAction.AddANewAPanel -> addANewAPanel(
-                panel = panelAction.panel, onCompletion = panelAction.onCompletion
-            )
+            is PanelsAction.AddANewAPanel ->
+                addANewAPanel(
+                    panel = panelAction.panel,
+                    onCompletion = panelAction.onCompletion,
+                )
 
-            is PanelsAction.AddANewFolderInAPanel -> addANewFolderInAPanel(
-                panelFolder = panelAction.panelFolder
-            )
+            is PanelsAction.AddANewFolderInAPanel ->
+                addANewFolderInAPanel(
+                    panelFolder = panelAction.panelFolder,
+                )
 
-            is PanelsAction.DeleteAPanel -> deleteAPanel(
-                panelId = panelAction.panelId, onCompletion = panelAction.onCompletion
-            )
+            is PanelsAction.DeleteAPanel ->
+                deleteAPanel(
+                    panelId = panelAction.panelId,
+                    onCompletion = panelAction.onCompletion,
+                )
 
-            is PanelsAction.RemoveAFolderFromPanel -> removeAFolderFromAPanel(
-                panelId = panelAction.panelId, folderId = panelAction.folderId
-            )
+            is PanelsAction.RemoveAFolderFromPanel ->
+                removeAFolderFromAPanel(
+                    panelId = panelAction.panelId,
+                    folderId = panelAction.folderId,
+                )
 
-            is PanelsAction.RenameAPanel -> renameAPanel(
-                panelId = panelAction.panelId,
-                newName = panelAction.newName,
-                onCompletion = panelAction.onCompletion
-            )
+            is PanelsAction.RenameAPanel ->
+                renameAPanel(
+                    panelId = panelAction.panelId,
+                    newName = panelAction.newName,
+                    onCompletion = panelAction.onCompletion,
+                )
 
-            is PanelsAction.UpdateFoldersSearchQuery -> updateFoldersSearchQuery(
-                panelAction.query
-            )
+            is PanelsAction.UpdateFoldersSearchQuery ->
+                updateFoldersSearchQuery(
+                    panelAction.query,
+                )
         }
     }
 
@@ -132,38 +150,51 @@ class SpecificPanelManagerScreenVM(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun updateSpecificPanelManagerScreenData() {
-
         specificPanelManagerScreenDataJob?.cancel()
 
         specificPanelManagerScreenDataJob = viewModelScope.launch {
-            combine(localFoldersRepo.getAllFoldersAsFlow(), snapshotFlow {
-                _selectedPanel.value
-            }.flatMapLatest { selectedPanel ->
-                localPanelsRepo.getAllTheFoldersFromAPanel(selectedPanel.localId)
-            }, snapshotFlow {
-                foldersSearchQuery.value
-            }) { allFolders, foldersOfTheSelectedPanel, foldersSearchQuery ->
-                PanelFolderMetaInfo(foldersToIncludeInPanel = allFolders.filter {
-                    it.localId !in foldersOfTheSelectedPanel.map { it.folderId } && !it.isArchived
-                }.run {
-                    if (foldersSearchQuery.isEmpty()) {
-                        this
-                    } else {
-                        filter {
-                            it.name.lowercase().contains(foldersSearchQuery.lowercase())
+            combine(
+                localFoldersRepo.getAllFoldersAsFlow(),
+                snapshotFlow {
+                    _selectedPanel.value
+                }
+                    .flatMapLatest { selectedPanel ->
+                        localPanelsRepo.getAllTheFoldersFromAPanel(selectedPanel.localId)
+                    },
+                snapshotFlow {
+                    foldersSearchQuery.value
+                },
+            ) { allFolders, foldersOfTheSelectedPanel, foldersSearchQuery ->
+                PanelFolderMetaInfo(
+                    foldersToIncludeInPanel =
+                    allFolders
+                        .filter {
+                            it.localId !in foldersOfTheSelectedPanel.map { it.folderId } &&
+                                !it.isArchived
                         }
-                    }
-                }, foldersOfTheSelectedPanel = foldersOfTheSelectedPanel)
-            }.collectLatest { (foldersToIncludeInPanel, foldersOfTheSelectedPanel) ->
-                linkoraLog(
-                    """
-                    foldersToIncludeInPanel: ${foldersToIncludeInPanel.map { it.name }}
-                    foldersOfTheSelectedPanel: ${foldersOfTheSelectedPanel.map { it.folderName }}
-                """.trimIndent()
+                        .run {
+                            if (foldersSearchQuery.isEmpty()) {
+                                this
+                            } else {
+                                filter {
+                                    it.name.lowercase().contains(foldersSearchQuery.lowercase())
+                                }
+                            }
+                        },
+                    foldersOfTheSelectedPanel = foldersOfTheSelectedPanel,
                 )
-                _foldersToIncludeInPanel.emit(foldersToIncludeInPanel)
-                _foldersOfTheSelectedPanel.emit(foldersOfTheSelectedPanel)
             }
+                .collectLatest { (foldersToIncludeInPanel, foldersOfTheSelectedPanel) ->
+                    linkoraLog(
+                        """
+                        foldersToIncludeInPanel: ${foldersToIncludeInPanel.map { it.name }}
+                        foldersOfTheSelectedPanel: ${foldersOfTheSelectedPanel.map { it.folderName }}
+                        """
+                            .trimIndent(),
+                    )
+                    _foldersToIncludeInPanel.emit(foldersToIncludeInPanel)
+                    _foldersOfTheSelectedPanel.emit(foldersOfTheSelectedPanel)
+                }
         }
     }
 
@@ -180,61 +211,97 @@ class SpecificPanelManagerScreenVM(
         }
     }
 
-    fun addANewAPanel(panel: Panel, onCompletion: () -> Unit) {
-        viewModelScope.launch {
-            localPanelsRepo.addANewPanel(panel).collectLatest {
-                it.onSuccess {
-                    pushUIEvent(
-                        UIEvent.Type.ShowSnackbar(
-                            message = Localization.Key.PanelCreatedSuccessfully.getLocalizedString()
-                                .replaceFirstPlaceHolderWith(panel.panelName) + it.getRemoteOnlyFailureMsg()
+    fun addANewAPanel(
+        panel: Panel,
+        onCompletion: () -> Unit,
+    ) {
+        viewModelScope
+            .launch {
+                localPanelsRepo.addANewPanel(panel).collectLatest {
+                    it.onSuccess {
+                        pushUIEvent(
+                            UIEvent.Type.ShowSnackbar(
+                                message =
+                                Localization.Key.PanelCreatedSuccessfully.getLocalizedString()
+                                    .replaceFirstPlaceHolderWith(panel.panelName) +
+                                    it.getRemoteOnlyFailureMsg(),
+                            ),
                         )
-                    )
-                }.pushSnackbarOnFailure()
+                    }
+                        .pushSnackbarOnFailure()
+                }
             }
-        }.invokeOnCompletion {
-            onCompletion()
-        }
+            .invokeOnCompletion {
+                onCompletion()
+            }
     }
 
-    fun deleteAPanel(panelId: Long, onCompletion: () -> Unit) {
-        viewModelScope.launch {
-            if (preferencesRepository.readPreferenceValue(longPreferencesKey(AppPreferences.LAST_SELECTED_PANEL_ID.key)) == panelId) {
-                preferencesRepository.changePreferenceValue(
-                    preferenceKey = longPreferencesKey(
-                        AppPreferences.LAST_SELECTED_PANEL_ID.key
-                    ), newValue = Constants.DEFAULT_PANELS_ID
-                )
+    fun deleteAPanel(
+        panelId: Long,
+        onCompletion: () -> Unit,
+    ) {
+        viewModelScope
+            .launch {
+                if (
+                    preferencesRepository.readPreferenceValue(
+                        longPreferencesKey(AppPreferences.LAST_SELECTED_PANEL_ID.key),
+                    ) == panelId
+                ) {
+                    preferencesRepository.changePreferenceValue(
+                        preferenceKey =
+                        longPreferencesKey(
+                            AppPreferences.LAST_SELECTED_PANEL_ID.key,
+                        ),
+                        newValue = Constants.DEFAULT_PANELS_ID,
+                    )
+                }
+                localPanelsRepo.deleteAPanel(panelId).collectLatest {
+                    it.onSuccess {
+                        pushUIEvent(
+                            UIEvent.Type.ShowSnackbar(
+                                message =
+                                Localization.Key.DeletedPanelSuccessfully.getLocalizedString() +
+                                    it.getRemoteOnlyFailureMsg(),
+                            ),
+                        )
+                    }
+                        .pushSnackbarOnFailure()
+                }
             }
-            localPanelsRepo.deleteAPanel(panelId).collectLatest {
-                it.onSuccess {
-                    pushUIEvent(UIEvent.Type.ShowSnackbar(message = Localization.Key.DeletedPanelSuccessfully.getLocalizedString() + it.getRemoteOnlyFailureMsg()))
-                }.pushSnackbarOnFailure()
+            .invokeOnCompletion {
+                onCompletion()
             }
-        }.invokeOnCompletion {
-            onCompletion()
-        }
     }
 
-    fun renameAPanel(panelId: Long, newName: String, onCompletion: () -> Unit) {
-        viewModelScope.launch {
-            localPanelsRepo.updateAPanelName(newName, panelId).collectLatest {
-                it.onSuccess {
-                    pushUIEvent(
-                        UIEvent.Type.ShowSnackbar(
-                            message = Localization.Key.UpdatedThePanelNameSuccessfully.getLocalizedString()
-                                .replaceFirstPlaceHolderWith(newName) + it.getRemoteOnlyFailureMsg()
+    fun renameAPanel(
+        panelId: Long,
+        newName: String,
+        onCompletion: () -> Unit,
+    ) {
+        viewModelScope
+            .launch {
+                localPanelsRepo.updateAPanelName(newName, panelId).collectLatest {
+                    it.onSuccess {
+                        pushUIEvent(
+                            UIEvent.Type.ShowSnackbar(
+                                message =
+                                Localization.Key.UpdatedThePanelNameSuccessfully.getLocalizedString()
+                                    .replaceFirstPlaceHolderWith(newName) +
+                                    it.getRemoteOnlyFailureMsg(),
+                            ),
                         )
-                    )
-                }.pushSnackbarOnFailure()
+                    }
+                        .pushSnackbarOnFailure()
+                }
             }
-        }.invokeOnCompletion {
-            onCompletion()
-        }
+            .invokeOnCompletion {
+                onCompletion()
+            }
     }
 
     fun removeAFolderFromAPanel(
-        panelId: Long, folderId: Long
+        panelId: Long,
+        folderId: Long,
     ) {
         viewModelScope.launch {
             localPanelsRepo.deleteAFolderFromAPanel(panelId, folderId).collectLatest {
@@ -250,5 +317,6 @@ class SpecificPanelManagerScreenVM(
 }
 
 private data class PanelFolderMetaInfo(
-    val foldersToIncludeInPanel: List<Folder>, val foldersOfTheSelectedPanel: List<PanelFolder>
+    val foldersToIncludeInPanel: List<Folder>,
+    val foldersOfTheSelectedPanel: List<PanelFolder>,
 )

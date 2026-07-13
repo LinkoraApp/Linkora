@@ -7,7 +7,6 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -51,49 +50,57 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.Platform
-import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.panel.PanelFolder
 import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.rememberLocalizedString
-import kotlinx.coroutines.flow.StateFlow
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun SpecificPanelManagerScreen(
- specificPanelManagerScreenParam: SpecificPanelManagerScreenParam
-) {
-    val foldersOfTheSelectedPanel by specificPanelManagerScreenParam.foldersOfTheSelectedPanel.collectAsStateWithLifecycle()
-    val foldersToIncludeInPanel by specificPanelManagerScreenParam.foldersToIncludeInPanel.collectAsStateWithLifecycle()
+fun SpecificPanelManagerScreen(specificPanelManagerScreenParam: SpecificPanelManagerScreenParam) {
+    val foldersOfTheSelectedPanel by
+        specificPanelManagerScreenParam.foldersOfTheSelectedPanel.collectAsStateWithLifecycle()
+    val foldersToIncludeInPanel by
+        specificPanelManagerScreenParam.foldersToIncludeInPanel.collectAsStateWithLifecycle()
 
     val navController = LocalNavController.current
     val topAppBarState = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
-        modifier = Modifier.padding(top = specificPanelManagerScreenParam.paddingValues.calculateTopPadding()).fillMaxSize(),
+        modifier =
+        Modifier.padding(
+            top = specificPanelManagerScreenParam.paddingValues.calculateTopPadding(),
+        )
+            .fillMaxSize(),
         topBar = {
-            MediumTopAppBar(navigationIcon = {
-                IconButton(
-                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand), onClick = {
-                        navController.navigateUp()
-                    }) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
-                }
-            }, scrollBehavior = topAppBarState, title = {
-                Text(
-                    text = SpecificPanelManagerScreenVM.selectedPanel.value.panelName,
-                    fontSize = 18.sp,
-                    style = MaterialTheme.typography.titleMedium,
-                )
-            })
+            MediumTopAppBar(
+                navigationIcon = {
+                    IconButton(
+                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                        onClick = {
+                            navController.navigateUp()
+                        },
+                    ) {
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
+                    }
+                },
+                scrollBehavior = topAppBarState,
+                title = {
+                    Text(
+                        text = SpecificPanelManagerScreenVM.selectedPanel.value.panelName,
+                        fontSize = 18.sp,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                },
+            )
         },
         bottomBar = {
             Column(
-                modifier = Modifier.fillMaxWidth().background(BottomSheetDefaults.ContainerColor)
-                    .padding(
-                        top = 12.dp
-                    )
+                modifier =
+                Modifier.fillMaxWidth()
+                    .background(BottomSheetDefaults.ContainerColor)
+                    .padding(top = 12.dp),
             ) {
                 OutlinedTextField(
                     trailingIcon = {
@@ -101,8 +108,11 @@ fun SpecificPanelManagerScreen(
                             IconButton(
                                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
                                 onClick = {
-                                    specificPanelManagerScreenParam.  performAction(PanelsAction.UpdateFoldersSearchQuery(query = ""))
-                                }) {
+                                    specificPanelManagerScreenParam.performAction(
+                                        PanelsAction.UpdateFoldersSearchQuery(query = ""),
+                                    )
+                                },
+                            ) {
                                 Icon(imageVector = Icons.Default.Clear, contentDescription = null)
                             }
                         }
@@ -111,55 +121,68 @@ fun SpecificPanelManagerScreen(
                     shape = RoundedCornerShape(15.dp),
                     value = specificPanelManagerScreenParam.foldersSearchQuery,
                     onValueChange = {
-                        specificPanelManagerScreenParam.  performAction(PanelsAction.UpdateFoldersSearchQuery(query = it))
+                        specificPanelManagerScreenParam.performAction(
+                            PanelsAction.UpdateFoldersSearchQuery(query = it),
+                        )
                     },
-                    modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp)
+                    modifier =
+                    Modifier.fillMaxWidth()
+                        .padding(start = 15.dp, end = 15.dp)
                         .navigationBarsPadding(),
                     placeholder = {
                         Text(
                             text = Localization.Key.SearchFoldersToAdd.rememberLocalizedString(),
                             style = MaterialTheme.typography.titleSmall,
-                            modifier = Modifier.basicMarquee()
+                            modifier = Modifier.basicMarquee(),
                         )
                     },
                     leadingIcon = {
                         Icon(imageVector = Icons.Default.Search, contentDescription = null)
-                    })
+                    },
+                )
                 if (platform is Platform.Desktop || platform is Platform.Web) {
                     Spacer(Modifier.height(15.dp))
                 }
             }
-        }) {
+        },
+    ) {
         LazyColumn(
-            modifier = Modifier.addEdgeToEdgeScaffoldPadding(it).fillMaxWidth().animateContentSize()
-                .nestedScroll(topAppBarState.nestedScrollConnection)
+            modifier =
+            Modifier.addEdgeToEdgeScaffoldPadding(it)
+                .fillMaxWidth()
+                .animateContentSize()
+                .nestedScroll(topAppBarState.nestedScrollConnection),
         ) {
             stickyHeader {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface)
-                        .padding(15.dp)
+                    modifier =
+                    Modifier.fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(15.dp),
                 ) {
                     Text(
                         text = Localization.Key.Panels.rememberLocalizedString(),
                         style = MaterialTheme.typography.titleLarge,
                         fontSize = 16.sp,
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).clickable {
+                        modifier =
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand).clickable {
                             navController.navigateUp()
-                        })
+                        },
+                    )
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowRight, contentDescription = ""
+                        imageVector = Icons.AutoMirrored.Filled.ArrowRight,
+                        contentDescription = "",
                     )
                     Text(
                         text = SpecificPanelManagerScreenVM.selectedPanel.value.panelName,
                         style = MaterialTheme.typography.titleMedium,
-                        fontSize = 16.sp
+                        fontSize = 16.sp,
                     )
                 }
                 HorizontalDivider(color = LocalContentColor.current.copy(0.25f))
             }
             if (foldersOfTheSelectedPanel.isNotEmpty()) {
-
                 item {
                     Spacer(modifier = Modifier.height(15.dp))
                     Text(
@@ -167,30 +190,40 @@ fun SpecificPanelManagerScreen(
                         fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier.padding(start = 10.dp, end = 15.dp)
+                        modifier = Modifier.padding(start = 10.dp, end = 15.dp),
                     )
                 }
                 items(foldersOfTheSelectedPanel) { folderItem ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
-                            .pressScaleEffect().clickable(onClick = {
-                                specificPanelManagerScreenParam. performAction(
-                                    PanelsAction.RemoveAFolderFromPanel(
-                                        folderId = folderItem.folderId,
-                                        panelId = SpecificPanelManagerScreenVM.selectedPanel.value.localId
+                        modifier =
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .fillMaxWidth()
+                            .pressScaleEffect()
+                            .clickable(
+                                onClick = {
+                                    specificPanelManagerScreenParam.performAction(
+                                        PanelsAction.RemoveAFolderFromPanel(
+                                            folderId = folderItem.folderId,
+                                            panelId =
+                                            SpecificPanelManagerScreenVM.selectedPanel.value.localId,
+                                        ),
                                     )
-                                )
-                            }, indication = null, interactionSource = remember {
-                                MutableInteractionSource()
-                            }).padding(10.dp)
+                                },
+                                indication = null,
+                                interactionSource =
+                                remember {
+                                    MutableInteractionSource()
+                                },
+                            )
+                            .padding(10.dp),
                     ) {
                         Icon(imageVector = Icons.Default.Remove, contentDescription = null)
                         Spacer(Modifier.width(5.dp))
                         Text(
                             text = folderItem.folderName,
                             style = MaterialTheme.typography.titleSmall,
-                            fontSize = 16.sp
+                            fontSize = 16.sp,
                         )
                     }
                 }
@@ -203,34 +236,46 @@ fun SpecificPanelManagerScreen(
                         fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier.padding(start = 10.dp, end = 15.dp)
+                        modifier = Modifier.padding(start = 10.dp, end = 15.dp),
                     )
                 }
                 items(foldersToIncludeInPanel) { folderToIncludeInPanel ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
-                            .pressScaleEffect().clickable(onClick = {
-                                specificPanelManagerScreenParam.  performAction(
-                                    PanelsAction.AddANewFolderInAPanel(
-                                        panelFolder = PanelFolder(
-                                            folderId = folderToIncludeInPanel.localId,
-                                            folderName = folderToIncludeInPanel.name,
-                                            connectedPanelId = SpecificPanelManagerScreenVM.selectedPanel.value.localId,
-                                            panelPosition = 0
-                                        )
+                        modifier =
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .fillMaxWidth()
+                            .pressScaleEffect()
+                            .clickable(
+                                onClick = {
+                                    specificPanelManagerScreenParam.performAction(
+                                        PanelsAction.AddANewFolderInAPanel(
+                                            panelFolder =
+                                            PanelFolder(
+                                                folderId = folderToIncludeInPanel.localId,
+                                                folderName = folderToIncludeInPanel.name,
+                                                connectedPanelId =
+                                                SpecificPanelManagerScreenVM.selectedPanel.value
+                                                    .localId,
+                                                panelPosition = 0,
+                                            ),
+                                        ),
                                     )
-                                )
-                            }, indication = null, interactionSource = remember {
-                                MutableInteractionSource()
-                            }).padding(10.dp)
+                                },
+                                indication = null,
+                                interactionSource =
+                                remember {
+                                    MutableInteractionSource()
+                                },
+                            )
+                            .padding(10.dp),
                     ) {
                         Icon(imageVector = Icons.Default.Add, contentDescription = null)
                         Spacer(Modifier.width(5.dp))
                         Text(
                             text = folderToIncludeInPanel.name,
                             style = MaterialTheme.typography.titleSmall,
-                            fontSize = 16.sp
+                            fontSize = 16.sp,
                         )
                     }
                 }

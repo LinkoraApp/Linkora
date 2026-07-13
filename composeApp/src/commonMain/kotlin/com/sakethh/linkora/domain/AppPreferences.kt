@@ -85,7 +85,7 @@ data class AppPreferences(
     val webCaptureRetainAllVersions: Boolean = false,
     val webCaptureMaxVersions: Int = 3,
     val webCaptureAutoDeleteDays: Int = 30,
-    val webCaptureDeleteOnLinkDelete: Boolean = false
+    val webCaptureDeleteOnLinkDelete: Boolean = false,
 ) {
     companion object {
         val DARK_THEME = booleanPreferencesKey("DARK_THEME")
@@ -128,16 +128,14 @@ data class AppPreferences(
         val USE_SNAPSHOTS = booleanPreferencesKey("USE_SNAPSHOTS")
         val SNAPSHOTS_EXPORT_TYPE = stringPreferencesKey("SNAPSHOTS_EXPORT_TYPE")
         val SKIP_SAVING_EXISTING_LINK = booleanPreferencesKey("SKIP_SAVING_EXISTING_LINK")
-        val SKIP_CERT_CHECK_FOR_SYNC_SERVER =
-            booleanPreferencesKey("SKIP_CERT_CHECK_FOR_SYNC_SERVER")
+        val SKIP_CERT_CHECK_FOR_SYNC_SERVER = booleanPreferencesKey("SKIP_CERT_CHECK_FOR_SYNC_SERVER")
         val EXPORT_LOCATION = stringPreferencesKey("EXPORT_LOCATION")
         val BACKUP_LOCATION = stringPreferencesKey("BACKUP_LOCATION")
         val BACKUP_AUTO_DELETION_ENABLED = booleanPreferencesKey("BACKUP_AUTO_DELETION_ENABLED")
         val BACKUP_AUTO_DELETION_THRESHOLD = intPreferencesKey("BACKUP_AUTO_DELETION_THRESHOLD")
         val COLLECTION_SOURCE_ID = intPreferencesKey("COLLECTION_SOURCE_ID")
         val SELECTED_APP_ICON = stringPreferencesKey("SELECTED_APP_ICON")
-        val SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK =
-            booleanPreferencesKey("SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK")
+        val SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK = booleanPreferencesKey("SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK")
         val SHOW_MENU_ON_GRID_LINK_CLICK = booleanPreferencesKey("SHOW_MENU_ON_GRID_LINK_CLICK")
         val AUTO_SAVE_ON_SHARE_INTENT = booleanPreferencesKey("AUTO_SAVE_ON_SHARE_INTENT")
         val FONT_TYPE = stringPreferencesKey("FONT_TYPE")
@@ -162,8 +160,7 @@ data class AppPreferences(
         val WEB_CAPTURE_WHITELIST_DOMAINS = stringPreferencesKey("WEB_CAPTURE_WHITELIST_DOMAINS")
         val WEB_CAPTURE_BLACKLIST_DOMAINS = stringPreferencesKey("WEB_CAPTURE_BLACKLIST_DOMAINS")
         val WEB_CAPTURE_SAVE_AS_VERSIONS = booleanPreferencesKey("WEB_CAPTURE_SAVE_AS_VERSIONS")
-        val WEB_CAPTURE_RETAIN_ALL_VERSIONS =
-            booleanPreferencesKey("WEB_CAPTURE_RETAIN_ALL_VERSIONS")
+        val WEB_CAPTURE_RETAIN_ALL_VERSIONS = booleanPreferencesKey("WEB_CAPTURE_RETAIN_ALL_VERSIONS")
         val WEB_CAPTURE_MAX_VERSIONS = intPreferencesKey("WEB_CAPTURE_MAX_VERSIONS")
         val WEB_CAPTURE_AUTO_DELETE_DAYS = intPreferencesKey("WEB_CAPTURE_AUTO_DELETE_DAYS")
         val WEB_CAPTURE_DELETE_ON_LINK_DELETE =

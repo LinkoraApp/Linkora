@@ -6,5 +6,5 @@ import kotlinx.serialization.json.JsonElement
 @Serializable
 data class WebSocketEvent(
     val operation: String,
-    val payload: JsonElement
+    val payload: JsonElement,
 )

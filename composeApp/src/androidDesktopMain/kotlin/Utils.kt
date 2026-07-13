@@ -41,7 +41,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey as dsStringKey
 
 fun getFileNameWithTimestamp(
     exportFileType: ExportFileType,
-    exportLocationType: ExportLocationType
+    exportLocationType: ExportLocationType,
 ): String {
     val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-SSS", Locale.US)
     val timestamp = simpleDateFormat.format(Date())
@@ -52,16 +52,20 @@ fun getFileNameWithTimestamp(
     } + "-$timestamp.${if (exportFileType == ExportFileType.HTML) "html" else "json"}"
 }
 
-
-fun getCertificateInfo(factory: CertificateFactory, inputStream: ByteArrayInputStream): String {
+fun getCertificateInfo(
+    factory: CertificateFactory,
+    inputStream: ByteArrayInputStream,
+): String {
     val certificate = factory.generateCertificate(inputStream) as X509Certificate
     val rawSubject = certificate.subjectX500Principal.name
-    val issuedTo = rawSubject.split(",").firstOrNull { it.trim().startsWith("CN=") }
-        ?.substringAfter("CN=") ?: rawSubject
+    val issuedTo =
+        rawSubject.split(",").firstOrNull { it.trim().startsWith("CN=") }?.substringAfter("CN=")
+            ?: rawSubject
 
     val rawIssuer = certificate.issuerX500Principal.name
-    val issuedBy = rawIssuer.split(",").firstOrNull { it.trim().startsWith("CN=") }
-        ?.substringAfter("CN=") ?: rawIssuer
+    val issuedBy =
+        rawIssuer.split(",").firstOrNull { it.trim().startsWith("CN=") }?.substringAfter("CN=")
+            ?: rawIssuer
 
     val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
     val expiresOn = dateFormat.format(certificate.notAfter)
@@ -69,149 +73,164 @@ fun getCertificateInfo(factory: CertificateFactory, inputStream: ByteArrayInputS
 }
 
 suspend fun readAllPreferences(
-    prefs: Preferences, externalAction: suspend (suspend (PlatformPreference) -> Unit) -> Unit
-): AppPreferences {
-    return AppPreferences(
-        correlation = prefs[dsStringKey(AppPreferences.SERVER_CORRELATION.key)].let {
-            if (it != null) {
-                Json.decodeFromString<Correlation>(it)
-            } else {
-                val randomCorrelation = Correlation.generateRandomCorrelation()
-                externalAction { platformPreference ->
-                    platformPreference.writePreferenceValue(
-                        preferenceKey = stringPreferencesKey(AppPreferences.SERVER_CORRELATION.key),
-                        newValue = Json.encodeToString(randomCorrelation)
-                    )
-                }
-                randomCorrelation
+    prefs: Preferences,
+    externalAction: suspend (suspend (PlatformPreference) -> Unit) -> Unit,
+): AppPreferences = AppPreferences(
+    correlation =
+    prefs[dsStringKey(AppPreferences.SERVER_CORRELATION.key)].let {
+        if (it != null) {
+            Json.decodeFromString<Correlation>(it)
+        } else {
+            val randomCorrelation = Correlation.generateRandomCorrelation()
+            externalAction { platformPreference ->
+                platformPreference.writePreferenceValue(
+                    preferenceKey = stringPreferencesKey(AppPreferences.SERVER_CORRELATION.key),
+                    newValue = Json.encodeToString(randomCorrelation),
+                )
             }
-        },
-        useDarkTheme = prefs[dsBooleanKey(AppPreferences.DARK_THEME.key)]
-            ?: (platform == Platform.Desktop),
-        useSystemTheme = prefs[dsBooleanKey(AppPreferences.FOLLOW_SYSTEM_THEME.key)]
-            ?: (platform == Platform.Android),
-        useAmoledTheme = prefs[dsBooleanKey(AppPreferences.AMOLED_THEME_STATE.key)] ?: false,
-        useDynamicTheming = prefs[dsBooleanKey(AppPreferences.DYNAMIC_THEMING.key)] ?: false,
-        isAutoDetectTitleForLinksEnabled = prefs[dsBooleanKey(AppPreferences.AUTO_DETECT_TITLE_FOR_LINK.key)]
-            ?: false,
-        showAssociatedImageInLinkMenu = prefs[dsBooleanKey(AppPreferences.ASSOCIATED_IMAGES_IN_LINK_MENU_VISIBILITY.key)]
-            ?: true,
-        isHomeScreenEnabled = prefs[dsBooleanKey(AppPreferences.HOME_SCREEN_VISIBILITY.key)]
-            ?: true,
-        useRemoteStrings = prefs[dsBooleanKey(AppPreferences.USE_REMOTE_LANGUAGE_STRINGS.key)]
-            ?: false,
-        selectedSortingType = prefs[dsStringKey(AppPreferences.SORTING_PREFERENCE.key)]
-            ?: SortingType.NEW_TO_OLD.name,
-        primaryJsoupUserAgent = prefs[dsStringKey(AppPreferences.JSOUP_USER_AGENT.key)]
-            ?: Constants.DEFAULT_USER_AGENT,
-        localizationServerURL = prefs[dsStringKey(AppPreferences.LOCALIZATION_SERVER_URL.key)]
-            ?: Constants.LOCALIZATION_SERVER_URL,
-        preferredAppLanguageName = prefs[dsStringKey(AppPreferences.APP_LANGUAGE_NAME.key)]
-            ?: "English",
-        preferredAppLanguageCode = prefs[dsStringKey(AppPreferences.APP_LANGUAGE_CODE.key)] ?: "en",
-        selectedLinkLayout = prefs[dsStringKey(AppPreferences.CURRENTLY_SELECTED_LINK_VIEW.key)]
-            ?: Layout.REGULAR_LIST_VIEW.name,
-        showTitleInLinkGridView = prefs[dsBooleanKey(AppPreferences.TITLE_VISIBILITY_FOR_NON_LIST_VIEWS.key)]
-            ?: true,
-        showHostInLinkListView = prefs[dsBooleanKey(AppPreferences.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS.key)]
-            ?: true,
-        enableFadedEdgeForNonListViews = prefs[dsBooleanKey(AppPreferences.FADED_EDGE_VISIBILITY_FOR_NON_LIST_VIEWS.key)]
-            ?: true,
-        forceSaveWithoutFetchingAnyMetaData = prefs[dsBooleanKey(AppPreferences.FORCE_SAVE_WITHOUT_FETCHING_META_DATA.key)]
-            ?: false,
-        skipSavingExistingLink = prefs[dsBooleanKey(AppPreferences.SKIP_SAVING_EXISTING_LINK.key)]
-            ?: true,
-        useProxy = prefs[dsBooleanKey(AppPreferences.USE_PROXY.key)] ?: false,
-        proxyUrl = prefs[dsStringKey(AppPreferences.PROXY_URL.key)] ?: Constants.PROXY_SERVER_URL,
-        startDestination = prefs[dsStringKey(AppPreferences.INITIAL_ROUTE.key)]
-            ?: Navigation.Root.HomeScreen.toString(),
-        serverBaseUrl = prefs[dsStringKey(AppPreferences.SERVER_URL.key)] ?: "",
-        serverSecurityToken = prefs[dsStringKey(AppPreferences.SERVER_AUTH_TOKEN.key)] ?: "",
-        serverSyncType = prefs[dsStringKey(AppPreferences.SERVER_SYNC_TYPE.key)]?.let {
-            SyncType.valueOf(
-                it
-            )
-        } ?: SyncType.TwoWay,
-        useLinkoraTopDecoratorOnDesktop = prefs[dsBooleanKey(AppPreferences.DESKTOP_TOP_DECORATOR.key)]
-            ?: true,
-        refreshLinksWorkerTag = prefs[dsStringKey(AppPreferences.CURRENT_WORK_MANAGER_WORK_UUID.key)]
-            ?: "52ae3f4a-d37f-4fdb-a6b6-4397b99ef1bd",
-        showVideoTagOnUIIfApplicable = prefs[dsBooleanKey(AppPreferences.SHOW_VIDEO_TAG_IF_APPLICABLE.key)]
-            ?: false,
-        forceShuffleLinks = prefs[dsBooleanKey(AppPreferences.FORCE_SHUFFLE_LINKS.key)] ?: false,
-        showNoteInLinkView = prefs[dsBooleanKey(AppPreferences.NOTE_VISIBILITY_IN_LIST_VIEWS.key)]
-            ?: true,
-        showDateInLinkView = prefs[dsBooleanKey(AppPreferences.SHOW_DATE_IN_LINK_VIEW.key)] ?: true,
-        showTagsInLinkView = prefs[dsBooleanKey(AppPreferences.SHOW_TAGS_IN_LINK_VIEW.key)] ?: true,
-        areSnapshotsEnabled = prefs[dsBooleanKey(AppPreferences.USE_SNAPSHOTS.key)] ?: false,
-        snapshotExportFormatID = prefs[dsStringKey(AppPreferences.SNAPSHOTS_EXPORT_TYPE.key)]
-            ?: SnapshotFormat.JSON.id.toString(),
-        skipCertCheckForSync = prefs[dsBooleanKey(AppPreferences.SKIP_CERT_CHECK_FOR_SYNC_SERVER.key)]
-            ?: false,
-        currentExportLocation = (prefs[dsStringKey(AppPreferences.EXPORT_LOCATION.key)]
-            ?: defaultExportLocation())
-            ?: Localization.Key.ExportRequiresDirectory.getLocalizedString(),
-        currentBackupLocation = (prefs[dsStringKey(AppPreferences.BACKUP_LOCATION.key)]
-            ?: defaultSnapshotLocation())
-            ?: Localization.Key.BackupsWorkOnlyWithDirectory.getLocalizedString(),
-        backupAutoDeleteThreshold = prefs[dsIntKey(AppPreferences.BACKUP_AUTO_DELETION_THRESHOLD.key)]
-            ?: 25,
-        backupAutoDeletionEnabled = prefs[dsBooleanKey(AppPreferences.BACKUP_AUTO_DELETION_ENABLED.key)]
-            ?: false,
-        selectedCollectionSourceId = prefs[dsIntKey(AppPreferences.COLLECTION_SOURCE_ID.key)] ?: 0,
-        selectedAppIcon = prefs[dsStringKey(AppPreferences.SELECTED_APP_ICON.key)]
-            ?: AppIconCode.new_logo.name,
-        showTagsInAddNewLinkDialogBox = prefs[dsBooleanKey(AppPreferences.SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK.key)]
-            ?: false,
-        showMenuOnGridLinkClick = prefs[dsBooleanKey(AppPreferences.SHOW_MENU_ON_GRID_LINK_CLICK.key)]
-            ?: true,
-        autoSaveOnShareIntent = prefs[dsBooleanKey(AppPreferences.AUTO_SAVE_ON_SHARE_INTENT.key)]
-            ?: false,
-        forceSaveIfRetrievalFails = prefs[dsBooleanKey(AppPreferences.FORCE_SAVE_LINKS.key)]
-            ?: true,
-        selectedFont = prefs[dsStringKey(AppPreferences.FONT_TYPE.key)]?.let { Font.valueOf(it) }
-            ?: Font.POPPINS,
-        selectedLinkRefreshType = prefs[dsStringKey(AppPreferences.REFRESH_LINK_TYPE.key)]?.let {
-            RefreshLinkType.valueOf(
-                it
-            )
-        } ?: RefreshLinkType.Both,
-        maxConcurrentRefreshCount = prefs[dsIntKey(AppPreferences.MAX_CONCURRENT_REFRESH_COUNT.key)]
-            ?: 15,
-        showSyncServerSurveyNotice = prefs[dsBooleanKey(AppPreferences.SHOW_SYNC_SERVER_SURVEY_NOTICE.key)]
-            ?: true,
-        useWebCaptures = prefs[dsBooleanKey(AppPreferences.USE_WEB_CAPTURES.key)] ?: false,
-        webCapturesLocation = prefs[dsStringKey(AppPreferences.WEB_CAPTURES_LOCATION.key)] ?: "",
-        webCaptureSaveImages = prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_IMAGES.key)]
-            ?: true,
-        webCaptureSaveFonts = prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_FONTS.key)]
-            ?: true,
-        webCaptureSaveCss = prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_CSS.key)] ?: true,
-        webCaptureExecuteJs = prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_EXECUTE_JS.key)]
-            ?: false,
-        webCaptureSaveAudio = prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_AUDIO.key)]
-            ?: true,
-        webCaptureSaveVideo = prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_VIDEO.key)]
-            ?: true,
-        webCaptureSaveMetadata = prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_METADATA.key)]
-            ?: true,
-        webCaptureWhitelistDomains = prefs[dsStringKey(AppPreferences.WEB_CAPTURE_WHITELIST_DOMAINS.key)]
-            ?: "",
-        webCaptureBlacklistDomains = prefs[dsStringKey(AppPreferences.WEB_CAPTURE_BLACKLIST_DOMAINS.key)]
-            ?: "",
-        webCaptureSaveAsVersions = prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_AS_VERSIONS.key)]
-            ?: false,
-        webCaptureRetainAllVersions = prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_RETAIN_ALL_VERSIONS.key)]
-            ?: false,
-        webCaptureMaxVersions = prefs[dsIntKey(AppPreferences.WEB_CAPTURE_MAX_VERSIONS.key)] ?: 3,
-        webCaptureAutoDeleteDays = prefs[dsIntKey(AppPreferences.WEB_CAPTURE_AUTO_DELETE_DAYS.key)]
-            ?: 30,
-        webCaptureDeleteOnLinkDelete = prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_DELETE_ON_LINK_DELETE.key)]
-            ?: false)
-}
+            randomCorrelation
+        }
+    },
+    useDarkTheme =
+    prefs[dsBooleanKey(AppPreferences.DARK_THEME.key)] ?: (platform == Platform.Desktop),
+    useSystemTheme =
+    prefs[dsBooleanKey(AppPreferences.FOLLOW_SYSTEM_THEME.key)]
+        ?: (platform == Platform.Android),
+    useAmoledTheme = prefs[dsBooleanKey(AppPreferences.AMOLED_THEME_STATE.key)] ?: false,
+    useDynamicTheming = prefs[dsBooleanKey(AppPreferences.DYNAMIC_THEMING.key)] ?: false,
+    isAutoDetectTitleForLinksEnabled =
+    prefs[dsBooleanKey(AppPreferences.AUTO_DETECT_TITLE_FOR_LINK.key)] ?: false,
+    showAssociatedImageInLinkMenu =
+    prefs[dsBooleanKey(AppPreferences.ASSOCIATED_IMAGES_IN_LINK_MENU_VISIBILITY.key)]
+        ?: true,
+    isHomeScreenEnabled =
+    prefs[dsBooleanKey(AppPreferences.HOME_SCREEN_VISIBILITY.key)] ?: true,
+    useRemoteStrings =
+    prefs[dsBooleanKey(AppPreferences.USE_REMOTE_LANGUAGE_STRINGS.key)] ?: false,
+    selectedSortingType =
+    prefs[dsStringKey(AppPreferences.SORTING_PREFERENCE.key)]
+        ?: SortingType.NEW_TO_OLD.name,
+    primaryJsoupUserAgent =
+    prefs[dsStringKey(AppPreferences.JSOUP_USER_AGENT.key)] ?: Constants.DEFAULT_USER_AGENT,
+    localizationServerURL =
+    prefs[dsStringKey(AppPreferences.LOCALIZATION_SERVER_URL.key)]
+        ?: Constants.LOCALIZATION_SERVER_URL,
+    preferredAppLanguageName =
+    prefs[dsStringKey(AppPreferences.APP_LANGUAGE_NAME.key)] ?: "English",
+    preferredAppLanguageCode = prefs[dsStringKey(AppPreferences.APP_LANGUAGE_CODE.key)] ?: "en",
+    selectedLinkLayout =
+    prefs[dsStringKey(AppPreferences.CURRENTLY_SELECTED_LINK_VIEW.key)]
+        ?: Layout.REGULAR_LIST_VIEW.name,
+    showTitleInLinkGridView =
+    prefs[dsBooleanKey(AppPreferences.TITLE_VISIBILITY_FOR_NON_LIST_VIEWS.key)] ?: true,
+    showHostInLinkListView =
+    prefs[dsBooleanKey(AppPreferences.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS.key)] ?: true,
+    enableFadedEdgeForNonListViews =
+    prefs[dsBooleanKey(AppPreferences.FADED_EDGE_VISIBILITY_FOR_NON_LIST_VIEWS.key)]
+        ?: true,
+    forceSaveWithoutFetchingAnyMetaData =
+    prefs[dsBooleanKey(AppPreferences.FORCE_SAVE_WITHOUT_FETCHING_META_DATA.key)] ?: false,
+    skipSavingExistingLink =
+    prefs[dsBooleanKey(AppPreferences.SKIP_SAVING_EXISTING_LINK.key)] ?: true,
+    useProxy = prefs[dsBooleanKey(AppPreferences.USE_PROXY.key)] ?: false,
+    proxyUrl = prefs[dsStringKey(AppPreferences.PROXY_URL.key)] ?: Constants.PROXY_SERVER_URL,
+    startDestination =
+    prefs[dsStringKey(AppPreferences.INITIAL_ROUTE.key)]
+        ?: Navigation.Root.HomeScreen.toString(),
+    serverBaseUrl = prefs[dsStringKey(AppPreferences.SERVER_URL.key)] ?: "",
+    serverSecurityToken = prefs[dsStringKey(AppPreferences.SERVER_AUTH_TOKEN.key)] ?: "",
+    serverSyncType =
+    prefs[dsStringKey(AppPreferences.SERVER_SYNC_TYPE.key)]?.let {
+        SyncType.valueOf(
+            it,
+        )
+    } ?: SyncType.TwoWay,
+    useLinkoraTopDecoratorOnDesktop =
+    prefs[dsBooleanKey(AppPreferences.DESKTOP_TOP_DECORATOR.key)] ?: true,
+    refreshLinksWorkerTag =
+    prefs[dsStringKey(AppPreferences.CURRENT_WORK_MANAGER_WORK_UUID.key)]
+        ?: "52ae3f4a-d37f-4fdb-a6b6-4397b99ef1bd",
+    showVideoTagOnUIIfApplicable =
+    prefs[dsBooleanKey(AppPreferences.SHOW_VIDEO_TAG_IF_APPLICABLE.key)] ?: false,
+    forceShuffleLinks = prefs[dsBooleanKey(AppPreferences.FORCE_SHUFFLE_LINKS.key)] ?: false,
+    showNoteInLinkView =
+    prefs[dsBooleanKey(AppPreferences.NOTE_VISIBILITY_IN_LIST_VIEWS.key)] ?: true,
+    showDateInLinkView = prefs[dsBooleanKey(AppPreferences.SHOW_DATE_IN_LINK_VIEW.key)] ?: true,
+    showTagsInLinkView = prefs[dsBooleanKey(AppPreferences.SHOW_TAGS_IN_LINK_VIEW.key)] ?: true,
+    areSnapshotsEnabled = prefs[dsBooleanKey(AppPreferences.USE_SNAPSHOTS.key)] ?: false,
+    snapshotExportFormatID =
+    prefs[dsStringKey(AppPreferences.SNAPSHOTS_EXPORT_TYPE.key)]
+        ?: SnapshotFormat.JSON.id.toString(),
+    skipCertCheckForSync =
+    prefs[dsBooleanKey(AppPreferences.SKIP_CERT_CHECK_FOR_SYNC_SERVER.key)] ?: false,
+    currentExportLocation =
+    (prefs[dsStringKey(AppPreferences.EXPORT_LOCATION.key)] ?: defaultExportLocation())
+        ?: Localization.Key.ExportRequiresDirectory.getLocalizedString(),
+    currentBackupLocation =
+    (prefs[dsStringKey(AppPreferences.BACKUP_LOCATION.key)] ?: defaultSnapshotLocation())
+        ?: Localization.Key.BackupsWorkOnlyWithDirectory.getLocalizedString(),
+    backupAutoDeleteThreshold =
+    prefs[dsIntKey(AppPreferences.BACKUP_AUTO_DELETION_THRESHOLD.key)] ?: 25,
+    backupAutoDeletionEnabled =
+    prefs[dsBooleanKey(AppPreferences.BACKUP_AUTO_DELETION_ENABLED.key)] ?: false,
+    selectedCollectionSourceId = prefs[dsIntKey(AppPreferences.COLLECTION_SOURCE_ID.key)] ?: 0,
+    selectedAppIcon =
+    prefs[dsStringKey(AppPreferences.SELECTED_APP_ICON.key)] ?: AppIconCode.new_logo.name,
+    showTagsInAddNewLinkDialogBox =
+    prefs[dsBooleanKey(AppPreferences.SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK.key)] ?: false,
+    showMenuOnGridLinkClick =
+    prefs[dsBooleanKey(AppPreferences.SHOW_MENU_ON_GRID_LINK_CLICK.key)] ?: true,
+    autoSaveOnShareIntent =
+    prefs[dsBooleanKey(AppPreferences.AUTO_SAVE_ON_SHARE_INTENT.key)] ?: false,
+    forceSaveIfRetrievalFails =
+    prefs[dsBooleanKey(AppPreferences.FORCE_SAVE_LINKS.key)] ?: true,
+    selectedFont =
+    prefs[dsStringKey(AppPreferences.FONT_TYPE.key)]?.let { Font.valueOf(it) }
+        ?: Font.POPPINS,
+    selectedLinkRefreshType =
+    prefs[dsStringKey(AppPreferences.REFRESH_LINK_TYPE.key)]?.let {
+        RefreshLinkType.valueOf(
+            it,
+        )
+    } ?: RefreshLinkType.Both,
+    maxConcurrentRefreshCount =
+    prefs[dsIntKey(AppPreferences.MAX_CONCURRENT_REFRESH_COUNT.key)] ?: 15,
+    showSyncServerSurveyNotice =
+    prefs[dsBooleanKey(AppPreferences.SHOW_SYNC_SERVER_SURVEY_NOTICE.key)] ?: true,
+    useWebCaptures = prefs[dsBooleanKey(AppPreferences.USE_WEB_CAPTURES.key)] ?: false,
+    webCapturesLocation = prefs[dsStringKey(AppPreferences.WEB_CAPTURES_LOCATION.key)] ?: "",
+    webCaptureSaveImages =
+    prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_IMAGES.key)] ?: true,
+    webCaptureSaveFonts =
+    prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_FONTS.key)] ?: true,
+    webCaptureSaveCss = prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_CSS.key)] ?: true,
+    webCaptureExecuteJs =
+    prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_EXECUTE_JS.key)] ?: false,
+    webCaptureSaveAudio =
+    prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_AUDIO.key)] ?: true,
+    webCaptureSaveVideo =
+    prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_VIDEO.key)] ?: true,
+    webCaptureSaveMetadata =
+    prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_METADATA.key)] ?: true,
+    webCaptureWhitelistDomains =
+    prefs[dsStringKey(AppPreferences.WEB_CAPTURE_WHITELIST_DOMAINS.key)] ?: "",
+    webCaptureBlacklistDomains =
+    prefs[dsStringKey(AppPreferences.WEB_CAPTURE_BLACKLIST_DOMAINS.key)] ?: "",
+    webCaptureSaveAsVersions =
+    prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_SAVE_AS_VERSIONS.key)] ?: false,
+    webCaptureRetainAllVersions =
+    prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_RETAIN_ALL_VERSIONS.key)] ?: false,
+    webCaptureMaxVersions = prefs[dsIntKey(AppPreferences.WEB_CAPTURE_MAX_VERSIONS.key)] ?: 3,
+    webCaptureAutoDeleteDays =
+    prefs[dsIntKey(AppPreferences.WEB_CAPTURE_AUTO_DELETE_DAYS.key)] ?: 30,
+    webCaptureDeleteOnLinkDelete =
+    prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_DELETE_ON_LINK_DELETE.key)] ?: false,
+)
 
 suspend fun <T> writePreferenceValue(
-    dataStore: DataStore<Preferences>, preferenceKey: PreferenceKey<T>, newValue: T
+    dataStore: DataStore<Preferences>,
+    preferenceKey: PreferenceKey<T>,
+    newValue: T,
 ) {
     dataStore.edit {
         when (preferenceKey) {
@@ -235,7 +254,8 @@ suspend fun <T> writePreferenceValue(
 }
 
 suspend fun <T> readPreferenceValue(
-    dataStore: DataStore<Preferences>, preferenceKey: PreferenceKey<T>
+    dataStore: DataStore<Preferences>,
+    preferenceKey: PreferenceKey<T>,
 ): T? {
     val preferences = dataStore.data.first()
 
@@ -244,5 +264,6 @@ suspend fun <T> readPreferenceValue(
         is PreferenceKey.LongPreferencesKey -> preferences[dsLongKey(preferenceKey.key)]
         is PreferenceKey.StringPreferencesKey -> preferences[dsStringKey(preferenceKey.key)]
         is PreferenceKey.IntPreferencesKey -> preferences[dsIntKey(preferenceKey.key)]
-    } as T?
+    }
+        as T?
 }

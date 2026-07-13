@@ -16,12 +16,11 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class PaginatorTest {
-
     private val activeConnections = LinkedHashSet(mutableSetOf<Long>())
 
     private suspend fun onRetrieve(
         lastSeenId: LastSeenId?,
-        lastSeenString: String?
+        lastSeenString: String?,
     ): Flow<Result<List<String>>> {
         val idValue = lastSeenId ?: Constants.EMPTY_LAST_SEEN_ID
         return flow {
@@ -35,22 +34,27 @@ class PaginatorTest {
         }
     }
 
-    private fun createPaginator(scope: CoroutineScope): Paginator<String> {
-        return Paginator(
-            coroutineScope = scope,
-            onRetrieve = ::onRetrieve,
-            onRetrieved = { (currentId, _), _ ->
-                val nextId =
-                    if (currentId == Constants.EMPTY_LAST_SEEN_ID) 19L else currentId + Constants.PAGE_SIZE
-                nextId to ""
-            },
-            onError = {},
-            onRetrieving = {},
-            onPagesFinished = {}
-        )
-    }
+    private fun createPaginator(scope: CoroutineScope): Paginator<String> = Paginator(
+        coroutineScope = scope,
+        onRetrieve = ::onRetrieve,
+        onRetrieved = { (currentId, _), _ ->
+            val nextId =
+                if (currentId == Constants.EMPTY_LAST_SEEN_ID) {
+                    19L
+                } else {
+                    currentId + Constants.PAGE_SIZE
+                }
+            nextId to ""
+        },
+        onError = {},
+        onRetrieving = {},
+        onPagesFinished = {},
+    )
 
-    private suspend fun loadPages(paginator: Paginator<String>, count: Int) {
+    private suspend fun loadPages(
+        paginator: Paginator<String>,
+        count: Int,
+    ) {
         paginator.retrieveNextBatch()
         paginator.updateFirstVisibleItemIndex(0)
 
@@ -59,7 +63,7 @@ class PaginatorTest {
 
     @Test
     fun `window never exceeds 3 active connections across every batch of 15 pages`() = runTest(
-        UnconfinedTestDispatcher()
+        UnconfinedTestDispatcher(),
     ) {
         val paginator = createPaginator(this.backgroundScope)
         val totalPages = 15
@@ -73,15 +77,16 @@ class PaginatorTest {
             val expectedSize = expectedMax - expectedMin + 1
 
             assertEquals(
-                expectedSize, activeConnections.size,
-                "Batch $batch: expected $expectedSize active (window [$expectedMin..$expectedMax]), got: $activeConnections"
+                expectedSize,
+                activeConnections.size,
+                "Batch $batch: expected $expectedSize active (window [$expectedMin..$expectedMax]), got: $activeConnections",
             )
         }
     }
 
     @Test
     fun `scrolling backward reactivates previously cancelled connections`() = runTest(
-        UnconfinedTestDispatcher()
+        UnconfinedTestDispatcher(),
     ) {
         val paginator = createPaginator(this.backgroundScope)
         loadPages(paginator, 5)
@@ -101,7 +106,7 @@ class PaginatorTest {
 
     @Test
     fun `zigzag scrolling never breaks the 3-connection limit`() = runTest(
-        UnconfinedTestDispatcher()
+        UnconfinedTestDispatcher(),
     ) {
         val paginator = createPaginator(this.backgroundScope)
         loadPages(paginator, 10)
@@ -142,7 +147,7 @@ class PaginatorTest {
 
     @Test
     fun `cancelAndReset clears everything and allows fresh reload`() = runTest(
-        UnconfinedTestDispatcher()
+        UnconfinedTestDispatcher(),
     ) {
         val paginator = createPaginator(this.backgroundScope)
         loadPages(paginator, 5)
@@ -167,26 +172,34 @@ class PaginatorTest {
     @Test
     fun `isPagesFinished stops further fetches`() = runTest(UnconfinedTestDispatcher()) {
         var callCount = 0
-        val paginator = Paginator<String>(
-            coroutineScope = this.backgroundScope,
-            onRetrieve = { _, _ ->
-                callCount++
-                flow {
-                    emit(
-                        if (callCount == 1) Result.Success(List(Constants.PAGE_SIZE) { "item $it" })
-                        else Result.Success(emptyList())
-                    )
-                }
-            },
-            onRetrieved = { (currentId, _), _ ->
-                val nextId =
-                    if (currentId == Constants.EMPTY_LAST_SEEN_ID) 19L else currentId + Constants.PAGE_SIZE
-                nextId to ""
-            },
-            onError = {},
-            onRetrieving = {},
-            onPagesFinished = {}
-        )
+        val paginator =
+            Paginator<String>(
+                coroutineScope = this.backgroundScope,
+                onRetrieve = { _, _ ->
+                    callCount++
+                    flow {
+                        emit(
+                            if (callCount == 1) {
+                                Result.Success(List(Constants.PAGE_SIZE) { "item $it" })
+                            } else {
+                                Result.Success(emptyList())
+                            },
+                        )
+                    }
+                },
+                onRetrieved = { (currentId, _), _ ->
+                    val nextId =
+                        if (currentId == Constants.EMPTY_LAST_SEEN_ID) {
+                            19L
+                        } else {
+                            currentId + Constants.PAGE_SIZE
+                        }
+                    nextId to ""
+                },
+                onError = {},
+                onRetrieving = {},
+                onPagesFinished = {},
+            )
 
         paginator.retrieveNextBatch()
         paginator.updateFirstVisibleItemIndex(0)
@@ -206,26 +219,34 @@ class PaginatorTest {
     @Test
     fun `errorOccurred stops further fetches`() = runTest(UnconfinedTestDispatcher()) {
         var callCount = 0
-        val paginator = Paginator<String>(
-            coroutineScope = this.backgroundScope,
-            onRetrieve = { _, _ ->
-                callCount++
-                flow {
-                    emit(
-                        if (callCount == 1) Result.Success(List(Constants.PAGE_SIZE) { "item $it" })
-                        else Result.Failure("Network error")
-                    )
-                }
-            },
-            onRetrieved = { (currentId, _), _ ->
-                val nextId =
-                    if (currentId == Constants.EMPTY_LAST_SEEN_ID) 19L else currentId + Constants.PAGE_SIZE
-                nextId to ""
-            },
-            onError = {},
-            onRetrieving = {},
-            onPagesFinished = {}
-        )
+        val paginator =
+            Paginator<String>(
+                coroutineScope = this.backgroundScope,
+                onRetrieve = { _, _ ->
+                    callCount++
+                    flow {
+                        emit(
+                            if (callCount == 1) {
+                                Result.Success(List(Constants.PAGE_SIZE) { "item $it" })
+                            } else {
+                                Result.Failure("Network error")
+                            },
+                        )
+                    }
+                },
+                onRetrieved = { (currentId, _), _ ->
+                    val nextId =
+                        if (currentId == Constants.EMPTY_LAST_SEEN_ID) {
+                            19L
+                        } else {
+                            currentId + Constants.PAGE_SIZE
+                        }
+                    nextId to ""
+                },
+                onError = {},
+                onRetrieving = {},
+                onPagesFinished = {},
+            )
 
         paginator.retrieveNextBatch()
         paginator.updateFirstVisibleItemIndex(0)

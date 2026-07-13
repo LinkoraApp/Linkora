@@ -35,38 +35,52 @@ fun SettingsSectionScaffold(
     floatingActionButton: ComposableContent = {},
     actions: ComposableContent = {},
     bottomBar: ComposableContent = {},
-    content: @Composable (paddingValues: PaddingValues, topAppBarScrollBehaviour: TopAppBarScrollBehavior) -> Unit
+    content:
+    @Composable (paddingValues: PaddingValues, topAppBarScrollBehaviour: TopAppBarScrollBehavior) -> Unit,
 ) {
     val navController = LocalNavController.current
     val topAppBarScrollBehaviour = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    Scaffold(bottomBar = bottomBar, floatingActionButton = {
-        floatingActionButton()
-    }, floatingActionButtonPosition = FabPosition.Center, topBar = {
-        Column {
-            LargeTopAppBar(actions = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    actions()
-                }
-            }, navigationIcon = {
-                IconButton(
-                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .pressScaleEffect(), onClick = {
-                        navController.navigateUp()
-                    }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null
-                    )
-                }
-            }, scrollBehavior = topAppBarScrollBehaviour, title = {
-                Text(
-                    text = topAppBarText,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontSize = 18.sp,
-                    modifier = Modifier.fillMaxWidth().padding(end = 25.dp)
+    Scaffold(
+        bottomBar = bottomBar,
+        floatingActionButton = {
+            floatingActionButton()
+        },
+        floatingActionButtonPosition = FabPosition.Center,
+        topBar = {
+            Column {
+                LargeTopAppBar(
+                    actions = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            actions()
+                        }
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            modifier =
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(),
+                            onClick = {
+                                navController.navigateUp()
+                            },
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = null,
+                            )
+                        }
+                    },
+                    scrollBehavior = topAppBarScrollBehaviour,
+                    title = {
+                        Text(
+                            text = topAppBarText,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontSize = 18.sp,
+                            modifier = Modifier.fillMaxWidth().padding(end = 25.dp),
+                        )
+                    },
                 )
-            })
-        }
-    }) {
+            }
+        },
+    ) {
         content(it, topAppBarScrollBehaviour)
     }
 }

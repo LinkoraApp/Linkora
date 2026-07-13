@@ -1,6 +1,5 @@
 package com.sakethh.linkora.domain.dto.server.panel
 
-import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.dto.server.Correlation
 import kotlinx.serialization.Serializable
 
@@ -9,5 +8,5 @@ data class AddANewPanelDTO(
     val panelName: String,
     val correlation: Correlation? = null,
     val eventTimestamp: Long,
-    val offlineSyncItemId: Long = 0
+    val offlineSyncItemId: Long = 0,
 )

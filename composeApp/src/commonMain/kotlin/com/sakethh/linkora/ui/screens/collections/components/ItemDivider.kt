@@ -12,20 +12,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.sakethh.linkora.domain.Platform
-import com.sakethh.linkora.platform.platform
 
 @Composable
 fun ItemDivider(
     colorOpacity: Float = 0.35f,
     thickness: Dp = 1.5.dp,
-    paddingValues: PaddingValues = PaddingValues(
-        top = 15.dp, start = 20.dp, end = if (Platform.Android.onMobile()) 20.dp else 5.dp
-    ),
-    color: Color = MaterialTheme.colorScheme.outline
+    paddingValues: PaddingValues =
+        PaddingValues(
+            top = 15.dp,
+            start = 20.dp,
+            end = if (Platform.Android.onMobile()) 20.dp else 5.dp,
+        ),
+    color: Color = MaterialTheme.colorScheme.outline,
 ) {
     HorizontalDivider(
-        modifier = Modifier.padding(
-            paddingValues
-        ).clip(RoundedCornerShape(25.dp)), thickness = thickness, color = color.copy(colorOpacity)
+        modifier = Modifier.padding(paddingValues).clip(RoundedCornerShape(25.dp)),
+        thickness = thickness,
+        color = color.copy(colorOpacity),
     )
 }

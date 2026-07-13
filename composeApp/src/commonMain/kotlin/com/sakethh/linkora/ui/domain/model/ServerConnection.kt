@@ -6,5 +6,5 @@ data class ServerConnection(
     val serverUrl: String,
     val webSocketScheme: String = "wss",
     val authToken: String,
-    val syncType: SyncType
+    val syncType: SyncType,
 )

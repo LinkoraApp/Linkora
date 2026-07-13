@@ -15,44 +15,54 @@ import com.sakethh.linkora.utils.rememberLocalizedString
 
 @Composable
 fun NotificationPermissionDialogBox(
-    isVisible: Boolean, launchRuntimePermission: () -> Unit, hideDialog: () -> Unit
+    isVisible: Boolean,
+    launchRuntimePermission: () -> Unit,
+    hideDialog: () -> Unit,
 ) {
     if (isVisible) {
-        AlertDialog(onDismissRequest = {}, confirmButton = {
-            Button(
-                onClick = {
-                    if (Build.VERSION.SDK_INT > 32) {
-                        launchRuntimePermission()
-                    }
-                    hideDialog()
-                }, modifier = Modifier.fillMaxWidth()
-            ) {
+        AlertDialog(
+            onDismissRequest = {},
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (Build.VERSION.SDK_INT > 32) {
+                            launchRuntimePermission()
+                        }
+                        hideDialog()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text = Localization.Key.EnableNotifications.rememberLocalizedString(),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                }
+            },
+            title = {
                 Text(
-                    text = Localization.Key.EnableNotifications.rememberLocalizedString(),
-                    style = MaterialTheme.typography.titleSmall
+                    text = Localization.Key.NotificationPermissionRequired.rememberLocalizedString(),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontSize = 18.sp,
                 )
-            }
-        }, title = {
-            Text(
-                text = Localization.Key.NotificationPermissionRequired.rememberLocalizedString(),
-                style = MaterialTheme.typography.titleLarge,
-                fontSize = 18.sp
-            )
-        }, text = {
-            Text(
-                text = Localization.Key.NotificationPermissionDesc.rememberLocalizedString(),
-                style = MaterialTheme.typography.titleMedium,
-                fontSize = 15.sp
-            )
-        }, dismissButton = {
-            OutlinedButton(
-                onClick = hideDialog, modifier = Modifier.fillMaxWidth()
-            ) {
+            },
+            text = {
                 Text(
-                    text = Localization.Key.Cancel.rememberLocalizedString(),
-                    style = MaterialTheme.typography.titleSmall
+                    text = Localization.Key.NotificationPermissionDesc.rememberLocalizedString(),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontSize = 15.sp,
                 )
-            }
-        })
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = hideDialog,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text = Localization.Key.Cancel.rememberLocalizedString(),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                }
+            },
+        )
     }
 }

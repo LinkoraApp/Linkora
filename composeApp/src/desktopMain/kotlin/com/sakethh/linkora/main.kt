@@ -63,42 +63,50 @@ import com.sakethh.linkora.utils.rememberLocalizedString
 import java.awt.Dimension
 import java.io.File
 
-val linkoraSpecificFolder = System.getProperty("user.home").run {
-    val appDataDir = File(this, ".linkora")
-    if (appDataDir.exists().not()) {
-        appDataDir.mkdirs()
+val linkoraSpecificFolder =
+    System.getProperty("user.home").run {
+        val appDataDir = File(this, ".linkora")
+        if (appDataDir.exists().not()) {
+            appDataDir.mkdirs()
+        }
+        appDataDir
     }
-    appDataDir
-}
 
 suspend fun main() {
-
     LinkoraSDK.set(
-        linkoraSdk = LinkoraSDK(
+        linkoraSdk =
+        LinkoraSDK(
             nativeUtils = NativeUtils(),
             fileManager = FileManager(),
             permissionManager = PermissionManager(),
-            localDatabase = File(linkoraSpecificFolder, "${LocalDatabase.NAME}.db").run {
+            localDatabase =
+            File(linkoraSpecificFolder, "${LocalDatabase.NAME}.db").run {
                 Room.databaseBuilder<LocalDatabase>(name = this.absolutePath)
-                    .setDriver(BundledSQLiteDriver()).addMigrations(
+                    .setDriver(BundledSQLiteDriver())
+                    .addMigrations(
                         LocalDatabase.MIGRATION_9_10,
                         LocalDatabase.MIGRATION_10_11,
                         LocalDatabase.MIGRATION_11_12,
                         LocalDatabase.MIGRATION_12_13,
-                        LocalDatabase.MIGRATION_13_14
-                    ).build()
+                        LocalDatabase.MIGRATION_13_14,
+                    )
+                    .build()
             },
             platformPreference = PlatformPreference,
             network = Network,
             dataSyncingNotificationService = NativeUtils.DataSyncingNotificationService(),
             webCapture = NativeUtils.WebCapture(),
-            webCaptureDatabaseManager = WebCaptureDatabaseManager(databaseBuilder = { webCaptureDirPath ->
-                File(webCaptureDirPath, "${WebCaptureDatabase.NAME}.db").run {
-                    Room.databaseBuilder<WebCaptureDatabase>(name = this.absolutePath)
-                        .setDriver(BundledSQLiteDriver()).build()
-                }
-            }),
-        )
+            webCaptureDatabaseManager =
+            WebCaptureDatabaseManager(
+                databaseBuilder = { webCaptureDirPath ->
+                    File(webCaptureDirPath, "${WebCaptureDatabase.NAME}.db").run {
+                        Room.databaseBuilder<WebCaptureDatabase>(name = this.absolutePath)
+                            .setDriver(BundledSQLiteDriver())
+                            .build()
+                    }
+                },
+            ),
+        ),
     )
 
     DependencyContainer.preferencesRepo.loadPersistedPreferences()
@@ -106,39 +114,46 @@ suspend fun main() {
     Localization.loadLocalizedStrings(
         preferences,
         languageCode = preferences.preferredAppLanguageCode,
-        languageName = preferences.preferredAppLanguageName
-    )?.join()
+        languageName = preferences.preferredAppLanguageName,
+    )
+        ?.join()
 
-    /* CoroutineScope(Dispatchers.IO).launch {
-         val preferences = DependencyContainer.preferencesRepo.getPreferences()
-         println("Starting bulk capture")
-         BulkWebCaptureService.captureAllWebPages(
-             preferences = preferences,
-             localLinksRepo = DependencyContainer.localLinksRepo,
-             metaDataDao = LinkoraSDK.getInstance().webCaptureDatabaseManager.getDatabase(
-                 preferences.webCapturesLocation
-             ).metaDataDao
-         )
-     }*/
+  /* CoroutineScope(Dispatchers.IO).launch {
+      val preferences = DependencyContainer.preferencesRepo.getPreferences()
+      println("Starting bulk capture")
+      BulkWebCaptureService.captureAllWebPages(
+          preferences = preferences,
+          localLinksRepo = DependencyContainer.localLinksRepo,
+          metaDataDao = LinkoraSDK.getInstance().webCaptureDatabaseManager.getDatabase(
+              preferences.webCapturesLocation
+          ).metaDataDao
+      )
+  }*/
 
     application {
-        val windowState = rememberWindowState(
-            width = 1054.dp, height = 600.dp
-        )
+        val windowState =
+            rememberWindowState(
+                width = 1054.dp,
+                height = 600.dp,
+            )
         val navController = rememberNavController()
         val useLinkoraTopDecoratorOnDesktop = preferences.useLinkoraTopDecoratorOnDesktop
         Window(
             state = windowState,
             onCloseRequest = ::exitApplication,
             title = Localization.Key.Linkora.getLocalizedString(),
-            undecorated = useLinkoraTopDecoratorOnDesktop
+            undecorated = useLinkoraTopDecoratorOnDesktop,
         ) {
-            val preferences by DependencyContainer.preferencesRepo.preferencesAsFlow.collectAsStateWithLifecycle()
+            val preferences by
+                DependencyContainer.preferencesRepo.preferencesAsFlow.collectAsStateWithLifecycle()
             window.minimumSize = Dimension(1054, 600)
             CompositionLocalProvider(
-                LocalNavController provides navController, LocalFabController provides retain {
-                    FabStateController()
-                }, LocalPlatform provides Platform.Desktop
+                LocalNavController provides navController,
+                LocalFabController provides
+                    retain {
+                        FabStateController()
+                    },
+                LocalPlatform provides Platform.Desktop,
             ) {
                 LinkoraTheme(
                     colorScheme = if (preferences.useDarkTheme) DarkColors else LightColors,
@@ -156,12 +171,16 @@ suspend fun main() {
                                         currentPlacement = windowState.placement,
                                         changePlacement = {
                                             windowState.placement = it
-                                        })
+                                        },
+                                    )
                                 }
                             }
-                        }, modifier = Modifier.border(
-                            0.5.dp, MaterialTheme.colorScheme.outline.copy(0.25f)
-                        )
+                        },
+                        modifier =
+                        Modifier.border(
+                            0.5.dp,
+                            MaterialTheme.colorScheme.outline.copy(0.25f),
+                        ),
                     ) {
                         App(modifier = Modifier.padding(it))
                     }
@@ -176,57 +195,62 @@ private fun ApplicationScope.TopDecorator(
     preferences: AppPreferences,
     minimize: () -> Unit,
     currentPlacement: WindowPlacement,
-    changePlacement: (WindowPlacement) -> Unit
+    changePlacement: (WindowPlacement) -> Unit,
 ) {
     Column {
         Box(Modifier.fillMaxWidth().padding(2.dp), contentAlignment = Alignment.CenterEnd) {
             Row(
-                verticalAlignment = Alignment.CenterVertically, modifier = Modifier.align(
-                    Alignment.CenterStart
-                )
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.align(Alignment.CenterStart),
             ) {
                 if (preferences.isServerConfigured()) {
                     Spacer(Modifier.padding(start = 15.dp))
                     Icon(
-                        imageVector = Icons.Default.WbCloudy, contentDescription = null
+                        imageVector = Icons.Default.WbCloudy,
+                        contentDescription = null,
                     )
                 }
                 Spacer(
-                    Modifier.padding(
-                        start = if (preferences.isServerConfigured().not()) 15.dp else 5.dp
-                    )
+                    Modifier.padding(start = if (preferences.isServerConfigured().not()) 15.dp else 5.dp),
                 )
                 Text(
                     text = Localization.Key.Linkora.rememberLocalizedString(),
                     style = MaterialTheme.typography.labelSmall,
                 )
             }
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
                     modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-                    onClick = minimize
+                    onClick = minimize,
                 ) {
                     Icon(imageVector = Icons.Default.Minimize, contentDescription = null)
                 }
                 IconButton(
-                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand), onClick = {
+                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                    onClick = {
                         if (currentPlacement == WindowPlacement.Fullscreen) {
                             changePlacement(WindowPlacement.Floating)
                         } else {
                             changePlacement(WindowPlacement.Fullscreen)
                         }
-                    }) {
+                    },
+                ) {
                     Icon(
-                        imageVector = if (currentPlacement != WindowPlacement.Fullscreen) Icons.Default.Maximize else Icons.Outlined.Window,
-                        contentDescription = null
+                        imageVector =
+                        if (currentPlacement != WindowPlacement.Fullscreen) {
+                            Icons.Default.Maximize
+                        } else {
+                            Icons.Outlined.Window
+                        },
+                        contentDescription = null,
                     )
                 }
                 IconButton(
-                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand), onClick = {
+                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                    onClick = {
                         this@TopDecorator.exitApplication()
-                    }) {
+                    },
+                ) {
                     Icon(imageVector = Icons.Default.Close, contentDescription = null)
                 }
             }

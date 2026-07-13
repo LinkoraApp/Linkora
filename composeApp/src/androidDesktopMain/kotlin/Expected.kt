@@ -4,11 +4,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class AndroidDesktopWebCapture {
-    suspend fun init(): Result<Boolean> {
-        return WebCapture.init().fold(onSuccess = {
-            Result.Success(true)
-        }, onFailure = { Result.Failure(it.message.toString()) })
-    }
+    suspend fun init(): Result<Boolean> = WebCapture.init()
+        .fold(
+            onSuccess = {
+                Result.Success(true)
+            },
+            onFailure = { Result.Failure(it.message.toString()) },
+        )
 
     suspend fun saveHTMLPage(
         fileDescriptor: Int,
@@ -25,44 +27,39 @@ class AndroidDesktopWebCapture {
         includeAudioElements: Boolean,
         includeVideoElements: Boolean,
         includeMetadata: Boolean,
-        logStuff: Boolean
-    ): Result<Boolean> {
-        return when (val initResult = init()) {
-            is Result.Failure -> Result.Failure(
-                initResult.message
-            )
+        logStuff: Boolean,
+    ): Result<Boolean> = when (val initResult = init()) {
+        is Result.Failure -> Result.Failure(initResult.message)
 
-            is Result.Loading -> Result.Loading(
-                initResult.message
-            )
+        is Result.Loading -> Result.Loading(initResult.message)
 
-            is Result.Success -> {
-                try {
-                    withContext(Dispatchers.IO) {
-                        WebCapture.saveHTMLPage(
-                            fileDescriptor = fileDescriptor,
-                            filePath = filePath,
-                            url = url,
-                            userAgent = userAgent,
-                            timeout = timeout,
-                            allowInsecureProtocol = allowInsecureProtocol,
-                            ignoreDocErrors = ignoreDocErrors,
-                            useCss = useCss,
-                            embedFonts = embedFonts,
-                            embedImages = embedImages,
-                            restrictJs = restrictJs,
-                            logStuff = logStuff,
-                            includeAudioElements = includeAudioElements,
-                            includeVideoElements = includeVideoElements,
-                            includeMetadata = includeMetadata
-                        ).run {
+        is Result.Success -> {
+            try {
+                withContext(Dispatchers.IO) {
+                    WebCapture.saveHTMLPage(
+                        fileDescriptor = fileDescriptor,
+                        filePath = filePath,
+                        url = url,
+                        userAgent = userAgent,
+                        timeout = timeout,
+                        allowInsecureProtocol = allowInsecureProtocol,
+                        ignoreDocErrors = ignoreDocErrors,
+                        useCss = useCss,
+                        embedFonts = embedFonts,
+                        embedImages = embedImages,
+                        restrictJs = restrictJs,
+                        logStuff = logStuff,
+                        includeAudioElements = includeAudioElements,
+                        includeVideoElements = includeVideoElements,
+                        includeMetadata = includeMetadata,
+                    )
+                        .run {
                             Result.Success(this)
                         }
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    Result.Failure(e.message.toString())
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Result.Failure(e.message.toString())
             }
         }
     }

@@ -16,44 +16,50 @@ interface PanelsDao {
     @Query("SELECT MAX(localId) FROM panel_folder")
     suspend fun getLatestPanelFolderID(): Long
 
-    @Insert
-    suspend fun addANewPanel(panel: Panel): Long
+    @Insert suspend fun addANewPanel(panel: Panel): Long
 
-    @Update
-    suspend fun updateAPanel(panel: Panel)
+    @Update suspend fun updateAPanel(panel: Panel)
 
-    @Update
-    suspend fun updateAPanelFolder(panelFolder: PanelFolder)
+    @Update suspend fun updateAPanelFolder(panelFolder: PanelFolder)
 
     @Query("SELECT remoteId FROM panel WHERE localId = :localId")
     suspend fun getRemoteIdOfPanel(localId: Long): Long?
 
     @Query("UPDATE panel_folder SET folderName = :newName WHERE folderId = :id")
-    suspend fun updateAFolderName(id: Long, newName: String)
+    suspend fun updateAFolderName(
+        id: Long,
+        newName: String,
+    )
 
-    @Insert
-    suspend fun addMultiplePanels(panels: List<Panel>)
+    @Insert suspend fun addMultiplePanels(panels: List<Panel>)
 
-    @Insert
-    suspend fun addMultiplePanelFolders(panelFolders: List<PanelFolder>)
+    @Insert suspend fun addMultiplePanelFolders(panelFolders: List<PanelFolder>)
 
     @Query("DELETE FROM panel WHERE localId = :id")
     suspend fun deleteAPanel(id: Long)
 
     @Query("UPDATE panel SET panelName = :newName WHERE localId = :panelId")
-    suspend fun updateAPanelName(newName: String, panelId: Long)
+    suspend fun updateAPanelName(
+        newName: String,
+        panelId: Long,
+    )
 
     @Query("UPDATE panel SET lastModified = :timestamp WHERE localId = :panelId")
-    suspend fun updatePanelTimestamp(panelId: Long, timestamp: Long)
+    suspend fun updatePanelTimestamp(
+        panelId: Long,
+        timestamp: Long,
+    )
 
     @Query("DELETE FROM panel_folder WHERE connectedPanelId = :panelId")
     suspend fun deleteConnectedFoldersOfPanel(panelId: Long)
 
-    @Insert
-    suspend fun addANewFolderInAPanel(panelFolder: PanelFolder): Long
+    @Insert suspend fun addANewFolderInAPanel(panelFolder: PanelFolder): Long
 
     @Query("DELETE FROM panel_folder WHERE connectedPanelId = :panelId AND folderId = :folderID ")
-    suspend fun deleteAFolderFromAPanel(panelId: Long, folderID: Long)
+    suspend fun deleteAFolderFromAPanel(
+        panelId: Long,
+        folderID: Long,
+    )
 
     @Query("DELETE FROM panel_folder WHERE folderId = :folderID")
     suspend fun deleteAFolderFromAllPanels(folderID: Long)
@@ -76,7 +82,9 @@ interface PanelsDao {
     @Query("SELECT * FROM panel_folder WHERE connectedPanelId = :panelId")
     fun getAllTheFoldersFromAPanel(panelId: Long): Flow<List<PanelFolder>>
 
-    @Query("SELECT * FROM panel WHERE localId=:panelId LIMIT 1") // there will always be only 1 panel with the given ID, but added `LIMIT 1` because why not.
+    @Query(
+        "SELECT * FROM panel WHERE localId=:panelId LIMIT 1",
+    ) // there will always be only 1 panel with the given ID, but added `LIMIT 1` because why not.
     suspend fun getPanel(panelId: Long): Panel
 
     @Query("SELECT localId FROM panel WHERE remoteId = :remoteId LIMIT 1")

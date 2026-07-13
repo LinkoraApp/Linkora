@@ -65,72 +65,64 @@ import kotlinx.coroutines.flow.update
 import kotlin.jvm.JvmName
 import kotlin.time.Duration
 
-fun String.addZeroAtPrefixOnInt() =
-    try {
-        if (toInt() > 9) this else "0$this"
-    } catch (e: Exception) {
-        e.printStackTrace()
-        this
-    }
-
-fun String.initialCaps(): String {
-    return when {
-        length > 1 -> {
-            get(0).uppercase() + substring(1).lowercase()
-        }
-
-        else -> this.uppercase()
-    }
+fun String.addZeroAtPrefixOnInt() = try {
+    if (toInt() > 9) this else "0$this"
+} catch (e: Exception) {
+    e.printStackTrace()
+    this
 }
 
-fun String.host(throwOnException: Boolean = true): String {
-    return try {
-        this.split("/")[2]
-    } catch (e: Exception) {
-        if (throwOnException) {
-            throw e
-        }
-        this
+fun String.initialCaps(): String = when {
+    length > 1 -> {
+        get(0).uppercase() + substring(1).lowercase()
     }
+
+    else -> this.uppercase()
+}
+
+fun String.host(throwOnException: Boolean = true): String = try {
+    this.split("/")[2]
+} catch (e: Exception) {
+    if (throwOnException) {
+        throw e
+    }
+    this
 }
 
 fun Modifier.fillMaxWidthWithPadding(
-    paddingValues: PaddingValues = PaddingValues(
-        start = 15.dp, end = 15.dp
-    )
-): Modifier {
-    return this.fillMaxWidth().padding(paddingValues)
-}
+    paddingValues: PaddingValues =
+        PaddingValues(
+            start = 15.dp,
+            end = 15.dp,
+        ),
+): Modifier = this.fillMaxWidth().padding(paddingValues)
 
 @Composable
-fun Modifier.bottomNavPaddingAcrossPlatforms(): Modifier {
-    return if (Platform.Android.onMobile()) {
-        this.navigationBarsPadding()
-    } else {
-        this.padding(bottom = 10.dp)
-    }
+fun Modifier.bottomNavPaddingAcrossPlatforms(): Modifier = if (Platform.Android.onMobile()) {
+    this.navigationBarsPadding()
+} else {
+    this.padding(bottom = 10.dp)
 }
 
-// keeps the nav bar (what's it actually called?) transparent while still applying padding on top, end, bottom;
-// kinda a hacky workaround, but there doesn't seem to be any clear documentation on how to handle this properly
+// keeps the nav bar (what's it actually called?) transparent while still applying padding on top,
+// end, bottom;
+// kinda a hacky workaround, but there doesn't seem to be any clear documentation on how to handle
+// this properly
 fun Modifier.addEdgeToEdgeScaffoldPadding(paddingValues: PaddingValues) = this.padding(
-    top = paddingValues.calculateTopPadding(), start = paddingValues.calculateStartPadding(
-        LayoutDirection.Ltr
-    ), end = paddingValues.calculateEndPadding(LayoutDirection.Rtl)
-).consumeWindowInsets(paddingValues)
+    top = paddingValues.calculateTopPadding(),
+    start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+    end = paddingValues.calculateEndPadding(LayoutDirection.Rtl),
+)
+    .consumeWindowInsets(paddingValues)
 
-fun String?.isNotNullOrNotBlank(): Boolean {
-    return !this.isNullOrBlank()
-}
+fun String?.isNotNullOrNotBlank(): Boolean = !this.isNullOrBlank()
 
-fun String.isAValidLink(): Boolean {
-    return try {
-        this.host()
-        true
-    } catch (e: Exception) {
-        e.printStackTrace()
-        false
-    }
+fun String.isAValidLink(): Boolean = try {
+    this.host()
+    true
+} catch (e: Exception) {
+    e.printStackTrace()
+    false
 }
 
 fun Boolean.ifNot(init: () -> Unit): Boolean {
@@ -147,14 +139,10 @@ fun Boolean.ifTrue(init: () -> Unit): Boolean {
     return this
 }
 
-fun Localization.Key.getLocalizedString(): String {
-    return Localization.getLocalizedString(this)
-}
+fun Localization.Key.getLocalizedString(): String = Localization.getLocalizedString(this)
 
 @Composable
-fun Localization.Key.rememberLocalizedString(): String {
-    return Localization.rememberLocalizedString(this)
-}
+fun Localization.Key.rememberLocalizedString(): String = Localization.rememberLocalizedString(this)
 
 suspend fun <T> Result<T>.pushSnackbarOnFailure() {
     if (this is Result.Failure) {
@@ -162,8 +150,11 @@ suspend fun <T> Result<T>.pushSnackbarOnFailure() {
     }
 }
 
-fun <T> Result.Success<T>.getRemoteOnlyFailureMsg(): String {
-    return if (this.isRemoteExecutionSuccessful.not()) "\n\n${Localization.Key.RemoteExecutionFailed.getLocalizedString()}\n" + this.remoteFailureMessage else ""
+fun <T> Result.Success<T>.getRemoteOnlyFailureMsg(): String = if (this.isRemoteExecutionSuccessful.not()) {
+    "\n\n${Localization.Key.RemoteExecutionFailed.getLocalizedString()}\n" +
+        this.remoteFailureMessage
+} else {
+    ""
 }
 
 fun Exception?.pushSnackbar(coroutineScope: CoroutineScope) {
@@ -184,44 +175,37 @@ fun Throwable?.pushSnackbar(coroutineScope: CoroutineScope) {
     }
 }
 
-fun <T> Flow<Result<T>>.catchAsThrowableAndEmitFailure(init: suspend () -> Unit = {}): Flow<Result<T>> {
-    return this.catch {
-        init()
+fun <T> Flow<Result<T>>.catchAsThrowableAndEmitFailure(
+    init: suspend () -> Unit = {},
+): Flow<Result<T>> = this.catch {
+    init()
+    it.printStackTrace()
+    emit(Result.Failure(message = it.message.toString()))
+}
+
+fun <T> Flow<Result<T>>.catchAsExceptionAndEmitFailure(): Flow<Result<T>> = this.catch {
+    try {
+        it as Exception
+        it.printStackTrace()
+        emit(Result.Failure(message = it.message.toString()))
+    } catch (e: Exception) {
+        e.printStackTrace()
         it.printStackTrace()
         emit(Result.Failure(message = it.message.toString()))
     }
 }
 
-fun <T> Flow<Result<T>>.catchAsExceptionAndEmitFailure(): Flow<Result<T>> {
-    return this.catch {
-        try {
-            it as Exception
-            it.printStackTrace()
-            emit(Result.Failure(message = it.message.toString()))
-        } catch (e: Exception) {
-            e.printStackTrace()
-            it.printStackTrace()
-            emit(Result.Failure(message = it.message.toString()))
-        }
-    }
-}
+fun String.replaceFirstPlaceHolderWith(string: String): String = this.replace(LinkoraPlaceHolder.First.value, string.inDoubleQuotes())
 
-fun String.replaceFirstPlaceHolderWith(string: String): String {
-    return this.replace(LinkoraPlaceHolder.First.value, string.inDoubleQuotes())
-}
-
-fun String.isATwitterUrl(): Boolean {
-    return this.trim().startsWith("http://twitter.com/") || this.trim()
-        .startsWith("https://twitter.com/") || this.trim().startsWith(
-        "http://x.com/"
-    ) || this.trim().startsWith("https://x.com/")
-}
+fun String.isATwitterUrl(): Boolean = this.trim().startsWith("http://twitter.com/") ||
+    this.trim().startsWith("https://twitter.com/") ||
+    this.trim().startsWith("http://x.com/") ||
+    this.trim().startsWith("https://x.com/")
 
 suspend fun <T : Any> T.then(init: suspend () -> Unit): T {
     init()
     return this
 }
-
 
 @Composable
 fun NavHostController.inRootScreen(includeSettingsScreen: Boolean): Boolean? {
@@ -234,33 +218,30 @@ fun NavHostController.inRootScreen(includeSettingsScreen: Boolean): Boolean? {
         )
     }
     return this.currentBackStackEntryAsState().value?.destination?.let { destination ->
-        rootRoutesList.filter {
-            includeSettingsScreen || it != Navigation.Root.SettingsScreen
-        }.any {
-            destination.hasRoute(it::class)
-        }
+        rootRoutesList
+            .filter {
+                includeSettingsScreen || it != Navigation.Root.SettingsScreen
+            }
+            .any {
+                destination.hasRoute(it::class)
+            }
     }
 }
 
 fun String.inDoubleQuotes(): String = "\"$this\""
 
-
-suspend inline fun <reified IncomingBody> HttpResponse.handleResponseBody(): Result<IncomingBody> {
-    return if (this.status.isSuccess().not()) {
-        Result.Failure(this.status.value.toString() + " " + this.status.description)
-    } else {
-        Result.Success(this.body<IncomingBody>())
-    }
+suspend inline fun <reified IncomingBody> HttpResponse.handleResponseBody(): Result<IncomingBody> = if (this.status.isSuccess().not()) {
+    Result.Failure(this.status.value.toString() + " " + this.status.description)
+} else {
+    Result.Success(this.body<IncomingBody>())
 }
 
-fun AppPreferences.toServerConnection(): ServerConnection {
-    return ServerConnection(
-        serverUrl = serverBaseUrl,
-        authToken = serverSecurityToken,
-        syncType = serverSyncType,
-        webSocketScheme = "wss"
-    )
-}
+fun AppPreferences.toServerConnection(): ServerConnection = ServerConnection(
+    serverUrl = serverBaseUrl,
+    authToken = serverSecurityToken,
+    syncType = serverSyncType,
+    webSocketScheme = "wss",
+)
 
 fun AppPreferences.ifServerConfigured(init: () -> Unit) {
     if (serverBaseUrl.isNotBlank()) {
@@ -268,43 +249,33 @@ fun AppPreferences.ifServerConfigured(init: () -> Unit) {
     }
 }
 
-fun AppPreferences.currentSavedServerConfig(): ServerConnection {
-    return ServerConnection(
-        serverUrl = serverBaseUrl,
-        authToken = serverSecurityToken,
-        syncType = serverSyncType,
-        webSocketScheme = "wss"
-    )
+fun AppPreferences.currentSavedServerConfig(): ServerConnection = ServerConnection(
+    serverUrl = serverBaseUrl,
+    authToken = serverSecurityToken,
+    syncType = serverSyncType,
+    webSocketScheme = "wss",
+)
+
+fun AppPreferences.isServerConfigured(): Boolean = serverBaseUrl.isNotBlank()
+
+fun AppPreferences.canPushToServer(): Boolean = listOf(SyncType.TwoWay, SyncType.ClientToServer).any {
+    isServerConfigured() && serverSyncType == it
 }
 
-fun AppPreferences.isServerConfigured(): Boolean {
-    return serverBaseUrl.isNotBlank()
+fun AppPreferences.canReadFromServer(): Boolean = listOf(SyncType.TwoWay, SyncType.ServerToClient).any {
+    isServerConfigured() && serverSyncType == it
 }
 
-fun AppPreferences.canPushToServer(): Boolean {
-    return listOf(SyncType.TwoWay, SyncType.ClientToServer).any {
-        isServerConfigured() && serverSyncType == it
-    }
-}
-
-fun AppPreferences.canReadFromServer(): Boolean {
-    return listOf(SyncType.TwoWay, SyncType.ServerToClient).any {
-        isServerConfigured() && serverSyncType == it
-    }
-}
-
-suspend fun AppPreferences.lastSyncedLocally(preferencesRepository: PreferencesRepository): Long {
-    return preferencesRepository.readPreferenceValue(
-        preferenceKey = longPreferencesKey(AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key)
-    ) ?: 0
-}
+suspend fun AppPreferences.lastSyncedLocally(preferencesRepository: PreferencesRepository): Long = preferencesRepository.readPreferenceValue(
+    preferenceKey = longPreferencesKey(AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key),
+) ?: 0
 
 suspend fun PreferencesRepository.updateLastSyncedWithServerTimeStamp(newValue: Long) {
     val preferenceKey = longPreferencesKey(AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key)
     if ((this.readPreferenceValue(preferenceKey) ?: 0) < newValue) {
         this.changePreferenceValue(
             preferenceKey = preferenceKey,
-            newValue = newValue
+            newValue = newValue,
         )
     }
 }
@@ -314,9 +285,8 @@ fun <T> MutableStateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, L
     data: List<T>,
     shouldShuffle: Boolean,
     idSelector: (T) -> Long,
-    stringSelector: (T) -> String
+    stringSelector: (T) -> String,
 ): Pair<LastSeenId, LastSeenString> {
-
     val lastItem = data.lastOrNull()
     val nextKeyId = lastItem?.let(idSelector) ?: Constants.EMPTY_LAST_SEEN_ID
     val nextKeyString = lastItem?.let(stringSelector) ?: ""
@@ -375,51 +345,61 @@ fun <T> MutableStateFlow<PaginationState<T>>.onPagesFinished() {
 context(viewModel: ViewModel)
 fun <T> Flow<T>.asStateInWhileSubscribed(
     initialValue: T,
-    stopTimeoutMillis: Long = 5000
-): StateFlow<T> {
-    return stateIn(
-        scope = viewModel.viewModelScope,
-        started = SharingStarted.WhileSubscribed(stopTimeoutMillis = stopTimeoutMillis),
-        initialValue = initialValue
-    )
-}
+    stopTimeoutMillis: Long = 5000,
+): StateFlow<T> = stateIn(
+    scope = viewModel.viewModelScope,
+    started = SharingStarted.WhileSubscribed(stopTimeoutMillis = stopTimeoutMillis),
+    initialValue = initialValue,
+)
 
 @JvmName("shuffleLinksFlatChildFolderData")
-fun Flow<Result<List<FlatChildFolderData>>>.shuffleLinks(): Flow<Result<List<FlatChildFolderData>>> {
-    return transform {
-        when (it) {
-            is Result.Success -> emit(it.copy(data = it.data.filter {
-                it.itemType != Constants.LINK
-            } + it.data.filter {
-                it.itemType == Constants.LINK
-            }.shuffled()))
+fun Flow<Result<List<FlatChildFolderData>>>.shuffleLinks(): Flow<Result<List<FlatChildFolderData>>> = transform {
+    when (it) {
+        is Result.Success ->
+            emit(
+                it.copy(
+                    data =
+                    it.data.filter {
+                        it.itemType != Constants.LINK
+                    } +
+                        it.data
+                            .filter {
+                                it.itemType == Constants.LINK
+                            }
+                            .shuffled(),
+                ),
+            )
 
-            else -> emit(it)
-        }
+        else -> emit(it)
     }
 }
 
-fun Flow<Result<List<Link>>>.shuffleLinks(): Flow<Result<List<Link>>> {
-    return transform {
-        when (it) {
-            is Result.Success -> emit(it.copy(data = it.data.shuffled()))
-            else -> emit(it)
-        }
+fun Flow<Result<List<Link>>>.shuffleLinks(): Flow<Result<List<Link>>> = transform {
+    when (it) {
+        is Result.Success -> emit(it.copy(data = it.data.shuffled()))
+        else -> emit(it)
     }
 }
 
 @JvmName("shuffleLinksFlatSearchResult")
-fun Flow<Result<List<FlatSearchResult>>>.shuffleLinks(): Flow<Result<List<FlatSearchResult>>> {
-    return transform {
-        when (it) {
-            is Result.Success -> emit(it.copy(data = it.data.filter {
-                it.itemType != Constants.LINK
-            } + it.data.filter {
-                it.itemType == Constants.LINK
-            }.shuffled()))
+fun Flow<Result<List<FlatSearchResult>>>.shuffleLinks(): Flow<Result<List<FlatSearchResult>>> = transform {
+    when (it) {
+        is Result.Success ->
+            emit(
+                it.copy(
+                    data =
+                    it.data.filter {
+                        it.itemType != Constants.LINK
+                    } +
+                        it.data
+                            .filter {
+                                it.itemType == Constants.LINK
+                            }
+                            .shuffled(),
+                ),
+            )
 
-            else -> emit(it)
-        }
+        else -> emit(it)
     }
 }
 
@@ -433,22 +413,24 @@ fun RefreshLinkType.asLocalizedString() = when (this) {
 @Composable
 fun ScrollAreaScope.VerticalScrollbar() {
     VerticalScrollbar(
-        modifier = Modifier.align(Alignment.TopEnd)
+        modifier =
+        Modifier.align(Alignment.TopEnd)
             .pointerHoverIcon(PointerIcon.Hand)
             .fillMaxHeight()
             .padding(end = 2.5.dp, start = 2.5.dp)
-            .width(8.dp)
+            .width(8.dp),
     ) {
         Thumb(
-            thumbVisibility = ThumbVisibility.HideWhileIdle(
+            thumbVisibility =
+            ThumbVisibility.HideWhileIdle(
                 enter = fadeIn(),
                 exit = fadeOut(),
-                hideDelay = Duration.parse("2s")
+                hideDelay = Duration.parse("2s"),
             ),
-            modifier = Modifier
-                .pointerHoverIcon(PointerIcon.Hand)
+            modifier =
+            Modifier.pointerHoverIcon(PointerIcon.Hand)
                 .clip(RoundedCornerShape(25.dp))
-                .background(MaterialTheme.colorScheme.secondary.copy(0.65f))
+                .background(MaterialTheme.colorScheme.secondary.copy(0.65f)),
         )
     }
 }

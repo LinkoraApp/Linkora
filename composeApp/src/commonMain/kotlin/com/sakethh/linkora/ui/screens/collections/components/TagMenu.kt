@@ -35,44 +35,57 @@ fun TagMenu(
     onHide: () -> Unit,
     tag: Tag,
     onRename: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val localClipBoardManager = LocalClipboardManager.current
     if (showMenu) {
-        ModalBottomSheet(sheetState = sheetState, onDismissRequest = {
-            coroutineScope.launch {
-                sheetState.hide()
-            }.invokeOnCompletion {
-                onHide()
-            }
-        }, dragHandle = null) {
-            MenuNonImageHeader(onClick = {
-                localClipBoardManager.setText(AnnotatedString(tag.name))
-                coroutineScope.launch {
-                    sheetState.hide()
-                    pushUIEvent(
-                        UIEvent.Type.ShowSnackbar(
-                            Localization.Key.CopiedTitleToTheClipboard.getLocalizedString()
-                        )
-                    )
-                }.invokeOnCompletion {
-                    onHide()
-                }
-            }, text = tag.name, leadingIcon = Icons.Default.Tag)
+        ModalBottomSheet(
+            sheetState = sheetState,
+            onDismissRequest = {
+                coroutineScope
+                    .launch {
+                        sheetState.hide()
+                    }
+                    .invokeOnCompletion {
+                        onHide()
+                    }
+            },
+            dragHandle = null,
+        ) {
+            MenuNonImageHeader(
+                onClick = {
+                    localClipBoardManager.setText(AnnotatedString(tag.name))
+                    coroutineScope
+                        .launch {
+                            sheetState.hide()
+                            pushUIEvent(
+                                UIEvent.Type.ShowSnackbar(
+                                    Localization.Key.CopiedTitleToTheClipboard.getLocalizedString(),
+                                ),
+                            )
+                        }
+                        .invokeOnCompletion {
+                            onHide()
+                        }
+                },
+                text = tag.name,
+                leadingIcon = Icons.Default.Tag,
+            )
             ItemDivider(
-                colorOpacity = 0.25f, paddingValues = PaddingValues(start = 25.dp, end = 25.dp)
+                colorOpacity = 0.25f,
+                paddingValues = PaddingValues(start = 25.dp, end = 25.dp),
             )
             Spacer(Modifier.height(5.dp))
             IndividualMenuComponent(
                 onClick = onRename,
                 elementName = Localization.Key.Rename.rememberLocalizedString(),
-                elementImageVector = Icons.Default.DriveFileRenameOutline
+                elementImageVector = Icons.Default.DriveFileRenameOutline,
             )
             IndividualMenuComponent(
                 onClick = onDelete,
                 elementName = Localization.Key.Delete.rememberLocalizedString(),
-                elementImageVector = Icons.Default.Delete
+                elementImageVector = Icons.Default.Delete,
             )
         }
     }

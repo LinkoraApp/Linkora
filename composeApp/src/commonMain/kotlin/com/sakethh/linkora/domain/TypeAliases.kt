@@ -11,5 +11,4 @@ typealias ImportFileType = FileType
 
 typealias ExportFileType = FileType
 
-
 typealias DeleteMultipleItemsDTO = ArchiveMultipleItemsDTO

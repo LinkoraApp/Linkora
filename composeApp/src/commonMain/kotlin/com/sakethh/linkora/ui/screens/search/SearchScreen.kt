@@ -103,12 +103,12 @@ fun SearchScreen(
     LaunchedEffect(!searchScreenVM.isSearchActive.value) {
         cancelForceSearchActive()
     }
-    val historyLinkTagsPairsState by searchScreenVM.historyLinkTagsPairsState.collectAsStateWithLifecycle()
+    val historyLinkTagsPairsState by
+        searchScreenVM.historyLinkTagsPairsState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
     val localUriHandler = LocalUriHandler.current
     val navController = LocalNavController.current
-    val searchBarPadding =
-        animateDpAsState(if (!searchScreenVM.isSearchActive.value) 15.dp else 0.dp)
+    val searchBarPadding = animateDpAsState(if (!searchScreenVM.isSearchActive.value) 15.dp else 0.dp)
     val searchResultsState by searchScreenVM.searchResultsState.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -126,25 +126,31 @@ fun SearchScreen(
                         text = Localization.Key.SearchTitlesToFindLinksAndFolders.rememberLocalizedString(),
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.basicMarquee(),
-                        maxLines = 1
+                        maxLines = 1,
                     )
                 },
-                modifier = Modifier.focusRequester(searchBarFocusRequester).animateContentSize()
-                    .padding(searchBarPadding.value).fillMaxWidth().wrapContentHeight(),
+                modifier =
+                Modifier.focusRequester(searchBarFocusRequester)
+                    .animateContentSize()
+                    .padding(searchBarPadding.value)
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
                 trailingIcon = {
                     Row {
                         if (searchScreenVM.isSearchActive.value) {
                             SortingIconButton()
                             IconButton(
-                                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                    .pressScaleEffect(), onClick = {
+                                modifier =
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(),
+                                onClick = {
                                     if (searchScreenVM.searchQuery.value == "") {
                                         searchScreenVM.isSearchActive.value = false
                                         cancelForceSearchActive()
                                     } else {
                                         searchScreenVM.updateSearchQuery("")
                                     }
-                                }) {
+                                },
+                            ) {
                                 Icon(imageVector = Icons.Default.Clear, contentDescription = null)
                             }
                         }
@@ -154,7 +160,8 @@ fun SearchScreen(
                 active = searchScreenVM.isSearchActive.value,
                 onActiveChange = {
                     searchScreenVM.updateSearchActiveState(it)
-                }) {
+                },
+            ) {
                 if (searchScreenVM.searchQuery.value.isBlank()) {
                     DataEmptyScreen(text = Localization.Key.SearchInLinkora.rememberLocalizedString())
                 } else {
@@ -164,24 +171,22 @@ fun SearchScreen(
                                 key(it.name) {
                                     FilterChip(
                                         text = it.asLocalizedString(),
-                                        isSelected = searchScreenVM.appliedFolderFilters.contains(
-                                            it
-                                        ),
+                                        isSelected = searchScreenVM.appliedFolderFilters.contains(it),
                                         onClick = {
                                             searchScreenVM.toggleFolderFilter(it)
-                                        })
+                                        },
+                                    )
                                 }
                             }
                             LinkType.entries.forEach {
                                 key(it.name) {
                                     FilterChip(
                                         text = it.asLocalizedString(),
-                                        isSelected = searchScreenVM.appliedLinkFilters.contains(
-                                            it
-                                        ),
+                                        isSelected = searchScreenVM.appliedLinkFilters.contains(it),
                                         onClick = {
                                             searchScreenVM.toggleLinkFilter(it)
-                                        })
+                                        },
+                                    )
                                 }
                             }
                             FilterChip(
@@ -189,7 +194,8 @@ fun SearchScreen(
                                 isSelected = searchScreenVM.appliedTagFiltering,
                                 onClick = {
                                     searchScreenVM.toggleTagFilter()
-                                })
+                                },
+                            )
                             Spacer(modifier = Modifier.width(10.dp))
                         }
                         CollectionLayoutManager(
@@ -202,22 +208,28 @@ fun SearchScreen(
                             folderMoreIconClick = {
                                 coroutineScope.pushUIEvent(
                                     UIEvent.Type.ShowMenuBtmSheet(
-                                        menuBtmSheetFor = if (it.isArchived) MenuBtmSheetType.Folder.ArchiveFolder else MenuBtmSheetType.Folder.RegularFolder,
+                                        menuBtmSheetFor =
+                                        if (it.isArchived) {
+                                            MenuBtmSheetType.Folder.ArchiveFolder
+                                        } else {
+                                            MenuBtmSheetType.Folder.RegularFolder
+                                        },
                                         selectedLinkForMenuBtmSheet = null,
-                                        selectedFolderForMenuBtmSheet = it
-                                    )
+                                        selectedFolderForMenuBtmSheet = it,
+                                    ),
                                 )
                             },
                             onFolderClick = { folder ->
-                                val collectionDetailPaneInfo = CollectionDetailPaneInfo(
-                                    currentFolder = folder,
-                                    currentTag = null,
-                                    collectionType = CollectionType.FOLDER
-                                )
+                                val collectionDetailPaneInfo =
+                                    CollectionDetailPaneInfo(
+                                        currentFolder = folder,
+                                        currentTag = null,
+                                        collectionType = CollectionType.FOLDER,
+                                    )
                                 navController.navigate(
                                     Navigation.Collection.CollectionDetailScreen(
-                                        Json.encodeToString(collectionDetailPaneInfo)
-                                    )
+                                        Json.encodeToString(collectionDetailPaneInfo),
+                                    ),
                                 )
                             },
                             linkMoreIconClick = {
@@ -225,8 +237,8 @@ fun SearchScreen(
                                     UIEvent.Type.ShowMenuBtmSheet(
                                         menuBtmSheetFor = it.link.linkType.asMenuBtmSheetType(),
                                         selectedLinkForMenuBtmSheet = it,
-                                        selectedFolderForMenuBtmSheet = null
-                                    )
+                                        selectedFolderForMenuBtmSheet = null,
+                                    ),
                                 )
                             },
                             onLinkClick = {
@@ -234,52 +246,51 @@ fun SearchScreen(
                                     localUriHandler.openUriOrNotify(it.link.url)
                                 }
                                 searchScreenVM.addANewLinkToHistory(
-                                    link = it.link.copy(
-                                        linkType = LinkType.HISTORY_LINK, localId = 0
-                                    ), tagIds = it.tags.map { it.localId })
+                                    link =
+                                    it.link.copy(
+                                        linkType = LinkType.HISTORY_LINK,
+                                        localId = 0,
+                                    ),
+                                    tagIds = it.tags.map { it.localId },
+                                )
                             },
                             isCurrentlyInDetailsView = {
                                 false
                             },
                             nestedScrollConnection = null,
                             onAttachedTagClick = {
-                                val collectionDetailPaneInfo = CollectionDetailPaneInfo(
-                                    currentFolder = null,
-                                    currentTag = it,
-                                    collectionType = CollectionType.TAG,
-                                )
+                                val collectionDetailPaneInfo =
+                                    CollectionDetailPaneInfo(
+                                        currentFolder = null,
+                                        currentTag = it,
+                                        collectionType = CollectionType.TAG,
+                                    )
                                 navController.navigate(
                                     Navigation.Collection.CollectionDetailScreen(
-                                        Json.encodeToString(
-                                            collectionDetailPaneInfo
-                                        )
-                                    )
+                                        Json.encodeToString(collectionDetailPaneInfo),
+                                    ),
                                 )
                             },
                             onTagClick = {
-                                val collectionDetailPaneInfo = CollectionDetailPaneInfo(
-                                    currentFolder = null,
-                                    currentTag = it,
-                                    collectionType = CollectionType.TAG,
-                                )
+                                val collectionDetailPaneInfo =
+                                    CollectionDetailPaneInfo(
+                                        currentFolder = null,
+                                        currentTag = it,
+                                        collectionType = CollectionType.TAG,
+                                    )
                                 navController.navigate(
                                     Navigation.Collection.CollectionDetailScreen(
-                                        Json.encodeToString(
-                                            collectionDetailPaneInfo
-                                        )
-                                    )
+                                        Json.encodeToString(collectionDetailPaneInfo),
+                                    ),
                                 )
                             },
                             tagMoreIconClick = {
-                                coroutineScope.pushUIEvent(
-                                    UIEvent.Type.ShowTagMenuBtmSheet(
-                                        selectedTag = it
-                                    )
-                                )
+                                coroutineScope.pushUIEvent(UIEvent.Type.ShowTagMenuBtmSheet(selectedTag = it))
                             },
                             onRetrieveNextPage = searchScreenVM::retrieveNextSearchPage,
                             preferences = preferences,
-                            onFirstVisibleItemIndexChange = searchScreenVM::updateFirstVisibleIndexOfSearchPaginator
+                            onFirstVisibleItemIndexChange =
+                            searchScreenVM::updateFirstVisibleIndexOfSearchPaginator,
                         )
                     }
                 }
@@ -288,14 +299,14 @@ fun SearchScreen(
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
                 text = Localization.rememberLocalizedString(Localization.Key.History),
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.titleMedium,
                 fontSize = 20.sp,
-                modifier = Modifier.padding(start = 15.dp)
+                modifier = Modifier.padding(start = 15.dp),
             )
             Row {
                 SortingIconButton()
@@ -315,8 +326,8 @@ fun SearchScreen(
                     UIEvent.Type.ShowMenuBtmSheet(
                         menuBtmSheetFor = MenuBtmSheetType.Link.HistoryLink,
                         selectedLinkForMenuBtmSheet = it,
-                        selectedFolderForMenuBtmSheet = null
-                    )
+                        selectedFolderForMenuBtmSheet = null,
+                    ),
                 )
             },
             onLinkClick = {
@@ -325,24 +336,24 @@ fun SearchScreen(
                 }
                 searchScreenVM.addANewLinkToHistory(
                     link = it.link.copy(linkType = LinkType.HISTORY_LINK, localId = 0),
-                    tagIds = it.tags.map { it.localId })
+                    tagIds = it.tags.map { it.localId },
+                )
             },
             isCurrentlyInDetailsView = {
                 false
             },
             nestedScrollConnection = null,
             onAttachedTagClick = {
-                val collectionDetailPaneInfo = CollectionDetailPaneInfo(
-                    currentFolder = null,
-                    currentTag = it,
-                    collectionType = CollectionType.TAG,
-                )
+                val collectionDetailPaneInfo =
+                    CollectionDetailPaneInfo(
+                        currentFolder = null,
+                        currentTag = it,
+                        collectionType = CollectionType.TAG,
+                    )
                 navController.navigate(
                     Navigation.Collection.CollectionDetailScreen(
-                        Json.encodeToString(
-                            collectionDetailPaneInfo
-                        )
-                    )
+                        Json.encodeToString(collectionDetailPaneInfo),
+                    ),
                 )
             },
             tagMoreIconClick = {},
@@ -352,16 +363,14 @@ fun SearchScreen(
             },
             onFirstVisibleItemIndexChange = searchScreenVM::updateStartingIndexForHistoryPaginator,
             flatSearchResultState = null,
-            preferences = preferences
+            preferences = preferences,
         )
     }
 }
 
 @Composable
 fun FilterChip(text: String, isSelected: Boolean, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier.animateContentSize()
-    ) {
+    Row(modifier = Modifier.animateContentSize()) {
         Spacer(modifier = Modifier.width(10.dp))
         FilterChip(
             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
@@ -369,15 +378,18 @@ fun FilterChip(text: String, isSelected: Boolean, onClick: () -> Unit) {
             onClick = onClick,
             label = {
                 Text(
-                    text = text, style = MaterialTheme.typography.titleSmall
+                    text = text,
+                    style = MaterialTheme.typography.titleSmall,
                 )
             },
             leadingIcon = {
                 if (isSelected) {
                     Icon(
-                        imageVector = Icons.Default.Check, contentDescription = null
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
                     )
                 }
-            })
+            },
+        )
     }
 }

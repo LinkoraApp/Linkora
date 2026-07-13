@@ -24,28 +24,32 @@ fun CoilImage(
     userAgent: String,
     contentScale: ContentScale = ContentScale.Crop,
     contentDescription: String? = null,
-    alignment: Alignment = Alignment.Center
+    alignment: Alignment = Alignment.Center,
 ) {
-
-    val imgURL by rememberSaveable(preferences.useProxy) {
-        mutableStateOf(
-            if (preferences.useProxy) {
-                preferences.proxyUrl.run {
-                    if (endsWith("/")) this else "$this/"
-                } + "image?url=${imgURL.encodeURLParameter()}"
-            } else {
-                imgURL
-            })
-    }
+    val imgURL by
+        rememberSaveable(preferences.useProxy) {
+            mutableStateOf(
+                if (preferences.useProxy) {
+                    preferences.proxyUrl.run {
+                        if (endsWith("/")) this else "$this/"
+                    } + "image?url=${imgURL.encodeURLParameter()}"
+                } else {
+                    imgURL
+                },
+            )
+        }
 
     val platformContext = LocalPlatformContext.current
     AsyncImage(
-        model = ImageRequest.Builder(platformContext).data(imgURL)
+        model =
+        ImageRequest.Builder(platformContext)
+            .data(imgURL)
             .httpHeaders(headers = NetworkHeaders.Builder().add("User-Agent", userAgent).build())
-            .crossfade(true).build(),
+            .crossfade(true)
+            .build(),
         contentDescription = contentDescription,
         modifier = modifier,
         contentScale = contentScale,
-        alignment = alignment
+        alignment = alignment,
     )
 }

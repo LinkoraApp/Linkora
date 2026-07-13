@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 data class ProxyInfoDTO(
     val title: String?,
     val description: String?,
-    val image: String?
+    val image: String?,
 )

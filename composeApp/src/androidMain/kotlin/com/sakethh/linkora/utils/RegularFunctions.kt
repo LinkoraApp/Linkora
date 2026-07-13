@@ -17,17 +17,18 @@ suspend fun createNewFile(
     exportFileType: ExportFileType,
     exportLocationType: ExportLocationType,
 ): Pair<DocumentFile?, String> {
-    val exportFileName = getFileNameWithTimestamp(
-        exportFileType = exportFileType,
-        exportLocationType = exportLocationType
-    )
+    val exportFileName =
+        getFileNameWithTimestamp(
+            exportFileType = exportFileType,
+            exportLocationType = exportLocationType,
+        )
 
     val directoryUri = exportLocation.toUri()
     return withContext(Dispatchers.IO) {
         val directory = DocumentFile.fromTreeUri(context, directoryUri)
         directory?.createFile(
             if (exportFileType == ExportFileType.HTML) "text/html" else "application/json",
-            exportFileName
+            exportFileName,
         ) to exportFileName
     }
 }

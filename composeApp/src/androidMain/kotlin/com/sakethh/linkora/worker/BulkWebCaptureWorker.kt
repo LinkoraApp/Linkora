@@ -6,144 +6,144 @@ import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.sakethh.linkora.MetaDataEntity
 import com.sakethh.linkora.R
-import com.sakethh.linkora.di.DependencyContainer
-import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
 import com.sakethh.linkora.ui.screens.settings.section.data.WebCaptureState
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flatMapMerge
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.onEach
 import java.util.UUID
 
-class BulkWebCaptureWorker(appContext: Context, workerParameters: WorkerParameters) :
-    CoroutineWorker(appContext, workerParameters) {
-
+class BulkWebCaptureWorker(
+    appContext: Context,
+    workerParameters: WorkerParameters,
+) : CoroutineWorker(appContext, workerParameters) {
     init {
         TODO("Not yet implemented completely")
     }
 
     companion object {
-        fun cancelWork(appContext: Context, workerTag: String) {
+        fun cancelWork(
+            appContext: Context,
+            workerTag: String,
+        ) {
             WorkManager.getInstance(appContext).cancelWorkById(UUID.fromString(workerTag))
-            DataSettingsScreenVM.webCaptureState = WebCaptureState(
-                isInProgress = false, currentIteration = 0, total = 0
-            )
+            DataSettingsScreenVM.webCaptureState =
+                WebCaptureState(
+                    isInProgress = false,
+                    currentIteration = 0,
+                    total = 0,
+                )
         }
     }
 
-    private var notificationService = WebCaptureNotificationService(appContext)
+    // var notificationService  = TODO()
 
-    override suspend fun getForegroundInfo(): ForegroundInfo {
-        return ForegroundInfo(
-            1,
-            NotificationCompat.Builder(applicationContext, "1")
-                .setSmallIcon(R.drawable.ic_stat_name)
-                .build()
-        )
-    }
+    override suspend fun getForegroundInfo(): ForegroundInfo = ForegroundInfo(
+        1,
+        NotificationCompat.Builder(applicationContext, "1")
+            .setSmallIcon(R.drawable.ic_stat_name)
+            .build(),
+    )
 
     override suspend fun doWork(): Result = coroutineScope {
-        var processedCount = 0
-        notificationService.clearNotifications()
+        Result.success()
+    /* var processedCount = 0
+    //   notificationService.clearNotifications()
 
-        if (isStopped) {
-            cleanUp()
-            return@coroutineScope Result.success()
-        }
+       if (isStopped) {
+           cleanUp()
+           return@coroutineScope Result.success()
+       }
 
-        val initResult = LinkoraSDK.getInstance().webCapture.init()
-        if (initResult is com.sakethh.linkora.domain.Result.Failure) {
-            return@coroutineScope Result.failure()
-        }
+       val initResult = LinkoraSDK.getInstance().webCapture.init()
+       if (initResult is com.sakethh.linkora.domain.Result.Failure) {
+           return@coroutineScope Result.failure()
+       }
 
-        return@coroutineScope try {
-            val preferences = DependencyContainer.preferencesRepo.getPreferences()
-            val localLinksRepo = DependencyContainer.localLinksRepo
-            val metaDataDao = LinkoraSDK.getInstance().webCaptureDatabase.metaDataDao
+       return@coroutineScope try {
+           val preferences = DependencyContainer.preferencesRepo.getPreferences()
+           val localLinksRepo = DependencyContainer.localLinksRepo
+          // val metaDataDao = LinkoraSDK.getInstance().webCaptureDatabase.metaDataDao
 
-            val linksToCapture = localLinksRepo.getAllLinks()
+           val linksToCapture = localLinksRepo.getAllLinks()
 
-            DataSettingsScreenVM.webCaptureState = WebCaptureState(
-                isInProgress = true,
-                currentIteration = 0,
-                total = linksToCapture.size
-            )
+           DataSettingsScreenVM.webCaptureState = WebCaptureState(
+               isInProgress = true,
+               currentIteration = 0,
+               total = linksToCapture.size
+           )
 
-            if (linksToCapture.isEmpty()) return@coroutineScope Result.success()
+           if (linksToCapture.isEmpty()) return@coroutineScope Result.success()
 
-            val baseCaptureDir = File(preferences.webCapturesLocation)
-            if (!baseCaptureDir.exists()) baseCaptureDir.mkdirs()
+          val baseCaptureDir = File(preferences.webCapturesLocation)
+           if (!baseCaptureDir.exists()) baseCaptureDir.mkdirs()
 
-            linksToCapture.asFlow()
-                .flatMapMerge(concurrency = 15) { link ->
-                    flow {
-                        val folderUuid = metaDataDao.getFolderNameByLink(link.url) ?: run {
-                            val newUuid = UUID.randomUUID().toString()
-                            metaDataDao.insert(
-                                MetaDataEntity(
-                                    link = link.url,
-                                    uuid = newUuid
-                                )
-                            )
-                            newUuid
-                        }
+           linksToCapture.asFlow()
+               .flatMapMerge(concurrency = 15) { link ->
+                   flow {
+                       val folderUuid = metaDataDao.getFolderNameByLink(link.url) ?: run {
+                           val newUuid = UUID.randomUUID().toString()
+                           metaDataDao.insert(
+                               MetaDataEntity(
+                                   link = link.url,
+                                   uuid = newUuid
+                               )
+                           )
+                           newUuid
+                       }
 
-                        val linkWebCaptureFolder = File(baseCaptureDir, folderUuid)
-                        if (!linkWebCaptureFolder.exists()) linkWebCaptureFolder.mkdirs()
+                       val linkWebCaptureFolder = File(baseCaptureDir, folderUuid)
+                       if (!linkWebCaptureFolder.exists()) linkWebCaptureFolder.mkdirs()
 
-                        LinkoraSDK.getInstance().webCapture.saveHTMLPage(
-                            url = link.url,
-                            userAgent = preferences.primaryJsoupUserAgent,
-                            timeout = 15000L,
-                            allowInsecureProtocol = false,
-                            ignoreDocErrors = true,
-                            useCss = preferences.webCaptureSaveCss,
-                            embedFonts = preferences.webCaptureSaveFonts,
-                            embedImages = preferences.webCaptureSaveImages,
-                            restrictJs = preferences.webCaptureExecuteJs,
-                            includeAudioElements = preferences.webCaptureSaveAudio,
-                            includeVideoElements = preferences.webCaptureSaveVideo,
-                            includeMetadata = preferences.webCaptureSaveMetadata,
-                            logStuff = false,
-                            nativeFolderPath = linkWebCaptureFolder.absolutePath
-                        )
+                       LinkoraSDK.getInstance().webCapture.saveHTMLPage(
+                           url = link.url,
+                           userAgent = preferences.primaryJsoupUserAgent,
+                           timeout = 15000L,
+                           allowInsecureProtocol = false,
+                           ignoreDocErrors = true,
+                           useCss = preferences.webCaptureSaveCss,
+                           embedFonts = preferences.webCaptureSaveFonts,
+                           embedImages = preferences.webCaptureSaveImages,
+                           restrictJs = preferences.webCaptureExecuteJs,
+                           includeAudioElements = preferences.webCaptureSaveAudio,
+                           includeVideoElements = preferences.webCaptureSaveVideo,
+                           includeMetadata = preferences.webCaptureSaveMetadata,
+                           logStuff = false,
+                           nativeFolderPath = linkWebCaptureFolder.absolutePath
+                       )
 
-                        emit(link.localId)
-                    }
-                }
-                .onEach {
-                    if (isStopped) {
-                        cleanUp()
-                        cancel()
-                    }
-                }
-                .catch { it.printStackTrace() }
-                .collect {
-                    processedCount++
-                    DataSettingsScreenVM.webCaptureState =
-                        DataSettingsScreenVM.webCaptureState.copy(currentIteration = processedCount)
-                    notificationService.showNotification()
-                }
+                       emit(link.localId)
+                   }
+               }
+               .onEach {
+                   if (isStopped) {
+                       cleanUp()
+                       cancel()
+                   }
+               }
+               .catch { it.printStackTrace() }
+               .collect {
+                   processedCount++
+                   DataSettingsScreenVM.webCaptureState =
+                       DataSettingsScreenVM.webCaptureState.copy(currentIteration = processedCount)
+                   notificationService.showNotification()
+               }
 
-            Result.success()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Result.failure()
-        } finally {
-            cleanUp()
-        }
+           Result.success()
+       } catch (e: Exception) {
+           e.printStackTrace()
+           Result.failure()
+       } finally {
+           cleanUp()
+       }*/
     }
 
     private fun cleanUp() {
-        DataSettingsScreenVM.webCaptureState = WebCaptureState(
-            isInProgress = false, currentIteration = 0, total = 0
-        )
-        notificationService.clearNotifications()
+        DataSettingsScreenVM.webCaptureState =
+            WebCaptureState(
+                isInProgress = false,
+                currentIteration = 0,
+                total = 0,
+            )
+        //  notificationService.clearNotifications()
     }
 }

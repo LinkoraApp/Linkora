@@ -7,8 +7,7 @@ import com.sakethh.linkora.domain.model.PendingSyncQueue
 
 @Dao
 interface PendingSyncQueueDao {
-    @Insert
-    suspend fun addInQueue(pendingSyncQueue: PendingSyncQueue)
+    @Insert suspend fun addInQueue(pendingSyncQueue: PendingSyncQueue)
 
     @Query("DELETE FROM pending_sync_queue WHERE id = :id")
     suspend fun deleteFromQueue(id: Long)

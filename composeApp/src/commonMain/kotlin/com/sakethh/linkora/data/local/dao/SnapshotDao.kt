@@ -10,8 +10,7 @@ interface SnapshotDao {
     @Query("SELECT * FROM snapshot WHERE id = :id")
     suspend fun getASnapshot(id: Long): Snapshot
 
-    @Insert
-    suspend fun addASnapshot(snapshot: Snapshot): Long
+    @Insert suspend fun addASnapshot(snapshot: Snapshot): Long
 
     @Query("DELETE FROM snapshot WHERE id = :id")
     suspend fun deleteASnapshot(id: Long)

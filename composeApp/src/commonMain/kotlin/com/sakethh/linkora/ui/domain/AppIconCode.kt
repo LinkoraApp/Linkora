@@ -15,5 +15,5 @@ enum class AppIconCode(val icon: DrawableResource) {
     legacy_logo(Res.drawable.legacy_logo),
     new_logo(Res.drawable.new_logo),
     oh_arthur(Res.drawable.oh_arthur),
-    must_be_weather(Res.drawable.weather_logo)
+    must_be_weather(Res.drawable.weather_logo),
 }

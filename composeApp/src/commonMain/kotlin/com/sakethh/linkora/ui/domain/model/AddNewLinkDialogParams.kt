@@ -11,14 +11,14 @@ import kotlinx.coroutines.flow.StateFlow
 
 @Stable
 data class AddNewLinkDialogParams(
-   val onDismiss: () -> Unit,
-   val currentFolder: Folder?,
-   val allTags: StateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<Tag>>>>,
-   val selectedTags: List<Tag>,
-   val foldersSearchQuery: String,
-   val foldersSearchQueryResult: StateFlow<List<Folder>>,
-   val rootRegularFolders: StateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<Folder>>>>,
-   val performAction: (AddANewLinkDialogBoxAction) -> Unit,
-   val url: String = "",
-   val title: String = ""
+    val onDismiss: () -> Unit,
+    val currentFolder: Folder?,
+    val allTags: StateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<Tag>>>>,
+    val selectedTags: List<Tag>,
+    val foldersSearchQuery: String,
+    val foldersSearchQueryResult: StateFlow<List<Folder>>,
+    val rootRegularFolders: StateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<Folder>>>>,
+    val performAction: (AddANewLinkDialogBoxAction) -> Unit,
+    val url: String = "",
+    val title: String = "",
 )

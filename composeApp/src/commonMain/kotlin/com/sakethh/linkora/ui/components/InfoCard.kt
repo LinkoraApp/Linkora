@@ -26,37 +26,36 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun InfoCard(
     info: String,
-    paddingValues: PaddingValues = PaddingValues(start = 20.dp, end = 20.dp, top = 15.dp)
+    paddingValues: PaddingValues = PaddingValues(start = 20.dp, end = 20.dp, top = 15.dp),
 ) {
     Card(
-        border = BorderStroke(
+        border =
+        BorderStroke(
             1.dp,
-            contentColorFor(MaterialTheme.colorScheme.surface)
+            contentColorFor(MaterialTheme.colorScheme.surface),
         ),
         colors = CardDefaults.cardColors(containerColor = AlertDialogDefaults.containerColor),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(paddingValues)
+        modifier = Modifier.fillMaxWidth().padding(paddingValues),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier =
+            Modifier.fillMaxWidth()
                 .wrapContentHeight()
                 .padding(
-                    top = 10.dp, bottom = 10.dp
+                    top = 10.dp,
+                    bottom = 10.dp,
                 ),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                contentAlignment = Alignment.CenterStart
-            ) {
+            Box(contentAlignment = Alignment.CenterStart) {
                 Icon(
                     imageVector = Icons.Outlined.Info,
                     contentDescription = null,
-                    modifier = Modifier
-                        .padding(
-                            start = 10.dp, end = 10.dp
-                        )
+                    modifier =
+                    Modifier.padding(
+                        start = 10.dp,
+                        end = 10.dp,
+                    ),
                 )
             }
             Text(
@@ -65,8 +64,7 @@ fun InfoCard(
                 fontSize = 14.sp,
                 lineHeight = 18.sp,
                 textAlign = TextAlign.Start,
-                modifier = Modifier
-                    .padding(end = 10.dp)
+                modifier = Modifier.padding(end = 10.dp),
             )
         }
     }

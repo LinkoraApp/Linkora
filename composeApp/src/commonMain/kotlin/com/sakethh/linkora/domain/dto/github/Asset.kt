@@ -5,6 +5,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Asset(
-    @SerialName("browser_download_url")
-    val directDownloadURL: String
+    @SerialName("browser_download_url") val directDownloadURL: String,
 )

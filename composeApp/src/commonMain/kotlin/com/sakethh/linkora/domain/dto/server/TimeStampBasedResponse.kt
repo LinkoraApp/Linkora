@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TimeStampBasedResponse(
     val eventTimestamp: Long,
-    val message: String
+    val message: String,
 )

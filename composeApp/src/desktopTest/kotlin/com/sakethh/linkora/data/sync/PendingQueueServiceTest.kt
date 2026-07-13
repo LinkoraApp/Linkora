@@ -44,7 +44,6 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class PendingQueueServiceTest {
-
     private lateinit var localFoldersRepo: LocalFoldersRepo
     private lateinit var localLinksRepo: LocalLinksRepo
     private lateinit var localPanelsRepo: LocalPanelsRepo
@@ -82,21 +81,22 @@ class PendingQueueServiceTest {
         coEvery { preferencesRepository.readPreferenceValue<Long>(any()) } returns 0L
         coEvery { preferencesRepository.changePreferenceValue<Long>(any(), any()) } returns Unit
 
-        pendingQueueService = PendingQueueService(
-            localFoldersRepo = localFoldersRepo,
-            localLinksRepo = localLinksRepo,
-            localPanelsRepo = localPanelsRepo,
-            pendingSyncQueueRepo = pendingSyncQueueRepo,
-            remoteFoldersRepo = remoteFoldersRepo,
-            remoteLinksRepo = remoteLinksRepo,
-            remotePanelsRepo = remotePanelsRepo,
-            preferencesRepository = preferencesRepository,
-            remoteMultiActionRepo = remoteMultiActionRepo,
-            remoteTagsRepo = remoteTagsRepo,
-            linksDao = linksDao,
-            foldersDao = foldersDao,
-            tagsDao = tagsDao
-        )
+        pendingQueueService =
+            PendingQueueService(
+                localFoldersRepo = localFoldersRepo,
+                localLinksRepo = localLinksRepo,
+                localPanelsRepo = localPanelsRepo,
+                pendingSyncQueueRepo = pendingSyncQueueRepo,
+                remoteFoldersRepo = remoteFoldersRepo,
+                remoteLinksRepo = remoteLinksRepo,
+                remotePanelsRepo = remotePanelsRepo,
+                preferencesRepository = preferencesRepository,
+                remoteMultiActionRepo = remoteMultiActionRepo,
+                remoteTagsRepo = remoteTagsRepo,
+                linksDao = linksDao,
+                foldersDao = foldersDao,
+                tagsDao = tagsDao,
+            )
     }
 
     @AfterTest
@@ -105,42 +105,42 @@ class PendingQueueServiceTest {
     }
 
     @Test
-    fun `queue processing with empty queue returns immediately and makes no remote calls`() =
-        runTest {
-            coEvery { pendingSyncQueueRepo.getAllItemsFromQueue() } returns emptyList()
+    fun `queue processing with empty queue returns immediately and makes no remote calls`() = runTest {
+        coEvery { pendingSyncQueueRepo.getAllItemsFromQueue() } returns emptyList()
 
-            val channel = Channel<Result<Unit>>(Channel.UNLIMITED)
+        val channel = Channel<Result<Unit>>(Channel.UNLIMITED)
 
-            with(pendingQueueService) {
-                val result =
-                    channel.pushPendingSyncQueueToServer().filterNot { it is Result.Loading }
-                        .first()
-                assertTrue(result is Result.Success)
-            }
-
-            coVerify(exactly = 0) { remoteTagsRepo.createATag(any()) }
-            coVerify(exactly = 0) { remoteLinksRepo.addANewLink(any()) }
-            coVerify(exactly = 0) {
-                preferencesRepository.changePreferenceValue<Long>(
-                    any(),
-                    any()
-                )
-            }
+        with(pendingQueueService) {
+            val result =
+                channel.pushPendingSyncQueueToServer().filterNot { it is Result.Loading }.first()
+            assertTrue(result is Result.Success)
         }
+
+        coVerify(exactly = 0) { remoteTagsRepo.createATag(any()) }
+        coVerify(exactly = 0) { remoteLinksRepo.addANewLink(any()) }
+        coVerify(exactly = 0) {
+            preferencesRepository.changePreferenceValue<Long>(
+                any(),
+                any(),
+            )
+        }
+    }
 
     @Test
     fun `create tag sync operation updates remote id and clears queue`() = runTest {
-        val createTagDTO = CreateTagDTO(
-            name = "Kotlin",
-            eventTimestamp = 1000L,
-            offlineSyncItemId = 42L,
-            correlation = null
-        )
-        val queueItem = PendingSyncQueue(
-            id = 1L,
-            operation = SyncServerRoute.CREATE_TAG.name,
-            payload = Json.encodeToString(createTagDTO)
-        )
+        val createTagDTO =
+            CreateTagDTO(
+                name = "Kotlin",
+                eventTimestamp = 1000L,
+                offlineSyncItemId = 42L,
+                correlation = null,
+            )
+        val queueItem =
+            PendingSyncQueue(
+                id = 1L,
+                operation = SyncServerRoute.CREATE_TAG.name,
+                payload = Json.encodeToString(createTagDTO),
+            )
 
         val timeStampResponse = TimeStampBasedResponse(2000L, "Success")
         val newItemResponse = NewItemResponseDTO(timeStampResponse, 99L, null)
@@ -162,11 +162,12 @@ class PendingQueueServiceTest {
     @Test
     fun `delete tag sync operation completes timestamp sync and clears queue`() = runTest {
         val idBasedDTO = IDBasedDTO(id = 99L, eventTimestamp = 1000L, correlation = null)
-        val queueItem = PendingSyncQueue(
-            id = 2L,
-            operation = SyncServerRoute.DELETE_TAG.name,
-            payload = Json.encodeToString(idBasedDTO)
-        )
+        val queueItem =
+            PendingSyncQueue(
+                id = 2L,
+                operation = SyncServerRoute.DELETE_TAG.name,
+                payload = Json.encodeToString(idBasedDTO),
+            )
 
         val timeStampResponse = TimeStampBasedResponse(2000L, "Deleted")
 
@@ -186,38 +187,48 @@ class PendingQueueServiceTest {
 
     @Test
     fun `create new link sync operation updates deeply nested link local properties`() = runTest {
-        val addLinkDTO = AddLinkDTO(
-            url = "https://example.com", title = "Test", imgURL = "", note = "",
-            idOfLinkedFolder = null, tags = emptyList(),
-            mediaType = MediaType.IMAGE, eventTimestamp = 1000L, offlineSyncItemId = 15L,
-            linkType = LinkType.IMPORTANT_LINK,
-            baseURL = "example.com",
-            userAgent = "TestAgent",
-            markedAsImportant = true,
-            correlation = null,
-        )
-        val queueItem = PendingSyncQueue(
-            id = 3L,
-            operation = SyncServerRoute.CREATE_A_NEW_LINK.name,
-            payload = Json.encodeToString(addLinkDTO)
-        )
+        val addLinkDTO =
+            AddLinkDTO(
+                url = "https://example.com",
+                title = "Test",
+                imgURL = "",
+                note = "",
+                idOfLinkedFolder = null,
+                tags = emptyList(),
+                mediaType = MediaType.IMAGE,
+                eventTimestamp = 1000L,
+                offlineSyncItemId = 15L,
+                linkType = LinkType.IMPORTANT_LINK,
+                baseURL = "example.com",
+                userAgent = "TestAgent",
+                markedAsImportant = true,
+                correlation = null,
+            )
+        val queueItem =
+            PendingSyncQueue(
+                id = 3L,
+                operation = SyncServerRoute.CREATE_A_NEW_LINK.name,
+                payload = Json.encodeToString(addLinkDTO),
+            )
 
         val timeStampResponse = TimeStampBasedResponse(2000L, "Success")
         val newItemResponse = NewItemResponseDTO(timeStampResponse, 88L, null)
-        val linkMock = mockk<Link>(relaxed = true) {
-            every { localId } returns 15L
-            every { copy(remoteId = 88L) } returns this
-        }
+        val linkMock =
+            mockk<Link>(relaxed = true) {
+                every { localId } returns 15L
+                every { copy(remoteId = 88L) } returns this
+            }
 
         coEvery { pendingSyncQueueRepo.getAllItemsFromQueue() } returns listOf(queueItem)
         coEvery { tagsDao.getTags(any()) } returns emptyList()
         coEvery { remoteLinksRepo.addANewLink(any()) } returns flowOf(Result.Success(newItemResponse))
         coEvery { localLinksRepo.getALink(15L) } returns linkMock
-        coEvery { localLinksRepo.updateALink(any(), any(), any()) } returns flowOf(
-            Result.Success(
-                Unit
+        coEvery { localLinksRepo.updateALink(any(), any(), any()) } returns
+            flowOf(
+                Result.Success(
+                    Unit,
+                ),
             )
-        )
 
         val channel = Channel<Result<Unit>>(Channel.UNLIMITED)
 
@@ -232,31 +243,40 @@ class PendingQueueServiceTest {
 
     @Test
     fun `add new panel folder sync operation dynamically resolves remote parent ids`() = runTest {
-        val addPanelFolderDTO = AddANewPanelFolderDTO(
-            folderId = 5L, panelPosition = 1, folderName = "PanelFolder", connectedPanelId = 10L,
-            offlineSyncItemId = 25L, eventTimestamp = 1000L, correlation = null
-        )
-        val queueItem = PendingSyncQueue(
-            id = 4L,
-            operation = SyncServerRoute.ADD_A_NEW_FOLDER_IN_A_PANEL.name,
-            payload = Json.encodeToString(addPanelFolderDTO)
-        )
+        val addPanelFolderDTO =
+            AddANewPanelFolderDTO(
+                folderId = 5L,
+                panelPosition = 1,
+                folderName = "PanelFolder",
+                connectedPanelId = 10L,
+                offlineSyncItemId = 25L,
+                eventTimestamp = 1000L,
+                correlation = null,
+            )
+        val queueItem =
+            PendingSyncQueue(
+                id = 4L,
+                operation = SyncServerRoute.ADD_A_NEW_FOLDER_IN_A_PANEL.name,
+                payload = Json.encodeToString(addPanelFolderDTO),
+            )
 
         val timeStampResponse = TimeStampBasedResponse(2000L, "Success")
         val newItemResponse = NewItemResponseDTO(timeStampResponse, 77L, null)
-        val panelFolderMock = mockk<PanelFolder>(relaxed = true) {
-            every { localId } returns 25L
-            every { copy(remoteId = 77L) } returns this
-        }
+        val panelFolderMock =
+            mockk<PanelFolder>(relaxed = true) {
+                every { localId } returns 25L
+                every { copy(remoteId = 77L) } returns this
+            }
 
         coEvery { pendingSyncQueueRepo.getAllItemsFromQueue() } returns listOf(queueItem)
         coEvery { localFoldersRepo.getRemoteIdOfAFolder(5L) } returns 500L
         coEvery { localPanelsRepo.getRemotePanelId(10L) } returns 1000L
-        coEvery { remotePanelsRepo.addANewFolderInAPanel(any()) } returns flowOf(
-            Result.Success(
-                newItemResponse
+        coEvery { remotePanelsRepo.addANewFolderInAPanel(any()) } returns
+            flowOf(
+                Result.Success(
+                    newItemResponse,
+                ),
             )
-        )
         coEvery { localPanelsRepo.getPanelFolder(25L) } returns panelFolderMock
 
         val channel = Channel<Result<Unit>>(Channel.UNLIMITED)
@@ -266,7 +286,9 @@ class PendingQueueServiceTest {
         }
 
         coVerify(exactly = 1) {
-            remotePanelsRepo.addANewFolderInAPanel(match { it.folderId == 500L && it.connectedPanelId == 1000L })
+            remotePanelsRepo.addANewFolderInAPanel(
+                match { it.folderId == 500L && it.connectedPanelId == 1000L },
+            )
         }
         coVerify(exactly = 1) { localPanelsRepo.updateAPanelFolder(any()) }
         coVerify(exactly = 1) { pendingSyncQueueRepo.removeFromQueue(4L) }

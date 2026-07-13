@@ -37,7 +37,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
@@ -71,12 +70,11 @@ fun TagSelectionComponent(
     onTagClick: (tag: Tag) -> Unit,
     onRetrieveNextTagsPage: () -> Unit,
     onFirstVisibleIndexChange: (Int) -> Unit,
-    showCreateNewTagSheet: () -> Unit
+    showCreateNewTagSheet: () -> Unit,
 ) {
     val lazyColumnState = rememberLazyListState()
     val lazyColumnUnifiedState = retain {
         lazyColumnState.asUnifiedLazyState()
-
     }
     val isTagsEmpty = allTags.data.isEmpty() || allTags.data.values.first().isEmpty()
 
@@ -86,66 +84,70 @@ fun TagSelectionComponent(
 
     PerformAtTheEndOfTheList(
         unifiedLazyState = lazyColumnUnifiedState,
-        actionOnReachingEnd = onRetrieveNextTagsPage
+        actionOnReachingEnd = onRetrieveNextTagsPage,
     )
 
     LaunchedEffect(Unit) {
         snapshotFlow {
             lazyColumnState.firstVisibleItemIndex
-        }.debounce(500).distinctUntilChanged().collect {
-            onFirstVisibleIndexChange(it)
         }
+            .debounce(500)
+            .distinctUntilChanged()
+            .collect {
+                onFirstVisibleIndexChange(it)
+            }
     }
-    Box(
-        modifier = Modifier.animateContentSize()
-            .heightIn(max = 345.dp)
-            .fillMaxWidth()
-    ) {
+    Box(modifier = Modifier.animateContentSize().heightIn(max = 345.dp).fillMaxWidth()) {
         OutlinedButton(
             shape = RoundedCornerShape(bottomStart = 25.dp, bottomEnd = 25.dp),
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
+            modifier =
+            Modifier.align(Alignment.BottomCenter)
                 .zIndex(1f)
                 .padding(
                     start = paddingValues.calculateStartPadding(LocalLayoutDirection.current),
-                    end = paddingValues.calculateEndPadding(LocalLayoutDirection.current)
+                    end = paddingValues.calculateEndPadding(LocalLayoutDirection.current),
                 )
                 .fillMaxWidth()
                 .height(buttonTotalHeight)
                 .pointerHoverIcon(icon = PointerIcon.Hand),
             onClick = {
                 showCreateNewTagSheet()
-            }
+            },
         ) {
             Box(
                 modifier = Modifier.fillMaxSize().padding(bottom = 5.dp),
-                contentAlignment = Alignment.BottomCenter
+                contentAlignment = Alignment.BottomCenter,
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Tag,
-                        contentDescription = null
+                        contentDescription = null,
                     )
                     Spacer(Modifier.width(5.dp))
                     Text(
                         text = Localization.Key.CreateANewTag.rememberLocalizedString(),
                         style = MaterialTheme.typography.titleSmall,
-                        fontSize = 16.sp
+                        fontSize = 16.sp,
                     )
                 }
             }
         }
         LazyColumn(
             state = lazyColumnState,
-            modifier = Modifier.zIndex(2f).fillMaxWidth().heightIn(min = 75.dp, max = 345.dp)
-                .padding(bottom = buttonVisibleHeight).padding(
-                    paddingValues
-                ).clip(RoundedCornerShape(25.dp))
-                .background(MaterialTheme.colorScheme.surface).border(
+            modifier =
+            Modifier.zIndex(2f)
+                .fillMaxWidth()
+                .heightIn(min = 75.dp, max = 345.dp)
+                .padding(bottom = buttonVisibleHeight)
+                .padding(paddingValues)
+                .clip(RoundedCornerShape(25.dp))
+                .background(MaterialTheme.colorScheme.surface)
+                .border(
                     width = 1.5.dp,
                     color = MaterialTheme.colorScheme.outline.copy(0.15f),
-                    shape = RoundedCornerShape(25.dp)
-                ).padding(horizontal = 15.dp)
+                    shape = RoundedCornerShape(25.dp),
+                )
+                .padding(horizontal = 15.dp),
         ) {
             item {
                 Spacer(Modifier.height(10.dp))
@@ -157,7 +159,7 @@ fun TagSelectionComponent(
                         style = MaterialTheme.typography.titleSmall,
                         fontSize = 18.sp,
                         modifier = Modifier.padding(end = 75.dp, bottom = 10.dp),
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.secondary,
                     )
                 }
             }
@@ -165,20 +167,36 @@ fun TagSelectionComponent(
                 return@LazyColumn
             }
             allTags.data.forEach { (pageKey, tags) ->
-                items(items = tags, key = {
-                    "TagSelectionComponent_P$pageKey-${it.localId}"
-                }) {
-                    val isTagSelected by rememberSaveable(selectedTags.contains(it)) {
-                        mutableStateOf(selectedTags.contains(it))
-                    }
+                items(
+                    items = tags,
+                    key = {
+                        "TagSelectionComponent_P$pageKey-${it.localId}"
+                    },
+                ) {
+                    val isTagSelected by
+                        rememberSaveable(selectedTags.contains(it)) {
+                            mutableStateOf(selectedTags.contains(it))
+                        }
                     AssistChip(
                         shape = RoundedCornerShape(15.dp),
-                        colors = AssistChipDefaults.assistChipColors(containerColor = if (isTagSelected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent),
-                        border = AssistChipDefaults.assistChipBorder(
+                        colors =
+                        AssistChipDefaults.assistChipColors(
+                            containerColor =
+                            if (isTagSelected) {
+                                MaterialTheme.colorScheme.secondaryContainer
+                            } else {
+                                Color.Transparent
+                            },
+                        ),
+                        border =
+                        AssistChipDefaults.assistChipBorder(
                             enabled = true,
-                            borderColor = if (isTagSelected) MaterialTheme.colorScheme.secondaryContainer else LocalContentColor.current.copy(
-                                0.25f
-                            )
+                            borderColor =
+                            if (isTagSelected) {
+                                MaterialTheme.colorScheme.secondaryContainer
+                            } else {
+                                LocalContentColor.current.copy(0.25f)
+                            },
                         ),
                         onClick = {
                             onTagClick(it)
@@ -186,20 +204,33 @@ fun TagSelectionComponent(
                         label = {
                             Text(
                                 text = it.name,
-                                color = if (isTagSelected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.secondary,
+                                color =
+                                if (isTagSelected) {
+                                    MaterialTheme.colorScheme.onSecondaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.secondary
+                                },
                                 style = MaterialTheme.typography.titleSmall,
-                                fontWeight = if (isTagSelected) FontWeight.SemiBold else FontWeight.Normal
+                                fontWeight = if (isTagSelected) FontWeight.SemiBold else FontWeight.Normal,
                             )
                         },
                         leadingIcon = {
                             Icon(
-                                tint = if (isTagSelected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.secondary,
+                                tint =
+                                if (isTagSelected) {
+                                    MaterialTheme.colorScheme.onSecondaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.secondary
+                                },
                                 imageVector = Icons.Default.Tag,
-                                contentDescription = null
+                                contentDescription = null,
                             )
                         },
-                        modifier = Modifier.padding(top = 7.5.dp, bottom = 7.5.dp).fillMaxWidth()
-                            .height(50.dp).pointerHoverIcon(icon = PointerIcon.Hand)
+                        modifier =
+                        Modifier.padding(top = 7.5.dp, bottom = 7.5.dp)
+                            .fillMaxWidth()
+                            .height(50.dp)
+                            .pointerHoverIcon(icon = PointerIcon.Hand),
                     )
                 }
             }
@@ -207,7 +238,7 @@ fun TagSelectionComponent(
                 item {
                     Box(
                         modifier = Modifier.fillMaxWidth().height(50.dp),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         ContainedLoadingIndicator()
                     }

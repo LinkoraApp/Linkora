@@ -16,12 +16,15 @@ import com.sakethh.linkora.ui.utils.pressScaleEffect
 @Composable
 fun SortingIconButton() {
     val coroutineScope = rememberCoroutineScope()
-    IconButton(modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(), onClick = {
-        coroutineScope.pushUIEvent(UIEvent.Type.ShowSortingBtmSheet)
-    }) {
+    IconButton(
+        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(),
+        onClick = {
+            coroutineScope.pushUIEvent(UIEvent.Type.ShowSortingBtmSheet)
+        },
+    ) {
         Icon(
             imageVector = Icons.AutoMirrored.Outlined.Sort,
-            contentDescription = null
+            contentDescription = null,
         )
     }
 }

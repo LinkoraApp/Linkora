@@ -5,5 +5,6 @@ import androidx.room3.PrimaryKey
 
 @Entity(tableName = "snapshot")
 data class Snapshot(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0, val content: String
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val content: String,
 )

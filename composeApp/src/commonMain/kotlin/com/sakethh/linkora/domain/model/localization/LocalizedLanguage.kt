@@ -7,9 +7,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 @Entity("localized_languages")
 data class LocalizedLanguage(
-    @PrimaryKey
-    val languageCode: String,
+    @PrimaryKey val languageCode: String,
     val languageName: String,
     val localizedStringsCount: Int,
-    val contributionLink: String
+    val contributionLink: String,
 )

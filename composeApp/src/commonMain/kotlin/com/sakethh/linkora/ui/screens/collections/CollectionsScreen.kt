@@ -127,7 +127,7 @@ import kotlinx.coroutines.launch
 @OptIn(
     ExperimentalMaterial3Api::class,
     ExperimentalFoundationApi::class,
-    ExperimentalMaterial3AdaptiveApi::class
+    ExperimentalMaterial3AdaptiveApi::class,
 )
 @Composable
 fun CollectionsScreen(
@@ -145,7 +145,8 @@ fun CollectionsScreen(
 
     val isDetailVisible = scaffoldNavigator.scaffoldValue.primary == PaneAdaptedValue.Expanded
     val isDetailEmpty =
-        currentDetailEntry == null || currentDetailEntry?.destination?.hasRoute<CollectionNavigation.Empty>() == true
+        currentDetailEntry == null ||
+            currentDetailEntry?.destination?.hasRoute<CollectionNavigation.Empty>() == true
 
     LaunchedEffect(isDetailVisible, isDetailEmpty) {
         CollectionsScreenVM.inCollectionsListPane = !isDetailVisible || isDetailEmpty
@@ -166,8 +167,7 @@ fun CollectionsScreen(
         mutableStateOf(false)
     }
     val collectionPagerState = collectionScreenParams.collectionPagerState
-    val rootContentSwitcherBtmSheetState =
-        rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val rootContentSwitcherBtmSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     LaunchedEffect(collectionPagerState.currentPage) {
         collectionPagerState.animateScrollToPage(collectionPagerState.currentPage)
     }
@@ -177,14 +177,14 @@ fun CollectionsScreen(
 
     val isRootFoldersListAtTheEnd = retain {
         derivedStateOf {
-            (rootFoldersListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index
-                ?: 0) >= (rootFoldersListState.layoutInfo.totalItemsCount - Constants.TRIGGER_THRESHOLD_AT_THE_END)
+            (rootFoldersListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) >=
+                (rootFoldersListState.layoutInfo.totalItemsCount - Constants.TRIGGER_THRESHOLD_AT_THE_END)
         }
     }
     val isTagsListAtTheEnd = retain {
         derivedStateOf {
-            (tagsListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index
-                ?: 0) >= (tagsListState.layoutInfo.totalItemsCount - Constants.TRIGGER_THRESHOLD_AT_THE_END)
+            (tagsListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) >=
+                (tagsListState.layoutInfo.totalItemsCount - Constants.TRIGGER_THRESHOLD_AT_THE_END)
         }
     }
 
@@ -199,17 +199,23 @@ fun CollectionsScreen(
     LaunchedEffect(Unit) {
         snapshotFlow {
             rootFoldersListState.firstVisibleItemIndex
-        }.debounce(500).distinctUntilChanged().collectLatest {
-            collectionScreenParams.onRegularRootFolderFirstVisibleItemIndexChange(it.toLong())
         }
+            .debounce(500)
+            .distinctUntilChanged()
+            .collectLatest {
+                collectionScreenParams.onRegularRootFolderFirstVisibleItemIndexChange(it.toLong())
+            }
     }
 
     LaunchedEffect(Unit) {
         snapshotFlow {
             tagsListState.firstVisibleItemIndex
-        }.debounce(500).distinctUntilChanged().collectLatest {
-            collectionScreenParams.onTagsFirstVisibleItemIndexChange(it.toLong())
         }
+            .debounce(500)
+            .distinctUntilChanged()
+            .collectLatest {
+                collectionScreenParams.onTagsFirstVisibleItemIndexChange(it.toLong())
+            }
     }
     val parentScrollState = rememberScrollState()
 
@@ -225,7 +231,9 @@ fun CollectionsScreen(
             }
 
             override fun onPostScroll(
-                consumed: Offset, available: Offset, source: NestedScrollSource
+                consumed: Offset,
+                available: Offset,
+                source: NestedScrollSource,
             ): Offset {
                 if (available.y > 0) {
                     val consumed = parentScrollState.dispatchRawDelta(-available.y)
@@ -236,15 +244,15 @@ fun CollectionsScreen(
         }
     }
 
-
     val isRootFoldersEmpty = rootFolders.data.isEmpty() || rootFolders.data.values.first().isEmpty()
-
 
     val isTagsEmpty = allTags.data.isEmpty() || allTags.data.values.first().isEmpty()
 
     val listPane: @Composable (modifier: Modifier) -> Unit = { modifier ->
         Scaffold(
-            modifier = modifier, floatingActionButtonPosition = FabPosition.End, topBar = {
+            modifier = modifier,
+            floatingActionButtonPosition = FabPosition.End,
+            topBar = {
                 MediumTopAppBar(
                     modifier = if (!onAndroidMobile) Modifier.size(0.dp) else Modifier,
                     scrollBehavior = topAppBarScrollBehavior,
@@ -253,38 +261,40 @@ fun CollectionsScreen(
                             text = Navigation.Root.CollectionsScreen.toString(),
                             color = MaterialTheme.colorScheme.onSurface,
                             style = MaterialTheme.typography.titleLarge,
-                            fontSize = 22.sp
+                            fontSize = 22.sp,
                         )
-                    })
-            }) { padding ->
+                    },
+                )
+            },
+        ) { padding ->
             BoxWithConstraints(
-                modifier = Modifier.padding(end = if (!onAndroidMobile) 15.dp else 0.dp)
-                    .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection).padding(padding)
-                    .fillMaxHeight()
+                modifier =
+                Modifier.padding(end = if (!onAndroidMobile) 15.dp else 0.dp)
+                    .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
+                    .padding(padding)
+                    .fillMaxHeight(),
             ) {
                 val screenHeight = maxHeight
-                Column(
-                    modifier = Modifier.fillMaxWidth().verticalScroll(parentScrollState)
-                ) {
+                Column(modifier = Modifier.fillMaxWidth().verticalScroll(parentScrollState)) {
                     DefaultFolderComponent(
                         name = Localization.rememberLocalizedString(Localization.Key.AllLinks),
                         icon = Icons.Outlined.DatasetLinked,
                         onClick = {
-                            val collectionDetailPaneInfo = CollectionDetailPaneInfo(
-                                currentFolder = Folder(
-                                    name = Localization.Key.AllLinks.getLocalizedString(),
-                                    note = "",
-                                    parentFolderId = null,
-                                    localId = Constants.ALL_LINKS_ID
-                                ),
-                                currentTag = null,
-                                collectionType = CollectionType.FOLDER,
-                            )
+                            val collectionDetailPaneInfo =
+                                CollectionDetailPaneInfo(
+                                    currentFolder =
+                                    Folder(
+                                        name = Localization.Key.AllLinks.getLocalizedString(),
+                                        note = "",
+                                        parentFolderId = null,
+                                        localId = Constants.ALL_LINKS_ID,
+                                    ),
+                                    currentTag = null,
+                                    collectionType = CollectionType.FOLDER,
+                                )
                             coroutineScope.launch {
                                 if (detailNavController.currentDestination != null) {
-                                    detailNavController.popBackStack<CollectionNavigation.Empty>(
-                                        inclusive = false
-                                    )
+                                    detailNavController.popBackStack<CollectionNavigation.Empty>(inclusive = false)
                                 }
                                 pendingDetailDestination = collectionDetailPaneInfo
                                 scaffoldNavigator.navigateTo(
@@ -292,28 +302,28 @@ fun CollectionsScreen(
                                 )
                             }
                         },
-                        isSelected = lastDetailDestination?.currentFolder?.localId == Constants.ALL_LINKS_ID
+                        isSelected = lastDetailDestination?.currentFolder?.localId == Constants.ALL_LINKS_ID,
                     )
                     ItemDivider()
                     DefaultFolderComponent(
                         name = Localization.rememberLocalizedString(Localization.Key.SavedLinks),
                         icon = Icons.Outlined.Link,
                         onClick = {
-                            val collectionDetailPaneInfo = CollectionDetailPaneInfo(
-                                currentFolder = Folder(
-                                    name = Localization.Key.SavedLinks.getLocalizedString(),
-                                    note = "",
-                                    parentFolderId = null,
-                                    localId = Constants.SAVED_LINKS_ID
-                                ),
-                                currentTag = null,
-                                collectionType = CollectionType.FOLDER,
-                            )
+                            val collectionDetailPaneInfo =
+                                CollectionDetailPaneInfo(
+                                    currentFolder =
+                                    Folder(
+                                        name = Localization.Key.SavedLinks.getLocalizedString(),
+                                        note = "",
+                                        parentFolderId = null,
+                                        localId = Constants.SAVED_LINKS_ID,
+                                    ),
+                                    currentTag = null,
+                                    collectionType = CollectionType.FOLDER,
+                                )
                             coroutineScope.launch {
                                 if (detailNavController.currentDestination != null) {
-                                    detailNavController.popBackStack<CollectionNavigation.Empty>(
-                                        inclusive = false
-                                    )
+                                    detailNavController.popBackStack<CollectionNavigation.Empty>(inclusive = false)
                                 }
                                 pendingDetailDestination = collectionDetailPaneInfo
                                 scaffoldNavigator.navigateTo(
@@ -321,27 +331,28 @@ fun CollectionsScreen(
                                 )
                             }
                         },
-                        isSelected = lastDetailDestination?.currentFolder?.localId == Constants.SAVED_LINKS_ID
+                        isSelected =
+                        lastDetailDestination?.currentFolder?.localId == Constants.SAVED_LINKS_ID,
                     )
                     DefaultFolderComponent(
                         name = Localization.rememberLocalizedString(Localization.Key.ImportantLinks),
                         icon = Icons.Outlined.StarOutline,
                         onClick = {
-                            val collectionDetailPaneInfo = CollectionDetailPaneInfo(
-                                currentFolder = Folder(
-                                    name = Localization.Key.ImportantLinks.getLocalizedString(),
-                                    note = "",
-                                    parentFolderId = null,
-                                    localId = Constants.IMPORTANT_LINKS_ID
-                                ),
-                                currentTag = null,
-                                collectionType = CollectionType.FOLDER,
-                            )
+                            val collectionDetailPaneInfo =
+                                CollectionDetailPaneInfo(
+                                    currentFolder =
+                                    Folder(
+                                        name = Localization.Key.ImportantLinks.getLocalizedString(),
+                                        note = "",
+                                        parentFolderId = null,
+                                        localId = Constants.IMPORTANT_LINKS_ID,
+                                    ),
+                                    currentTag = null,
+                                    collectionType = CollectionType.FOLDER,
+                                )
                             coroutineScope.launch {
                                 if (detailNavController.currentDestination != null) {
-                                    detailNavController.popBackStack<CollectionNavigation.Empty>(
-                                        inclusive = false
-                                    )
+                                    detailNavController.popBackStack<CollectionNavigation.Empty>(inclusive = false)
                                 }
                                 pendingDetailDestination = collectionDetailPaneInfo
                                 scaffoldNavigator.navigateTo(
@@ -349,27 +360,28 @@ fun CollectionsScreen(
                                 )
                             }
                         },
-                        isSelected = lastDetailDestination?.currentFolder?.localId == Constants.IMPORTANT_LINKS_ID
+                        isSelected =
+                        lastDetailDestination?.currentFolder?.localId == Constants.IMPORTANT_LINKS_ID,
                     )
                     DefaultFolderComponent(
                         name = Localization.rememberLocalizedString(Localization.Key.Archive),
                         icon = Icons.Outlined.Archive,
                         onClick = {
-                            val collectionDetailPaneInfo = CollectionDetailPaneInfo(
-                                currentFolder = Folder(
-                                    name = Localization.Key.Archive.getLocalizedString(),
-                                    note = "",
-                                    parentFolderId = null,
-                                    localId = Constants.ARCHIVE_ID
-                                ),
-                                currentTag = null,
-                                collectionType = CollectionType.FOLDER,
-                            )
+                            val collectionDetailPaneInfo =
+                                CollectionDetailPaneInfo(
+                                    currentFolder =
+                                    Folder(
+                                        name = Localization.Key.Archive.getLocalizedString(),
+                                        note = "",
+                                        parentFolderId = null,
+                                        localId = Constants.ARCHIVE_ID,
+                                    ),
+                                    currentTag = null,
+                                    collectionType = CollectionType.FOLDER,
+                                )
                             coroutineScope.launch {
                                 if (detailNavController.currentDestination != null) {
-                                    detailNavController.popBackStack<CollectionNavigation.Empty>(
-                                        inclusive = false
-                                    )
+                                    detailNavController.popBackStack<CollectionNavigation.Empty>(inclusive = false)
                                 }
                                 pendingDetailDestination = collectionDetailPaneInfo
                                 scaffoldNavigator.navigateTo(
@@ -377,27 +389,32 @@ fun CollectionsScreen(
                                 )
                             }
                         },
-                        isSelected = lastDetailDestination?.currentFolder?.localId == Constants.ARCHIVE_ID
+                        isSelected = lastDetailDestination?.currentFolder?.localId == Constants.ARCHIVE_ID,
                     )
                     Spacer(modifier = Modifier.height(15.dp))
 
                     Row(
-                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                            .fillMaxWidth(),
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface).fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Row(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            modifier =
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                                 .padding(start = 15.dp)
-                                .clickable(indication = null, interactionSource = remember {
-                                    MutableInteractionSource()
-                                }) {
+                                .clickable(
+                                    indication = null,
+                                    interactionSource =
+                                    remember {
+                                        MutableInteractionSource()
+                                    },
+                                ) {
                                     isRootContentSwitcherBtmSheetVisible = true
                                     coroutineScope.launch {
                                         rootContentSwitcherBtmSheetState.show()
                                     }
-                                }, verticalAlignment = Alignment.CenterVertically
+                                },
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             FilledTonalIconButton(
                                 onClick = {
@@ -406,12 +423,11 @@ fun CollectionsScreen(
                                         rootContentSwitcherBtmSheetState.show()
                                     }
                                 },
-                                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                    .size(22.dp)
+                                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).size(22.dp),
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.ArrowDownward,
-                                    contentDescription = null
+                                    contentDescription = null,
                                 )
                             }
                             Spacer(Modifier.width(10.dp))
@@ -434,7 +450,10 @@ fun CollectionsScreen(
 
                     HorizontalPager(
                         state = collectionPagerState,
-                        modifier = Modifier.height(screenHeight).animateContentSize().fillMaxWidth()
+                        modifier =
+                        Modifier.height(screenHeight)
+                            .animateContentSize()
+                            .fillMaxWidth()
                             .nestedScroll(defaultFoldersScrollConnection),
                         verticalAlignment = Alignment.Top,
                     ) { currentPage ->
@@ -444,14 +463,15 @@ fun CollectionsScreen(
                         ) {
                             when (currentPage) {
                                 0 -> {
-
                                     item {
                                         AnimatedVisibility(!rootFolders.isRetrieving && isRootFoldersEmpty) {
                                             DataEmptyScreen(
                                                 text = Localization.Key.NoFoldersFound.rememberLocalizedString(),
-                                                paddingValues = PaddingValues(
-                                                    top = 50.dp, start = 15.dp
-                                                )
+                                                paddingValues =
+                                                PaddingValues(
+                                                    top = 50.dp,
+                                                    start = 15.dp,
+                                                ),
                                             )
                                         }
                                     }
@@ -461,17 +481,19 @@ fun CollectionsScreen(
                                     }
 
                                     rootFolders.data.forEach { (_, folders) ->
-                                        items(folders, key = {
-                                            "rootFolders" + it.localId
-                                        }) { folder ->
+                                        items(
+                                            folders,
+                                            key = {
+                                                "rootFolders" + it.localId
+                                            },
+                                        ) { folder ->
                                             FolderComponent(
                                                 FolderComponentParam(
                                                     name = folder.name,
                                                     note = folder.note,
                                                     onClick = {
-                                                        if (CollectionsScreenVM.selectedFoldersViaLongClick.contains(
-                                                                folder
-                                                            )
+                                                        if (
+                                                            CollectionsScreenVM.selectedFoldersViaLongClick.contains(folder)
                                                         ) {
                                                             return@FolderComponentParam
                                                         }
@@ -484,11 +506,10 @@ fun CollectionsScreen(
                                                         coroutineScope.launch {
                                                             if (detailNavController.currentDestination != null) {
                                                                 detailNavController.popBackStack<CollectionNavigation.Empty>(
-                                                                    inclusive = false
+                                                                    inclusive = false,
                                                                 )
                                                             }
-                                                            pendingDetailDestination =
-                                                                collectionDetailPaneInfo
+                                                            pendingDetailDestination = collectionDetailPaneInfo
                                                             scaffoldNavigator.navigateTo(
                                                                 pane = ListDetailPaneScaffoldRole.Detail,
                                                             )
@@ -496,11 +517,8 @@ fun CollectionsScreen(
                                                     },
                                                     onLongClick = {
                                                         if (CollectionsScreenVM.isSelectionEnabled.value.not()) {
-                                                            CollectionsScreenVM.isSelectionEnabled.value =
-                                                                true
-                                                            CollectionsScreenVM.selectedFoldersViaLongClick.add(
-                                                                folder
-                                                            )
+                                                            CollectionsScreenVM.isSelectionEnabled.value = true
+                                                            CollectionsScreenVM.selectedFoldersViaLongClick.add(folder)
                                                         }
                                                     },
                                                     onMoreIconClick = {
@@ -508,44 +526,44 @@ fun CollectionsScreen(
                                                             UIEvent.Type.ShowMenuBtmSheet(
                                                                 menuBtmSheetFor = MenuBtmSheetType.Folder.RegularFolder,
                                                                 selectedLinkForMenuBtmSheet = null,
-                                                                selectedFolderForMenuBtmSheet = folder
-                                                            )
+                                                                selectedFolderForMenuBtmSheet = folder,
+                                                            ),
                                                         )
                                                     },
-                                                    isCurrentlyInDetailsView = remember(
-                                                        lastDetailDestination?.currentFolder?.localId
-                                                    ) {
-                                                        mutableStateOf(lastDetailDestination?.currentFolder?.localId == folder.localId)
+                                                    isCurrentlyInDetailsView =
+                                                    remember(lastDetailDestination?.currentFolder?.localId) {
+                                                        mutableStateOf(
+                                                            lastDetailDestination?.currentFolder?.localId ==
+                                                                folder.localId,
+                                                        )
                                                     },
-                                                    showMoreIcon = rememberSaveable {
+                                                    showMoreIcon =
+                                                    rememberSaveable {
                                                         mutableStateOf(true)
                                                     },
-                                                    isSelectedForSelection = rememberSaveable(
+                                                    isSelectedForSelection =
+                                                    rememberSaveable(
                                                         CollectionsScreenVM.isSelectionEnabled.value,
-                                                        CollectionsScreenVM.selectedFoldersViaLongClick.size
+                                                        CollectionsScreenVM.selectedFoldersViaLongClick.size,
                                                     ) {
                                                         mutableStateOf(
-                                                            CollectionsScreenVM.isSelectionEnabled.value && CollectionsScreenVM.selectedFoldersViaLongClick.contains(
-                                                                folder
-                                                            )
+                                                            CollectionsScreenVM.isSelectionEnabled.value &&
+                                                                CollectionsScreenVM.selectedFoldersViaLongClick
+                                                                    .contains(folder),
                                                         )
                                                     },
                                                     showCheckBox = CollectionsScreenVM.isSelectionEnabled,
                                                     onCheckBoxChanged = { bool ->
                                                         if (bool) {
-                                                            CollectionsScreenVM.selectedFoldersViaLongClick.add(
-                                                                folder
-                                                            )
+                                                            CollectionsScreenVM.selectedFoldersViaLongClick.add(folder)
                                                         } else {
-                                                            CollectionsScreenVM.selectedFoldersViaLongClick.remove(
-                                                                folder
-                                                            )
+                                                            CollectionsScreenVM.selectedFoldersViaLongClick.remove(folder)
                                                         }
                                                     },
                                                     path = null,
                                                     showPath = false,
                                                     onPathItemClick = {},
-                                                )
+                                                ),
                                             )
                                         }
                                     }
@@ -553,9 +571,11 @@ fun CollectionsScreen(
                                     item {
                                         AnimatedVisibility(!rootFolders.pagesCompleted) {
                                             LoadingScreen(
-                                                paddingValues = PaddingValues(
-                                                    start = 15.dp, top = 75.dp
-                                                )
+                                                paddingValues =
+                                                PaddingValues(
+                                                    start = 15.dp,
+                                                    top = 75.dp,
+                                                ),
                                             )
                                         }
                                     }
@@ -573,9 +593,12 @@ fun CollectionsScreen(
                                     }
 
                                     allTags.data.forEach { (pageKey, tags) ->
-                                        items(tags, key = {
-                                            "Collection-Screen-Tags-Page:$pageKey+" + "ID:" + it.localId
-                                        }) { currentTag ->
+                                        items(
+                                            tags,
+                                            key = {
+                                                "Collection-Screen-Tags-Page:$pageKey+" + "ID:" + it.localId
+                                            },
+                                        ) { currentTag ->
                                             FolderComponent(
                                                 FolderComponentParam(
                                                     name = currentTag.name,
@@ -591,11 +614,10 @@ fun CollectionsScreen(
                                                         coroutineScope.launch {
                                                             if (detailNavController.currentDestination != null) {
                                                                 detailNavController.popBackStack<CollectionNavigation.Empty>(
-                                                                    inclusive = false
+                                                                    inclusive = false,
                                                                 )
                                                             }
-                                                            pendingDetailDestination =
-                                                                collectionDetailPaneInfo
+                                                            pendingDetailDestination = collectionDetailPaneInfo
                                                             scaffoldNavigator.navigateTo(
                                                                 pane = ListDetailPaneScaffoldRole.Detail,
                                                             )
@@ -604,28 +626,30 @@ fun CollectionsScreen(
                                                     onLongClick = {},
                                                     onMoreIconClick = {
                                                         coroutineScope.pushUIEvent(
-                                                            UIEvent.Type.ShowTagMenuBtmSheet(
-                                                                selectedTag = currentTag
-                                                            )
+                                                            UIEvent.Type.ShowTagMenuBtmSheet(selectedTag = currentTag),
                                                         )
                                                     },
-                                                    isCurrentlyInDetailsView = rememberSaveable {
+                                                    isCurrentlyInDetailsView =
+                                                    rememberSaveable {
                                                         mutableStateOf(false)
                                                     },
-                                                    showMoreIcon = rememberSaveable {
+                                                    showMoreIcon =
+                                                    rememberSaveable {
                                                         mutableStateOf(true)
                                                     },
-                                                    isSelectedForSelection = rememberSaveable {
+                                                    isSelectedForSelection =
+                                                    rememberSaveable {
                                                         mutableStateOf(false)
                                                     },
-                                                    showCheckBox = rememberSaveable {
+                                                    showCheckBox =
+                                                    rememberSaveable {
                                                         mutableStateOf(false)
                                                     },
                                                     onCheckBoxChanged = {},
                                                     path = null,
                                                     showPath = false,
                                                     onPathItemClick = {},
-                                                )
+                                                ),
                                             )
                                         }
                                     }
@@ -633,9 +657,11 @@ fun CollectionsScreen(
                                     item {
                                         AnimatedVisibility(!allTags.pagesCompleted) {
                                             LoadingScreen(
-                                                paddingValues = PaddingValues(
-                                                    start = 15.dp, top = 75.dp
-                                                )
+                                                paddingValues =
+                                                PaddingValues(
+                                                    start = 15.dp,
+                                                    top = 75.dp,
+                                                ),
                                             )
                                         }
                                     }
@@ -665,14 +691,16 @@ fun CollectionsScreen(
                 }
             }
         },
-        paneExpansionState = rememberPaneExpansionState(
+        paneExpansionState =
+        rememberPaneExpansionState(
             keyProvider = scaffoldNavigator.scaffoldValue,
             anchors = PaneExpansionAnchors,
         ),
         paneExpansionDragHandle = { state ->
             val interactionSource = remember { MutableInteractionSource() }
             VerticalDragHandle(
-                modifier = Modifier.paneExpansionDraggable(
+                modifier =
+                Modifier.paneExpansionDraggable(
                     state,
                     LocalMinimumInteractiveComponentSize.current,
                     interactionSource,
@@ -694,11 +722,11 @@ fun CollectionsScreen(
                             if (!onAndroidMobile) {
                                 Box(
                                     modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
+                                    contentAlignment = Alignment.Center,
                                 ) {
                                     Text(
                                         text = Localization.Key.SelectACollection.rememberLocalizedString(),
-                                        style = MaterialTheme.typography.titleMedium
+                                        style = MaterialTheme.typography.titleMedium,
                                     )
                                 }
                             }
@@ -706,40 +734,40 @@ fun CollectionsScreen(
                         composable<CollectionNavigation.Pane> { navBackStackEntry ->
                             val collectionDetailPaneInfo =
                                 navBackStackEntry.toRoute<CollectionNavigation.Pane>().run {
-                                    Utils.json.decodeFromString<CollectionDetailPaneInfo>(this.collectionDetailPaneInfo)
+                                    Utils.json.decodeFromString<CollectionDetailPaneInfo>(
+                                        this.collectionDetailPaneInfo,
+                                    )
                                 }
                             CollectionDetailPane(
                                 navigateUp = {
-                                    /*
-                                     * `LaunchedEffect(currentEntry)....`
-                                     * will handle the rest of the navigation. Since it also handles the system back handling,
-                                     * it will collide if we navigate the pane from here and will navigate back to the "Empty" screen
-                                     * which we don't want.
-                                     * */
+                      /*
+                       * `LaunchedEffect(currentEntry)....`
+                       * will handle the rest of the navigation. Since it also handles the system back handling,
+                       * it will collide if we navigate the pane from here and will navigate back to the "Empty" screen
+                       * which we don't want.
+                       * */
                                     detailNavController.navigateUp()
                                 },
                                 collectionDetailPaneInfo = collectionDetailPaneInfo,
                                 onNavigate = { collectionDetailPaneInfo ->
                                     detailNavController.navigate(
                                         CollectionNavigation.Pane(
-                                            Utils.json.encodeToString(collectionDetailPaneInfo)
-                                        )
+                                            Utils.json.encodeToString(collectionDetailPaneInfo),
+                                        ),
                                     )
-                                })
+                                },
+                            )
                         }
                     }
                     LaunchedEffect(pendingDetailDestination) {
                         pendingDetailDestination?.let { destination ->
 
-                            // on mobile, detailPane isn't composed until scaffoldNavigator#navigateTo is called,
+                            // on mobile, detailPane isn't composed until scaffoldNavigator#navigateTo is
+                            // called,
                             // so NavHost graph isn't set yet, wait for it
                             snapshotFlow { detailNavController.currentDestination }.first { it != null }
                             detailNavController.navigate(
-                                CollectionNavigation.Pane(
-                                    Utils.json.encodeToString(
-                                        destination
-                                    )
-                                )
+                                CollectionNavigation.Pane(Utils.json.encodeToString(destination)),
                             )
                             lastDetailDestination = destination
                             pendingDetailDestination = null
@@ -747,13 +775,16 @@ fun CollectionsScreen(
                     }
                 }
             }
-        })
+        },
+    )
     val hideCollectionSwitcher: () -> Unit = {
-        coroutineScope.launch {
-            rootContentSwitcherBtmSheetState.hide()
-        }.invokeOnCompletion {
-            isRootContentSwitcherBtmSheetVisible = false
-        }
+        coroutineScope
+            .launch {
+                rootContentSwitcherBtmSheetState.hide()
+            }
+            .invokeOnCompletion {
+                isRootContentSwitcherBtmSheetVisible = false
+            }
     }
     RootCollectionSwitcher(
         isRootContentSwitcherBtmSheetVisible = isRootContentSwitcherBtmSheetVisible,
@@ -765,28 +796,27 @@ fun CollectionsScreen(
             }
             hideCollectionSwitcher()
         },
-        preferences = preferences
+        preferences = preferences,
     )
 
-    /*
-  * The worst thing (in our context, specifically this collection screen's)
-  * about navigation compose/nav2 (excluding backstack owner) is NavHost,
-  * it maintains its own `PredictiveBackHandler` (just deep dive in the source code of NavHost, you'll end up with internal function which has its own state of back handling),
-  * which seems to be breaking our external `PlatformSpecificBackHandler`,
-  * now, to deal with illogical "Empty" Screen on android, we gotta do something,
-  * when navigating via navigation button from top bar, things happen as expected,
-  * since nav host isnt intercepting its action,
-  * but thats not the case with back handling.
-  *
-  * Although Nav3 is built around: "You own the things", i wonder if its worth to migrate
-  * especially if it got its own back handling somewhere and somehow in the process. but im going to test
-  * it on jetpack compose project
-  * and once it becomes stable on the web, then will probably migrate this whole thing to nav3
-  * https://kotlinlang.org/docs/multiplatform/compose-navigation-3.html#multiplatform-support:~:text=Browser%20history%20navigation%20is%20expected%20to%20be%20supported%20by%20the%20base%20multiplatform%20Navigation%203%20library%20in%20version%201%2E1%2E0
-  * */
+  /*
+   * The worst thing (in our context, specifically this collection screen's)
+   * about navigation compose/nav2 (excluding backstack owner) is NavHost,
+   * it maintains its own `PredictiveBackHandler` (just deep dive in the source code of NavHost, you'll end up with internal function which has its own state of back handling),
+   * which seems to be breaking our external `PlatformSpecificBackHandler`,
+   * now, to deal with illogical "Empty" Screen on android, we gotta do something,
+   * when navigating via navigation button from top bar, things happen as expected,
+   * since nav host isnt intercepting its action,
+   * but thats not the case with back handling.
+   *
+   * Although Nav3 is built around: "You own the things", i wonder if its worth to migrate
+   * especially if it got its own back handling somewhere and somehow in the process. but im going to test
+   * it on jetpack compose project
+   * and once it becomes stable on the web, then will probably migrate this whole thing to nav3
+   * https://kotlinlang.org/docs/multiplatform/compose-navigation-3.html#multiplatform-support:~:text=Browser%20history%20navigation%20is%20expected%20to%20be%20supported%20by%20the%20base%20multiplatform%20Navigation%203%20library%20in%20version%201%2E1%2E0
+   * */
     LaunchedEffect(currentDetailEntry) {
-        val isAtEmpty =
-            currentDetailEntry?.destination?.hasRoute<CollectionNavigation.Empty>() == true
+        val isAtEmpty = currentDetailEntry?.destination?.hasRoute<CollectionNavigation.Empty>() == true
         if (isAtEmpty && onAndroidMobile) {
             scaffoldNavigator.navigateBack(BackNavigationBehavior.PopLatest)
         }
@@ -800,37 +830,63 @@ fun CollectionsScreen(
     }
 }
 
-private val PaneExpansionAnchors = listOf(
-    PaneExpansionAnchor.Proportion(0f),
-    PaneExpansionAnchor.Offset.fromStart(300.dp),
-    PaneExpansionAnchor.Proportion(0.6f)
-)
+private val PaneExpansionAnchors =
+    listOf(
+        PaneExpansionAnchor.Proportion(0f),
+        PaneExpansionAnchor.Offset.fromStart(300.dp),
+        PaneExpansionAnchor.Proportion(0.6f),
+    )
 
 @Composable
 private fun DefaultFolderComponent(
-    name: String, icon: ImageVector, onClick: () -> Unit, isSelected: Boolean
+    name: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    isSelected: Boolean,
 ) {
     Card(
-        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(
-            end = 15.dp, start = 15.dp, top = 15.dp
-        ).wrapContentHeight().fillMaxWidth().clickable(interactionSource = remember {
-            MutableInteractionSource()
-        }, indication = null, onClick = {
-            onClick()
-        }).pressScaleEffect().then(
-            if (isSelected && supportsWideDisplay()) Modifier.border(
-                width = 2.5.dp,
-                color = MaterialTheme.colorScheme.primary,
-                shape = CardDefaults.shape
-            ) else Modifier
-        )
+        modifier =
+        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+            .padding(
+                end = 15.dp,
+                start = 15.dp,
+                top = 15.dp,
+            )
+            .wrapContentHeight()
+            .fillMaxWidth()
+            .clickable(
+                interactionSource =
+                remember {
+                    MutableInteractionSource()
+                },
+                indication = null,
+                onClick = {
+                    onClick()
+                },
+            )
+            .pressScaleEffect()
+            .then(
+                if (isSelected && supportsWideDisplay()) {
+                    Modifier.border(
+                        width = 2.5.dp,
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = CardDefaults.shape,
+                    )
+                } else {
+                    Modifier
+                },
+            ),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
-                modifier = Modifier.padding(20.dp), imageVector = icon, contentDescription = null
+                modifier = Modifier.padding(20.dp),
+                imageVector = icon,
+                contentDescription = null,
             )
             Text(
-                text = name, style = MaterialTheme.typography.titleSmall, fontSize = 16.sp
+                text = name,
+                style = MaterialTheme.typography.titleSmall,
+                fontSize = 16.sp,
             )
         }
     }

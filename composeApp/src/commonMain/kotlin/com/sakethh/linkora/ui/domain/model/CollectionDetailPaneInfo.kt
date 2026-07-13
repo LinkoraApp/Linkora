@@ -15,5 +15,5 @@ data class CollectionDetailPaneInfo(
 
 enum class CollectionType {
     FOLDER,
-    TAG
+    TAG,
 }

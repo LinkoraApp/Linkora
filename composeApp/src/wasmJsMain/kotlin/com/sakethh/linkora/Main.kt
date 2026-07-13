@@ -63,30 +63,32 @@ import org.w3c.dom.Worker
 import org.w3c.dom.set
 
 @OptIn(ExperimentalWasmJsInterop::class)
-private fun createWorker(): Worker =
-    js("""new Worker(new URL("sqlite-wasm-worker/worker.js", import.meta.url))""")
+private fun createWorker(): Worker = js("""new Worker(new URL("sqlite-wasm-worker/worker.js", import.meta.url))""")
 
 private const val SHOW_WEB_NOTICE = "SHOW_WEB_NOTICE"
 
 @OptIn(
     ExperimentalComposeUiApi::class,
     ExperimentalBrowserHistoryApi::class,
-    ExperimentalMaterial3Api::class
+    ExperimentalMaterial3Api::class,
 )
 fun main() {
-
     LinkoraSDK.set(
-        linkoraSdk = LinkoraSDK(
+        linkoraSdk =
+        LinkoraSDK(
             nativeUtils = NativeUtils(),
             fileManager = FileManager(),
             permissionManager = PermissionManager(),
-            localDatabase = Room.databaseBuilder<LocalDatabase>("${LocalDatabase.NAME}.db")
-                .setDriver(WebWorkerSQLiteDriver(createWorker())).build(),
+            localDatabase =
+            Room.databaseBuilder<LocalDatabase>("${LocalDatabase.NAME}.db")
+                .setDriver(WebWorkerSQLiteDriver(createWorker()))
+                .build(),
             platformPreference = PlatformPreference,
             network = Network,
             dataSyncingNotificationService = NativeUtils.DataSyncingNotificationService(),
-            webCapture = NativeUtils.WebCapture()
-        )
+            webCapture = NativeUtils.WebCapture(),
+            webCaptureDatabaseManager = TODO(),
+        ),
     )
 
     MainScope().launch {
@@ -96,49 +98,63 @@ fun main() {
             preferences,
             languageName = preferences.preferredAppLanguageName,
             languageCode = preferences.preferredAppLanguageCode,
-        )?.join()
+        )
+            ?.join()
     }
 
     ComposeViewport {
-        val preferences by DependencyContainer.preferencesRepo.preferencesAsFlow.collectAsStateWithLifecycle()
+        val preferences by
+            DependencyContainer.preferencesRepo.preferencesAsFlow.collectAsStateWithLifecycle()
         val navController = rememberNavController()
         LaunchedEffect(Unit) {
             navController.bindToBrowserNavigation()
         }
         val webNoticeState =
-            rememberModalBottomSheetState(skipPartiallyExpanded = true, confirmValueChange = {
-                if (it == SheetValue.Hidden) {
-                    localStorage.getItem(SHOW_WEB_NOTICE)?.toBooleanStrictOrNull() == false
-                } else {
-                    true
-                }
-            })
+            rememberModalBottomSheetState(
+                skipPartiallyExpanded = true,
+                confirmValueChange = {
+                    if (it == SheetValue.Hidden) {
+                        localStorage.getItem(SHOW_WEB_NOTICE)?.toBooleanStrictOrNull() == false
+                    } else {
+                        true
+                    }
+                },
+            )
         var showWebNoticeState by rememberSaveable {
             mutableStateOf(true)
         }
         val coroutineScope = rememberCoroutineScope()
         CompositionLocalProvider(
             LocalNavController provides navController,
-            LocalFabController provides retain {
-                FabStateController()
-            }, LocalPlatform provides Platform.Web
+            LocalFabController provides
+                retain {
+                    FabStateController()
+                },
+            LocalPlatform provides Platform.Web,
         ) {
             LinkoraTheme(
                 colorScheme = if (preferences.useDarkTheme) DarkColors else LightColors,
-                preferredFont = preferences.selectedFont
+                preferredFont = preferences.selectedFont,
             ) {
                 Surface {
                     App()
 
-                    if (showWebNoticeState && localStorage.getItem(SHOW_WEB_NOTICE)
-                            ?.toBooleanStrictOrNull() != false
+                    if (
+                        showWebNoticeState &&
+                        localStorage.getItem(SHOW_WEB_NOTICE)?.toBooleanStrictOrNull() != false
                     ) {
-                        ModalBottomSheet(sheetState = webNoticeState, onDismissRequest = {
-                            showWebNoticeState = false
-                        }) {
+                        ModalBottomSheet(
+                            sheetState = webNoticeState,
+                            onDismissRequest = {
+                                showWebNoticeState = false
+                            },
+                        ) {
                             Column(
-                                modifier = Modifier.padding(
-                                    start = 15.dp, end = 15.dp, bottom = 7.5.dp
+                                modifier =
+                                Modifier.padding(
+                                    start = 15.dp,
+                                    end = 15.dp,
+                                    bottom = 7.5.dp,
                                 ),
                             ) {
                                 Icon(
@@ -147,40 +163,47 @@ fun main() {
                                 )
                                 Spacer(modifier = Modifier.height(7.5.dp))
                                 Text(
-                                    text = "Room handles database operations on Linkora Web using OPFS, which has strict browser locking limits. " +
-                                            "Room Web is still in early alpha, so the Linkora web port is highly experimental and can be unstable at times. " +
-                                            "It is not recommended for daily use yet, unlike Linkora Android and Desktop. " +
-                                            "If something breaks, please report it on GitHub with your browser version and console logs.",
+                                    text =
+                                    "Room handles database operations on Linkora Web using OPFS, which has strict browser locking limits. " +
+                                        "Room Web is still in early alpha, so the Linkora web port is highly experimental and can be unstable at times. " +
+                                        "It is not recommended for daily use yet, unlike Linkora Android and Desktop. " +
+                                        "If something breaks, please report it on GitHub with your browser version and console logs.",
                                     fontSize = 16.sp,
-                                    style = MaterialTheme.typography.titleSmall
+                                    style = MaterialTheme.typography.titleSmall,
                                 )
                                 Spacer(modifier = Modifier.height(15.dp))
                                 HorizontalDivider(thickness = 1.dp)
                                 Spacer(modifier = Modifier.height(15.dp))
                                 Text(
-                                    text = "Linkora Web relies on a dedicated proxy to fetch images and metadata. Since only one public instance is available, you may encounter issues.\n" +
-                                            "To ensure reliable image display and metadata retrieval, use a self-hosted Linkora proxy. Update your proxy address in the Advanced Settings screen.",
+                                    text =
+                                    "Linkora Web relies on a dedicated proxy to fetch images and metadata. Since only one public instance is available, you may encounter issues.\n" +
+                                        "To ensure reliable image display and metadata retrieval, use a self-hosted Linkora proxy. Update your proxy address in the Advanced Settings screen.",
                                     fontSize = 16.sp,
-                                    style = MaterialTheme.typography.titleSmall
+                                    style = MaterialTheme.typography.titleSmall,
                                 )
                                 Spacer(modifier = Modifier.height(5.dp))
                                 Button(
                                     onClick = {
                                         localStorage.set(
-                                            key = SHOW_WEB_NOTICE, value = "false"
+                                            key = SHOW_WEB_NOTICE,
+                                            value = "false",
                                         )
-                                        coroutineScope.launch {
-                                            webNoticeState.hide()
-                                        }.invokeOnCompletion {
-                                            showWebNoticeState = false
-                                        }
+                                        coroutineScope
+                                            .launch {
+                                                webNoticeState.hide()
+                                            }
+                                            .invokeOnCompletion {
+                                                showWebNoticeState = false
+                                            }
                                     },
-                                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                        .pressScaleEffect().fillMaxWidth()
+                                    modifier =
+                                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                        .pressScaleEffect()
+                                        .fillMaxWidth(),
                                 ) {
                                     Text(
                                         text = "Got It",
-                                        style = MaterialTheme.typography.titleMedium
+                                        style = MaterialTheme.typography.titleMedium,
                                     )
                                 }
                             }
@@ -191,4 +214,3 @@ fun main() {
         }
     }
 }
-

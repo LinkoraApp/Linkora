@@ -69,88 +69,103 @@ import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
 
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun MenuBtmSheet(
     preferences: AppPreferences,
-    menuBtmSheetParam: MenuBtmSheetParam
+    menuBtmSheetParam: MenuBtmSheetParam,
 ) {
     val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(
         menuBtmSheetParam.showProgressBarDuringRemoteSave.value,
-        menuBtmSheetParam.btmModalSheetState.isVisible
+        menuBtmSheetParam.btmModalSheetState.isVisible,
     ) {
-        if (menuBtmSheetParam.showProgressBarDuringRemoteSave.value && !menuBtmSheetParam.btmModalSheetState.isVisible) {
+        if (
+            menuBtmSheetParam.showProgressBarDuringRemoteSave.value &&
+            !menuBtmSheetParam.btmModalSheetState.isVisible
+        ) {
             menuBtmSheetParam.btmModalSheetState.expand()
         }
     }
-    val showNote = rememberSaveable(menuBtmSheetParam.showNote.value) {
-        mutableStateOf(menuBtmSheetParam.showNote.value)
-    }
-    val localClipboard = LocalClipboardManager.current
-    val currentFolder = remember(menuBtmSheetParam.folder) {
-        menuBtmSheetParam.folder
-    }
-    val hideContent: () -> Unit = {
-        coroutineScope.launch {
-            if (menuBtmSheetParam.btmModalSheetState.isVisible) {
-                menuBtmSheetParam.btmModalSheetState.hide()
-            }
-        }.invokeOnCompletion {
-            menuBtmSheetParam.onDismiss()
+    val showNote =
+        rememberSaveable(menuBtmSheetParam.showNote.value) {
+            mutableStateOf(menuBtmSheetParam.showNote.value)
         }
+    val localClipboard = LocalClipboardManager.current
+    val currentFolder =
+        remember(menuBtmSheetParam.folder) {
+            menuBtmSheetParam.folder
+        }
+    val hideContent: () -> Unit = {
+        coroutineScope
+            .launch {
+                if (menuBtmSheetParam.btmModalSheetState.isVisible) {
+                    menuBtmSheetParam.btmModalSheetState.hide()
+                }
+            }
+            .invokeOnCompletion {
+                menuBtmSheetParam.onDismiss()
+            }
     }
     val onAndroidMobile = Platform.Android.onMobile()
     val quickActions: ComposableContent = {
         Row(
             modifier = Modifier.padding(start = 10.dp, end = 10.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             QuickActionItem(
-                shape = RoundedCornerShape(
-                    topStart = 20.dp, topEnd = 8.dp, bottomStart = 20.dp, bottomEnd = 8.dp
+                shape =
+                RoundedCornerShape(
+                    topStart = 20.dp,
+                    topEnd = 8.dp,
+                    bottomStart = 20.dp,
+                    bottomEnd = 8.dp,
                 ),
-                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f)
+                modifier =
+                Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f)
                     .pressScaleEffect(),
                 onClick = {
                     menuBtmSheetParam.onForceLaunchInAnExternalBrowser()
                     hideContent()
                 },
                 text = Localization.Key.Open.rememberLocalizedString(),
-                icon = Icons.Default.OpenInNew
+                icon = Icons.Default.OpenInNew,
             )
-            val lastItemShape = RoundedCornerShape(
-                topStart = 8.dp, topEnd = 20.dp, bottomStart = 8.dp, bottomEnd = 20.dp
-            )
+            val lastItemShape =
+                RoundedCornerShape(
+                    topStart = 8.dp,
+                    topEnd = 20.dp,
+                    bottomStart = 8.dp,
+                    bottomEnd = 20.dp,
+                )
             QuickActionItem(
                 shape = if (onAndroidMobile) RoundedCornerShape(8.dp) else lastItemShape,
-                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f)
+                modifier =
+                Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f)
                     .pressScaleEffect(),
                 onClick = {
                     localClipboard.setText(
-                        AnnotatedString(
-                            text = menuBtmSheetParam.linkTagsPair?.link?.url ?: ""
-                        )
+                        AnnotatedString(text = menuBtmSheetParam.linkTagsPair?.link?.url ?: ""),
                     )
                     hideContent()
                 },
                 text = Localization.Key.Copy.rememberLocalizedString(),
-                icon = Icons.Default.CopyAll
+                icon = Icons.Default.CopyAll,
             )
 
             if (onAndroidMobile) {
                 QuickActionItem(
                     shape = lastItemShape,
-                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f)
+                    modifier =
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f)
                         .pressScaleEffect(),
                     onClick = {
                         menuBtmSheetParam.onShare(menuBtmSheetParam.linkTagsPair!!.link.url)
                         hideContent()
                     },
                     text = Localization.Key.Share.rememberLocalizedString(),
-                    icon = Icons.Default.Share
+                    icon = Icons.Default.Share,
                 )
             }
         }
@@ -162,26 +177,32 @@ fun MenuBtmSheet(
 
     val commonContent: ComposableContent = {
         Column(
-            modifier = if (onAndroidMobile) Modifier else Modifier.verticalScroll(
-                rememberScrollState()
-            )
+            modifier = if (onAndroidMobile) {
+                Modifier
+            } else {
+                Modifier.verticalScroll(
+                    rememberScrollState(),
+                )
+            },
         ) {
             if (onAndroidMobile) {
                 IndividualMenuComponent(
                     onClick = {
-                        coroutineScope.launch {
-                            if (menuBtmSheetParam.btmModalSheetState.isVisible) {
-                                menuBtmSheetParam.btmModalSheetState.hide()
+                        coroutineScope
+                            .launch {
+                                if (menuBtmSheetParam.btmModalSheetState.isVisible) {
+                                    menuBtmSheetParam.btmModalSheetState.hide()
+                                }
                             }
-                        }.invokeOnCompletion {
-                            showNote.value = true
-                            coroutineScope.launch {
-                                menuBtmSheetParam.btmModalSheetState.show()
+                            .invokeOnCompletion {
+                                showNote.value = true
+                                coroutineScope.launch {
+                                    menuBtmSheetParam.btmModalSheetState.show()
+                                }
                             }
-                        }
                     },
                     elementName = Localization.Key.ViewNote.rememberLocalizedString(),
-                    elementImageVector = Icons.AutoMirrored.Outlined.TextSnippet
+                    elementImageVector = Icons.AutoMirrored.Outlined.TextSnippet,
                 )
             }
             IndividualMenuComponent(
@@ -190,23 +211,25 @@ fun MenuBtmSheet(
                     menuBtmSheetParam.onRename()
                 },
                 elementName = Localization.Key.Edit.rememberLocalizedString(),
-                elementImageVector = Icons.Outlined.Edit
+                elementImageVector = Icons.Outlined.Edit,
             )
             if (menuBtmSheetLinkEntries().contains(menuBtmSheetParam.menuBtmSheetFor)) {
                 Row(
-                    modifier = Modifier
-                        .pointerHoverIcon(icon = PointerIcon.Hand)
+                    modifier =
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                         .combinedClickable(
-                            interactionSource = null, indication = null,
+                            interactionSource = null,
+                            indication = null,
                             onClick = {
                                 showRefreshOptions = !showRefreshOptions
-                            })
+                            },
+                        )
                         .pressScaleEffect()
                         .padding(end = 10.dp)
                         .wrapContentHeight()
                         .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     IconButton(
                         modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
@@ -214,11 +237,11 @@ fun MenuBtmSheet(
                         onClick = {
                             showRefreshOptions = !showRefreshOptions
                         },
-                        colors = IconButtonDefaults.filledTonalIconButtonColors()
+                        colors = IconButtonDefaults.filledTonalIconButtonColors(),
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Refresh,
-                            contentDescription = null
+                            contentDescription = null,
                         )
                     }
                     Text(
@@ -227,12 +250,12 @@ fun MenuBtmSheet(
                         fontSize = 16.sp,
                         modifier = Modifier.fillMaxWidth(),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
                 AnimatedVisibility(
                     visible = showRefreshOptions,
-                    modifier = Modifier.padding(start = 30.dp).fillMaxWidth()
+                    modifier = Modifier.padding(start = 30.dp).fillMaxWidth(),
                 ) {
                     Column {
                         RefreshMenuComponent(
@@ -240,21 +263,21 @@ fun MenuBtmSheet(
                             onClick = {
                                 menuBtmSheetParam.onRefresh(RefreshLinkType.Title)
                                 hideContent()
-                            }
+                            },
                         )
                         RefreshMenuComponent(
                             label = Localization.Key.RefreshImageLabel.rememberLocalizedString(),
                             onClick = {
                                 menuBtmSheetParam.onRefresh(RefreshLinkType.Image)
                                 hideContent()
-                            }
+                            },
                         )
                         RefreshMenuComponent(
                             label = Localization.Key.RefreshImageAndTitle.rememberLocalizedString(),
                             onClick = {
                                 menuBtmSheetParam.onRefresh(RefreshLinkType.Both)
                                 hideContent()
-                            }
+                            },
                         )
                     }
                 }
@@ -269,16 +292,23 @@ fun MenuBtmSheet(
                         menuBtmSheetParam.onAddToImportantLinks?.let { it() }
                         hideContent()
                     },
-                    elementName = if (!markedAsImportant) Localization.Key.MarkALinkAsImpLink.getLocalizedString() else Localization.Key.RemoveALinkFromImpLink.getLocalizedString(),
-                    elementImageVector = if (markedAsImportant) Icons.Outlined.DeleteForever else Icons.Outlined.StarOutline
+                    elementName =
+                    if (!markedAsImportant) {
+                        Localization.Key.MarkALinkAsImpLink.getLocalizedString()
+                    } else {
+                        Localization.Key.RemoveALinkFromImpLink.getLocalizedString()
+                    },
+                    elementImageVector =
+                    if (markedAsImportant) Icons.Outlined.DeleteForever else Icons.Outlined.StarOutline,
                 )
             }
 
-            val isArchived = if (menuBtmSheetParam.menuBtmSheetFor is MenuBtmSheetType.Folder) {
-                currentFolder!!.isArchived
-            } else {
-                menuBtmSheetParam.linkTagsPair!!.link.linkType == LinkType.ARCHIVE_LINK
-            }
+            val isArchived =
+                if (menuBtmSheetParam.menuBtmSheetFor is MenuBtmSheetType.Folder) {
+                    currentFolder!!.isArchived
+                } else {
+                    menuBtmSheetParam.linkTagsPair!!.link.linkType == LinkType.ARCHIVE_LINK
+                }
             val inChildFolder = currentFolder != null && currentFolder.parentFolderId != null
 
             if (!inChildFolder) {
@@ -287,14 +317,26 @@ fun MenuBtmSheet(
                         menuBtmSheetParam.onArchive()
                         hideContent()
                     },
-                    elementName = if (isArchived) Localization.Key.UnArchive.getLocalizedString() else Localization.Key.Archive.getLocalizedString(),
-                    elementImageVector = if (isArchived) Icons.Outlined.Unarchive else Icons.Outlined.Archive
+                    elementName =
+                    if (isArchived) {
+                        Localization.Key.UnArchive.getLocalizedString()
+                    } else {
+                        Localization.Key.Archive.getLocalizedString()
+                    },
+                    elementImageVector =
+                    if (isArchived) Icons.Outlined.Unarchive else Icons.Outlined.Archive,
                 )
             }
 
-            if (menuBtmSheetLinkEntries().contains(menuBtmSheetParam.menuBtmSheetFor) && menuBtmSheetParam.linkTagsPair!!.link.note.isNotBlank() || menuBtmSheetFolderEntries().contains(
-                    menuBtmSheetParam.menuBtmSheetFor
-                ) && currentFolder!!.note.isNotBlank()
+            if (
+                (
+                    menuBtmSheetLinkEntries().contains(menuBtmSheetParam.menuBtmSheetFor) &&
+                        menuBtmSheetParam.linkTagsPair!!.link.note.isNotBlank()
+                    ) ||
+                (
+                    menuBtmSheetFolderEntries().contains(menuBtmSheetParam.menuBtmSheetFor) &&
+                        currentFolder!!.note.isNotBlank()
+                    )
             ) {
                 IndividualMenuComponent(
                     onClick = {
@@ -302,28 +344,48 @@ fun MenuBtmSheet(
                         hideContent()
                     },
                     elementName = Localization.Key.DeleteTheNote.rememberLocalizedString(),
-                    elementImageVector = Icons.Outlined.Delete
+                    elementImageVector = Icons.Outlined.Delete,
                 )
             }
             if (menuBtmSheetParam.menuBtmSheetFor != MenuBtmSheetType.Link.ImportantLink) {
                 IndividualMenuComponent(
                     onClick = {
                         menuBtmSheetParam.onDelete()
-                        coroutineScope.launch {
-                            if (menuBtmSheetParam.btmModalSheetState.isVisible) {
-                                menuBtmSheetParam.btmModalSheetState.hide()
+                        coroutineScope
+                            .launch {
+                                if (menuBtmSheetParam.btmModalSheetState.isVisible) {
+                                    menuBtmSheetParam.btmModalSheetState.hide()
+                                }
                             }
-                        }.invokeOnCompletion {
-                            menuBtmSheetParam.onDismiss()
-                        }
+                            .invokeOnCompletion {
+                                menuBtmSheetParam.onDismiss()
+                            }
                     },
-                    elementName = if (menuBtmSheetParam.menuBtmSheetFor == MenuBtmSheetType.Folder.RegularFolder) Localization.Key.DeleteTheFolder.rememberLocalizedString() else Localization.Key.DeleteTheLink.rememberLocalizedString(),
-                    elementImageVector = if (menuBtmSheetParam.menuBtmSheetFor == MenuBtmSheetType.Folder.RegularFolder) Icons.Outlined.FolderDelete else Icons.Outlined.DeleteForever
+                    elementName =
+                    if (menuBtmSheetParam.menuBtmSheetFor == MenuBtmSheetType.Folder.RegularFolder) {
+                        Localization.Key.DeleteTheFolder.rememberLocalizedString()
+                    } else {
+                        Localization.Key.DeleteTheLink.rememberLocalizedString()
+                    },
+                    elementImageVector =
+                    if (menuBtmSheetParam.menuBtmSheetFor == MenuBtmSheetType.Folder.RegularFolder) {
+                        Icons.Outlined.FolderDelete
+                    } else {
+                        Icons.Outlined.DeleteForever
+                    },
                 )
             }
-            if ((onAndroidMobile && preferences.selectedLinkLayout in listOf(
-                    Layout.STAGGERED_VIEW.name, Layout.GRID_VIEW.name
-                ) && menuBtmSheetParam.menuBtmSheetFor in menuBtmSheetLinkEntries()) || (!onAndroidMobile && menuBtmSheetParam.menuBtmSheetFor in menuBtmSheetLinkEntries())
+            if (
+                (
+                    onAndroidMobile &&
+                        preferences.selectedLinkLayout in
+                        listOf(
+                            Layout.STAGGERED_VIEW.name,
+                            Layout.GRID_VIEW.name,
+                        ) &&
+                        menuBtmSheetParam.menuBtmSheetFor in menuBtmSheetLinkEntries()
+                    ) ||
+                (!onAndroidMobile && menuBtmSheetParam.menuBtmSheetFor in menuBtmSheetLinkEntries())
             ) {
                 quickActions()
             }
@@ -333,7 +395,11 @@ fun MenuBtmSheet(
         }
     }
     ModalBottomSheet(
-        properties = ModalBottomSheetProperties(shouldDismissOnBackPress = menuBtmSheetParam.showProgressBarDuringRemoteSave.value.not()),
+        properties =
+        ModalBottomSheetProperties(
+            shouldDismissOnBackPress =
+            menuBtmSheetParam.showProgressBarDuringRemoteSave.value.not(),
+        ),
         onDismissRequest = {
             if (menuBtmSheetParam.showProgressBarDuringRemoteSave.value) return@ModalBottomSheet
             hideContent()
@@ -344,16 +410,24 @@ fun MenuBtmSheet(
             }
         },
         sheetState = menuBtmSheetParam.btmModalSheetState,
-        shape = if (menuBtmSheetParam.showProgressBarDuringRemoteSave.value && onAndroidMobile) RectangleShape else BottomSheetDefaults.ExpandedShape
+        shape =
+        if (menuBtmSheetParam.showProgressBarDuringRemoteSave.value && onAndroidMobile) {
+            RectangleShape
+        } else {
+            BottomSheetDefaults.ExpandedShape
+        },
     ) {
         if (menuBtmSheetParam.showProgressBarDuringRemoteSave.value) {
             Column(
-                modifier = Modifier.fillMaxWidthWithPadding().bottomNavPaddingAcrossPlatforms()
+                modifier = Modifier.fillMaxWidthWithPadding().bottomNavPaddingAcrossPlatforms(),
             ) {
                 Spacer(modifier = Modifier.height(15.dp))
                 Text(
-                    text = Localization.rememberLocalizedString(Localization.Key.UpdatingChangesOnRemoteServer),
-                    style = MaterialTheme.typography.titleLarge
+                    text =
+                    Localization.rememberLocalizedString(
+                        Localization.Key.UpdatingChangesOnRemoteServer,
+                    ),
+                    style = MaterialTheme.typography.titleLarge,
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
@@ -372,11 +446,11 @@ fun MenuBtmSheet(
         } else {
             NonMobileMenu(
                 preferences,
-                menuBtmSheetParam, menuBtmSheetParam.linkTagsPair!!, currentFolder, commonContent
+                menuBtmSheetParam,
+                menuBtmSheetParam.linkTagsPair!!,
+                currentFolder,
+                commonContent,
             )
         }
     }
 }
-
-
-

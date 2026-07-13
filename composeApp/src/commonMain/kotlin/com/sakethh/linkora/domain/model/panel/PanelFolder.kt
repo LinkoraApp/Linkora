@@ -14,5 +14,5 @@ data class PanelFolder(
     val panelPosition: Long,
     val folderName: String,
     val connectedPanelId: Long,
-    val lastModified: Long = getSystemEpochSeconds()
+    val lastModified: Long = getSystemEpochSeconds(),
 )

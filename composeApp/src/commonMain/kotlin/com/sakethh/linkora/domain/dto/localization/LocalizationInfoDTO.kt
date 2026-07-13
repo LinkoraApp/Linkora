@@ -7,5 +7,5 @@ data class LocalizationInfoDTO(
     val availableLanguages: List<AvailableLanguageDTO>,
     val totalAvailableLanguages: Int,
     val totalStrings: Int,
-    val lastUpdatedOn: String
+    val lastUpdatedOn: String,
 )

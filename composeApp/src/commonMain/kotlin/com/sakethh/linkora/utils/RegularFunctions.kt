@@ -33,14 +33,13 @@ import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
-fun <T> wrappedResultFlow(init: suspend (SendChannel<Result<T>>) -> T): Flow<Result<T>> {
-    return channelFlow {
-        send(Result.Loading())
-        init(this.channel).let {
-            send(Result.Success(it))
-        }
-    }.catchAsExceptionAndEmitFailure()
+fun <T> wrappedResultFlow(init: suspend (SendChannel<Result<T>>) -> T): Flow<Result<T>> = channelFlow {
+    send(Result.Loading())
+    init(this.channel).let {
+        send(Result.Success(it))
+    }
 }
+    .catchAsExceptionAndEmitFailure()
 
 fun defaultSavedLinksFolder(): Folder = Folder(
     name = Localization.Key.SavedLinks.getLocalizedString(),
@@ -48,7 +47,7 @@ fun defaultSavedLinksFolder(): Folder = Folder(
     parentFolderId = null,
     localId = Constants.SAVED_LINKS_ID,
     remoteId = null,
-    isArchived = false
+    isArchived = false,
 )
 
 fun defaultImpLinksFolder(): Folder = Folder(
@@ -57,7 +56,7 @@ fun defaultImpLinksFolder(): Folder = Folder(
     parentFolderId = null,
     localId = Constants.IMPORTANT_LINKS_ID,
     remoteId = null,
-    isArchived = false
+    isArchived = false,
 )
 
 fun <T1, T2, T3, T4, T5, T6, T7, M> septetCombine(
@@ -68,12 +67,19 @@ fun <T1, T2, T3, T4, T5, T6, T7, M> septetCombine(
     flow5: Flow<T5>,
     flow6: Flow<T6>,
     flow7: Flow<T7>,
-    transform: suspend (T1, T2, T3, T4, T5, T6, T7) -> M
+    transform: suspend (T1, T2, T3, T4, T5, T6, T7) -> M,
 ): Flow<M> = combine(
-    combine(flow, flow2, flow3, ::Triple), combine(flow4, flow5, flow6, flow7, ::Quadruple)
+    combine(flow, flow2, flow3, ::Triple),
+    combine(flow4, flow5, flow6, flow7, ::Quadruple),
 ) { t1, t2 ->
     transform(
-        t1.first, t1.second, t1.third, t2.first, t2.second, t2.third, t2.fourth
+        t1.first,
+        t1.second,
+        t1.third,
+        t2.first,
+        t2.second,
+        t2.third,
+        t2.fourth,
     )
 }
 
@@ -84,12 +90,18 @@ fun <T1, T2, T3, T4, T5, T6, M> hexadCombine(
     flow4: Flow<T4>,
     flow5: Flow<T5>,
     flow6: Flow<T6>,
-    transform: suspend (T1, T2, T3, T4, T5, T6) -> M
+    transform: suspend (T1, T2, T3, T4, T5, T6) -> M,
 ): Flow<M> = combine(
-    combine(flow, flow2, flow3, ::Triple), combine(flow4, flow5, flow6, ::Triple)
+    combine(flow, flow2, flow3, ::Triple),
+    combine(flow4, flow5, flow6, ::Triple),
 ) { t1, t2 ->
     transform(
-        t1.first, t1.second, t1.third, t2.first, t2.second, t2.third
+        t1.first,
+        t1.second,
+        t1.third,
+        t2.first,
+        t2.second,
+        t2.third,
     )
 }
 
@@ -99,37 +111,41 @@ inline fun <reified OutgoingBody, reified IncomingBody> postFlow(
     crossinline authToken: suspend () -> String,
     endPoint: String,
     outgoingBody: OutgoingBody,
-    contentType: ContentType = ContentType.Application.Json
-): Flow<Result<IncomingBody>> {
-    return flow {
-        emit(Result.Loading())
-        syncServerClient().post(baseUrl() + endPoint) {
+    contentType: ContentType = ContentType.Application.Json,
+): Flow<Result<IncomingBody>> = flow {
+    emit(Result.Loading())
+    syncServerClient()
+        .post(baseUrl() + endPoint) {
             bearerAuth(authToken())
             contentType(contentType)
             setBody(outgoingBody)
-        }.handleResponseBody<IncomingBody>().run {
+        }
+        .handleResponseBody<IncomingBody>()
+        .run {
             emit(this)
         }
-    }.catchAsExceptionAndEmitFailure()
 }
+    .catchAsExceptionAndEmitFailure()
 
 inline fun <reified IncomingBody> getFlow(
     crossinline syncServerClient: () -> HttpClient,
     crossinline baseUrl: suspend () -> String,
     crossinline authToken: suspend () -> String,
     endPoint: String,
-    contentType: ContentType = ContentType.Application.Json
-): Flow<Result<IncomingBody>> {
-    return flow {
-        emit(Result.Loading())
-        syncServerClient().get(baseUrl() + endPoint) {
+    contentType: ContentType = ContentType.Application.Json,
+): Flow<Result<IncomingBody>> = flow {
+    emit(Result.Loading())
+    syncServerClient()
+        .get(baseUrl() + endPoint) {
             bearerAuth(authToken())
             contentType(contentType)
-        }.handleResponseBody<IncomingBody>().run {
+        }
+        .handleResponseBody<IncomingBody>()
+        .run {
             emit(this)
         }
-    }.catchAsExceptionAndEmitFailure()
 }
+    .catchAsExceptionAndEmitFailure()
 
 fun <LocalType, RemoteType> performLocalOperationWithRemoteSyncFlow(
     performRemoteOperation: Boolean,
@@ -137,31 +153,30 @@ fun <LocalType, RemoteType> performLocalOperationWithRemoteSyncFlow(
     remoteOperation: suspend () -> Flow<Result<RemoteType>> = { emptyFlow() },
     remoteOperationOnSuccess: suspend (RemoteType) -> Unit = {},
     onRemoteOperationFailure: suspend () -> Unit = {},
-    localOperation: suspend () -> LocalType
-): Flow<Result<LocalType>> {
-    return flow {
-        emit(Result.Loading())
-        val localResult = localOperation()
-        Result.Success(localResult).let { success ->
-            if (performRemoteOperation && canPushToServer()) {
-                remoteOperation().collect { remoteResult ->
-                    remoteResult.onFailure { failureMessage ->
-                        success.isRemoteExecutionSuccessful = false
-                        success.remoteFailureMessage = failureMessage
-                        onRemoteOperationFailure()
-                    }
-                    remoteResult.onSuccess {
-                        remoteOperationOnSuccess(it.data)
-                    }
+    localOperation: suspend () -> LocalType,
+): Flow<Result<LocalType>> = flow {
+    emit(Result.Loading())
+    val localResult = localOperation()
+    Result.Success(localResult).let { success ->
+        if (performRemoteOperation && canPushToServer()) {
+            remoteOperation().collect { remoteResult ->
+                remoteResult.onFailure { failureMessage ->
+                    success.isRemoteExecutionSuccessful = false
+                    success.remoteFailureMessage = failureMessage
+                    onRemoteOperationFailure()
+                }
+                remoteResult.onSuccess {
+                    remoteOperationOnSuccess(it.data)
                 }
             }
-            emit(success)
         }
-    }.catch {
+        emit(success)
+    }
+}
+    .catch {
         it.printStackTrace()
         emit(Result.Failure(message = it.message.toString()))
     }
-}
 
 fun defaultFolderIds(): List<Long> = listOf(
     Constants.SAVED_LINKS_ID,
@@ -169,11 +184,10 @@ fun defaultFolderIds(): List<Long> = listOf(
     Constants.ARCHIVE_ID,
     Constants.ALL_LINKS_ID,
     Constants.HISTORY_ID,
-    Constants.DEFAULT_PANELS_ID
+    Constants.DEFAULT_PANELS_ID,
 )
 
 fun getVideoPlatformBaseUrls(): List<String> = listOf("youtube.com", "youtu.be")
-
 
 @OptIn(ExperimentalTime::class)
 fun getSystemEpochSeconds() = Clock.System.now().epochSeconds
@@ -181,23 +195,20 @@ fun getSystemEpochSeconds() = Clock.System.now().epochSeconds
 @OptIn(ExperimentalTime::class)
 fun epochToReadableDateTime(
     epochSeconds: Long,
-    timeZone: TimeZone = TimeZone.currentSystemDefault()
-): String? {
-    return try {
-        Instant.fromEpochSeconds(epochSeconds).toLocalDateTime(timeZone)
-            .run {
-                "${"${this.date.day}".addZeroAtPrefixOnInt()} ${
-                    month.name.initialCaps()
-                } ${this.year}, ${
-                    "${
-                        (if (this.time.hour > 12) time.hour - 12 else time.hour)
-                    }".addZeroAtPrefixOnInt()
-                }:${"${this.time.minute}".addZeroAtPrefixOnInt()}:${"${this.time.second}".addZeroAtPrefixOnInt()} ${if (this.time.hour > 11) "PM" else "AM"}"
-            }
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
+    timeZone: TimeZone = TimeZone.currentSystemDefault(),
+): String? = try {
+    Instant.fromEpochSeconds(epochSeconds).toLocalDateTime(timeZone).run {
+        "${"${this.date.day}".addZeroAtPrefixOnInt()} ${
+            month.name.initialCaps()
+        } ${this.year}, ${
+            "${
+                (if (this.time.hour > 12) time.hour - 12 else time.hour)
+            }".addZeroAtPrefixOnInt()
+        }:${"${this.time.minute}".addZeroAtPrefixOnInt()}:${"${this.time.second}".addZeroAtPrefixOnInt()} ${if (this.time.hour > 11) "PM" else "AM"}"
     }
+} catch (e: Exception) {
+    e.printStackTrace()
+    null
 }
 
 fun longPreferencesKey(key: String) = PreferenceKey.LongPreferencesKey(key)
@@ -208,12 +219,9 @@ fun stringPreferencesKey(key: String) = PreferenceKey.StringPreferencesKey(key)
 
 fun booleanPreferencesKey(key: String) = PreferenceKey.BooleanPreferencesKey(key)
 
-
 @Composable
-fun supportsWideDisplay(): Boolean {
-    return with(LocalDensity.current) {
-        LocalWindowInfo.current.containerSize.width.toDp() > 840.dp
-    }
+fun supportsWideDisplay(): Boolean = with(LocalDensity.current) {
+    LocalWindowInfo.current.containerSize.width.toDp() > 840.dp
 }
 
 suspend fun UriHandler.openUriOrNotify(uri: String) {
@@ -221,6 +229,8 @@ suspend fun UriHandler.openUriOrNotify(uri: String) {
         openUri(uri)
     } catch (e: Exception) {
         e.printStackTrace()
-        UIEvent.pushUIEvent(UIEvent.Type.ShowSnackbar("Couldn't open link, make sure you have a browser installed."))
+        UIEvent.pushUIEvent(
+            UIEvent.Type.ShowSnackbar("Couldn't open link, make sure you have a browser installed."),
+        )
     }
 }

@@ -7,5 +7,5 @@ import androidx.room3.PrimaryKey
 data class PendingSyncQueue(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val operation: String,
-    val payload: String
+    val payload: String,
 )

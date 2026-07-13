@@ -11,5 +11,5 @@ data class Panel(
     @PrimaryKey(autoGenerate = true) val localId: Long = 0,
     val panelName: String,
     val remoteId: Long? = null,
-    val lastModified: Long = getSystemEpochSeconds()
+    val lastModified: Long = getSystemEpochSeconds(),
 )

@@ -37,13 +37,13 @@ import kotlinx.coroutines.launch
 fun NewVersionUpdateBtmContent(
     modalBtmSheetState: SheetState,
     shouldBtmModalSheetBeVisible: MutableState<Boolean>,
-    latestVersion: String, urlOfLatestReleasePage: String, tagName: String
+    latestVersion: String,
+    urlOfLatestReleasePage: String,
+    tagName: String,
 ) {
     val uriHandler = LocalUriHandler.current
     val coroutineScope = rememberCoroutineScope()
-    LazyColumn(
-        modifier = Modifier.fillMaxWidth().wrapContentHeight()
-    ) {
+    LazyColumn(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
         item {
             Text(
                 text = Localization.Key.NewUpdateIsAvailable.rememberLocalizedString(),
@@ -51,20 +51,21 @@ fun NewVersionUpdateBtmContent(
                 fontSize = 24.sp,
                 textAlign = TextAlign.Start,
                 lineHeight = 32.sp,
-                modifier = Modifier.padding(start = 20.dp, end = 20.dp)
+                modifier = Modifier.padding(start = 20.dp, end = 20.dp),
             )
         }
         item {
             VersionCardForBtmSheetContent(
                 title = Localization.Key.CurrentVersion.rememberLocalizedString(),
-                value = Constants.APP_VERSION_NAME
+                value = Constants.APP_VERSION_NAME,
             )
         }
         item {
             VersionCardForBtmSheetContent(
-                title = Localization.Key.LatestVersionAvailableDesc.rememberLocalizedString()
+                title =
+                Localization.Key.LatestVersionAvailableDesc.rememberLocalizedString()
                     .replace(LinkoraPlaceHolder.First.value, tagName.substringBefore("-")),
-                value = latestVersion
+                value = latestVersion,
             )
         }
         item {
@@ -72,26 +73,33 @@ fun NewVersionUpdateBtmContent(
         }
         item {
             Button(
-                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(start = 20.dp, end = 20.dp).fillMaxWidth()
-                    .pressScaleEffect(), onClick = {
-                    coroutineScope.launch {
-                        if (modalBtmSheetState.isVisible) {
-                            modalBtmSheetState.hide()
+                modifier =
+                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                    .padding(start = 20.dp, end = 20.dp)
+                    .fillMaxWidth()
+                    .pressScaleEffect(),
+                onClick = {
+                    coroutineScope
+                        .launch {
+                            if (modalBtmSheetState.isVisible) {
+                                modalBtmSheetState.hide()
+                            }
                         }
-                    }.invokeOnCompletion {
-                        shouldBtmModalSheetBeVisible.value = false
-                    }
+                        .invokeOnCompletion {
+                            shouldBtmModalSheetBeVisible.value = false
+                        }
                     coroutineScope.launch {
                         uriHandler.openUriOrNotify(urlOfLatestReleasePage)
                     }
-                }) {
+                },
+            ) {
                 Text(
                     text = Localization.Key.RedirectToLatestReleasePage.rememberLocalizedString(),
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 16.sp,
                     textAlign = TextAlign.Center,
                     lineHeight = 18.sp,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }
@@ -105,7 +113,7 @@ fun NewVersionUpdateBtmContent(
 private fun VersionCardForBtmSheetContent(title: String, value: String) {
     Card(
         shape = RoundedCornerShape(10.dp),
-        modifier = Modifier.padding(top = 20.dp, start = 20.dp, end = 20.dp).fillMaxWidth()
+        modifier = Modifier.padding(top = 20.dp, start = 20.dp, end = 20.dp).fillMaxWidth(),
     ) {
         Text(
             text = title,
@@ -113,14 +121,14 @@ private fun VersionCardForBtmSheetContent(title: String, value: String) {
             fontSize = 16.sp,
             textAlign = TextAlign.Start,
             lineHeight = 18.sp,
-            modifier = Modifier.padding(20.dp)
+            modifier = Modifier.padding(20.dp),
         )
         Text(
             text = value,
             style = MaterialTheme.typography.titleMedium,
             fontSize = 18.sp,
             textAlign = TextAlign.Start,
-            modifier = Modifier.padding(start = 20.dp, bottom = 20.dp, end = 20.dp)
+            modifier = Modifier.padding(start = 20.dp, bottom = 20.dp, end = 20.dp),
         )
     }
 }

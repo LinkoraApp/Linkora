@@ -13,211 +13,290 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class PreferencesImpl(
-    private val platformPreference: PlatformPreference
+    private val platformPreference: PlatformPreference,
 ) : PreferencesRepository {
-
     private val _preferences = MutableStateFlow(AppPreferences())
     override val preferencesAsFlow: StateFlow<AppPreferences> = _preferences.asStateFlow()
 
-    override fun getPreferences(): AppPreferences {
-        return _preferences.value
-    }
+    override fun getPreferences(): AppPreferences = _preferences.value
 
     override suspend fun loadPersistedPreferences() {
         _preferences.value = platformPreference.readAllPreferences()
     }
 
     override suspend fun <T> changePreferenceValue(
-        preferenceKey: PreferenceKey<T>, newValue: T
+        preferenceKey: PreferenceKey<T>,
+        newValue: T,
     ) {
         platformPreference.writePreferenceValue(
-            preferenceKey = preferenceKey, newValue = newValue
+            preferenceKey = preferenceKey,
+            newValue = newValue,
         )
         updateStateMemory(preferenceKey, newValue)
     }
 
-    override suspend fun <T> readPreferenceValue(
-        preferenceKey: PreferenceKey<T>,
-    ): T? {
-        return platformPreference.readPreferenceValue(
-            preferenceKey = preferenceKey
-        )
-    }
+    override suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T? = platformPreference.readPreferenceValue(
+        preferenceKey = preferenceKey,
+    )
 
     @Suppress("UNCHECKED_CAST")
-    private fun <T> updateStateMemory(key: PreferenceKey<T>, value: T) {
+    private fun <T> updateStateMemory(
+        key: PreferenceKey<T>,
+        value: T,
+    ) {
         _preferences.update { currentPref ->
             when (key) {
                 AppPreferences.DARK_THEME -> currentPref.copy(useDarkTheme = value as Boolean)
+
                 AppPreferences.FOLLOW_SYSTEM_THEME -> currentPref.copy(useSystemTheme = value as Boolean)
+
                 AppPreferences.AMOLED_THEME_STATE -> currentPref.copy(useAmoledTheme = value as Boolean)
+
                 AppPreferences.DYNAMIC_THEMING -> currentPref.copy(useDynamicTheming = value as Boolean)
-                AppPreferences.AUTO_DETECT_TITLE_FOR_LINK -> currentPref.copy(
-                    isAutoDetectTitleForLinksEnabled = value as Boolean
-                )
 
-                AppPreferences.ASSOCIATED_IMAGES_IN_LINK_MENU_VISIBILITY -> currentPref.copy(
-                    showAssociatedImageInLinkMenu = value as Boolean
-                )
-
-                AppPreferences.HOME_SCREEN_VISIBILITY -> currentPref.copy(isHomeScreenEnabled = value as Boolean)
-                AppPreferences.USE_REMOTE_LANGUAGE_STRINGS -> currentPref.copy(useRemoteStrings = value as Boolean)
-                AppPreferences.SORTING_PREFERENCE -> currentPref.copy(selectedSortingType = value as String)
-                AppPreferences.JSOUP_USER_AGENT -> currentPref.copy(primaryJsoupUserAgent = value as String)
-                AppPreferences.LOCALIZATION_SERVER_URL -> currentPref.copy(localizationServerURL = value as String)
-                AppPreferences.APP_LANGUAGE_NAME -> currentPref.copy(preferredAppLanguageName = value as String)
-                AppPreferences.APP_LANGUAGE_CODE -> currentPref.copy(preferredAppLanguageCode = value as String)
-                AppPreferences.CURRENTLY_SELECTED_LINK_VIEW -> currentPref.copy(selectedLinkLayout = value as String)
-                AppPreferences.TITLE_VISIBILITY_FOR_NON_LIST_VIEWS -> currentPref.copy(
-                    showTitleInLinkGridView = value as Boolean
-                )
-
-                AppPreferences.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS -> currentPref.copy(
-                    showHostInLinkListView = value as Boolean
-                )
-
-                AppPreferences.FADED_EDGE_VISIBILITY_FOR_NON_LIST_VIEWS -> currentPref.copy(
-                    enableFadedEdgeForNonListViews = value as Boolean
-                )
-
-                AppPreferences.FORCE_SAVE_WITHOUT_FETCHING_META_DATA -> currentPref.copy(
-                    forceSaveWithoutFetchingAnyMetaData = value as Boolean
-                )
-
-                AppPreferences.SKIP_SAVING_EXISTING_LINK -> currentPref.copy(skipSavingExistingLink = value as Boolean)
-                AppPreferences.USE_PROXY -> currentPref.copy(useProxy = value as Boolean)
-                AppPreferences.PROXY_URL -> currentPref.copy(proxyUrl = value as String)
-                AppPreferences.INITIAL_ROUTE -> currentPref.copy(startDestination = value as String)
-                AppPreferences.SERVER_URL -> currentPref.copy(serverBaseUrl = value as String)
-                AppPreferences.SERVER_AUTH_TOKEN -> currentPref.copy(serverSecurityToken = value as String)
-                AppPreferences.SERVER_SYNC_TYPE -> currentPref.copy(
-                    serverSyncType = SyncType.valueOf(
-                        value as String
+                AppPreferences.AUTO_DETECT_TITLE_FOR_LINK ->
+                    currentPref.copy(
+                        isAutoDetectTitleForLinksEnabled = value as Boolean,
                     )
-                )
 
-                AppPreferences.DESKTOP_TOP_DECORATOR -> currentPref.copy(
-                    useLinkoraTopDecoratorOnDesktop = value as Boolean
-                )
+                AppPreferences.ASSOCIATED_IMAGES_IN_LINK_MENU_VISIBILITY ->
+                    currentPref.copy(
+                        showAssociatedImageInLinkMenu = value as Boolean,
+                    )
 
-                AppPreferences.CURRENT_WORK_MANAGER_WORK_UUID -> currentPref.copy(
-                    refreshLinksWorkerTag = value as String
-                )
+                AppPreferences.HOME_SCREEN_VISIBILITY ->
+                    currentPref.copy(isHomeScreenEnabled = value as Boolean)
 
-                AppPreferences.SHOW_VIDEO_TAG_IF_APPLICABLE -> currentPref.copy(
-                    showVideoTagOnUIIfApplicable = value as Boolean
-                )
+                AppPreferences.USE_REMOTE_LANGUAGE_STRINGS ->
+                    currentPref.copy(useRemoteStrings = value as Boolean)
+
+                AppPreferences.SORTING_PREFERENCE -> currentPref.copy(selectedSortingType = value as String)
+
+                AppPreferences.JSOUP_USER_AGENT -> currentPref.copy(primaryJsoupUserAgent = value as String)
+
+                AppPreferences.LOCALIZATION_SERVER_URL ->
+                    currentPref.copy(localizationServerURL = value as String)
+
+                AppPreferences.APP_LANGUAGE_NAME ->
+                    currentPref.copy(preferredAppLanguageName = value as String)
+
+                AppPreferences.APP_LANGUAGE_CODE ->
+                    currentPref.copy(preferredAppLanguageCode = value as String)
+
+                AppPreferences.CURRENTLY_SELECTED_LINK_VIEW ->
+                    currentPref.copy(selectedLinkLayout = value as String)
+
+                AppPreferences.TITLE_VISIBILITY_FOR_NON_LIST_VIEWS ->
+                    currentPref.copy(
+                        showTitleInLinkGridView = value as Boolean,
+                    )
+
+                AppPreferences.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS ->
+                    currentPref.copy(
+                        showHostInLinkListView = value as Boolean,
+                    )
+
+                AppPreferences.FADED_EDGE_VISIBILITY_FOR_NON_LIST_VIEWS ->
+                    currentPref.copy(
+                        enableFadedEdgeForNonListViews = value as Boolean,
+                    )
+
+                AppPreferences.FORCE_SAVE_WITHOUT_FETCHING_META_DATA ->
+                    currentPref.copy(
+                        forceSaveWithoutFetchingAnyMetaData = value as Boolean,
+                    )
+
+                AppPreferences.SKIP_SAVING_EXISTING_LINK ->
+                    currentPref.copy(skipSavingExistingLink = value as Boolean)
+
+                AppPreferences.USE_PROXY -> currentPref.copy(useProxy = value as Boolean)
+
+                AppPreferences.PROXY_URL -> currentPref.copy(proxyUrl = value as String)
+
+                AppPreferences.INITIAL_ROUTE -> currentPref.copy(startDestination = value as String)
+
+                AppPreferences.SERVER_URL -> currentPref.copy(serverBaseUrl = value as String)
+
+                AppPreferences.SERVER_AUTH_TOKEN -> currentPref.copy(serverSecurityToken = value as String)
+
+                AppPreferences.SERVER_SYNC_TYPE ->
+                    currentPref.copy(
+                        serverSyncType =
+                        SyncType.valueOf(
+                            value as String,
+                        ),
+                    )
+
+                AppPreferences.DESKTOP_TOP_DECORATOR ->
+                    currentPref.copy(
+                        useLinkoraTopDecoratorOnDesktop = value as Boolean,
+                    )
+
+                AppPreferences.CURRENT_WORK_MANAGER_WORK_UUID ->
+                    currentPref.copy(
+                        refreshLinksWorkerTag = value as String,
+                    )
+
+                AppPreferences.SHOW_VIDEO_TAG_IF_APPLICABLE ->
+                    currentPref.copy(
+                        showVideoTagOnUIIfApplicable = value as Boolean,
+                    )
 
                 AppPreferences.FORCE_SHUFFLE_LINKS -> currentPref.copy(forceShuffleLinks = value as Boolean)
-                AppPreferences.NOTE_VISIBILITY_IN_LIST_VIEWS -> currentPref.copy(showNoteInLinkView = value as Boolean)
-                AppPreferences.SHOW_DATE_IN_LINK_VIEW -> currentPref.copy(showDateInLinkView = value as Boolean)
-                AppPreferences.SHOW_TAGS_IN_LINK_VIEW -> currentPref.copy(showTagsInLinkView = value as Boolean)
+
+                AppPreferences.NOTE_VISIBILITY_IN_LIST_VIEWS ->
+                    currentPref.copy(showNoteInLinkView = value as Boolean)
+
+                AppPreferences.SHOW_DATE_IN_LINK_VIEW ->
+                    currentPref.copy(showDateInLinkView = value as Boolean)
+
+                AppPreferences.SHOW_TAGS_IN_LINK_VIEW ->
+                    currentPref.copy(showTagsInLinkView = value as Boolean)
+
                 AppPreferences.USE_SNAPSHOTS -> currentPref.copy(areSnapshotsEnabled = value as Boolean)
-                AppPreferences.SNAPSHOTS_EXPORT_TYPE -> currentPref.copy(snapshotExportFormatID = value as String)
-                AppPreferences.SKIP_CERT_CHECK_FOR_SYNC_SERVER -> currentPref.copy(
-                    skipCertCheckForSync = value as Boolean
-                )
+
+                AppPreferences.SNAPSHOTS_EXPORT_TYPE ->
+                    currentPref.copy(snapshotExportFormatID = value as String)
+
+                AppPreferences.SKIP_CERT_CHECK_FOR_SYNC_SERVER ->
+                    currentPref.copy(
+                        skipCertCheckForSync = value as Boolean,
+                    )
 
                 AppPreferences.EXPORT_LOCATION -> currentPref.copy(currentExportLocation = value as String)
+
                 AppPreferences.BACKUP_LOCATION -> currentPref.copy(currentBackupLocation = value as String)
-                AppPreferences.BACKUP_AUTO_DELETION_THRESHOLD -> currentPref.copy(
-                    backupAutoDeleteThreshold = value as Int
-                )
 
-                AppPreferences.BACKUP_AUTO_DELETION_ENABLED -> currentPref.copy(
-                    backupAutoDeletionEnabled = value as Boolean
-                )
-
-                AppPreferences.COLLECTION_SOURCE_ID -> currentPref.copy(selectedCollectionSourceId = value as Int)
-                AppPreferences.SELECTED_APP_ICON -> currentPref.copy(selectedAppIcon = value as String)
-                AppPreferences.SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK -> currentPref.copy(
-                    showTagsInAddNewLinkDialogBox = value as Boolean
-                )
-
-                AppPreferences.SHOW_MENU_ON_GRID_LINK_CLICK -> currentPref.copy(
-                    showMenuOnGridLinkClick = value as Boolean
-                )
-
-                AppPreferences.AUTO_SAVE_ON_SHARE_INTENT -> currentPref.copy(autoSaveOnShareIntent = value as Boolean)
-                AppPreferences.FORCE_SAVE_LINKS -> currentPref.copy(forceSaveIfRetrievalFails = value as Boolean)
-                AppPreferences.FONT_TYPE -> currentPref.copy(selectedFont = Font.valueOf(value as String))
-                AppPreferences.REFRESH_LINK_TYPE -> currentPref.copy(
-                    selectedLinkRefreshType = RefreshLinkType.valueOf(
-                        value as String
+                AppPreferences.BACKUP_AUTO_DELETION_THRESHOLD ->
+                    currentPref.copy(
+                        backupAutoDeleteThreshold = value as Int,
                     )
-                )
 
-                AppPreferences.MAX_CONCURRENT_REFRESH_COUNT -> currentPref.copy(
-                    maxConcurrentRefreshCount = value as Int
-                )
+                AppPreferences.BACKUP_AUTO_DELETION_ENABLED ->
+                    currentPref.copy(
+                        backupAutoDeletionEnabled = value as Boolean,
+                    )
 
-                AppPreferences.SHOW_SYNC_SERVER_SURVEY_NOTICE -> currentPref.copy(
-                    showSyncServerSurveyNotice = value as Boolean
-                )
+                AppPreferences.COLLECTION_SOURCE_ID ->
+                    currentPref.copy(selectedCollectionSourceId = value as Int)
 
-                AppPreferences.USE_WEB_CAPTURES -> currentPref.copy(
-                    useWebCaptures = value as Boolean
-                )
+                AppPreferences.SELECTED_APP_ICON -> currentPref.copy(selectedAppIcon = value as String)
 
-                AppPreferences.WEB_CAPTURES_LOCATION -> currentPref.copy(
-                    webCapturesLocation = value as String
-                )
+                AppPreferences.SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK ->
+                    currentPref.copy(
+                        showTagsInAddNewLinkDialogBox = value as Boolean,
+                    )
 
-                AppPreferences.WEB_CAPTURE_SAVE_IMAGES -> currentPref.copy(
-                    webCaptureSaveImages = value as Boolean
-                )
+                AppPreferences.SHOW_MENU_ON_GRID_LINK_CLICK ->
+                    currentPref.copy(
+                        showMenuOnGridLinkClick = value as Boolean,
+                    )
 
-                AppPreferences.WEB_CAPTURE_SAVE_FONTS -> currentPref.copy(
-                    webCaptureSaveFonts = value as Boolean
-                )
+                AppPreferences.AUTO_SAVE_ON_SHARE_INTENT ->
+                    currentPref.copy(autoSaveOnShareIntent = value as Boolean)
 
-                AppPreferences.WEB_CAPTURE_SAVE_CSS -> currentPref.copy(
-                    webCaptureSaveCss = value as Boolean
-                )
+                AppPreferences.FORCE_SAVE_LINKS ->
+                    currentPref.copy(forceSaveIfRetrievalFails = value as Boolean)
 
-                AppPreferences.WEB_CAPTURE_EXECUTE_JS -> currentPref.copy(
-                    webCaptureExecuteJs = value as Boolean
-                )
+                AppPreferences.FONT_TYPE -> currentPref.copy(selectedFont = Font.valueOf(value as String))
 
-                AppPreferences.WEB_CAPTURE_SAVE_AUDIO -> currentPref.copy(
-                    webCaptureSaveAudio = value as Boolean
-                )
+                AppPreferences.REFRESH_LINK_TYPE ->
+                    currentPref.copy(
+                        selectedLinkRefreshType =
+                        RefreshLinkType.valueOf(
+                            value as String,
+                        ),
+                    )
 
-                AppPreferences.WEB_CAPTURE_SAVE_VIDEO -> currentPref.copy(
-                    webCaptureSaveVideo = value as Boolean
-                )
+                AppPreferences.MAX_CONCURRENT_REFRESH_COUNT ->
+                    currentPref.copy(
+                        maxConcurrentRefreshCount = value as Int,
+                    )
 
-                AppPreferences.WEB_CAPTURE_SAVE_METADATA -> currentPref.copy(
-                    webCaptureSaveMetadata = value as Boolean
-                )
+                AppPreferences.SHOW_SYNC_SERVER_SURVEY_NOTICE ->
+                    currentPref.copy(
+                        showSyncServerSurveyNotice = value as Boolean,
+                    )
 
-                AppPreferences.WEB_CAPTURE_WHITELIST_DOMAINS -> currentPref.copy(
-                    webCaptureWhitelistDomains = value as String
-                )
+                AppPreferences.USE_WEB_CAPTURES ->
+                    currentPref.copy(
+                        useWebCaptures = value as Boolean,
+                    )
 
-                AppPreferences.WEB_CAPTURE_BLACKLIST_DOMAINS -> currentPref.copy(
-                    webCaptureBlacklistDomains = value as String
-                )
+                AppPreferences.WEB_CAPTURES_LOCATION ->
+                    currentPref.copy(
+                        webCapturesLocation = value as String,
+                    )
 
-                AppPreferences.WEB_CAPTURE_SAVE_AS_VERSIONS -> currentPref.copy(
-                    webCaptureSaveAsVersions = value as Boolean
-                )
+                AppPreferences.WEB_CAPTURE_SAVE_IMAGES ->
+                    currentPref.copy(
+                        webCaptureSaveImages = value as Boolean,
+                    )
 
-                AppPreferences.WEB_CAPTURE_RETAIN_ALL_VERSIONS -> currentPref.copy(
-                    webCaptureRetainAllVersions = value as Boolean
-                )
+                AppPreferences.WEB_CAPTURE_SAVE_FONTS ->
+                    currentPref.copy(
+                        webCaptureSaveFonts = value as Boolean,
+                    )
 
-                AppPreferences.WEB_CAPTURE_MAX_VERSIONS -> currentPref.copy(
-                    webCaptureMaxVersions = value as Int
-                )
+                AppPreferences.WEB_CAPTURE_SAVE_CSS ->
+                    currentPref.copy(
+                        webCaptureSaveCss = value as Boolean,
+                    )
 
-                AppPreferences.WEB_CAPTURE_AUTO_DELETE_DAYS -> currentPref.copy(
-                    webCaptureAutoDeleteDays = value as Int
-                )
+                AppPreferences.WEB_CAPTURE_EXECUTE_JS ->
+                    currentPref.copy(
+                        webCaptureExecuteJs = value as Boolean,
+                    )
 
-                AppPreferences.WEB_CAPTURE_DELETE_ON_LINK_DELETE -> currentPref.copy(
-                    webCaptureDeleteOnLinkDelete = value as Boolean
-                )
+                AppPreferences.WEB_CAPTURE_SAVE_AUDIO ->
+                    currentPref.copy(
+                        webCaptureSaveAudio = value as Boolean,
+                    )
+
+                AppPreferences.WEB_CAPTURE_SAVE_VIDEO ->
+                    currentPref.copy(
+                        webCaptureSaveVideo = value as Boolean,
+                    )
+
+                AppPreferences.WEB_CAPTURE_SAVE_METADATA ->
+                    currentPref.copy(
+                        webCaptureSaveMetadata = value as Boolean,
+                    )
+
+                AppPreferences.WEB_CAPTURE_WHITELIST_DOMAINS ->
+                    currentPref.copy(
+                        webCaptureWhitelistDomains = value as String,
+                    )
+
+                AppPreferences.WEB_CAPTURE_BLACKLIST_DOMAINS ->
+                    currentPref.copy(
+                        webCaptureBlacklistDomains = value as String,
+                    )
+
+                AppPreferences.WEB_CAPTURE_SAVE_AS_VERSIONS ->
+                    currentPref.copy(
+                        webCaptureSaveAsVersions = value as Boolean,
+                    )
+
+                AppPreferences.WEB_CAPTURE_RETAIN_ALL_VERSIONS ->
+                    currentPref.copy(
+                        webCaptureRetainAllVersions = value as Boolean,
+                    )
+
+                AppPreferences.WEB_CAPTURE_MAX_VERSIONS ->
+                    currentPref.copy(
+                        webCaptureMaxVersions = value as Int,
+                    )
+
+                AppPreferences.WEB_CAPTURE_AUTO_DELETE_DAYS ->
+                    currentPref.copy(
+                        webCaptureAutoDeleteDays = value as Int,
+                    )
+
+                AppPreferences.WEB_CAPTURE_DELETE_ON_LINK_DELETE ->
+                    currentPref.copy(
+                        webCaptureDeleteOnLinkDelete = value as Boolean,
+                    )
 
                 else -> currentPref
             }

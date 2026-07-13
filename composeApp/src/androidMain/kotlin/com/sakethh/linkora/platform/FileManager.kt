@@ -39,34 +39,37 @@ import java.io.ByteArrayInputStream
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 
-actual class FileManager(private val context: Context) {
-
+actual class FileManager(
+    private val context: Context,
+) {
     private suspend fun writeToFile(
         exportLocation: String,
         exportFileType: ExportFileType,
         exportLocationType: ExportLocationType,
         byteArray: ByteArray,
-        onCompletion: suspend (String) -> Unit
+        onCompletion: suspend (String) -> Unit,
     ) {
-        val (newFile, exportFileName) = createNewFile(
-            context = context,
-            exportLocation = exportLocation,
-            exportFileType = exportFileType,
-            exportLocationType = exportLocationType
-        )
-        val isSuccess = withContext(Dispatchers.IO) {
-            try {
-                newFile?.uri?.let { fileUri ->
-                    context.contentResolver.openOutputStream(fileUri)?.use { outputStream ->
-                        outputStream.write(byteArray)
+        val (newFile, exportFileName) =
+            createNewFile(
+                context = context,
+                exportLocation = exportLocation,
+                exportFileType = exportFileType,
+                exportLocationType = exportLocationType,
+            )
+        val isSuccess =
+            withContext(Dispatchers.IO) {
+                try {
+                    newFile?.uri?.let { fileUri ->
+                        context.contentResolver.openOutputStream(fileUri)?.use { outputStream ->
+                            outputStream.write(byteArray)
+                        }
                     }
+                    true
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    false
                 }
-                true
-            } catch (e: Exception) {
-                e.printStackTrace()
-                false
             }
-        }
         if (isSuccess) {
             onCompletion(exportFileName)
         } else {
@@ -79,20 +82,20 @@ actual class FileManager(private val context: Context) {
         exportFileType: ExportFileType,
         exportLocationType: ExportLocationType,
         rawExportString: RawExportString,
-        onCompletion: suspend (String) -> Unit
+        onCompletion: suspend (String) -> Unit,
     ) {
         writeToFile(
             exportLocation = exportLocation,
             exportFileType = exportFileType,
             exportLocationType = exportLocationType,
             byteArray = rawExportString.toByteArray(),
-            onCompletion = onCompletion
+            onCompletion = onCompletion,
         )
     }
 
-
     actual suspend fun saveSyncServerCertificateInternally(
-        certificate: ByteArray, onCompletion: () -> Unit
+        certificate: ByteArray,
+        onCompletion: () -> Unit,
     ) {
         context.filesDir.resolve("sync-server-cert.cer").writeBytes(certificate)
         onCompletion()
@@ -102,15 +105,17 @@ actual class FileManager(private val context: Context) {
         exportLocation: String,
         rawExportString: String,
         fileType: ExportFileType,
-        onCompletion: suspend (String) -> Unit
+        onCompletion: suspend (String) -> Unit,
     ) {
         val snapshotWorker = OneTimeWorkRequestBuilder<SnapshotWorker>()
         val rawExportStringID: Long =
             DependencyContainer.snapshotRepo.addASnapshot(Snapshot(content = rawExportString))
 
         val parameters =
-            Data.Builder().putLong(key = "rawExportStringID", value = rawExportStringID)
-                .putString(key = "fileType", value = fileType.name).build()
+            Data.Builder()
+                .putLong(key = "rawExportStringID", value = rawExportStringID)
+                .putString(key = "fileType", value = fileType.name)
+                .build()
         snapshotWorker.setInputData(parameters)
         WorkManager.getInstance(context).enqueue(snapshotWorker.build())
     }
@@ -128,27 +133,35 @@ actual class FileManager(private val context: Context) {
     }
 
     actual suspend fun deleteAutoBackups(
-        backupLocation: String, threshold: Int, onCompletion: (Int) -> Unit
+        backupLocation: String,
+        threshold: Int,
+        onCompletion: (Int) -> Unit,
     ) {
         try {
             withContext(Dispatchers.IO) {
-                DocumentFile.fromTreeUri(context, backupLocation.toUri())?.listFiles()?.filter {
-                    it.name?.startsWith("LinkoraSnapshot-") == true
-                }?.let { snapshots ->
-                    val snapshotsCount = snapshots.count()
-                    if (snapshotsCount > threshold) {
-                        snapshots.sortedBy {
-                            it.lastModified()
-                        }.take(snapshotsCount - threshold).apply {
-                            forEach {
-                                it.delete()
-                            }
-                            onCompletion(count())
-                        }
-                    } else {
-                        onCompletion(0)
+                DocumentFile.fromTreeUri(context, backupLocation.toUri())
+                    ?.listFiles()
+                    ?.filter {
+                        it.name?.startsWith("LinkoraSnapshot-") == true
                     }
-                }
+                    ?.let { snapshots ->
+                        val snapshotsCount = snapshots.count()
+                        if (snapshotsCount > threshold) {
+                            snapshots
+                                .sortedBy {
+                                    it.lastModified()
+                                }
+                                .take(snapshotsCount - threshold)
+                                .apply {
+                                    forEach {
+                                        it.delete()
+                                    }
+                                    onCompletion(count())
+                                }
+                        } else {
+                            onCompletion(0)
+                        }
+                    }
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -159,20 +172,23 @@ actual class FileManager(private val context: Context) {
     suspend fun importFile(importFileType: ImportFileType): String? {
         AndroidUIEvent.pushUIEvent(
             AndroidUIEvent.Type.ImportAFile(
-                fileType = when (importFileType) {
+                fileType =
+                when (importFileType) {
                     ImportFileType.JSON -> "application/json"
                     ImportFileType.HTML -> "text/html"
                     else -> "*/*"
-                }
-            )
+                },
+            ),
         )
 
-        val importEvent = try {
-            AndroidUIEvent.androidUIEventChannel.first() as? AndroidUIEvent.Type.UriOfTheFileForImporting
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return null
-        }
+        val importEvent =
+            try {
+                AndroidUIEvent.androidUIEventChannel.first()
+                    as? AndroidUIEvent.Type.UriOfTheFileForImporting
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return null
+            }
 
         val uri = importEvent?.uri ?: return null
 
@@ -200,36 +216,62 @@ actual class FileManager(private val context: Context) {
 
         emit(
             Result.Loading(
-                message = if (!basedOnNewExportSchema) {
+                message =
+                if (!basedOnNewExportSchema) {
                     "This JSON file is based on the legacy schema."
                 } else {
                     "This JSON file is based on latest schema."
-                }
-            )
+                },
+            ),
         )
 
-        val jsonObj = if (!basedOnNewExportSchema) {
-            Json.decodeFromString<LegacyExportSchema>(jsonContent)
-                .asJSONExportSchema(userAgent = DependencyContainer.preferencesRepo.getPreferences().primaryJsoupUserAgent)
-        } else Utils.json.decodeFromString<JSONExportSchema>(jsonContent).run {
-            JSONExportSchema(schemaVersion = schemaVersion, links = links.map {
-                it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
-            }, folders = folders.map {
-                it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
-            }, panels = PanelForJSONExportSchema(panels = panels.panels.map {
-                it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
-            }, panelFolders = panels.panelFolders.map {
-                it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
-            }), tags = tags.map {
-                it.copy(
-                    remoteId = null, lastModified = currentSystemEpochSeconds
-                )
-            }, linkTags = linkTags.map {
-                it.copy(
-                    remoteId = null, lastModified = currentSystemEpochSeconds
-                )
-            })
-        }
+        val jsonObj =
+            if (!basedOnNewExportSchema) {
+                Json.decodeFromString<LegacyExportSchema>(jsonContent)
+                    .asJSONExportSchema(
+                        userAgent =
+                        DependencyContainer.preferencesRepo.getPreferences().primaryJsoupUserAgent,
+                    )
+            } else {
+                Utils.json.decodeFromString<JSONExportSchema>(jsonContent).run {
+                    JSONExportSchema(
+                        schemaVersion = schemaVersion,
+                        links =
+                        links.map {
+                            it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
+                        },
+                        folders =
+                        folders.map {
+                            it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
+                        },
+                        panels =
+                        PanelForJSONExportSchema(
+                            panels =
+                            panels.panels.map {
+                                it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
+                            },
+                            panelFolders =
+                            panels.panelFolders.map {
+                                it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
+                            },
+                        ),
+                        tags =
+                        tags.map {
+                            it.copy(
+                                remoteId = null,
+                                lastModified = currentSystemEpochSeconds,
+                            )
+                        },
+                        linkTags =
+                        linkTags.map {
+                            it.copy(
+                                remoteId = null,
+                                lastModified = currentSystemEpochSeconds,
+                            )
+                        },
+                    )
+                }
+            }
         emit(Result.Success(jsonObj))
     }
 
@@ -241,15 +283,19 @@ actual class FileManager(private val context: Context) {
         emit(Result.Success(importContent))
     }
 
-    actual suspend fun getSyncServerCertificate(onCompletion: (certInfo: String) -> Unit): ByteArray? {
+    actual suspend fun getSyncServerCertificate(
+        onCompletion: (certInfo: String) -> Unit,
+    ): ByteArray? {
         AndroidUIEvent.pushUIEvent(
             AndroidUIEvent.Type.ImportAFile(
-                fileType = "*/*"
-            )
+                fileType = "*/*",
+            ),
         )
         var certInfo = ""
         return try {
-            val (uri) = AndroidUIEvent.androidUIEventChannel.first() as AndroidUIEvent.Type.UriOfTheFileForImporting
+            val (uri) =
+                AndroidUIEvent.androidUIEventChannel.first()
+                    as AndroidUIEvent.Type.UriOfTheFileForImporting
             if (uri == null) {
                 return null
             }
@@ -258,10 +304,13 @@ actual class FileManager(private val context: Context) {
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
                     val factory = CertificateFactory.getInstance("X.509")
                     val inputStreamBytes = inputStream.readBytes()
-                    certInfo = getCertificateInfo(
-                        factory = factory, inputStream = ByteArrayInputStream(inputStreamBytes)
-                    )
-                    (factory.generateCertificate(ByteArrayInputStream(inputStreamBytes)) as X509Certificate).encoded
+                    certInfo =
+                        getCertificateInfo(
+                            factory = factory,
+                            inputStream = ByteArrayInputStream(inputStreamBytes),
+                        )
+                    (factory.generateCertificate(ByteArrayInputStream(inputStreamBytes)) as X509Certificate)
+                        .encoded
                 }
             }
         } catch (e: Exception) {
@@ -273,9 +322,7 @@ actual class FileManager(private val context: Context) {
     }
 
     // these two operations aren't called on android
-    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> =
-        emptyFlow()
+    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> = emptyFlow()
 
-    actual suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>> =
-        emptyFlow()
+    actual suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>> = emptyFlow()
 }

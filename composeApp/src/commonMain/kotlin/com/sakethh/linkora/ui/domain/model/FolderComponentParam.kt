@@ -15,12 +15,12 @@ data class FolderComponentParam(
     val showPath: Boolean,
     val leadingIcon: ImageVector = Icons.Outlined.Folder,
     val onClick: () -> Unit,
-    val onPathItemClick: (folder:Folder) -> Unit,
+    val onPathItemClick: (folder: Folder) -> Unit,
     val onLongClick: () -> Unit,
     val onMoreIconClick: () -> Unit,
     val isCurrentlyInDetailsView: MutableState<Boolean>,
     val showMoreIcon: MutableState<Boolean>,
     val isSelectedForSelection: MutableState<Boolean>,
     val showCheckBox: MutableState<Boolean>,
-    val onCheckBoxChanged: (Boolean) -> Unit
+    val onCheckBoxChanged: (Boolean) -> Unit,
 )

@@ -16,8 +16,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
-import java.io.FileDescriptor
-import java.io.FileOutputStream
 import java.net.ServerSocket
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -39,28 +37,30 @@ class WebCaptureIntegrationTest {
 
         if (masterServer == null) {
             masterPort = ServerSocket(0).use { it.localPort }
-            masterServer = embeddedServer(CIO, port = masterPort) {
-                routing {
-                    get("/") {
-                        val requestedDelay =
-                            call.request.queryParameters["delay"]?.toLongOrNull() ?: 0L
-                        val targetId = call.request.queryParameters["id"] ?: "Unknown"
+            masterServer =
+                embeddedServer(CIO, port = masterPort) {
+                    routing {
+                        get("/") {
+                            val requestedDelay = call.request.queryParameters["delay"]?.toLongOrNull() ?: 0L
+                            val targetId = call.request.queryParameters["id"] ?: "Unknown"
 
-                        if (requestedDelay > 0) {
-                            delay(requestedDelay.milliseconds)
+                            if (requestedDelay > 0) {
+                                delay(requestedDelay.milliseconds)
+                            }
+                            call.respondText(
+                                "<html><body>Target $targetId</body></html>",
+                                ContentType.Text.Html,
+                            )
                         }
-                        call.respondText(
-                            "<html><body>Target $targetId</body></html>",
-                            ContentType.Text.Html
-                        )
-                    }
-                    get("/trap") {
-                        val trapHtml =
-                            "<html><body><img src=\"http://127.0.0.1:$masterPort/?delay=3000&id=trap_image\"></body></html>"
-                        call.respondText(trapHtml, ContentType.Text.Html)
+                        get("/trap") {
+                            val trapHtml =
+                                "<html><body><img src=\"http://127.0.0.1:$masterPort/?delay=3000&id=trap_image\"></body></html>"
+                            call.respondText(trapHtml, ContentType.Text.Html)
+                        }
                     }
                 }
-            }.start(wait = false).engine
+                    .start(wait = false)
+                    .engine
         }
     }
 
@@ -109,7 +109,7 @@ class WebCaptureIntegrationTest {
                 includeAudioElements = false,
                 includeVideoElements = false,
                 includeMetadata = false,
-                logStuff = true
+                logStuff = true,
             )
         }
     }
@@ -119,23 +119,24 @@ class WebCaptureIntegrationTest {
         JVMAndAndroidWebCapture.init()
         val tempFile = createTempTestFile()
 
-        val result = JVMAndAndroidWebCapture.saveHTMLPage(
-            fileDescriptor = -1,
-            filePath = tempFile.absolutePath,
-            url = "http://127.0.0.1:$masterPort/?id=FastResponse",
-            userAgent = "LinkoraTest/1.0",
-            timeout = 10000L,
-            allowInsecureProtocol = true,
-            ignoreDocErrors = true,
-            useCss = false,
-            embedFonts = false,
-            embedImages = false,
-            restrictJs = false,
-            includeAudioElements = false,
-            includeVideoElements = false,
-            includeMetadata = false,
-            logStuff = true
-        )
+        val result =
+            JVMAndAndroidWebCapture.saveHTMLPage(
+                fileDescriptor = -1,
+                filePath = tempFile.absolutePath,
+                url = "http://127.0.0.1:$masterPort/?id=FastResponse",
+                userAgent = "LinkoraTest/1.0",
+                timeout = 10000L,
+                allowInsecureProtocol = true,
+                ignoreDocErrors = true,
+                useCss = false,
+                embedFonts = false,
+                embedImages = false,
+                restrictJs = false,
+                includeAudioElements = false,
+                includeVideoElements = false,
+                includeMetadata = false,
+                logStuff = true,
+            )
 
         assertTrue(result)
         assertTrue(tempFile.exists())
@@ -166,7 +167,7 @@ class WebCaptureIntegrationTest {
                     includeAudioElements = false,
                     includeVideoElements = false,
                     includeMetadata = false,
-                    logStuff = true
+                    logStuff = true,
                 )
             } catch (e: Exception) {
                 assertTrue(e is CancellationException)
@@ -202,7 +203,7 @@ class WebCaptureIntegrationTest {
                     includeAudioElements = false,
                     includeVideoElements = false,
                     includeMetadata = false,
-                    logStuff = true
+                    logStuff = true,
                 )
             } catch (e: Exception) {
                 assertTrue(e is CancellationException)
@@ -220,56 +221,56 @@ class WebCaptureIntegrationTest {
     fun chaoticConcurrentLoadTest(): Unit = runBlocking {
         JVMAndAndroidWebCapture.init()
 
-        val deferredResults = (0 until 20).map { i ->
-            async {
-                val serverDelayMs = (50..200).random().toLong()
-                val tempFile = createTempTestFile()
+        val deferredResults =
+            (0 until 20).map { i ->
+                async {
+                    val serverDelayMs = (50..200).random().toLong()
+                    val tempFile = createTempTestFile()
 
-                val shouldCancel = (0..1).random() == 0
-                var captureSucceeded = false
+                    val shouldCancel = (0..1).random() == 0
+                    var captureSucceeded = false
 
-                val captureJob = launch {
-                    try {
-                        captureSucceeded = JVMAndAndroidWebCapture.saveHTMLPage(
-                            fileDescriptor = -1,
-                            filePath = tempFile.absolutePath,
-                            url = "http://127.0.0.1:$masterPort/?delay=$serverDelayMs&id=$i",
-                            userAgent = "LinkoraTest/1.0",
-                            timeout = 10000L,
-                            allowInsecureProtocol = true,
-                            ignoreDocErrors = true,
-                            useCss = false,
-                            embedFonts = false,
-                            embedImages = false,
-                            restrictJs = false,
-                            includeAudioElements = false,
-                            includeVideoElements = false,
-                            includeMetadata = false,
-                            logStuff = true
-                        )
-                    } catch (e: Exception) {
-                        assertTrue(e is CancellationException)
+                    val captureJob = launch {
+                        try {
+                            captureSucceeded =
+                                JVMAndAndroidWebCapture.saveHTMLPage(
+                                    fileDescriptor = -1,
+                                    filePath = tempFile.absolutePath,
+                                    url = "http://127.0.0.1:$masterPort/?delay=$serverDelayMs&id=$i",
+                                    userAgent = "LinkoraTest/1.0",
+                                    timeout = 10000L,
+                                    allowInsecureProtocol = true,
+                                    ignoreDocErrors = true,
+                                    useCss = false,
+                                    embedFonts = false,
+                                    embedImages = false,
+                                    restrictJs = false,
+                                    includeAudioElements = false,
+                                    includeVideoElements = false,
+                                    includeMetadata = false,
+                                    logStuff = true,
+                                )
+                        } catch (e: Exception) {
+                            assertTrue(e is CancellationException)
+                        }
+                    }
+
+                    if (shouldCancel) {
+                        delay((10..50).random().toLong().milliseconds)
+                        captureJob.cancelAndJoin()
+                    } else {
+                        captureJob.join()
+                    }
+
+                    if (captureSucceeded) {
+                        val content = tempFile.readText()
+                        assertTrue(content.contains("Target $i"))
+                    } else {
+                        val content = tempFile.readText()
+                        assertTrue(content.isEmpty())
                     }
                 }
-
-                if (shouldCancel) {
-                    delay((10..50).random().toLong().milliseconds)
-                    captureJob.cancelAndJoin()
-                } else {
-                    captureJob.join()
-                }
-
-                if (captureSucceeded) {
-                    val content = tempFile.readText()
-                    assertTrue(
-                        content.contains("Target $i")
-                    )
-                } else {
-                    val content = tempFile.readText()
-                    assertTrue(content.isEmpty())
-                }
             }
-        }
 
         deferredResults.awaitAll()
     }

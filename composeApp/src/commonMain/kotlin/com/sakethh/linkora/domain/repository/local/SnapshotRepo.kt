@@ -1,7 +1,6 @@
 package com.sakethh.linkora.domain.repository.local
 
 import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.Snapshot
 import com.sakethh.linkora.domain.model.link.Link
@@ -30,6 +29,6 @@ interface SnapshotRepo {
         allPanelFolders: List<PanelFolder>,
         allTags: List<Tag>,
         allLinkTagsPairs: List<LinkTag>,
-        onCompletion: () -> Unit
+        onCompletion: () -> Unit,
     )
 }

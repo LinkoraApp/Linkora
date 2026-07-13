@@ -53,28 +53,36 @@ import kotlinx.coroutines.runBlocking
 import kotlin.toString
 
 class ShareToSaveActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val autoSave = runBlocking {
             DependencyContainer.preferencesRepo.getPreferences().autoSaveOnShareIntent
         }
         if (autoSave) {
-            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            if (
+                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) !=
+                PackageManager.PERMISSION_GRANTED
+            ) {
                 Toast.makeText(
                     applicationContext,
                     Localization.Key.AutoSaveNotificationPermission.getLocalizedString(),
-                    Toast.LENGTH_SHORT
-                ).show()
+                    Toast.LENGTH_SHORT,
+                )
+                    .show()
                 finishAndRemoveTask()
             }
 
             linkoraLog("Redirecting the intent action to AutoSaveLinkService")
-            val autoSaveServiceIntent = Intent(this, AutoSaveLinkService::class.java).putExtra(
-                Intent.EXTRA_TEXT, this@ShareToSaveActivity.intent?.getStringExtra(
-                    Intent.EXTRA_TEXT
-                ).toString()
-            )
+            val autoSaveServiceIntent =
+                Intent(this, AutoSaveLinkService::class.java)
+                    .putExtra(
+                        Intent.EXTRA_TEXT,
+                        this@ShareToSaveActivity.intent
+                            ?.getStringExtra(
+                                Intent.EXTRA_TEXT,
+                            )
+                            .toString(),
+                    )
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 startForegroundService(autoSaveServiceIntent)
@@ -89,86 +97,131 @@ class ShareToSaveActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
             val context = LocalContext.current
-            val intentActivityVM = viewModel<IntentActivityVM>(factory = viewModelFactory {
-                initializer {
-                    IntentActivityVM(
-                        localLinksRepo = DependencyContainer.localLinksRepo,
-                        localFoldersRepo = DependencyContainer.localFoldersRepo,
-                        localPanelsRepo = DependencyContainer.localPanelsRepo,
-                        localTagsRepo = DependencyContainer.localTagsRepo,
-                        snapshotRepo = DependencyContainer.snapshotRepo,
-                        preferencesRepository = DependencyContainer.preferencesRepo,
-                        showToast = { message ->
-                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                        })
-                }
-            })
+            val intentActivityVM =
+                viewModel<IntentActivityVM>(
+                    factory =
+                    viewModelFactory {
+                        initializer {
+                            IntentActivityVM(
+                                localLinksRepo = DependencyContainer.localLinksRepo,
+                                localFoldersRepo = DependencyContainer.localFoldersRepo,
+                                localPanelsRepo = DependencyContainer.localPanelsRepo,
+                                localTagsRepo = DependencyContainer.localTagsRepo,
+                                snapshotRepo = DependencyContainer.snapshotRepo,
+                                preferencesRepository = DependencyContainer.preferencesRepo,
+                                showToast = { message ->
+                                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                },
+                            )
+                        }
+                    },
+                )
             val preferences by intentActivityVM.preferencesAsFlow.collectAsStateWithLifecycle()
             CompositionLocalProvider(
                 LocalNavController provides navController,
-                LocalFabController provides retain {
-                    FabStateController()
-                },
-                LocalPlatform provides Platform.Android
+                LocalFabController provides
+                    retain {
+                        FabStateController()
+                    },
+                LocalPlatform provides Platform.Android,
             ) {
-                val darkColors = DarkColors.copy(
-                    background = if (preferences.useAmoledTheme) Color(0xFF000000) else DarkColors.background,
-                    surface = if (preferences.useAmoledTheme) Color(0xFF000000) else DarkColors.surface
-                )
-                val colors = when {
-                    preferences.useDynamicTheming && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                        if (preferences.useSystemTheme) {
-                            if (isSystemInDarkTheme()) dynamicDarkColorScheme(context).copy(
-                                background = if (preferences.useAmoledTheme) Color(
-                                    0xFF000000
-                                ) else dynamicDarkColorScheme(context).background,
-                                surface = if (preferences.useAmoledTheme) Color(
-                                    0xFF000000
-                                ) else dynamicDarkColorScheme(
-                                    context
-                                ).surface
-                            ) else dynamicLightColorScheme(
-                                context
-                            )
-                        } else {
-                            if (preferences.useDarkTheme) dynamicDarkColorScheme(
-                                context
-                            ).copy(
-                                background = if (preferences.useAmoledTheme) Color(
-                                    0xFF000000
-                                ) else dynamicDarkColorScheme(context).background,
-                                surface = if (preferences.useAmoledTheme) Color(
-                                    0xFF000000
-                                ) else dynamicDarkColorScheme(
-                                    context
-                                ).surface
-                            ) else dynamicLightColorScheme(context)
+                val darkColors =
+                    DarkColors.copy(
+                        background =
+                        if (preferences.useAmoledTheme) Color(0xFF000000) else DarkColors.background,
+                        surface = if (preferences.useAmoledTheme) Color(0xFF000000) else DarkColors.surface,
+                    )
+                val colors =
+                    when {
+                        preferences.useDynamicTheming && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+                            if (preferences.useSystemTheme) {
+                                if (isSystemInDarkTheme()) {
+                                    dynamicDarkColorScheme(context)
+                                        .copy(
+                                            background =
+                                            if (preferences.useAmoledTheme) {
+                                                Color(
+                                                    0xFF000000,
+                                                )
+                                            } else {
+                                                dynamicDarkColorScheme(context).background
+                                            },
+                                            surface =
+                                            if (preferences.useAmoledTheme) {
+                                                Color(
+                                                    0xFF000000,
+                                                )
+                                            } else {
+                                                dynamicDarkColorScheme(
+                                                    context,
+                                                )
+                                                    .surface
+                                            },
+                                        )
+                                } else {
+                                    dynamicLightColorScheme(
+                                        context,
+                                    )
+                                }
+                            } else {
+                                if (preferences.useDarkTheme) {
+                                    dynamicDarkColorScheme(
+                                        context,
+                                    )
+                                        .copy(
+                                            background =
+                                            if (preferences.useAmoledTheme) {
+                                                Color(
+                                                    0xFF000000,
+                                                )
+                                            } else {
+                                                dynamicDarkColorScheme(context).background
+                                            },
+                                            surface =
+                                            if (preferences.useAmoledTheme) {
+                                                Color(
+                                                    0xFF000000,
+                                                )
+                                            } else {
+                                                dynamicDarkColorScheme(
+                                                    context,
+                                                )
+                                                    .surface
+                                            },
+                                        )
+                                } else {
+                                    dynamicLightColorScheme(context)
+                                }
+                            }
                         }
-                    }
 
-                    else -> if (preferences.useSystemTheme) {
-                        if (isSystemInDarkTheme()) darkColors else LightColors
-                    } else {
-                        if (preferences.useDarkTheme) darkColors else LightColors
+                        else ->
+                            if (preferences.useSystemTheme) {
+                                if (isSystemInDarkTheme()) darkColors else LightColors
+                            } else {
+                                if (preferences.useDarkTheme) darkColors else LightColors
+                            }
                     }
-                }
                 val collectionsScreenVM: CollectionsScreenVM = linkoraViewModel()
                 LinkoraTheme(
                     colorScheme = colors,
-                    preferredFont = preferences.selectedFont
+                    preferredFont = preferences.selectedFont,
                 ) {
                     AddANewLinkDialogBox(
                         preferences = preferences,
-                        addNewLinkDialogParams = AddNewLinkDialogParams(
+                        addNewLinkDialogParams =
+                        AddNewLinkDialogParams(
                             onDismiss = {
                                 if (MainActivity.wasLaunched) {
                                     this@ShareToSaveActivity.finishAndRemoveTask()
                                     return@AddNewLinkDialogParams
                                 }
                                 if (preferences.areSnapshotsEnabled) {
-                                    intentActivityVM.createADataSnapshot(onCompletion = {
-                                        this@ShareToSaveActivity.finishAndRemoveTask()
-                                    })
+                                    intentActivityVM.createADataSnapshot(
+                                        onCompletion = {
+                                            this@ShareToSaveActivity.finishAndRemoveTask()
+                                        },
+                                    )
                                 } else {
                                     this@ShareToSaveActivity.finishAndRemoveTask()
                                 }
@@ -180,12 +233,16 @@ class ShareToSaveActivity : ComponentActivity() {
                             foldersSearchQueryResult = collectionsScreenVM.foldersSearchQueryResult,
                             rootRegularFolders = collectionsScreenVM.rootRegularFolders,
                             performAction = collectionsScreenVM::performAction,
-                            url = this@ShareToSaveActivity.intent?.getStringExtra(
-                                Intent.EXTRA_TEXT
-                            ).toString(),
-                            title = this@ShareToSaveActivity.intent?.getStringExtra(
-                                Intent.EXTRA_SUBJECT
-                            ) ?: ""
+                            url =
+                            this@ShareToSaveActivity.intent
+                                ?.getStringExtra(
+                                    Intent.EXTRA_TEXT,
+                                )
+                                .toString(),
+                            title =
+                            this@ShareToSaveActivity.intent?.getStringExtra(
+                                Intent.EXTRA_SUBJECT,
+                            ) ?: "",
                         ),
                     )
                 }
@@ -201,9 +258,10 @@ class IntentActivityVM(
     private val localTagsRepo: LocalTagsRepo,
     private val snapshotRepo: SnapshotRepo,
     val preferencesRepository: PreferencesRepository,
-    showToast: (message: String) -> Unit
+    showToast: (message: String) -> Unit,
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
+
     fun createADataSnapshot(onCompletion: () -> Unit) {
         viewModelScope.launch {
             val allLinks = async { localLinksRepo.getAllLinks() }
@@ -220,7 +278,7 @@ class IntentActivityVM(
                 allPanelFolders = allPanelFolders.await(),
                 allTags = allTags.await(),
                 allLinkTagsPairs = allLinkTagsPairs.await(),
-                onCompletion = onCompletion
+                onCompletion = onCompletion,
             )
         }
     }
@@ -234,5 +292,4 @@ class IntentActivityVM(
             }
         }
     }
-
 }

@@ -49,7 +49,7 @@ class SnapshotRepoImpl(
     private val exportDataRepo: ExportDataRepo,
     private val localTagsRepo: LocalTagsRepo,
     private val fileManager: FileManager,
-    private val preferencesRepository: PreferencesRepository
+    private val preferencesRepository: PreferencesRepository,
 ) : SnapshotRepo {
 
     private var snapshotsJob: Job? = null
@@ -66,75 +66,93 @@ class SnapshotRepoImpl(
         }
     }
 
-    override suspend fun getASnapshot(id: Long): Snapshot {
-        return snapshotDao.getASnapshot(id)
-    }
+    override suspend fun getASnapshot(id: Long): Snapshot = snapshotDao.getASnapshot(id)
 
-    override suspend fun addASnapshot(snapshot: Snapshot): Long {
-        return snapshotDao.addASnapshot(snapshot)
-    }
+    override suspend fun addASnapshot(snapshot: Snapshot): Long = snapshotDao.addASnapshot(snapshot)
 
     override suspend fun deleteASnapshot(id: Long) {
         snapshotDao.deleteASnapshot(id)
     }
 
     // TODO: NESTED collectLatest
-    override context(coroutineScope: CoroutineScope)
-    fun collectLatestAndExport() {
+    context(coroutineScope: CoroutineScope)
+    override fun collectLatestAndExport() {
         snapshotsJob?.cancel()
         coroutineScope.launch {
-            preferencesRepository.preferencesAsFlow.map {
-                it.areSnapshotsEnabled
-            }.debounce(1000).collectLatest {
-                if (it) {
-                    snapshotsJob = this.launch(Dispatchers.Default) {
-                        linkoraLog("data checks for snapshots are now enabled")
-                        septetCombine(
-                            linksRepo.getAllLinksAsFlow(),
-                            foldersRepo.getAllFoldersAsFlow(),
-                            localPanelsRepo.getAllThePanels(),
-                            localPanelsRepo.getAllThePanelFoldersAsAFlow(),
-                            snapshotFlow {
-                                forceSnapshot.value
-                            },
-                            localTagsRepo.getAllTags(
-                                preferencesRepository.getPreferences().selectedSortingType
-                            ),
-                            localTagsRepo.getAllLinkTags()
-                        ) { links, folders, panels, panelFolders, _, tags, linkTags ->
-                            AllTablesDTO(
-                                links = links,
-                                folders = folders,
-                                panels = panels,
-                                panelFolders = panelFolders,
-                                tags = tags,
-                                linkTagsPairs = linkTags,
-                            )
-                        }.cancellable().drop(1).debounce(1000).flowOn(Dispatchers.Default)
-                            .collectLatest {
-                                if (pauseSnapshots || (it.links + it.folders + it.panelFolders + it.panels + it.tags + it.linkTagsPairs).isEmpty()) return@collectLatest
-                                try {
-                                    _isAnySnapshotOngoing.value = true
-                                    createAManualSnapshot(
-                                        allLinks = it.links,
-                                        allFolders = it.folders,
-                                        allPanels = it.panels,
-                                        allPanelFolders = it.panelFolders,
-                                        allTags = it.tags,
-                                        allLinkTagsPairs = it.linkTagsPairs,
-                                        onCompletion = {})
-                                } catch (e: Exception) {
-                                    e.pushSnackbar()
-                                } finally {
-                                    _isAnySnapshotOngoing.value = false
-                                }
-                            }
-                    }
-                } else {
-                    linkoraLog("data checks for snapshots are disabled")
-                    snapshotsJob?.cancel()
+            preferencesRepository.preferencesAsFlow
+                .map {
+                    it.areSnapshotsEnabled
                 }
-            }
+                .debounce(1000)
+                .collectLatest {
+                    if (it) {
+                        snapshotsJob =
+                            this.launch(Dispatchers.Default) {
+                                linkoraLog("data checks for snapshots are now enabled")
+                                septetCombine(
+                                    linksRepo.getAllLinksAsFlow(),
+                                    foldersRepo.getAllFoldersAsFlow(),
+                                    localPanelsRepo.getAllThePanels(),
+                                    localPanelsRepo.getAllThePanelFoldersAsAFlow(),
+                                    snapshotFlow {
+                                        forceSnapshot.value
+                                    },
+                                    localTagsRepo.getAllTags(
+                                        preferencesRepository.getPreferences().selectedSortingType,
+                                    ),
+                                    localTagsRepo.getAllLinkTags(),
+                                ) { links, folders, panels, panelFolders, _, tags, linkTags ->
+                                    AllTablesDTO(
+                                        links = links,
+                                        folders = folders,
+                                        panels = panels,
+                                        panelFolders = panelFolders,
+                                        tags = tags,
+                                        linkTagsPairs = linkTags,
+                                    )
+                                }
+                                    .cancellable()
+                                    .drop(1)
+                                    .debounce(1000)
+                                    .flowOn(Dispatchers.Default)
+                                    .collectLatest {
+                                        if (
+                                            pauseSnapshots ||
+                                            (
+                                                it.links +
+                                                    it.folders +
+                                                    it.panelFolders +
+                                                    it.panels +
+                                                    it.tags +
+                                                    it.linkTagsPairs
+                                                )
+                                                .isEmpty()
+                                        ) {
+                                            return@collectLatest
+                                        }
+                                        try {
+                                            _isAnySnapshotOngoing.value = true
+                                            createAManualSnapshot(
+                                                allLinks = it.links,
+                                                allFolders = it.folders,
+                                                allPanels = it.panels,
+                                                allPanelFolders = it.panelFolders,
+                                                allTags = it.tags,
+                                                allLinkTagsPairs = it.linkTagsPairs,
+                                                onCompletion = {},
+                                            )
+                                        } catch (e: Exception) {
+                                            e.pushSnackbar()
+                                        } finally {
+                                            _isAnySnapshotOngoing.value = false
+                                        }
+                                    }
+                            }
+                    } else {
+                        linkoraLog("data checks for snapshots are disabled")
+                        snapshotsJob?.cancel()
+                    }
+                }
         }
     }
 
@@ -145,7 +163,7 @@ class SnapshotRepoImpl(
         allPanelFolders: List<PanelFolder>,
         allTags: List<Tag>,
         allLinkTagsPairs: List<LinkTag>,
-        onCompletion: () -> Unit
+        onCompletion: () -> Unit,
     ) {
         val preferences = preferencesRepository.getPreferences()
         if (preferences.backupAutoDeletionEnabled) {
@@ -154,52 +172,82 @@ class SnapshotRepoImpl(
                 threshold = preferences.backupAutoDeleteThreshold,
                 onCompletion = {
                     linkoraLog(
-                        "Deleted $it snapshot files as the threshold was ${preferences.backupAutoDeleteThreshold}"
+                        "Deleted $it snapshot files as the threshold was ${preferences.backupAutoDeleteThreshold}",
                     )
-                })
+                },
+            )
         }
 
-        if (preferences.snapshotExportFormatID.toInt() == SnapshotFormat.JSON.id || preferences.snapshotExportFormatID.toInt() == SnapshotFormat.BOTH.id) {
-
+        if (
+            preferences.snapshotExportFormatID.toInt() == SnapshotFormat.JSON.id ||
+            preferences.snapshotExportFormatID.toInt() == SnapshotFormat.BOTH.id
+        ) {
             val serializedJsonExportString =
-                JSONExportSchema(schemaVersion = JSONExportSchema.VERSION, links = allLinks.map {
-                    it.copy(
-                        remoteId = null, lastModified = 0
-                    )
-                }, folders = allFolders.map {
-                    it.copy(
-                        remoteId = null, lastModified = 0
-                    )
-                }, panels = PanelForJSONExportSchema(panels = allPanels.map {
-                    it.copy(
-                        remoteId = null, lastModified = 0
-                    )
-                }, panelFolders = allPanelFolders.map {
-                    it.copy(
-                        remoteId = null, lastModified = 0
-                    )
-                }), tags = allTags.map {
-                    it.copy(remoteId = null, lastModified = 0)
-                }, linkTags = allLinkTagsPairs.map {
-                    it.copy(remoteId = null, lastModified = 0)
-                }).run {
-                    Json.encodeToString(this)
-                }
+                JSONExportSchema(
+                    schemaVersion = JSONExportSchema.VERSION,
+                    links =
+                    allLinks.map {
+                        it.copy(
+                            remoteId = null,
+                            lastModified = 0,
+                        )
+                    },
+                    folders =
+                    allFolders.map {
+                        it.copy(
+                            remoteId = null,
+                            lastModified = 0,
+                        )
+                    },
+                    panels =
+                    PanelForJSONExportSchema(
+                        panels =
+                        allPanels.map {
+                            it.copy(
+                                remoteId = null,
+                                lastModified = 0,
+                            )
+                        },
+                        panelFolders =
+                        allPanelFolders.map {
+                            it.copy(
+                                remoteId = null,
+                                lastModified = 0,
+                            )
+                        },
+                    ),
+                    tags =
+                    allTags.map {
+                        it.copy(remoteId = null, lastModified = 0)
+                    },
+                    linkTags =
+                    allLinkTagsPairs.map {
+                        it.copy(remoteId = null, lastModified = 0)
+                    },
+                )
+                    .run {
+                        Json.encodeToString(this)
+                    }
 
             fileManager.exportSnapshotData(
                 exportLocation = preferences.currentBackupLocation,
                 rawExportString = serializedJsonExportString,
-                fileType = FileType.JSON
+                fileType = FileType.JSON,
             )
         }
 
-        if (preferences.snapshotExportFormatID.toInt() == SnapshotFormat.HTML.id || preferences.snapshotExportFormatID.toInt() == SnapshotFormat.BOTH.id) {
+        if (
+            preferences.snapshotExportFormatID.toInt() == SnapshotFormat.HTML.id ||
+            preferences.snapshotExportFormatID.toInt() == SnapshotFormat.BOTH.id
+        ) {
             fileManager.exportSnapshotData(
-                rawExportString = exportDataRepo.rawExportDataAsHTML(
-                    links = allLinks, folders = allFolders
+                rawExportString =
+                exportDataRepo.rawExportDataAsHTML(
+                    links = allLinks,
+                    folders = allFolders,
                 ),
                 fileType = ExportFileType.HTML,
-                exportLocation = preferences.currentBackupLocation
+                exportLocation = preferences.currentBackupLocation,
             )
         }
         onCompletion()

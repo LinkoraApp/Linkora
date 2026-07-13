@@ -5,5 +5,5 @@ import com.sakethh.linkora.domain.MediaType
 data class ScrapedLinkInfo(
     val title: String,
     val imgUrl: String,
-    val mediaType: MediaType = MediaType.IMAGE
+    val mediaType: MediaType = MediaType.IMAGE,
 )

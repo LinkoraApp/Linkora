@@ -159,31 +159,43 @@ fun DataSettingsScreen() {
     var labelForAlertDialogWithProgress by rememberSaveable {
         mutableStateOf("")
     }
-    val exportLocation = rememberSaveable(preferences.currentExportLocation) {
-        mutableStateOf(preferences.currentExportLocation)
-    }
+    val exportLocation =
+        rememberSaveable(preferences.currentExportLocation) {
+            mutableStateOf(preferences.currentExportLocation)
+        }
 
     val localFocusManager = LocalFocusManager.current
 
-    var maxConcurrentRefreshCount by rememberSaveable(preferences.maxConcurrentRefreshCount) {
-        mutableIntStateOf(preferences.maxConcurrentRefreshCount)
-    }
+    var maxConcurrentRefreshCount by
+        rememberSaveable(preferences.maxConcurrentRefreshCount) {
+            mutableIntStateOf(preferences.maxConcurrentRefreshCount)
+        }
 
-    val refreshesInProgress = rememberSaveable(
-        !DataSettingsScreenVM.refreshLinksState.value.isInRefreshingState,
-        !(platform is Platform.Android && dataSettingsScreenVM.isAnyRefreshingScheduledOnAndroid.value)
-    ) {
-        !DataSettingsScreenVM.refreshLinksState.value.isInRefreshingState && !(platform is Platform.Android && dataSettingsScreenVM.isAnyRefreshingScheduledOnAndroid.value)
-    }
+    val refreshesInProgress =
+        rememberSaveable(
+            !DataSettingsScreenVM.refreshLinksState.value.isInRefreshingState,
+            !(
+                platform is Platform.Android &&
+                    dataSettingsScreenVM.isAnyRefreshingScheduledOnAndroid.value
+                ),
+        ) {
+            !DataSettingsScreenVM.refreshLinksState.value.isInRefreshingState &&
+                !(
+                    platform is Platform.Android &&
+                        dataSettingsScreenVM.isAnyRefreshingScheduledOnAndroid.value
+                    )
+        }
 
     SettingsSectionScaffold(
         topAppBarText = Navigation.Settings.DataSettingsScreen.toString(),
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
-            modifier = Modifier.animateContentSize().fillMaxSize()
+            modifier =
+            Modifier.animateContentSize()
+                .fillMaxSize()
                 .addEdgeToEdgeScaffoldPadding(paddingValues)
                 .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
-            verticalArrangement = Arrangement.spacedBy(30.dp)
+            verticalArrangement = Arrangement.spacedBy(30.dp),
         ) {
             item {
                 Spacer(modifier = Modifier)
@@ -201,29 +213,54 @@ fun DataSettingsScreen() {
                     if (platform is Platform.Desktop) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(start = 15.dp, end = 15.dp, top = 5.dp)
+                            modifier = Modifier.padding(start = 15.dp, end = 15.dp, top = 5.dp),
                         ) {
                             Text(
                                 text = Localization.Key.ImportMethodLabel.rememberLocalizedString(),
-                                style = MaterialTheme.typography.titleMedium
+                                style = MaterialTheme.typography.titleMedium,
                             )
                             Spacer(modifier = Modifier.width(5.dp))
                             Text(
-                                text = if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) Localization.Key.FileLocationLabel.rememberLocalizedString() else Localization.Key.FilePickerLabel.rememberLocalizedString(),
-                                style = MaterialTheme.typography.titleLarge
+                                text =
+                                if (
+                                    importFileSelectionMethod.value ==
+                                    ImportFileSelectionMethod.FileLocationString.name
+                                ) {
+                                    Localization.Key.FileLocationLabel.rememberLocalizedString()
+                                } else {
+                                    Localization.Key.FilePickerLabel.rememberLocalizedString()
+                                },
+                                style = MaterialTheme.typography.titleLarge,
                             )
                             Spacer(modifier = Modifier.width(5.dp))
                             FilledTonalIconButton(
-                                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                    .size(24.dp), onClick = {
-                                    if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) importFileSelectionMethod.value =
-                                        ImportFileSelectionMethod.FilePicker.name else importFileSelectionMethod.value =
+                                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).size(24.dp),
+                                onClick = {
+                                    if (
+                                        importFileSelectionMethod.value ==
                                         ImportFileSelectionMethod.FileLocationString.name
-                                }) {
+                                    ) {
+                                        importFileSelectionMethod.value = ImportFileSelectionMethod.FilePicker.name
+                                    } else {
+                                        importFileSelectionMethod.value =
+                                            ImportFileSelectionMethod.FileLocationString.name
+                                    }
+                                },
+                            ) {
                                 Icon(
                                     imageVector = Icons.Default.SwitchLeft,
                                     contentDescription = null,
-                                    modifier = Modifier.rotate(if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) 0f else 180f)
+                                    modifier =
+                                    Modifier.rotate(
+                                        if (
+                                            importFileSelectionMethod.value ==
+                                            ImportFileSelectionMethod.FileLocationString.name
+                                        ) {
+                                            0f
+                                        } else {
+                                            180f
+                                        },
+                                    ),
                                 )
                             }
                         }
@@ -243,13 +280,20 @@ fun DataSettingsScreen() {
                     SettingComponent(
                         SettingComponentParam(
                             isIconNeeded = true,
-                            title = Localization.rememberLocalizedString(Localization.Key.ImportUsingJsonFile),
+                            title =
+                            Localization.rememberLocalizedString(Localization.Key.ImportUsingJsonFile),
                             doesDescriptionExists = true,
-                            description = Localization.rememberLocalizedString(Localization.Key.ImportUsingJsonFileDesc),
+                            description =
+                            Localization.rememberLocalizedString(
+                                Localization.Key.ImportUsingJsonFileDesc,
+                            ),
                             isSwitchNeeded = false,
                             isSwitchEnabled = false,
                             onSwitchStateChange = {
-                                if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) {
+                                if (
+                                    importFileSelectionMethod.value ==
+                                    ImportFileSelectionMethod.FileLocationString.name
+                                ) {
                                     selectedImportFormat.value = ImportFileType.JSON.name
                                     showFileLocationPickerDialog.value = true
                                     return@SettingComponentParam
@@ -264,12 +308,12 @@ fun DataSettingsScreen() {
                                     onCompletion = {
                                         isImportExportProgressUIVisible = false
                                     },
-                                    importFileSelectionMethod = ImportFileSelectionMethod.FilePicker to ""
+                                    importFileSelectionMethod = ImportFileSelectionMethod.FilePicker to "",
                                 )
                             },
                             icon = Icons.Default.DataObject,
-                            shouldFilledIconBeUsed = true
-                        )
+                            shouldFilledIconBeUsed = true,
+                        ),
                     )
                 }
 
@@ -277,13 +321,20 @@ fun DataSettingsScreen() {
                     SettingComponent(
                         SettingComponentParam(
                             isIconNeeded = true,
-                            title = Localization.rememberLocalizedString(Localization.Key.ImportDataFromHtmlFile),
+                            title =
+                            Localization.rememberLocalizedString(Localization.Key.ImportDataFromHtmlFile),
                             doesDescriptionExists = true,
-                            description = Localization.rememberLocalizedString(Localization.Key.ImportDataFromHtmlFileDesc),
+                            description =
+                            Localization.rememberLocalizedString(
+                                Localization.Key.ImportDataFromHtmlFileDesc,
+                            ),
                             isSwitchNeeded = false,
                             isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
-                                if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) {
+                                if (
+                                    importFileSelectionMethod.value ==
+                                    ImportFileSelectionMethod.FileLocationString.name
+                                ) {
                                     selectedImportFormat.value = ImportFileType.HTML.name
                                     showFileLocationPickerDialog.value = true
                                     return@SettingComponentParam
@@ -298,12 +349,12 @@ fun DataSettingsScreen() {
                                     onCompletion = {
                                         isImportExportProgressUIVisible = false
                                     },
-                                    importFileSelectionMethod = ImportFileSelectionMethod.FilePicker to ""
+                                    importFileSelectionMethod = ImportFileSelectionMethod.FilePicker to "",
                                 )
                             },
                             icon = Icons.Default.Html,
-                            shouldFilledIconBeUsed = true
-                        )
+                            shouldFilledIconBeUsed = true,
+                        ),
                     )
                 }
 
@@ -328,35 +379,55 @@ fun DataSettingsScreen() {
                 }
 
                 item {
-                    TextField(supportingText = {
-                        Text(
-                            text = Localization.Key.CurrentExportLocationSupportingText.rememberLocalizedString(),
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                    }, textStyle = MaterialTheme.typography.titleSmall, trailingIcon = {
-                        FilledTonalIconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                .pressScaleEffect().padding(end = 5.dp), onClick = {
-                                dataSettingsScreenVM.changeExportLocation(
-                                    exportLocation = exportLocation.value,
-                                    platform = platform,
-                                    exportLocationType = ExportLocationType.EXPORT
-                                )
-                            }) {
-                            Icon(
-                                imageVector = if (platform is Platform.Android) Icons.Default.FolderOpen else Icons.Default.Save,
-                                contentDescription = null
+                    TextField(
+                        supportingText = {
+                            Text(
+                                text =
+                                Localization.Key.CurrentExportLocationSupportingText
+                                    .rememberLocalizedString(),
+                                style = MaterialTheme.typography.titleSmall,
                             )
-                        }
-                    }, readOnly = platform is Platform.Android, label = {
-                        Text(
-                            text = Localization.Key.CurrentExportLocation.rememberLocalizedString(),
-                            style = MaterialTheme.typography.titleMedium,
-                            textAlign = TextAlign.Start,
-                        )
-                    }, value = exportLocation.value, onValueChange = {
-                        exportLocation.value = it
-                    }, modifier = Modifier.padding(start = 15.dp, end = 15.dp).fillMaxWidth())
+                        },
+                        textStyle = MaterialTheme.typography.titleSmall,
+                        trailingIcon = {
+                            FilledTonalIconButton(
+                                modifier =
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .pressScaleEffect()
+                                    .padding(end = 5.dp),
+                                onClick = {
+                                    dataSettingsScreenVM.changeExportLocation(
+                                        exportLocation = exportLocation.value,
+                                        platform = platform,
+                                        exportLocationType = ExportLocationType.EXPORT,
+                                    )
+                                },
+                            ) {
+                                Icon(
+                                    imageVector =
+                                    if (platform is Platform.Android) {
+                                        Icons.Default.FolderOpen
+                                    } else {
+                                        Icons.Default.Save
+                                    },
+                                    contentDescription = null,
+                                )
+                            }
+                        },
+                        readOnly = platform is Platform.Android,
+                        label = {
+                            Text(
+                                text = Localization.Key.CurrentExportLocation.rememberLocalizedString(),
+                                style = MaterialTheme.typography.titleMedium,
+                                textAlign = TextAlign.Start,
+                            )
+                        },
+                        value = exportLocation.value,
+                        onValueChange = {
+                            exportLocation.value = it
+                        },
+                        modifier = Modifier.padding(start = 15.dp, end = 15.dp).fillMaxWidth(),
+                    )
                 }
 
                 item {
@@ -365,7 +436,8 @@ fun DataSettingsScreen() {
                             isIconNeeded = true,
                             title = Localization.rememberLocalizedString(Localization.Key.ExportDataAsJson),
                             doesDescriptionExists = true,
-                            description = Localization.rememberLocalizedString(Localization.Key.ExportDataAsJsonDesc),
+                            description =
+                            Localization.rememberLocalizedString(Localization.Key.ExportDataAsJsonDesc),
                             isSwitchNeeded = false,
                             isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
@@ -379,11 +451,12 @@ fun DataSettingsScreen() {
                                     },
                                     onCompletion = {
                                         isImportExportProgressUIVisible = false
-                                    })
+                                    },
+                                )
                             },
                             icon = Icons.Default.DataObject,
-                            shouldFilledIconBeUsed = true
-                        )
+                            shouldFilledIconBeUsed = true,
+                        ),
                     )
                 }
 
@@ -393,7 +466,8 @@ fun DataSettingsScreen() {
                             isIconNeeded = true,
                             title = Localization.rememberLocalizedString(Localization.Key.ExportDataAsHtml),
                             doesDescriptionExists = true,
-                            description = Localization.rememberLocalizedString(Localization.Key.ExportDataAsHtmlDesc),
+                            description =
+                            Localization.rememberLocalizedString(Localization.Key.ExportDataAsHtmlDesc),
                             isSwitchNeeded = false,
                             isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
@@ -407,11 +481,12 @@ fun DataSettingsScreen() {
                                     },
                                     onCompletion = {
                                         isImportExportProgressUIVisible = false
-                                    })
+                                    },
+                                )
                             },
                             icon = Icons.Default.Html,
-                            shouldFilledIconBeUsed = true
-                        )
+                            shouldFilledIconBeUsed = true,
+                        ),
                     )
                     Spacer(modifier = Modifier.height(15.dp))
                     SettingSectionComponent(
@@ -423,8 +498,8 @@ fun DataSettingsScreen() {
                             sectionIcon = Icons.Default.BackupTable,
                             shouldArrowIconAppear = true,
                             fontSize = 16.sp,
-                            bottomSpacing = 0.dp
-                        )
+                            bottomSpacing = 0.dp,
+                        ),
                     )
                     if (platform != Platform.Web) {
                         Spacer(modifier = Modifier.height(15.dp))
@@ -437,8 +512,8 @@ fun DataSettingsScreen() {
                                 sectionIcon = Icons.Default.Web,
                                 shouldArrowIconAppear = true,
                                 fontSize = 16.sp,
-                                bottomSpacing = 0.dp
-                            )
+                                bottomSpacing = 0.dp,
+                            ),
                         )
                     }
                 }
@@ -460,25 +535,35 @@ fun DataSettingsScreen() {
                     SettingComponent(
                         SettingComponentParam(
                             isIconNeeded = true,
-                            title = Localization.rememberLocalizedString(Localization.Key.ConnectToALinkoraServer),
+                            title =
+                            Localization.rememberLocalizedString(
+                                Localization.Key.ConnectToALinkoraServer,
+                            ),
                             doesDescriptionExists = true,
-                            description = Localization.rememberLocalizedString(Localization.Key.ConnectToALinkoraServerDesc),
+                            description =
+                            Localization.rememberLocalizedString(
+                                Localization.Key.ConnectToALinkoraServerDesc,
+                            ),
                             isSwitchNeeded = false,
                             isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
                                 navController.navigate(Navigation.Settings.Data.ServerSetupScreen)
                             },
                             icon = Icons.Default.CloudSync,
-                            shouldFilledIconBeUsed = true
-                        )
+                            shouldFilledIconBeUsed = true,
+                        ),
                     )
                 } else {
                     SettingComponent(
                         SettingComponentParam(
                             isIconNeeded = true,
-                            title = Localization.rememberLocalizedString(Localization.Key.ManageConnectedServer),
+                            title =
+                            Localization.rememberLocalizedString(Localization.Key.ManageConnectedServer),
                             doesDescriptionExists = true,
-                            description = Localization.rememberLocalizedString(Localization.Key.ManageConnectedServerDesc),
+                            description =
+                            Localization.rememberLocalizedString(
+                                Localization.Key.ManageConnectedServerDesc,
+                            ),
                             isSwitchNeeded = false,
                             isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
@@ -488,10 +573,9 @@ fun DataSettingsScreen() {
                                 }
                             },
                             icon = Icons.Default.WbCloudy,
-                            shouldFilledIconBeUsed = true
-                        )
+                            shouldFilledIconBeUsed = true,
+                        ),
                     )
-
                 }
             }
 
@@ -509,18 +593,21 @@ fun DataSettingsScreen() {
                                 serverManagementViewModel.saveServerConnectionAndSync(
                                     serverConnection = preferences.currentSavedServerConfig(),
                                     timeStampAfter = {
-                                        preferences.lastSyncedLocally(serverManagementViewModel.preferencesRepository)
+                                        preferences.lastSyncedLocally(
+                                            serverManagementViewModel.preferencesRepository,
+                                        )
                                     },
                                     onSyncStart = {
                                         isForcePushAndPullProgressUIVisible = true
                                     },
                                     onCompletion = {
                                         isForcePushAndPullProgressUIVisible = false
-                                    })
+                                    },
+                                )
                             },
                             icon = Icons.Default.Sync,
-                            shouldFilledIconBeUsed = true
-                        )
+                            shouldFilledIconBeUsed = true,
+                        ),
                     )
                 }
             }
@@ -531,28 +618,33 @@ fun DataSettingsScreen() {
                         start = 15.dp,
                         end = 15.dp,
                         bottom = 30.dp,
-                    ), color = DividerDefaults.color.copy(0.5f)
+                    ),
+                    color = DividerDefaults.color.copy(0.5f),
                 )
                 SettingComponent(
                     SettingComponentParam(
                         isIconNeeded = true,
                         title = Localization.Key.EnforceStrictDefaultIDsLabel.rememberLocalizedString(),
                         doesDescriptionExists = true,
-                        description = Localization.Key.EnforceStrictDefaultIDsDesc.rememberLocalizedString(),
+                        description =
+                        Localization.Key.EnforceStrictDefaultIDsDesc.rememberLocalizedString(),
                         isSwitchNeeded = false,
                         isSwitchEnabled = preferences.useAmoledTheme,
                         onSwitchStateChange = {
-                            dataSettingsScreenVM.forceSetDefaultFolderToInternalIds(onStart = {
-                                labelForAlertDialogWithProgress =
-                                    Localization.Key.UpdatingInternalIDsLabel.getLocalizedString()
-                                showAlertDialogWithProgress.value = true
-                            }, onCompletion = {
-                                showAlertDialogWithProgress.value = false
-                            })
+                            dataSettingsScreenVM.forceSetDefaultFolderToInternalIds(
+                                onStart = {
+                                    labelForAlertDialogWithProgress =
+                                        Localization.Key.UpdatingInternalIDsLabel.getLocalizedString()
+                                    showAlertDialogWithProgress.value = true
+                                },
+                                onCompletion = {
+                                    showAlertDialogWithProgress.value = false
+                                },
+                            )
                         },
                         icon = Icons.Default.AutoFixHigh,
-                        shouldFilledIconBeUsed = true
-                    )
+                        shouldFilledIconBeUsed = true,
+                    ),
                 )
             }
 
@@ -562,28 +654,38 @@ fun DataSettingsScreen() {
                         start = 15.dp,
                         end = 15.dp,
                         bottom = 30.dp,
-                    ), color = DividerDefaults.color.copy(0.5f)
+                    ),
+                    color = DividerDefaults.color.copy(0.5f),
                 )
                 SettingComponent(
                     SettingComponentParam(
                         isIconNeeded = true,
-                        title = Localization.rememberLocalizedString(Localization.Key.DeleteDuplicateLinksFromAllCollections),
+                        title =
+                        Localization.rememberLocalizedString(
+                            Localization.Key.DeleteDuplicateLinksFromAllCollections,
+                        ),
                         doesDescriptionExists = true,
-                        description = Localization.rememberLocalizedString(Localization.Key.DeleteDuplicateLinksFromAllCollectionsDesc),
+                        description =
+                        Localization.rememberLocalizedString(
+                            Localization.Key.DeleteDuplicateLinksFromAllCollectionsDesc,
+                        ),
                         isSwitchNeeded = false,
                         isSwitchEnabled = preferences.useAmoledTheme,
                         onSwitchStateChange = {
-                            dataSettingsScreenVM.deleteDuplicates(onStart = {
-                                labelForAlertDialogWithProgress =
-                                    Localization.Key.DeletingDuplicatesLabel.getLocalizedString()
-                                showAlertDialogWithProgress.value = true
-                            }, onCompletion = {
-                                showAlertDialogWithProgress.value = false
-                            })
+                            dataSettingsScreenVM.deleteDuplicates(
+                                onStart = {
+                                    labelForAlertDialogWithProgress =
+                                        Localization.Key.DeletingDuplicatesLabel.getLocalizedString()
+                                    showAlertDialogWithProgress.value = true
+                                },
+                                onCompletion = {
+                                    showAlertDialogWithProgress.value = false
+                                },
+                            )
                         },
                         icon = Icons.Default.Delete,
-                        shouldFilledIconBeUsed = true
-                    )
+                        shouldFilledIconBeUsed = true,
+                    ),
                 )
             }
             item {
@@ -592,22 +694,29 @@ fun DataSettingsScreen() {
                         start = 15.dp,
                         end = 15.dp,
                         bottom = 30.dp,
-                    ), color = DividerDefaults.color.copy(0.5f)
+                    ),
+                    color = DividerDefaults.color.copy(0.5f),
                 )
                 SettingComponent(
                     SettingComponentParam(
                         isIconNeeded = true,
-                        title = Localization.rememberLocalizedString(Localization.Key.DeleteEntireDataPermanently),
+                        title =
+                        Localization.rememberLocalizedString(
+                            Localization.Key.DeleteEntireDataPermanently,
+                        ),
                         doesDescriptionExists = true,
-                        description = Localization.rememberLocalizedString(Localization.Key.DeleteEntireDataPermanentlyDesc),
+                        description =
+                        Localization.rememberLocalizedString(
+                            Localization.Key.DeleteEntireDataPermanentlyDesc,
+                        ),
                         isSwitchNeeded = false,
                         isSwitchEnabled = preferences.useAmoledTheme,
                         onSwitchStateChange = {
                             shouldDeleteEntireDialogBoxAppear.value = true
                         },
                         icon = Icons.Default.DeleteForever,
-                        shouldFilledIconBeUsed = true
-                    )
+                        shouldFilledIconBeUsed = true,
+                    ),
                 )
             }
             item {
@@ -616,13 +725,15 @@ fun DataSettingsScreen() {
                         start = 15.dp,
                         end = 15.dp,
                         bottom = 30.dp,
-                    ), color = DividerDefaults.color.copy(0.5f)
+                    ),
+                    color = DividerDefaults.color.copy(0.5f),
                 )
                 SettingComponent(
                     SettingComponentParam(
                         title = Localization.rememberLocalizedString(Localization.Key.ClearImageCache),
                         doesDescriptionExists = true,
-                        description = Localization.rememberLocalizedString(Localization.Key.ClearImageCacheDesc),
+                        description =
+                        Localization.rememberLocalizedString(Localization.Key.ClearImageCacheDesc),
                         isSwitchNeeded = false,
                         isIconNeeded = true,
                         icon = Icons.Default.BrokenImage,
@@ -633,8 +744,8 @@ fun DataSettingsScreen() {
                                 it.memoryCache?.clear()
                             }
                         },
-                        shouldFilledIconBeUsed = true
-                    )
+                        shouldFilledIconBeUsed = true,
+                    ),
                 )
             }
             item {
@@ -642,7 +753,8 @@ fun DataSettingsScreen() {
                     Modifier.padding(
                         start = 15.dp,
                         end = 15.dp,
-                    ), color = DividerDefaults.color.copy(0.5f)
+                    ),
+                    color = DividerDefaults.color.copy(0.5f),
                 )
                 Text(
                     text = Localization.Key.Refresh.rememberLocalizedString(),
@@ -650,29 +762,38 @@ fun DataSettingsScreen() {
                     fontSize = 16.sp,
                     lineHeight = 20.sp,
                     textAlign = TextAlign.Start,
-                    modifier = Modifier.padding(
+                    modifier =
+                    Modifier.padding(
                         top = 15.dp,
-                        start = 15.dp, end = 15.dp,
-                        bottom = if (DataSettingsScreenVM.refreshLinksState.value.isInRefreshingState || dataSettingsScreenVM.isAnyRefreshingScheduledOnAndroid.value) 0.dp else 15.dp
+                        start = 15.dp,
+                        end = 15.dp,
+                        bottom =
+                        if (
+                            DataSettingsScreenVM.refreshLinksState.value.isInRefreshingState ||
+                            dataSettingsScreenVM.isAnyRefreshingScheduledOnAndroid.value
+                        ) {
+                            0.dp
+                        } else {
+                            15.dp
+                        },
                     ),
                 )
-                AnimatedContent(
-                    targetState = refreshesInProgress
-                ) { refreshesInProgress ->
+                AnimatedContent(targetState = refreshesInProgress) { refreshesInProgress ->
                     if (refreshesInProgress) {
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Column(
-                                modifier = Modifier.padding(
+                                modifier =
+                                Modifier.padding(
                                     start = 15.dp,
                                     end = 15.dp,
-                                    bottom = 20.dp
+                                    bottom = 20.dp,
                                 )
                                     .fillMaxWidth()
                                     .border(
                                         width = 1.dp,
                                         color = MaterialTheme.colorScheme.outline.copy(0.5f),
-                                        shape = RoundedCornerShape(15.dp)
-                                    )
+                                        shape = RoundedCornerShape(15.dp),
+                                    ),
                             ) {
                                 Text(
                                     text = Localization.Key.RefreshType.rememberLocalizedString(),
@@ -680,38 +801,54 @@ fun DataSettingsScreen() {
                                     lineHeight = 20.sp,
                                     textAlign = TextAlign.Start,
                                     modifier = Modifier.padding(start = 15.dp, top = 15.dp),
-                                    color = MaterialTheme.colorScheme.secondary
+                                    color = MaterialTheme.colorScheme.secondary,
                                 )
                                 for (refreshLinkType in RefreshLinkType.entries) {
-                                    val isSelected =
-                                        refreshLinkType.name == preferences.selectedLinkRefreshType.name
+                                    val isSelected = refreshLinkType.name == preferences.selectedLinkRefreshType.name
                                     Row(
-                                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
-                                            .fillMaxWidth().clickable(onClick = {
-                                                dataSettingsScreenVM.changeSettingPreferenceValue(
-                                                    preferenceKey = stringPreferencesKey(
-                                                        AppPreferences.REFRESH_LINK_TYPE.key
-                                                    ),
-                                                    newValue = refreshLinkType.name
-                                                )
-                                            }, indication = null, interactionSource = null)
+                                        modifier =
+                                        Modifier.pointerHoverIcon(PointerIcon.Hand)
+                                            .fillMaxWidth()
+                                            .clickable(
+                                                onClick = {
+                                                    dataSettingsScreenVM.changeSettingPreferenceValue(
+                                                        preferenceKey =
+                                                        stringPreferencesKey(
+                                                            AppPreferences.REFRESH_LINK_TYPE.key,
+                                                        ),
+                                                        newValue = refreshLinkType.name,
+                                                    )
+                                                },
+                                                indication = null,
+                                                interactionSource = null,
+                                            )
                                             .pressScaleEffect(),
-                                        verticalAlignment = Alignment.CenterVertically
+                                        verticalAlignment = Alignment.CenterVertically,
                                     ) {
                                         RadioButton(
                                             selected = isSelected,
                                             onClick = {
                                                 dataSettingsScreenVM.changeSettingPreferenceValue(
-                                                    preferenceKey = stringPreferencesKey(
-                                                        AppPreferences.REFRESH_LINK_TYPE.key
-                                                    ),
-                                                    newValue = refreshLinkType.name
+                                                    preferenceKey =
+                                                    stringPreferencesKey(AppPreferences.REFRESH_LINK_TYPE.key),
+                                                    newValue = refreshLinkType.name,
                                                 )
-                                            })
+                                            },
+                                        )
                                         Text(
                                             text = refreshLinkType.asLocalizedString(),
-                                            color = if (isSelected) MaterialTheme.colorScheme.primary else LocalContentColor.current,
-                                            style = if (isSelected) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall
+                                            color =
+                                            if (isSelected) {
+                                                MaterialTheme.colorScheme.primary
+                                            } else {
+                                                LocalContentColor.current
+                                            },
+                                            style =
+                                            if (isSelected) {
+                                                MaterialTheme.typography.titleLarge
+                                            } else {
+                                                MaterialTheme.typography.titleSmall
+                                            },
                                         )
                                     }
                                 }
@@ -721,45 +858,54 @@ fun DataSettingsScreen() {
                                     textStyle = MaterialTheme.typography.titleSmall,
                                     trailingIcon = {
                                         FilledTonalIconButton(
-                                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                                .pressScaleEffect().padding(end = 5.dp), onClick = {
+                                            modifier =
+                                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                                .pressScaleEffect()
+                                                .padding(end = 5.dp),
+                                            onClick = {
                                                 dataSettingsScreenVM.changeSettingPreferenceValue(
-                                                    preferenceKey = intPreferencesKey(
-                                                        AppPreferences.MAX_CONCURRENT_REFRESH_COUNT.key
+                                                    preferenceKey =
+                                                    intPreferencesKey(
+                                                        AppPreferences.MAX_CONCURRENT_REFRESH_COUNT.key,
                                                     ),
-                                                    newValue = maxConcurrentRefreshCount
+                                                    newValue = maxConcurrentRefreshCount,
                                                 )
                                                 localFocusManager.clearFocus(force = true)
-                                            }) {
+                                            },
+                                        ) {
                                             Icon(
                                                 imageVector = Icons.Default.Save,
-                                                contentDescription = null
+                                                contentDescription = null,
                                             )
                                         }
                                     },
                                     label = {
                                         Text(
-                                            text = Localization.Key.RefreshLinkTextFieldLabel.rememberLocalizedString(),
+                                            text =
+                                            Localization.Key.RefreshLinkTextFieldLabel.rememberLocalizedString(),
                                             style = MaterialTheme.typography.titleMedium,
                                             textAlign = TextAlign.Start,
                                         )
                                     },
                                     value = maxConcurrentRefreshCount.toString(),
                                     onValueChange = {
-                                        maxConcurrentRefreshCount = try {
-                                            it.toInt()
-                                        } catch (_: Exception) {
-                                            0
-                                        } catch (_: Error) {
-                                            0
-                                        }.coerceAtLeast(minimumValue = 1)
+                                        maxConcurrentRefreshCount =
+                                            try {
+                                                it.toInt()
+                                            } catch (_: Exception) {
+                                                0
+                                            } catch (_: Error) {
+                                                0
+                                            }
+                                                .coerceAtLeast(minimumValue = 1)
                                     },
-                                    modifier = Modifier.padding(
+                                    modifier =
+                                    Modifier.padding(
                                         start = 15.dp,
                                         end = 15.dp,
-                                        bottom = 15.dp
+                                        bottom = 15.dp,
                                     )
-                                        .fillMaxWidth()
+                                        .fillMaxWidth(),
                                 )
                             }
 
@@ -767,7 +913,8 @@ fun DataSettingsScreen() {
                                 SettingComponentParam(
                                     title = Localization.Key.RefreshLinksComponentLabel.rememberLocalizedString(),
                                     doesDescriptionExists = true,
-                                    description = Localization.Key.RefreshLinksComponentDesc.rememberLocalizedString(),
+                                    description =
+                                    Localization.Key.RefreshLinksComponentDesc.rememberLocalizedString(),
                                     isSwitchNeeded = false,
                                     isIconNeeded = true,
                                     icon = Icons.Default.Refresh,
@@ -775,98 +922,124 @@ fun DataSettingsScreen() {
                                     onSwitchStateChange = {
                                         dataSettingsScreenVM.refreshAllLinks()
                                     },
-                                    shouldFilledIconBeUsed = true
-                                )
+                                    shouldFilledIconBeUsed = true,
+                                ),
                             )
                         }
                     } else {
-                        Box(
-                            modifier = Modifier.fillMaxWidth().wrapContentHeight()
-                                .animateContentSize()
-                        ) {
+                        Box(modifier = Modifier.fillMaxWidth().wrapContentHeight().animateContentSize()) {
                             if (dataSettingsScreenVM.isAnyRefreshingScheduledOnAndroid.value) {
                                 InfoCard(
                                     info = Localization.Key.WorkManagerDesc.rememberLocalizedString(),
-                                    paddingValues = PaddingValues(start = 20.dp, end = 20.dp)
+                                    paddingValues = PaddingValues(start = 20.dp, end = 20.dp),
                                 )
                             }
                             if (DataSettingsScreenVM.refreshLinksState.value.isInRefreshingState) {
-                                Column(
-                                    modifier = Modifier.fillMaxWidth().wrapContentHeight()
-                                ) {
+                                Column(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
                                     Text(
                                         text = Localization.rememberLocalizedString(Localization.Key.RefreshingLinks),
                                         style = MaterialTheme.typography.titleMedium,
-                                        modifier = Modifier.padding(
-                                            start = 15.dp, end = 15.dp
-                                        )
+                                        modifier =
+                                        Modifier.padding(
+                                            start = 15.dp,
+                                            end = 15.dp,
+                                        ),
                                     )
                                     if (DataSettingsScreenVM.refreshLinksState.value.currentIteration != 0) {
                                         Row(
-                                            modifier = Modifier.fillMaxWidth()
-                                                .padding(start = 15.dp),
+                                            modifier = Modifier.fillMaxWidth().padding(start = 15.dp),
                                             verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.SpaceBetween
+                                            horizontalArrangement = Arrangement.SpaceBetween,
                                         ) {
                                             LinearProgressIndicator(
                                                 modifier = Modifier.fillMaxWidth(0.85f),
                                                 progress = {
-                                                    DataSettingsScreenVM.refreshLinksState.value.currentIteration.toFloat() / DataSettingsScreenVM.totalLinksForRefresh.value
-                                                })
+                                                    DataSettingsScreenVM.refreshLinksState.value.currentIteration
+                                                        .toFloat() / DataSettingsScreenVM.totalLinksForRefresh.value
+                                                },
+                                            )
                                             IconButton(
                                                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
                                                 onClick = {
                                                     dataSettingsScreenVM.cancelRefreshingAllLinks()
-                                                }) {
+                                                },
+                                            ) {
                                                 Icon(
                                                     imageVector = Icons.Default.Cancel,
-                                                    contentDescription = ""
+                                                    contentDescription = "",
                                                 )
                                             }
                                         }
                                     }
                                     Text(
-                                        text = Localization.Key.NoOfLinksRefreshed.rememberLocalizedString()
+                                        text =
+                                        Localization.Key.NoOfLinksRefreshed.rememberLocalizedString()
                                             .replace(
                                                 LinkoraPlaceHolder.First.value,
-                                                DataSettingsScreenVM.refreshLinksState.value.currentIteration.toString()
-                                            ).replace(
+                                                DataSettingsScreenVM.refreshLinksState.value.currentIteration
+                                                    .toString(),
+                                            )
+                                            .replace(
                                                 LinkoraPlaceHolder.Second.value,
-                                                DataSettingsScreenVM.totalLinksForRefresh.value.toString()
+                                                DataSettingsScreenVM.totalLinksForRefresh.value.toString(),
                                             ),
                                         style = MaterialTheme.typography.titleSmall,
-                                        modifier = Modifier.padding(
-                                            start = 15.dp, end = 15.dp
+                                        modifier =
+                                        Modifier.padding(
+                                            start = 15.dp,
+                                            end = 15.dp,
                                         ),
-                                        lineHeight = 18.sp
+                                        lineHeight = 18.sp,
                                     )
                                     Card(
-                                        border = BorderStroke(
-                                            1.dp, contentColorFor(MaterialTheme.colorScheme.surface)
+                                        border =
+                                        BorderStroke(
+                                            1.dp,
+                                            contentColorFor(MaterialTheme.colorScheme.surface),
                                         ),
-                                        colors = CardDefaults.cardColors(containerColor = AlertDialogDefaults.containerColor),
-                                        modifier = Modifier.fillMaxWidth().padding(
-                                            start = 15.dp, end = 15.dp, top = 20.dp
-                                        )
+                                        colors =
+                                        CardDefaults.cardColors(
+                                            containerColor = AlertDialogDefaults.containerColor,
+                                        ),
+                                        modifier =
+                                        Modifier.fillMaxWidth()
+                                            .padding(
+                                                start = 15.dp,
+                                                end = 15.dp,
+                                                top = 20.dp,
+                                            ),
                                     ) {
                                         Row(
-                                            modifier = Modifier.fillMaxWidth().wrapContentHeight()
+                                            modifier =
+                                            Modifier.fillMaxWidth()
+                                                .wrapContentHeight()
                                                 .padding(
-                                                    top = 10.dp, bottom = 10.dp
-                                                ), verticalAlignment = Alignment.CenterVertically
+                                                    top = 10.dp,
+                                                    bottom = 10.dp,
+                                                ),
+                                            verticalAlignment = Alignment.CenterVertically,
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Outlined.Info,
                                                 contentDescription = null,
-                                                modifier = Modifier.padding(
-                                                    start = 10.dp, end = 10.dp
-                                                )
+                                                modifier =
+                                                Modifier.padding(
+                                                    start = 10.dp,
+                                                    end = 10.dp,
+                                                ),
                                             )
                                             Text(
-                                                text = if (platform is Platform.Android) Localization.Key.RefreshingLinksAndroidDesc.rememberLocalizedString() else Localization.Key.RefreshingLinksDesktopDesc.rememberLocalizedString(),
+                                                text =
+                                                if (platform is Platform.Android) {
+                                                    Localization.Key.RefreshingLinksAndroidDesc
+                                                        .rememberLocalizedString()
+                                                } else {
+                                                    Localization.Key.RefreshingLinksDesktopDesc
+                                                        .rememberLocalizedString()
+                                                },
                                                 style = MaterialTheme.typography.titleSmall,
                                                 lineHeight = 18.sp,
-                                                modifier = Modifier.padding(end = 15.dp)
+                                                modifier = Modifier.padding(end = 15.dp),
                                             )
                                         }
                                     }
@@ -885,73 +1058,81 @@ fun DataSettingsScreen() {
         val fileLocation = rememberSaveable {
             mutableStateOf("")
         }
-        AlertDialog(onDismissRequest = {
-            showFileLocationPickerDialog.value = false
-        }, confirmButton = {
-            Button(
-                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth(),
-                onClick = {
-                    dataSettingsScreenVM.importDataFromAFile(
-                        importFileType = ImportFileType.valueOf(
-                            selectedImportFormat.value
-                        ),
-                        onStart = {
-                            showFileLocationPickerDialog.value = false
-                            isImportExportProgressUIVisible = true
-                        },
-                        onCompletion = {
-                            isImportExportProgressUIVisible = false
-                            showFileLocationPickerDialog.value = false
-                        },
-                        importFileSelectionMethod = ImportFileSelectionMethod.FileLocationString to fileLocation.value
-                    )
-                }) {
-                Text(
-                    text = Localization.Key.ImportLabel.rememberLocalizedString(),
-                    style = MaterialTheme.typography.titleSmall
-                )
-            }
-        }, dismissButton = {
-            OutlinedButton(
-                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth(),
-                onClick = {
-                    showFileLocationPickerDialog.value = false
-                }) {
-                Text(
-                    text = Localization.Key.Cancel.rememberLocalizedString(),
-                    style = MaterialTheme.typography.titleSmall
-                )
-            }
-        }, text = {
-            OutlinedTextField(
-                label = {
+        AlertDialog(
+            onDismissRequest = {
+                showFileLocationPickerDialog.value = false
+            },
+            confirmButton = {
+                Button(
+                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth(),
+                    onClick = {
+                        dataSettingsScreenVM.importDataFromAFile(
+                            importFileType = ImportFileType.valueOf(selectedImportFormat.value),
+                            onStart = {
+                                showFileLocationPickerDialog.value = false
+                                isImportExportProgressUIVisible = true
+                            },
+                            onCompletion = {
+                                isImportExportProgressUIVisible = false
+                                showFileLocationPickerDialog.value = false
+                            },
+                            importFileSelectionMethod =
+                            ImportFileSelectionMethod.FileLocationString to fileLocation.value,
+                        )
+                    },
+                ) {
                     Text(
-                        text = Localization.Key.FileLocationLabel.rememberLocalizedString(),
+                        text = Localization.Key.ImportLabel.rememberLocalizedString(),
                         style = MaterialTheme.typography.titleSmall,
-                        maxLines = 1
                     )
-                },
-                value = fileLocation.value,
-                onValueChange = {
-                    fileLocation.value = it
-                },
-                textStyle = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }, title = {
-            Text(
-                text = Localization.Key.ProvideAValidFileLocation.rememberLocalizedString(),
-                style = MaterialTheme.typography.titleLarge,
-                fontSize = 18.sp
-            )
-        })
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth(),
+                    onClick = {
+                        showFileLocationPickerDialog.value = false
+                    },
+                ) {
+                    Text(
+                        text = Localization.Key.Cancel.rememberLocalizedString(),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                }
+            },
+            text = {
+                OutlinedTextField(
+                    label = {
+                        Text(
+                            text = Localization.Key.FileLocationLabel.rememberLocalizedString(),
+                            style = MaterialTheme.typography.titleSmall,
+                            maxLines = 1,
+                        )
+                    },
+                    value = fileLocation.value,
+                    onValueChange = {
+                        fileLocation.value = it
+                    },
+                    textStyle = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            },
+            title = {
+                Text(
+                    text = Localization.Key.ProvideAValidFileLocation.rememberLocalizedString(),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontSize = 18.sp,
+                )
+            },
+        )
     }
     ServerManagementBottomSheet(
         sheetState = serverInfoBtmSheetState,
         isVisible = shouldServerInfoBtmSheetBeVisible,
         removeTheConnection = { onDeletion ->
             serverManagementViewModel.deleteTheConnection(onDeletion)
-        }, preferences = preferences
+        },
+        preferences = preferences,
     )
     LogsScreen(
         isVisible = isImportExportProgressUIVisible,
@@ -960,7 +1141,7 @@ fun DataSettingsScreen() {
         },
         logs = dataSettingsScreenVM.importExportProgressLogs,
         operationTitle = dataOperationTitle.value,
-        operationDesc = Localization.Key.ImportExportScreenTopAppBarDesc.rememberLocalizedString()
+        operationDesc = Localization.Key.ImportExportScreenTopAppBarDesc.rememberLocalizedString(),
     )
     LogsScreen(
         isVisible = isForcePushAndPullProgressUIVisible,
@@ -970,41 +1151,53 @@ fun DataSettingsScreen() {
         },
         logs = serverManagementViewModel.dataSyncLogs,
         operationTitle = Localization.Key.SyncingDataLabel.rememberLocalizedString(),
-        operationDesc = Localization.Key.InitiateManualSyncDescAlt.rememberLocalizedString()
+        operationDesc = Localization.Key.InitiateManualSyncDescAlt.rememberLocalizedString(),
     )
     if (shouldDeleteEntireDialogBoxAppear.value) {
         DeleteFolderOrLinkDialog(
             preferences = preferences,
-            deleteFolderOrLinkDialogParam = DeleteFolderOrLinkDialogParam(
+            deleteFolderOrLinkDialogParam =
+            DeleteFolderOrLinkDialogParam(
                 onDismiss = {
                     shouldDeleteEntireDialogBoxAppear.value = false
                 },
                 deleteDialogBoxType = DeleteDialogBoxType.REMOVE_ENTIRE_DATA,
                 onDeleteClick = { onCompletion, deleteEverythingFromRemote ->
                     dataSettingsScreenVM.deleteEntireDatabase(
-                        deleteEverythingFromRemote, onCompletion
+                        deleteEverythingFromRemote,
+                        onCompletion,
                     )
-                })
+                },
+            ),
         )
     }
     if (showAlertDialogWithProgress.value) {
-        AlertDialog(onDismissRequest = {}, content = {
-            Column(
-                modifier = Modifier.clip(AlertDialogDefaults.shape)
-                    .background(AlertDialogDefaults.containerColor).padding(15.dp),
-                verticalArrangement = Arrangement.spacedBy(15.dp)
-            ) {
-                Text(
-                    text = labelForAlertDialogWithProgress,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontSize = 18.sp
-                )
-                LinearProgressIndicator()
-            }
-        })
+        AlertDialog(
+            onDismissRequest = {},
+            content = {
+                Column(
+                    modifier =
+                    Modifier.clip(AlertDialogDefaults.shape)
+                        .background(AlertDialogDefaults.containerColor)
+                        .padding(15.dp),
+                    verticalArrangement = Arrangement.spacedBy(15.dp),
+                ) {
+                    Text(
+                        text = labelForAlertDialogWithProgress,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontSize = 18.sp,
+                    )
+                    LinearProgressIndicator()
+                }
+            },
+        )
     }
     PlatformSpecificBackHandler {
-        if (isImportExportProgressUIVisible || showAlertDialogWithProgress.value || shouldDeleteEntireDialogBoxAppear.value) {
+        if (
+            isImportExportProgressUIVisible ||
+            showAlertDialogWithProgress.value ||
+            shouldDeleteEntireDialogBoxAppear.value
+        ) {
             return@PlatformSpecificBackHandler
         } else {
             navController.navigateUp()

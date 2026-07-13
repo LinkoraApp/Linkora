@@ -7,5 +7,5 @@ import com.sakethh.linkora.domain.model.panel.PanelFolder
 data class ProcessedPanelFolders(
     val panelFolders: List<PanelFolder>,
     val links: List<List<Link>>,
-    val folders: List<List<Folder>>
+    val folders: List<List<Folder>>,
 )

@@ -3,6 +3,7 @@
 import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.io.ByteArrayOutputStream
 
 plugins {
     kotlin("multiplatform")
@@ -60,46 +61,85 @@ kotlin {
             }
         }
     }
-
 }
 
-val cargoBuildAndroid = tasks.register("cargoBuildAndroid") {
-    group = "rust"
-    outputs.dir(jniLibsDir)
-    doLast {
-        val ndkBase = file("${System.getProperty("user.home")}/Android/Sdk/ndk")
-        val ndkDir = ndkBase.listFiles()?.maxOrNull()
-            ?: throw GradleException("NDK not found in $ndkBase. Please install it via Android Studio SDK Manager.")
+val cargoBuildAndroid =
+    tasks.register("cargoBuildAndroid") {
+        group = "rust"
+        outputs.dir(jniLibsDir)
+        doLast {
+            val sdkPath =
+                System.getenv("ANDROID_HOME")
+                    ?: System.getenv("ANDROID_SDK_ROOT")
+                    ?: file("${System.getProperty("user.home")}/Android/Sdk").absolutePath
 
-        listOf(
-            "aarch64-linux-android",
-            "x86_64-linux-android",
-            "armv7-linux-androideabi"
-        ).forEach { target ->
-            exec {
-                workingDir = rustBasePath
-                environment("ANDROID_NDK_HOME", ndkDir.absolutePath)
-                commandLine(
-                    "cargo",
-                    "ndk",
-                    "-t",
-                    target,
-                    "-o",
-                    jniLibsDir.get().asFile.absolutePath,
-                    "build",
-                    "--release"
+            val ndkBase = file("$sdkPath/ndk")
+            val ndkDir =
+                ndkBase.listFiles()?.maxOrNull()
+                    ?: throw GradleException("NDK not found in $ndkBase. Please install it via Android Studio SDK Manager.")
+
+            val androidTargets =
+                listOf(
+                    "aarch64-linux-android",
+                    "x86_64-linux-android",
+                    "armv7-linux-androideabi",
                 )
+
+            println("Ensuring Android Rust targets are installed...")
+            exec {
+                commandLine("rustup", "target", "add", *androidTargets.toTypedArray())
+            }
+
+            val hasCargoNdk =
+                try {
+                    val output = ByteArrayOutputStream()
+                    exec {
+                        commandLine("cargo", "--list")
+                        standardOutput = output
+                    }
+                    output.toString().contains(" ndk")
+                } catch (e: Exception) {
+                    false
+                }
+
+            if (!hasCargoNdk) {
+                println("cargo-ndk is missing. Installing it now (this will take a moment)...")
+                exec {
+                    commandLine("cargo", "install", "cargo-ndk")
+                }
+            }
+
+            androidTargets.forEach { target ->
+                exec {
+                    workingDir = rustBasePath
+                    environment("ANDROID_NDK_HOME", ndkDir.absolutePath)
+                    commandLine(
+                        "cargo",
+                        "ndk",
+                        "-t",
+                        target,
+                        "-o",
+                        jniLibsDir.get().asFile.absolutePath,
+                        "build",
+                        "--release",
+                    )
+                }
             }
         }
     }
-}
 
 android {
     namespace = "com.sakethh.linkora.web_capture"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk =
+        libs.versions.android.compileSdk
+            .get()
+            .toInt()
 
     defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
     }
     buildTypes {
         release {
@@ -121,18 +161,23 @@ tasks.register("cargoBuildDesktop") {
     group = "rust"
     doLast {
         val currentOs = OperatingSystem.current()
-        val (desktopTarget, binaryName) = when {
-            currentOs.isLinux -> "x86_64-unknown-linux-gnu" to "libweb_capture.so"
-            currentOs.isWindows -> "x86_64-pc-windows-msvc" to "web_capture.dll"
-            else -> throw GradleException("Unsupported host operating system for building monolith-binding")
-        }
+        val (desktopTarget, binaryName) =
+            when {
+                currentOs.isLinux -> "x86_64-unknown-linux-gnu" to "libweb_capture.so"
+                currentOs.isWindows -> "x86_64-pc-windows-msvc" to "web_capture.dll"
+                else -> throw GradleException("Unsupported host operating system for building monolith-binding")
+            }
 
         exec {
             workingDir = rustBasePath
             commandLine("cargo", "build", "--release", "--target", desktopTarget)
         }
 
-        val libDir = layout.buildDirectory.dir("rustLibs/desktop").get().asFile
+        val libDir =
+            layout.buildDirectory
+                .dir("rustLibs/desktop")
+                .get()
+                .asFile
         libDir.mkdirs()
 
         val sourceFile = File("$rustBasePath/target/$desktopTarget/release/$binaryName")
@@ -150,7 +195,8 @@ tasks.register("cargoBuildDesktop") {
     }
 }
 
-tasks.matching { it.name == "processJvmResources" || it.name == "jvmProcessResources" }
+tasks
+    .matching { it.name == "processJvmResources" || it.name == "jvmProcessResources" }
     .configureEach {
         dependsOn("cargoBuildDesktop")
     }
@@ -165,8 +211,9 @@ tasks.named<Test>("desktopTest") {
     environment("LD_LIBRARY_PATH", rustBuildDir.absolutePath)
 }
 
-tasks.matching {
-    it.name.startsWith("merge") && it.name.endsWith("JniLibFolders")
-}.configureEach {
-    dependsOn(cargoBuildAndroid)
-}
+tasks
+    .matching {
+        it.name.startsWith("merge") && it.name.endsWith("JniLibFolders")
+    }.configureEach {
+        dependsOn(cargoBuildAndroid)
+    }

@@ -33,7 +33,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class LocalPanelsRepoImplTest {
-
     private lateinit var database: LocalDatabase
     private lateinit var panelsDao: PanelsDao
     private lateinit var foldersDao: FoldersDao
@@ -48,10 +47,11 @@ class LocalPanelsRepoImplTest {
     fun setup() {
         clearAllMocks()
 
-        database = Room.inMemoryDatabaseBuilder<LocalDatabase>()
-            .setDriver(BundledSQLiteDriver())
-            .setQueryCoroutineContext(Dispatchers.Unconfined)
-            .build()
+        database =
+            Room.inMemoryDatabaseBuilder<LocalDatabase>()
+                .setDriver(BundledSQLiteDriver())
+                .setQueryCoroutineContext(Dispatchers.Unconfined)
+                .build()
 
         panelsDao = database.panelsDao
         foldersDao = database.foldersDao
@@ -60,26 +60,29 @@ class LocalPanelsRepoImplTest {
         pendingSyncQueueRepo = mockk<PendingSyncQueueRepo>(relaxed = true)
         preferencesRepository = mockk<PreferencesRepository>(relaxed = true)
 
-        val mockPrefs = mockk<AppPreferences>(relaxed = true) {
-            every { serverBaseUrl } returns "https://server.linkora.com"
-            every { serverSecurityToken } returns "mock-auth-token"
-            every { correlation } returns Correlation(
-                id = "test-correlation-id",
-                clientName = "test-client"
-            )
-        }
+        val mockPrefs =
+            mockk<AppPreferences>(relaxed = true) {
+                every { serverBaseUrl } returns "https://server.linkora.com"
+                every { serverSecurityToken } returns "mock-auth-token"
+                every { correlation } returns
+                    Correlation(
+                        id = "test-correlation-id",
+                        clientName = "test-client",
+                    )
+            }
         coEvery { preferencesRepository.getPreferences() } returns mockPrefs
 
         mockkStatic("com.sakethh.linkora.utils.ExtensionsKt")
         every { any<AppPreferences>().canPushToServer() } returns true
 
-        localPanelsRepo = LocalPanelsRepoImpl(
-            panelsDao = panelsDao,
-            remotePanelsRepo = remotePanelsRepo,
-            foldersDao = foldersDao,
-            pendingSyncQueueRepo = pendingSyncQueueRepo,
-            preferencesRepository = preferencesRepository
-        )
+        localPanelsRepo =
+            LocalPanelsRepoImpl(
+                panelsDao = panelsDao,
+                remotePanelsRepo = remotePanelsRepo,
+                foldersDao = foldersDao,
+                pendingSyncQueueRepo = pendingSyncQueueRepo,
+                preferencesRepository = preferencesRepository,
+            )
     }
 
     @AfterTest
@@ -87,33 +90,32 @@ class LocalPanelsRepoImplTest {
         database.close()
     }
 
-    private suspend fun executeAndGetErrorMessage(block: suspend () -> List<Any>): String {
-        return try {
-            val results = block()
-            val lastResult = results.lastOrNull()
-            if (lastResult is Result.Failure<*>) {
-                lastResult.message
-            } else {
-                ""
-            }
-        } catch (e: Throwable) {
-            e.message?.takeIf { it.isNotBlank() } ?: e.javaClass.simpleName
+    private suspend fun executeAndGetErrorMessage(block: suspend () -> List<Any>): String = try {
+        val results = block()
+        val lastResult = results.lastOrNull()
+        if (lastResult is Result.Failure<*>) {
+            lastResult.message
+        } else {
+            ""
         }
+    } catch (e: Throwable) {
+        e.message?.takeIf { it.isNotBlank() } ?: e.javaClass.simpleName
     }
 
     @Test
-    fun `adding a new panel locally successfully executes remote call and updates local DB`() =
-        runTest {
-            val panel = Panel(localId = 0, panelName = "Research", lastModified = 0L)
+    fun `adding a new panel locally successfully executes remote call and updates local DB`() = runTest {
+        val panel = Panel(localId = 0, panelName = "Research", lastModified = 0L)
 
-            localPanelsRepo.addANewPanel(panel, viaSocket = false).toList()
+        localPanelsRepo.addANewPanel(panel, viaSocket = false).toList()
 
-            val dbPanels = panelsDao.getAllThePanelsAsAList()
-            assertEquals(1, dbPanels.size)
-            assertEquals("Research", dbPanels.first().panelName)
+        val dbPanels = panelsDao.getAllThePanelsAsAList()
+        assertEquals(1, dbPanels.size)
+        assertEquals("Research", dbPanels.first().panelName)
 
-            coVerify(exactly = 1) { remotePanelsRepo.addANewPanel(match { it.panelName == "Research" }) }
+        coVerify(exactly = 1) {
+            remotePanelsRepo.addANewPanel(match { it.panelName == "Research" })
         }
+    }
 
     @Test
     fun `viaSocket flag entirely bypasses remote repo execution during panel creation`() = runTest {
@@ -130,148 +132,157 @@ class LocalPanelsRepoImplTest {
     }
 
     @Test
-    fun `network failure during remote panel creation explicitly captures dto to pending sync queue`() =
-        runTest {
-            coEvery { remotePanelsRepo.addANewPanel(any()) }  returns flowOf(Result.Failure("Network Timeout"))
+    fun `network failure during remote panel creation explicitly captures dto to pending sync queue`() = runTest {
+        coEvery { remotePanelsRepo.addANewPanel(any()) } returns
+            flowOf(Result.Failure("Network Timeout"))
 
-            val panel = Panel(localId = 0, panelName = "QueuedPanel", lastModified = 0L)
+        val panel = Panel(localId = 0, panelName = "QueuedPanel", lastModified = 0L)
 
-            localPanelsRepo.addANewPanel(panel, viaSocket = false).toList()
+        localPanelsRepo.addANewPanel(panel, viaSocket = false).toList()
 
-            coVerify(exactly = 1) {
-                pendingSyncQueueRepo.addInQueue(match { queueItem ->
-                    queueItem.operation == "ADD_A_NEW_PANEL" && queueItem.payload.contains("QueuedPanel")
-                })
-            }
+        coVerify(exactly = 1) {
+            pendingSyncQueueRepo.addInQueue(
+                match { queueItem ->
+                    queueItem.operation == "ADD_A_NEW_PANEL" &&
+                        queueItem.payload.contains("QueuedPanel")
+                },
+            )
         }
+    }
 
     @Test
-    fun `attempting to update or delete an unsynced panel throws local validation exception`() =
-        runTest {
-            val panelId = panelsDao.addANewPanel(
+    fun `attempting to update or delete an unsynced panel throws local validation exception`() = runTest {
+        val panelId =
+            panelsDao.addANewPanel(
                 Panel(
                     localId = 0,
                     panelName = "Unsynced",
                     lastModified = 0L,
-                    remoteId = null
-                )
+                    remoteId = null,
+                ),
             )
 
-            val updateError = executeAndGetErrorMessage {
-                localPanelsRepo.updateAPanelName("NewName", panelId, viaSocket = false).toList()
-            }
-
-            val deleteError = executeAndGetErrorMessage {
-                localPanelsRepo.deleteAPanel(panelId, viaSocket = false).toList()
-            }
-
-            assertTrue(
-                updateError.contains(
-                    "Failed requirement",
-                    ignoreCase = true
-                ) || updateError.contains("null", ignoreCase = true),
-                "Expected require() to fail for update with null remoteId, got: $updateError"
-            )
-
-            assertTrue(
-                deleteError.contains(
-                    "Failed requirement",
-                    ignoreCase = true
-                ) || deleteError.contains("null", ignoreCase = true),
-                "Expected require() to fail for delete with null remoteId, got: $deleteError"
-            )
+        val updateError = executeAndGetErrorMessage {
+            localPanelsRepo.updateAPanelName("NewName", panelId, viaSocket = false).toList()
         }
 
+        val deleteError = executeAndGetErrorMessage {
+            localPanelsRepo.deleteAPanel(panelId, viaSocket = false).toList()
+        }
+
+        assertTrue(
+            updateError.contains(
+                "Failed requirement",
+                ignoreCase = true,
+            ) ||
+                updateError.contains("null", ignoreCase = true),
+            "Expected require() to fail for update with null remoteId, got: $updateError",
+        )
+
+        assertTrue(
+            deleteError.contains(
+                "Failed requirement",
+                ignoreCase = true,
+            ) ||
+                deleteError.contains("null", ignoreCase = true),
+            "Expected require() to fail for delete with null remoteId, got: $deleteError",
+        )
+    }
+
     @Test
-    fun `attempting to add an unsynced folder to an unsynced panel throws local validation exception`() =
-        runTest {
-            val folderId = foldersDao.insertANewFolder(
+    fun `attempting to add an unsynced folder to an unsynced panel throws local validation exception`() = runTest {
+        val folderId =
+            foldersDao.insertANewFolder(
                 Folder(
                     name = "UnsyncedFolder",
                     note = "",
                     parentFolderId = null,
                     isArchived = false,
                     lastModified = 0L,
-                    remoteId = null
-                )
+                    remoteId = null,
+                ),
             )
-            val panelId = panelsDao.addANewPanel(
+        val panelId =
+            panelsDao.addANewPanel(
                 Panel(
                     localId = 0,
                     panelName = "UnsyncedPanel",
                     lastModified = 0L,
-                    remoteId = null
-                )
+                    remoteId = null,
+                ),
             )
 
-            val panelFolder = PanelFolder(
+        val panelFolder =
+            PanelFolder(
                 localId = 0,
                 folderId = folderId,
                 connectedPanelId = panelId,
                 panelPosition = 1,
                 folderName = "UnsyncedFolder",
-                lastModified = 0L
+                lastModified = 0L,
             )
 
-            val addFolderError = executeAndGetErrorMessage {
-                localPanelsRepo.addANewFolderInAPanel(panelFolder, viaSocket = false).toList()
-            }
-
-            assertTrue(
-                addFolderError.contains(
-                    "Failed requirement",
-                    ignoreCase = true
-                ) || addFolderError.contains("null", ignoreCase = true),
-                "Expected require() to fail for adding a panel folder without remote ids, got: $addFolderError"
-            )
+        val addFolderError = executeAndGetErrorMessage {
+            localPanelsRepo.addANewFolderInAPanel(panelFolder, viaSocket = false).toList()
         }
 
+        assertTrue(
+            addFolderError.contains(
+                "Failed requirement",
+                ignoreCase = true,
+            ) ||
+                addFolderError.contains("null", ignoreCase = true),
+            "Expected require() to fail for adding a panel folder without remote ids, got: $addFolderError",
+        )
+    }
+
     @Test
-    fun `deleting a synced panel correctly drops it and its connected folders locally and pushes changes`() =
-        runTest {
-            val folderId = foldersDao.insertANewFolder(
+    fun `deleting a synced panel correctly drops it and its connected folders locally and pushes changes`() = runTest {
+        val folderId =
+            foldersDao.insertANewFolder(
                 Folder(
                     name = "TargetFolder",
                     note = "",
                     parentFolderId = null,
                     isArchived = false,
                     lastModified = 0L,
-                    remoteId = 111L
-                )
+                    remoteId = 111L,
+                ),
             )
-            val panelId = panelsDao.addANewPanel(
+        val panelId =
+            panelsDao.addANewPanel(
                 Panel(
                     localId = 0,
                     panelName = "TargetPanel",
                     lastModified = 0L,
-                    remoteId = 222L
-                )
+                    remoteId = 222L,
+                ),
             )
 
-            panelsDao.addANewFolderInAPanel(
-                PanelFolder(
-                    localId = 0,
-                    folderId = folderId,
-                    connectedPanelId = panelId,
-                    panelPosition = 1,
-                    folderName = "TargetFolder",
-                    lastModified = 0L
-                )
-            )
+        panelsDao.addANewFolderInAPanel(
+            PanelFolder(
+                localId = 0,
+                folderId = folderId,
+                connectedPanelId = panelId,
+                panelPosition = 1,
+                folderName = "TargetFolder",
+                lastModified = 0L,
+            ),
+        )
 
-            localPanelsRepo.deleteAPanel(panelId, viaSocket = false).toList()
+        localPanelsRepo.deleteAPanel(panelId, viaSocket = false).toList()
 
-            val allPanels = panelsDao.getAllThePanelsAsAList()
-            val allPanelFolders = panelsDao.getAllThePanelFoldersAsAList()
+        val allPanels = panelsDao.getAllThePanelsAsAList()
+        val allPanelFolders = panelsDao.getAllThePanelFoldersAsAList()
 
-            assertTrue(allPanels.isEmpty(), "Expected panel to be completely deleted from local DB")
-            assertTrue(
-                allPanelFolders.isEmpty(),
-                "Expected cascaded deletion of connected panel folders"
-            )
+        assertTrue(allPanels.isEmpty(), "Expected panel to be completely deleted from local DB")
+        assertTrue(
+            allPanelFolders.isEmpty(),
+            "Expected cascaded deletion of connected panel folders",
+        )
 
-            coVerify(exactly = 1) {
-                remotePanelsRepo.deleteAPanel(match { it.id == 222L })
-            }
+        coVerify(exactly = 1) {
+            remotePanelsRepo.deleteAPanel(match { it.id == 222L })
         }
+    }
 }

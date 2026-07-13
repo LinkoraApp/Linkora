@@ -4,8 +4,9 @@ import com.sakethh.linkora.data.local.dao.PendingSyncQueueDao
 import com.sakethh.linkora.domain.model.PendingSyncQueue
 import com.sakethh.linkora.domain.repository.local.PendingSyncQueueRepo
 
-class PendingSyncQueueRepoImpl(private val pendingSyncQueueDao: PendingSyncQueueDao) :
-    PendingSyncQueueRepo {
+class PendingSyncQueueRepoImpl(
+    private val pendingSyncQueueDao: PendingSyncQueueDao,
+) : PendingSyncQueueRepo {
     override suspend fun addInQueue(pendingSyncQueue: PendingSyncQueue) {
         pendingSyncQueueDao.addInQueue(pendingSyncQueue)
     }
@@ -14,7 +15,5 @@ class PendingSyncQueueRepoImpl(private val pendingSyncQueueDao: PendingSyncQueue
         pendingSyncQueueDao.deleteFromQueue(id)
     }
 
-    override suspend fun getAllItemsFromQueue(): List<PendingSyncQueue> {
-        return pendingSyncQueueDao.getAllItemsFromQueue()
-    }
+    override suspend fun getAllItemsFromQueue(): List<PendingSyncQueue> = pendingSyncQueueDao.getAllItemsFromQueue()
 }

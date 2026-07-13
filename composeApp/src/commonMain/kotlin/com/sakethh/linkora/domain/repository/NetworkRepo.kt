@@ -5,5 +5,8 @@ import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.flow.Flow
 
 interface NetworkRepo {
-    suspend fun testServerConnection(serverUrl: String, token: String): Flow<Result<HttpResponse>>
+    suspend fun testServerConnection(
+        serverUrl: String,
+        token: String,
+    ): Flow<Result<HttpResponse>>
 }

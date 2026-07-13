@@ -25,27 +25,34 @@ import androidx.compose.ui.unit.dp
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 
 @Composable
-fun SettingSectionComponent(
-    settingSectionComponentParam: SettingSectionComponentParam
-) {
+fun SettingSectionComponent(settingSectionComponentParam: SettingSectionComponentParam) {
     Column {
         Spacer(modifier = Modifier.height(10.dp))
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+            modifier =
+            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                 .fillMaxWidth()
                 .pressScaleEffect()
-                .clickable(interactionSource = remember {
-                    MutableInteractionSource()
-                }, onClick = {
-                    settingSectionComponentParam.onClick()
-                }, indication = null)
+                .clickable(
+                    interactionSource =
+                    remember {
+                        MutableInteractionSource()
+                    },
+                    onClick = {
+                        settingSectionComponentParam.onClick()
+                    },
+                    indication = null,
+                ),
         ) {
             Spacer(modifier = Modifier.width(10.dp))
-            FilledTonalIconButton(modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand), onClick = { settingSectionComponentParam.onClick() }) {
+            FilledTonalIconButton(
+                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                onClick = { settingSectionComponentParam.onClick() },
+            ) {
                 Icon(
                     imageVector = settingSectionComponentParam.sectionIcon,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
             Spacer(modifier = Modifier.width(10.dp))
@@ -57,13 +64,16 @@ fun SettingSectionComponent(
             if (settingSectionComponentParam.shouldArrowIconAppear) {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.CenterEnd
+                    contentAlignment = Alignment.CenterEnd,
                 ) {
                     Row {
-                        IconButton(modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand), onClick = { settingSectionComponentParam.onClick() }) {
+                        IconButton(
+                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                            onClick = { settingSectionComponentParam.onClick() },
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.ChevronRight,
-                                contentDescription = null
+                                contentDescription = null,
                             )
                         }
                         Spacer(modifier = Modifier.width(10.dp))

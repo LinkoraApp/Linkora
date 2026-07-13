@@ -1,20 +1,18 @@
-#![allow(clippy::too_many_arguments)]
-
 use dashmap::DashMap;
+use jni::JNIEnv;
 use jni::objects::{GlobalRef, JClass, JObject, JString, JValue};
 use jni::sys::{jboolean, jint, jlong};
-use jni::JNIEnv;
 use monolith::core::{
-    create_monolithic_document, CancelToken, MonolithOutputFormat, Options,
-    EXTERNAL_CANCELLATION_PANIC,
+    CancelToken, EXTERNAL_CANCELLATION_PANIC, MonolithOutputFormat, Options,
+    create_monolithic_document,
 };
 use std::any::Any;
 use std::fs::File;
 use std::io::Write;
 use std::os::fd::FromRawFd;
-use std::panic::{catch_unwind, AssertUnwindSafe};
+use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{mpsc, Arc, Mutex, OnceLock};
+use std::sync::{Arc, Mutex, OnceLock, mpsc};
 use tokio::runtime::Runtime;
 use tokio::task::AbortHandle;
 
@@ -67,7 +65,7 @@ static WEB_CAPTURE_OP_ABORT_HANDLES: OnceLock<DashMap<String, (CancelToken, Abor
     OnceLock::new();
 
 fn get_web_capture_abort_handles() -> &'static DashMap<String, (CancelToken, AbortHandle)> {
-    WEB_CAPTURE_OP_ABORT_HANDLES.get_or_init(|| DashMap::new())
+    WEB_CAPTURE_OP_ABORT_HANDLES.get_or_init(DashMap::new)
 }
 
 fn call_on_thrown(env: &mut JNIEnv, callback: &JObject, msg: &str) {
@@ -212,12 +210,7 @@ pub extern "system" fn Java_com_sakethh_linkora_JVMAndAndroidWebCapture_spawnRes
 
                         #[cfg(not(test))]
                         {
-                            on_capture_result(
-                                env,
-                                global_callback_ref,
-                                jni_op_key,
-                                is_success,
-                            );
+                            on_capture_result(env, global_callback_ref, jni_op_key, is_success);
                         }
                     }
 
@@ -238,12 +231,7 @@ pub extern "system" fn Java_com_sakethh_linkora_JVMAndAndroidWebCapture_spawnRes
 
                         #[cfg(not(test))]
                         {
-                            on_capture_result(
-                                env,
-                                global_callback_ref,
-                                jni_op_key,
-                                false,
-                            );
+                            on_capture_result(env, global_callback_ref, jni_op_key, false);
                         }
                     }
 
@@ -433,7 +421,7 @@ pub extern "system" fn Java_com_sakethh_linkora_JVMAndAndroidWebCapture_saveHTML
                 std::fs::write(file_path_string, html_doc)
             } else {
                 let mut web_capture_file = unsafe { File::from_raw_fd(file_descriptor) };
-                web_capture_file.write_all(&*html_doc)
+                web_capture_file.write_all(&html_doc)
             };
 
             match web_capture_file_creation {
@@ -536,10 +524,8 @@ fn get_html_doc(
     );
     monolith_doc
         .map_err(|err| err.to_string())
-        .and_then(|(doc, _)| Ok(doc))
+        .map(|(doc, _)| doc)
 }
-
-fn main() {}
 
 #[cfg(test)]
 mod jni_integration_tests {
@@ -554,16 +540,23 @@ mod jni_integration_tests {
         let port = listener.local_addr().unwrap().port();
 
         std::thread::spawn(move || {
-            if let Ok((mut stream, _)) = listener.accept() {
-                let mut buf = [0u8; 1024];
-                let _ = stream.read(&mut buf);
-                std::thread::sleep(delay);
-                let response = format!(
-                    "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
-                    body.len(),
-                    body
-                );
-                let _ = stream.write_all(response.as_bytes());
+            // Loop endlessly to accept multiple connections
+            for stream in listener.incoming() {
+                if let Ok(mut stream) = stream {
+                    // Spawn a thread for each request so they process concurrently
+                    std::thread::spawn(move || {
+                        use std::io::{Read, Write};
+                        let mut buf = [0u8; 1024];
+                        let _ = stream.read(&mut buf);
+                        std::thread::sleep(delay);
+                        let response = format!(
+                            "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                            body.len(),
+                            body
+                        );
+                        let _ = stream.write_all(response.as_bytes());
+                    });
+                }
             }
         });
 
@@ -653,7 +646,14 @@ mod jni_integration_tests {
 
         let mut temp_files = Vec::new();
         let user_agent = env.new_string("linkora-test-agent").unwrap();
-        let url = env.new_string("https://example.com").unwrap();
+
+        let port = spawn_mock_http_server(
+            Duration::from_millis(50),
+            "<html><body>Concurrent Success</body></html>",
+        );
+        let url = env
+            .new_string(format!("http://127.0.0.1:{}/", port))
+            .unwrap();
 
         for i in 0..15 {
             let tmp_file = tempfile::NamedTempFile::new().unwrap();
@@ -690,7 +690,10 @@ mod jni_integration_tests {
         for tmp_file in temp_files {
             assert!(tmp_file.path().exists());
             let file_contents = std::fs::read_to_string(tmp_file.path()).unwrap();
-            assert!(!file_contents.is_empty());
+            assert!(
+                !file_contents.is_empty(),
+                "File was empty, meaning capture failed!"
+            );
         }
 
         Java_com_sakethh_linkora_JVMAndAndroidWebCapture_killResultDaemon(
@@ -975,7 +978,6 @@ mod jni_integration_tests {
         }
     }
 
-
     #[test]
     fn direct_monolith_cancellation_during_initial_network_test() {
         let cancel_token = CancelToken(Some(Arc::new(AtomicBool::new(false))));
@@ -1083,7 +1085,7 @@ mod jni_integration_tests {
                 false, // ignore_doc_errors
                 false, // use_css
                 false, // embed_fonts
-                true,  // embed_images (CRITICAL: Forces monolith to parse DOM and request the image)
+                true, // embed_images (CRITICAL: Forces monolith to parse DOM and request the image)
                 false, // restrict_js
                 false, // include_audio_elements
                 false, // include_video_elements

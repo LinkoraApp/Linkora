@@ -24,16 +24,15 @@ expect val showDynamicThemingOption: Boolean
 
 expect val platform: Platform
 
-@Composable
-expect fun PlatformSpecificBackHandler(init: () -> Unit = {})
+@Composable expect fun PlatformSpecificBackHandler(init: () -> Unit = {})
 
 expect val PlatformIODispatcher: CoroutineDispatcher
-
 
 expect fun platformSpecificLogging(string: String)
 
 expect class PermissionManager {
     suspend fun permittedToShowNotification(): PermissionStatus
+
     suspend fun isStorageAccessPermitted(): PermissionStatus
 }
 
@@ -53,37 +52,29 @@ expect class FileManager {
         exportFileType: ExportFileType,
         exportLocationType: ExportLocationType,
         rawExportString: RawExportString,
-        onCompletion: suspend (String) -> Unit
+        onCompletion: suspend (String) -> Unit,
     )
 
-    suspend fun importFromJSONObj(
-    ): Flow<Result<JSONExportSchema>>
+    suspend fun importFromJSONObj(): Flow<Result<JSONExportSchema>>
 
-    suspend fun importFromJSONObj(
-        fileLocation: String
-    ): Flow<Result<JSONExportSchema>>
+    suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>>
 
-    suspend fun importFromHTMLString(
-    ): Flow<Result<String>>
+    suspend fun importFromHTMLString(): Flow<Result<String>>
 
-    suspend fun importFromHTMLString(
-        fileLocation: String
-    ): Flow<Result<String>>
+    suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>>
 
     suspend fun saveSyncServerCertificateInternally(
         certificate: ByteArray,
-        onCompletion: () -> Unit
+        onCompletion: () -> Unit,
     )
 
-    suspend fun getSyncServerCertificate(
-        onCompletion: (certInfo: String) -> Unit
-    ): ByteArray?
+    suspend fun getSyncServerCertificate(onCompletion: (certInfo: String) -> Unit): ByteArray?
 
     suspend fun exportSnapshotData(
         exportLocation: String,
         rawExportString: String,
         fileType: ExportFileType,
-        onCompletion: suspend (String) -> Unit = {}
+        onCompletion: suspend (String) -> Unit = {},
     )
 
     suspend fun pickADirectory(): String?
@@ -91,9 +82,9 @@ expect class FileManager {
     suspend fun deleteAutoBackups(
         backupLocation: String,
         // maximum number of backups allowed to keep
-        threshold: Int, onCompletion: (deletionCount: Int) -> Unit
+        threshold: Int,
+        onCompletion: (deletionCount: Int) -> Unit,
     )
-
 }
 
 expect class NativeUtils {
@@ -101,6 +92,7 @@ expect class NativeUtils {
 
     class WebCapture {
         suspend fun init(): Result<Boolean>
+
         suspend fun saveHTMLPage(
             nativeFolderPath: String,
             url: String,
@@ -122,7 +114,7 @@ expect class NativeUtils {
     suspend fun onRefreshAllLinks(
         localLinksRepo: LocalLinksRepo,
         preferencesRepository: PreferencesRepository,
-        refreshLinksRepo: RefreshLinksRepo
+        refreshLinksRepo: RefreshLinksRepo,
     )
 
     suspend fun isAnyRefreshingScheduled(): Flow<Boolean?>
@@ -131,20 +123,23 @@ expect class NativeUtils {
 
     class DataSyncingNotificationService {
         fun showNotification()
+
         fun clearNotification()
     }
 
     fun onIconChange(allIconCodes: List<String>, newIconCode: String, onCompletion: () -> Unit)
 
     /**
-     * THE WEB IMPLEMENTATION IS A HACK TO KEEP COMPILER HAPPY, THIS FUNCTION SHOULD NOT BE USED RANDOMLY
-
+     * THE WEB IMPLEMENTATION IS A HACK TO KEEP COMPILER HAPPY, THIS FUNCTION SHOULD NOT BE USED
+     * RANDOMLY
+     *
      * PLATFORM IMPLICATIONS:
      * - On JVM (Android/Desktop): This behaves like a traditional `runBlocking`. It will physically
-     * block the current coroutine and wait for the [block] to complete before moving to the next line.
+     *   block the current coroutine and wait for the [block] to complete before moving to the next
+     *   line.
      * - On Web (Wasm/JS): True blocking is impossible on the browser's single event loop. This
-     * behaves as a "fire-and-forget" asynchronous launch. The function returns instantly, and
-     * any code written immediately after calling this will execute BEFORE the [block] finishes.
+     *   behaves as a "fire-and-forget" asynchronous launch. The function returns instantly, and any
+     *   code written immediately after calling this will execute BEFORE the [block] finishes.
      * * Do NOT use this if subsequent synchronous code relies on the outcome of the [block] on Web.
      */
     fun <T> platformRunBlocking(block: suspend () -> T): T?
@@ -162,6 +157,7 @@ expect class PlatformPreference {
 }
 
 expect fun defaultExportLocation(): String?
+
 expect fun defaultSnapshotLocation(): String?
 
 @Suppress("KotlinNoActualForExpect")

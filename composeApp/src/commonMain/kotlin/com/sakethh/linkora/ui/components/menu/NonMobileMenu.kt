@@ -28,9 +28,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ComposableContent
 import com.sakethh.linkora.domain.model.Folder
-import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.ui.components.CoilImage
 import com.sakethh.linkora.ui.components.InfoCard
 import com.sakethh.linkora.ui.components.link.TagsRow
@@ -43,54 +43,62 @@ fun NonMobileMenu(
     menuBtmSheetParam: MenuBtmSheetParam,
     currentLinkTagsPair: LinkTagsPair,
     currentFolder: Folder?,
-    commonMenuContent: ComposableContent
+    commonMenuContent: ComposableContent,
 ) {
-    val menuBtmSheetFor = remember { 
+    val menuBtmSheetFor = remember {
         menuBtmSheetParam.menuBtmSheetFor
     }
     Row(verticalAlignment = Alignment.CenterVertically) {
         if (menuBtmSheetFor in menuBtmSheetLinkEntries()) {
             Column(
-                modifier = Modifier.fillMaxWidth(0.5f).padding(start = 15.dp, bottom = 15.dp)
+                modifier =
+                Modifier.fillMaxWidth(0.5f)
+                    .padding(start = 15.dp, bottom = 15.dp)
                     .wrapContentHeight()
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(rememberScrollState()),
             ) {
                 CoilImage(
-                    modifier = Modifier.animateContentSize().fillMaxWidth()
-                        .clip(RoundedCornerShape(15.dp)).height(200.dp),
+                    modifier =
+                    Modifier.animateContentSize()
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(15.dp))
+                        .height(200.dp),
                     imgURL = currentLinkTagsPair.link.imgURL,
                     preferences = preferences,
-                    userAgent = currentLinkTagsPair.link.userAgent
-                        ?: preferences.primaryJsoupUserAgent,
+                    userAgent = currentLinkTagsPair.link.userAgent ?: preferences.primaryJsoupUserAgent,
                 )
                 Spacer(Modifier.height(10.dp))
                 Text(
                     text = currentLinkTagsPair.link.title,
                     style = MaterialTheme.typography.titleLarge,
-                    fontSize = 18.sp
+                    fontSize = 18.sp,
                 )
                 if (currentLinkTagsPair.tags.isNotEmpty()) {
-                    TagsRow(tags = currentLinkTagsPair.tags, onTagClick = {
-                        menuBtmSheetParam.onTagClick(it)
-                    })
+                    TagsRow(
+                        tags = currentLinkTagsPair.tags,
+                        onTagClick = {
+                            menuBtmSheetParam.onTagClick(it)
+                        },
+                    )
                 }
                 Spacer(Modifier.height(5.dp))
                 Text(
                     text = currentLinkTagsPair.link.host,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clip(RoundedCornerShape(5.dp))
-                        .background(MaterialTheme.colorScheme.primary.copy(0.1f)).padding(5.dp),
+                    modifier =
+                    Modifier.clip(RoundedCornerShape(5.dp))
+                        .background(MaterialTheme.colorScheme.primary.copy(0.1f))
+                        .padding(5.dp),
                 )
                 HorizontalDivider(
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(end = 5.dp, top = 15.dp, bottom = 12.dp)
+                    modifier = Modifier.fillMaxWidth().padding(end = 5.dp, top = 15.dp, bottom = 12.dp),
                 )
                 if (currentLinkTagsPair.link.note.isNotBlank()) {
                     Text(
                         text = Localization.Key.SavedNote.rememberLocalizedString(),
                         style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
                     )
                     Spacer(Modifier.height(5.dp))
                     Text(
@@ -100,35 +108,34 @@ fun NonMobileMenu(
                 } else {
                     InfoCard(
                         info = Localization.Key.NoNoteAdded.rememberLocalizedString(),
-                        paddingValues = PaddingValues(top = 2.dp)
+                        paddingValues = PaddingValues(top = 2.dp),
                     )
                 }
             }
         } else {
             Column(
-                modifier = Modifier.fillMaxWidth(0.5f).padding(start = 15.dp, bottom = 15.dp)
-                    .wrapContentHeight()
+                modifier =
+                Modifier.fillMaxWidth(0.5f).padding(start = 15.dp, bottom = 15.dp).wrapContentHeight(),
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Folder,
                     contentDescription = null,
-                    modifier = Modifier.size(45.dp)
+                    modifier = Modifier.size(45.dp),
                 )
                 Spacer(Modifier.height(10.dp))
                 Text(
                     text = currentFolder!!.name,
                     style = MaterialTheme.typography.titleLarge,
-                    fontSize = 18.sp
+                    fontSize = 18.sp,
                 )
                 HorizontalDivider(
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(end = 5.dp, top = 15.dp, bottom = 12.dp)
+                    modifier = Modifier.fillMaxWidth().padding(end = 5.dp, top = 15.dp, bottom = 12.dp),
                 )
                 if (currentFolder.note.isNotBlank()) {
                     Text(
                         text = Localization.Key.SavedNote.rememberLocalizedString(),
                         style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
                     )
                     Spacer(Modifier.height(5.dp))
                     Text(
@@ -138,7 +145,7 @@ fun NonMobileMenu(
                 } else {
                     InfoCard(
                         info = Localization.Key.NoNoteAdded.rememberLocalizedString(),
-                        paddingValues = PaddingValues(top = 2.dp)
+                        paddingValues = PaddingValues(top = 2.dp),
                     )
                 }
             }

@@ -17,17 +17,19 @@ import com.sakethh.linkora.ui.utils.pressScaleEffect
 @Composable
 fun RefreshMenuComponent(label: String, onClick: () -> Unit) {
     OutlinedButton(
-        modifier = Modifier.pressScaleEffect()
+        modifier =
+        Modifier.pressScaleEffect()
             .pointerHoverIcon(icon = PointerIcon.Hand)
-            .padding(start = 15.dp, end = 15.dp).fillMaxWidth(),
-        onClick = onClick
+            .padding(start = 15.dp, end = 15.dp)
+            .fillMaxWidth(),
+        onClick = onClick,
     ) {
         Text(
             text = label,
             modifier = Modifier.fillMaxWidth(),
             style = MaterialTheme.typography.titleSmall,
             textAlign = TextAlign.Start,
-            fontSize = 18.sp
+            fontSize = 18.sp,
         )
     }
 }

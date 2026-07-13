@@ -12,7 +12,6 @@ import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.ifNot
 import com.sakethh.linkora.utils.ifTrue
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class MainVM(
@@ -20,9 +19,9 @@ class MainVM(
     launchAction: (Action) -> Unit,
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
+
     init {
         viewModelScope.launch {
-
             launch {
                 UIEvent.uiEvents.collect {
                     if (it is UIEvent.Type.MinimizeTheApp) {
@@ -35,16 +34,31 @@ class MainVM(
                 AndroidUIEvent.androidUIEventChannel.collect {
                     when (it) {
                         is AndroidUIEvent.Type.ShowRuntimePermissionForStorage -> {
-                            pushUIEvent(UIEvent.Type.ShowSnackbar(Localization.Key.StoragePermissionIsRequired.getLocalizedString()))
+                            pushUIEvent(
+                                UIEvent.Type.ShowSnackbar(
+                                    Localization.Key.StoragePermissionIsRequired.getLocalizedString(),
+                                ),
+                            )
                             launchAction(Action.LaunchWriteExternalStoragePermission)
                         }
 
                         is AndroidUIEvent.Type.StoragePermissionGrantedForAndBelowQ -> {
-                            it.isGranted.ifNot {
-                                pushUIEvent(UIEvent.Type.ShowSnackbar(message = Localization.Key.StoragePermissionIsRequired.getLocalizedString()))
-                            }.ifTrue {
-                                pushUIEvent(UIEvent.Type.ShowSnackbar(message = Localization.Key.PermissionGranted.getLocalizedString()))
-                            }
+                            it.isGranted
+                                .ifNot {
+                                    pushUIEvent(
+                                        UIEvent.Type.ShowSnackbar(
+                                            message =
+                                            Localization.Key.StoragePermissionIsRequired.getLocalizedString(),
+                                        ),
+                                    )
+                                }
+                                .ifTrue {
+                                    pushUIEvent(
+                                        UIEvent.Type.ShowSnackbar(
+                                            message = Localization.Key.PermissionGranted.getLocalizedString(),
+                                        ),
+                                    )
+                                }
                         }
 
                         is AndroidUIEvent.Type.ImportAFile -> {
@@ -59,7 +73,12 @@ class MainVM(
 
                         is AndroidUIEvent.Type.NotificationPermissionState -> {
                             it.isGranted.ifNot {
-                                pushUIEvent(UIEvent.Type.ShowSnackbar(message = Localization.Key.NotificationPermissionIsRequired.getLocalizedString()))
+                                pushUIEvent(
+                                    UIEvent.Type.ShowSnackbar(
+                                        message =
+                                        Localization.Key.NotificationPermissionIsRequired.getLocalizedString(),
+                                    ),
+                                )
                             }
                         }
 

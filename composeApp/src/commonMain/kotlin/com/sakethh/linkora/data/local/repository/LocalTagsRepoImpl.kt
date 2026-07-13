@@ -27,9 +27,12 @@ class LocalTagsRepoImpl(
     private val tagsDao: TagsDao,
     private val remoteTagsRepo: RemoteTagsRepo,
     private val preferencesRepository: PreferencesRepository,
-    private val pendingSyncQueueRepo: PendingSyncQueueRepo
+    private val pendingSyncQueueRepo: PendingSyncQueueRepo,
 ) : LocalTagsRepo {
-    override suspend fun createATag(tag: Tag, viaSocket: Boolean): Flow<Result<Long>> {
+    override suspend fun createATag(
+        tag: Tag,
+        viaSocket: Boolean,
+    ): Flow<Result<Long>> {
         var newTagId: Long? = null
         val eventTimestamp = getSystemEpochSeconds()
         val preferences = preferencesRepository.getPreferences()
@@ -40,59 +43,71 @@ class LocalTagsRepoImpl(
             performRemoteOperation = !viaSocket,
             remoteOperation = {
                 remoteTagsRepo.createATag(
-                    createTagDTO = CreateTagDTO(
+                    createTagDTO =
+                    CreateTagDTO(
                         name = tag.name,
                         eventTimestamp = eventTimestamp,
-                        correlation = preferences.correlation
-                    )
+                        correlation = preferences.correlation,
+                    ),
                 )
             },
             remoteOperationOnSuccess = {
                 if (newTagId == null) return@performLocalOperationWithRemoteSyncFlow
 
                 tagsDao.updateATag(
-                    tag = tagsDao.getATag(newTagId).copy(
-                        remoteId = it.id, lastModified = it.timeStampBasedResponse.eventTimestamp
-                    )
+                    tag =
+                    tagsDao
+                        .getATag(newTagId)
+                        .copy(
+                            remoteId = it.id,
+                            lastModified = it.timeStampBasedResponse.eventTimestamp,
+                        ),
                 )
-                preferencesRepository.updateLastSyncedWithServerTimeStamp(it.timeStampBasedResponse.eventTimestamp)
+                preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                    it.timeStampBasedResponse.eventTimestamp,
+                )
             },
             onRemoteOperationFailure = {
                 if (newTagId == null) return@performLocalOperationWithRemoteSyncFlow
 
                 pendingSyncQueueRepo.addInQueue(
                     PendingSyncQueue(
-                        operation = SyncServerRoute.CREATE_TAG.name, payload = Json.encodeToString(
+                        operation = SyncServerRoute.CREATE_TAG.name,
+                        payload =
+                        Json.encodeToString(
                             CreateTagDTO(
                                 name = tag.name,
                                 eventTimestamp = eventTimestamp,
                                 offlineSyncItemId = newTagId!!,
-                                correlation = preferences.correlation
-                            )
-                        )
-                    )
+                                correlation = preferences.correlation,
+                            ),
+                        ),
+                    ),
                 )
-            }) {
+            },
+        ) {
             newTagId = tagsDao.createATag(tag)
             newTagId
         }
     }
 
-    override suspend fun createATagLocally(
-        tag: Tag,
-    ): Long {
-        return tagsDao.createATag(tag)
-    }
+    override suspend fun createATagLocally(tag: Tag): Long = tagsDao.createATag(tag)
 
     override suspend fun createLinkTags(linksTags: List<LinkTag>) {
         tagsDao.createLinkTags(linksTags)
     }
 
-    override suspend fun deleteLinkTagsBasedOnTags(tagIds: List<Long>, linkId: Long) {
+    override suspend fun deleteLinkTagsBasedOnTags(
+        tagIds: List<Long>,
+        linkId: Long,
+    ) {
         tagsDao.deleteLinkTagsBasedOnTags(tagIds, linkId)
     }
 
-    override suspend fun deleteATag(id: Long, viaSocket: Boolean): Flow<Result<Unit>> {
+    override suspend fun deleteATag(
+        id: Long,
+        viaSocket: Boolean,
+    ): Flow<Result<Unit>> {
         val tag = tagsDao.getATag(id)
         val eventTimestamp = getSystemEpochSeconds()
         val preferences = preferencesRepository.getPreferences()
@@ -105,9 +120,10 @@ class LocalTagsRepoImpl(
                 require(tag.remoteId != null)
                 remoteTagsRepo.deleteATag(
                     IDBasedDTO(
-                        id = tag.remoteId, eventTimestamp = eventTimestamp,
-                        correlation = preferences.correlation
-                    )
+                        id = tag.remoteId,
+                        eventTimestamp = eventTimestamp,
+                        correlation = preferences.correlation,
+                    ),
                 )
             },
             remoteOperationOnSuccess = {
@@ -119,47 +135,53 @@ class LocalTagsRepoImpl(
                     pendingSyncQueueRepo.addInQueue(
                         PendingSyncQueue(
                             operation = SyncServerRoute.DELETE_TAG.name,
-                            payload = Json.encodeToString(
+                            payload =
+                            Json.encodeToString(
                                 IDBasedDTO(
-                                    id = tag.remoteId, eventTimestamp = eventTimestamp,
-                                    correlation = preferences.correlation
-                                )
-                            )
-                        )
+                                    id = tag.remoteId,
+                                    eventTimestamp = eventTimestamp,
+                                    correlation = preferences.correlation,
+                                ),
+                            ),
+                        ),
                     )
                 }
-            }) {
+            },
+        ) {
             tagsDao.deleteATag(id)
         }
     }
 
-    override fun getAllTags(sortOption: String): Flow<List<Tag>> {
-        return tagsDao.getAllTags(sortOption)
-    }
+    override fun getAllTags(sortOption: String): Flow<List<Tag>> = tagsDao.getAllTags(sortOption)
 
     override fun getTags(
-        sortOption: String, pageSize: Int,
+        sortOption: String,
+        pageSize: Int,
         lastSeenName: String?,
-        lastSeenId: Long?
-    ): Flow<Result<List<Tag>>> {
-        return when (sortOption) {
-            Sorting.A_TO_Z, Sorting.Z_TO_A -> tagsDao.getTagsSortedByName(
+        lastSeenId: Long?,
+    ): Flow<Result<List<Tag>>> = when (sortOption) {
+        Sorting.A_TO_Z,
+        Sorting.Z_TO_A,
+        ->
+            tagsDao.getTagsSortedByName(
                 lastSeenId = lastSeenId,
                 lastSeenName = lastSeenName?.takeIf { it.isNotEmpty() },
                 pageSize = pageSize,
-                isAscending = sortOption == Sorting.A_TO_Z
+                isAscending = sortOption == Sorting.A_TO_Z,
             )
 
-            else -> tagsDao.getTagsSortedById(
+        else ->
+            tagsDao.getTagsSortedById(
                 lastSeenId = lastSeenId,
                 isAscending = sortOption == Sorting.OLD_TO_NEW,
-                pageSize = pageSize
+                pageSize = pageSize,
             )
-        }.mapToResultFlow()
-    }
+    }.mapToResultFlow()
 
     override suspend fun renameATag(
-        localTagId: Long, newName: String, viaSocket: Boolean
+        localTagId: Long,
+        newName: String,
+        viaSocket: Boolean,
     ): Flow<Result<Unit>> {
         val tag = tagsDao.getATag(localTagId)
         val eventTimestamp = getSystemEpochSeconds()
@@ -172,89 +194,77 @@ class LocalTagsRepoImpl(
             remoteOperation = {
                 require(tag.remoteId != null)
                 remoteTagsRepo.renameATag(
-                    renameTagDTO = RenameTagDTO(
+                    renameTagDTO =
+                    RenameTagDTO(
                         id = tag.remoteId,
                         newName = newName,
                         eventTimestamp = eventTimestamp,
-                        correlation = preferences.correlation
-                    )
+                        correlation = preferences.correlation,
+                    ),
                 )
             },
             remoteOperationOnSuccess = {
                 tagsDao.updateATag(
-                    tagsDao.getATag(tag.localId).copy(lastModified = it.eventTimestamp)
+                    tagsDao.getATag(tag.localId).copy(lastModified = it.eventTimestamp),
                 )
                 preferencesRepository.updateLastSyncedWithServerTimeStamp(it.eventTimestamp)
             },
             onRemoteOperationFailure = {
                 pendingSyncQueueRepo.addInQueue(
                     PendingSyncQueue(
-                        operation = SyncServerRoute.RENAME_TAG.name, payload = Json.encodeToString(
+                        operation = SyncServerRoute.RENAME_TAG.name,
+                        payload =
+                        Json.encodeToString(
                             RenameTagDTO(
                                 newName = newName,
                                 id = tag.localId,
                                 eventTimestamp = eventTimestamp,
-                                correlation = preferences.correlation
-                            )
-                        )
-                    )
+                                correlation = preferences.correlation,
+                            ),
+                        ),
+                    ),
                 )
-            }) {
+            },
+        ) {
             tagsDao.renameATag(localTagId, newName)
         }
     }
 
-    override suspend fun getAllLinkTagsAsList(): List<LinkTag> {
-        return tagsDao.getAllTagLinksAsList()
-    }
+    override suspend fun getAllLinkTagsAsList(): List<LinkTag> = tagsDao.getAllTagLinksAsList()
 
-    override fun getAllLinkTags(): Flow<List<LinkTag>> {
-        return tagsDao.getAllLinkTags()
-    }
+    override fun getAllLinkTags(): Flow<List<LinkTag>> = tagsDao.getAllLinkTags()
 
-    override suspend fun getAllTagsAsList(): List<Tag> {
-        return tagsDao.getAllTagsAsList()
-    }
+    override suspend fun getAllTagsAsList(): List<Tag> = tagsDao.getAllTagsAsList()
 
-    override suspend fun getLastInsertedIdFromTags(): Long {
-        return tagsDao.getLastInsertedIdFromTags()
-    }
+    override suspend fun getLastInsertedIdFromTags(): Long = tagsDao.getLastInsertedIdFromTags()
 
-    override fun getTagsBasedOnTheLinkId(linkId: Long): Flow<List<Tag>> {
-        return tagsDao.getTagsBasedOnTheLinkId(linkId)
-    }
+    override fun getTagsBasedOnTheLinkId(linkId: Long): Flow<List<Tag>> = tagsDao.getTagsBasedOnTheLinkId(linkId)
 
-    override suspend fun getTags(linkId: Long): List<Tag> {
-        return tagsDao.getTags(linkId)
-    }
+    override suspend fun getTags(linkId: Long): List<Tag> = tagsDao.getTags(linkId)
 
-    override fun getTagsForLinks(linkIds: List<Long>): Flow<Map<Long, List<Tag>>> {
-        return tagsDao.getTagsWithLinkIds(linkIds).map { flatList ->
-            flatList.groupBy { it.linkId }.mapValues { entry ->
+    override fun getTagsForLinks(linkIds: List<Long>): Flow<Map<Long, List<Tag>>> = tagsDao.getTagsWithLinkIds(linkIds).map { flatList ->
+        flatList
+            .groupBy { it.linkId }
+            .mapValues { entry ->
                 entry.value.map { it.tag }
             }
-        }
     }
 
-    override suspend fun getTagsForLinksAsMap(linkIds: List<Long>): Map<Long, List<Tag>> {
-        return tagsDao.getTagsWithLinkIdsAsList(linkIds).groupBy { it.linkId }.mapValues { entry ->
+    override suspend fun getTagsForLinksAsMap(linkIds: List<Long>): Map<Long, List<Tag>> = tagsDao
+        .getTagsWithLinkIdsAsList(linkIds)
+        .groupBy { it.linkId }
+        .mapValues { entry ->
             entry.value.map { it.tag }
         }
-    }
 
-    override fun search(query: String, sortOption: String): Flow<List<Tag>> {
-        return tagsDao.search(query, sortOption)
-    }
+    override fun search(
+        query: String,
+        sortOption: String,
+    ): Flow<List<Tag>> = tagsDao.search(query, sortOption)
 
-    override suspend fun getLocalTagIds(remoteIds: List<Long>): List<Long> {
-        return tagsDao.getLocalTagIds(remoteIds)
-    }
+    override suspend fun getLocalTagIds(remoteIds: List<Long>): List<Long> = tagsDao.getLocalTagIds(remoteIds)
 
-    override suspend fun getLocalTags(remoteIds: List<Long>): List<Tag> {
-        return tagsDao.getLocalTags(remoteIds)
-    }
+    override suspend fun getLocalTags(remoteIds: List<Long>): List<Tag> = tagsDao.getLocalTags(remoteIds)
 
-    override suspend fun getLocalTagId(remoteId: Long): Long {
-        return tagsDao.getLocalTagId(remoteId)
-    }
+    override suspend fun getLocalTagId(remoteId: Long): Long = tagsDao.getLocalTagId(remoteId)
 }
