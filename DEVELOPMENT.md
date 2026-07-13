@@ -6,21 +6,33 @@ branch naming conventions, commit message styles, PR workflows, or rules on AI u
 
 ## Environment
 
-* **JDK:** JDK 21 (Both Android and Desktop targets are explicitly compiled against `JVM_21`. For
-  reference, `OpenJDK version "21.0.9"` is what is installed on my machine).
-* **IDE:** Android Studio
+* **JDK:** JDK 21. Both Android and Desktop targets are explicitly compiled against `JVM_21`.
+    * *Note on newer JDKs:* If your system default JDK is newer (e.g., JDK 25), use the JetBrains
+      Runtime (JBR) 21 bundled with Android Studio. If you must use the terminal, prefix commands
+      with your JBR path: `JAVA_HOME="/path/to/your/android-studio/jbr" ./gradlew <command>`.
+* **NDK (Required):** The Android NDK is **mandatory**. Linkora compiles Rust code for Android
+  targets (`aarch64-linux-android`, `x86_64-linux-android`, `armv7-linux-androideabi`). You **must**
+  install the NDK via Android Studio: `Tools` -> `SDK Manager` -> `SDK Tools` tab -> check
+  `NDK (Side by side)` -> Apply. The build scripts are preset to automatically detect it via the
+  `$ANDROID_HOME` environment variable. Do not hardcode paths.
+* **IDE:** Android Studio.
+
+Your first build will take 5 to 20 minutes depending on your machine and internet speed. Subsequent
+builds will be significantly faster.
 
 ## Codebase Map
 
-Linkora is a single KMP module (`composeApp`) separated by target source sets.
+Linkora is a multi-module KMP project.
 
-* `composeApp/src/commonMain`: The core of the app.
-* `composeApp/src/androidMain`: Android-specific implementations, services (like
-  `AutoSaveLinkService`), and `actual` declarations.
-* `composeApp/src/desktopMain`: JVM/Desktop specific implementations.
-* `composeApp/src/wasmJsMain`: Web target implementations.
-* `composeApp/worker`: JavaScript Web Worker implementation required for the Wasm target
-  functionality.
+* `composeApp/`: The main application module, separated by target source sets.
+    * `src/commonMain`: The core of the app.
+    * `src/androidMain`: Android-specific implementations, services (like `AutoSaveLinkService`),
+      and `actual` declarations.
+    * `src/desktopMain`: JVM/Desktop specific implementations.
+    * `src/wasmJsMain`: Web target implementations.
+    * `worker`: JavaScript Web Worker implementation required for the Wasm target functionality.
+* `web-capture/`: The core implementation of the web-capture feature. This module contains both Rust
+  and Kotlin files that work together to handle the underlying capture logic.
 
 ## Build Commands
 
@@ -30,14 +42,19 @@ project:
 
 * **Android:** `./gradlew assembleDebug` (or just hit run in Android Studio)
 * **Desktop:** `./gradlew desktopRun`
-* **Desktop (Hot Reload):**
-  `./gradlew hotRunDesktop --mainClass "com.sakethh.linkora.MainKt"`
-  *(Note: If you hit a toolchain error stating it cannot find a Java installation
-  matching `languageVersion=21` and `vendor=JetBrains`, point Gradle to the JetBrains Runtime (JBR)
-  bundled with Android Studio by passing its path directly in the command:
-  `./gradlew hotRunDesktop --mainClass "com.sakethh.linkora.MainKt" -Dorg.gradle.java.home="<path_to_android_studio>/jbr"`).*
+* **Desktop (Hot Reload):** `./gradlew hotRunDesktop --mainClass "com.sakethh.linkora.MainKt"`
 * **Web (Wasm):** `./gradlew wasmJsBrowserDevelopmentRun`
-* **Tests:** `./gradlew desktopTest` (Everything must pass before you open a PR).
+* **Tests:** `./gradlew verifyAll`
+
+## Git Hooks (Pre-commit & Pre-push)
+
+* **Pre-commit:** Automatically runs formatting (`cargo fmt` for Rust, `spotlessApply` for Kotlin)
+  on tracked but uncommitted changed files.
+* **Pre-push:** Runs Kotlin and Rust test cases before allowing the push to proceed.
+
+You can bypass these locally using `git commit --no-verify` or `git push --no-verify`. The exact
+same checks are enforced on GitHub Actions for every PR and commit. If you skip locally, the remote
+CI will fail, and you will have to fix it and push again.
 
 ---
 
@@ -51,12 +68,12 @@ the language allows it.
 ### Reusability
 
 If a code block is exactly repeated or can be extracted into a separate reusable block, it must be
-either an extension function or context based function or just a regular function. It must not be
+either an extension function, context-based function, or just a regular function. It must not be
 copy-pasted. Kotlin supports OOP out of the box, and I expect you to use it, so it won't turn into a
 mess.
 
-Use context-based functions only when you want to extend based on multiple types. If it is a
-single type extended, then use extension functions.
+Use context-based functions only when you want to extend based on multiple types. If it is a single
+type extended, then use extension functions.
 
 ### Custom UI Components
 
@@ -69,8 +86,8 @@ component does not exist and is required, feel free to add it.
 
 Use inheritance cautiously. For example, a class like `SettingsScreenViewModel` can be inherited as
 long as it doesn't have any side effects in its initialization and the inheritance is within the
-context. Usually `UseCases` are used here, and I do plan to refactor certain things into `UseCases`
-but for now, use it cautiously, and read what's happening before inheriting.
+context. Usually `UseCases` are used here, and I do plan to refactor certain things into `UseCases`,
+but for now, read what's happening before inheriting.
 
 ### UseCases
 
@@ -101,30 +118,31 @@ some [faith](https://youtu.be/ZwOBYAkXMYY) and name things properly.
 
 ### Tests
 
-Although running `./gradlew desktopTest` executes all tests against the desktop target irrespective
-of source sets, almost all your test cases must be written directly in `desktopTest`. The core
-reason for this is the `mockk` library. `mockk` supports Android and Desktop, but since Linkora also
-targets the Web, writing mocks for the web target isn't possible from `commonMain`. Running tests
-via the
-desktop target allows for easy mocking across the board without that friction.
+Run `./gradlew verifyAll`. This automatically runs `desktopTest` (Kotlin) and `cargo test` (Rust).
+
+Although `verifyAll` executes tests against the desktop target irrespective of source sets, almost
+all your Kotlin test cases must be written directly in `desktopTest`. The core reason for this is
+the `mockk` library. `mockk` supports Android and Desktop, but since Linkora also targets the Web,
+writing mocks for the web target isn't possible from `commonMain`. Running tests via the desktop
+target allows for easy mocking across the board without that friction.
 
 Additionally, some components like the `Log` class require a mock on Android, which just adds
 unnecessary work. If you are testing a specific platform implementation, write them in the source
 sets meant for platform-specific tests and make sure they pass locally. But for almost every other
 case, if it does not interact directly with native Android or Web APIs, the test goes in
-`desktopTest`. Almost every test case lives here for this exact reason.
+`desktopTest`.
 
 ### Recompositions
 
-Use `retain` when it makes sense, but for almost every
-case, `rememberSaveable` should do it. In some cases, use a custom `Saver`
-if needed.
+Use `retain` when it makes sense, but for almost every case, `rememberSaveable` should do it. In
+some cases, use a custom `Saver` if needed.
 
-### Code Formatting
+### Coroutines and Cancellation
 
-There is no external linter configured right now. Use Android Studio's default formatting. Before
-you commit, configure your IDE's "Commit checks" to run
-**Reformat code**, **Rearrange code**, and **Optimize imports**.
+When working with concurrent code, cancellation must be handled properly. Do not stick to
+theoretical boilerplate found on the internet, and do not attempt "fire-and-forget" operations just
+because you can. Linkora's core implementations, including the Rust integration, depend entirely on
+cancellation being handled correctly.
 
 ---
 
@@ -137,10 +155,9 @@ remote data.
 
 Linkora ships with a bundled SQLite driver. If your database changes pass the desktop tests, they
 will work on Android, and they will work on the web (assuming OPFS is not locking the database, this
-is a known limitation, and we can't directly fix this). I
-expect you to understand how to work with Room and SQLite itself. There are some cases where raw
-queries get too long, feel free to use LLMs here, but you must completely understand what that SQL
-query does before committing it.
+is a known limitation, and we can't directly fix this). I expect you to understand how to work with
+Room and SQLite itself. There are some cases where raw queries get too long, feel free to use LLMs
+here, but you must completely understand what that SQL query does before committing it.
 
 Any changes made to the database schema require a proper Room migration. Do not just bump the
 database version.
@@ -193,8 +210,7 @@ For OS-level features (File Management, Permissions, Native Utilities), use KMP'
 
 There are cases where Linkora on Android uses background processing via WorkManager, see
 `SnapshotWorker.kt`, `RefreshAllLinksWorker.kt`. These operations may re-run based on Android OS
-scheduling, and it doesn't guarantee the operation will be finished when it is triggered. It will be
-eventually complete, but not always at the moment it got triggered for the first time. This also
+scheduling, and it doesn't guarantee the operation will be finished when it is triggered. This also
 means for a worker like `RefreshAllLinksWorker`, we should not perform any duplicate refreshes just
 because the OS nuked the first initialization and successfully completed at the 4th initialization.
 All the refreshes need to persist locally as Linkora currently does.
@@ -234,9 +250,9 @@ the version of schema a file is currently based on.
 
 ### Fastlane
 
-The `fastlane/` directory tracks metadata and images for F-Droid. You can submit
-PRs for translation fixes in store listings or new images. However, release notes are
-strictly managed by me. Do not write or modify release notes; I handle those right before a release.
+The `fastlane/` directory tracks metadata and images for F-Droid. You can submit PRs for translation
+fixes in store listings or new images. However, release notes are strictly managed by me. Do not
+write or modify release notes; I handle those right before a release.
 
 ### Architecture
 
@@ -246,32 +262,35 @@ it triggers the remote sync-server.**
 * Use the `performLocalOperationWithRemoteSyncFlow` function to handle any feature that syncs. It
   ensures the remote operation is only called if the local operation succeeds.
 * You should have basic understanding of how to work with Kotlin Coroutines and Flows.
-* UI events (Snackbars, Menus, Dialogs, etc.) operate on an event bus. Send them using `pushUIEvent`
-  via `UIEvent` in `commonMain`, or use `androidUIEvent` for Android-specific events. These are
-  collected respectively in `AppVM` (common) or `MainVM` (Android-specific).
+* UI events (Snackbars, Menus, Dialogs, etc.) operate on an event bus.
+    * Send them using `pushUIEvent` via `UIEvent` in `commonMain`, or use `androidUIEvent` for
+      Android-specific events.
+    * These are collected respectively in `AppVM` (common) or `MainVM` (Android-specific).
 * Snapshots/auto-backups use Kotlin Flows to subscribe to all relevant tables with a 1-second
   debounce. If you are working around this, please go through `SnapshotRepoImpl.kt` properly.
-* Lists that can grow infinitely use a custom `Paginator.kt`. It
-  relies on cursor-based pagination. If you know the concept, this is just a Kotlin implementation
-  using a `Job` that cancels and subscribes based on what is visible on the screen. Read the file to
-  see exactly how it is implemented.
-* If you go through any `Local****Repo`, you will find functions that have a param `viaSocket`. The
-  sole reason this exists is that these functions are called when an operation is initiated by
-  the user and also when an event that is sent via websocket needs the same functionality as
-  whatever a function is doing. Since an operation is done via web-socket, it must not be sent back
-  to the sync-server. That's also the reason `performLocalOperationWithRemoteSyncFlow` has
-  `performRemoteOperation = !viaSocket` in all implementations, since it doesn't call the remote
-  operation when it is called via websocket operation. This helps to not make a loop of calls from
-  local to remote when receiving something via websocket.
-* Do not stick to MVVM/MVI/Clean implementations just because you consider it as your favorite style
-  to do things, or you have read it is the best way to do it. This codebase isn't based on strict
-  MVVM nor MVI. It is a hybrid based on both implementations, so use whatever makes sense
-  practically and keep it simple. If you think MVVM makes sense for whatever you are implementing,
-  use it. If you see that a state and action-driven implementation makes sense, use MVI. If you
-  think a hybrid model of these two makes sense, use it.
-* For reusable composables, do not attach
-  them to any specific viewmodel; hoist them via `performAction(SomeAction) -> <WhatEver>` and the
-  actual implementation must be done on the caller side.
+* Lists that can grow infinitely use a custom `Paginator.kt`. It relies on cursor-based pagination.
+    * If you know the concept, this is just a Kotlin implementation using a `Job` that cancels and
+      subscribes based on what is visible on the screen.
+    * Read the file to see exactly how it is implemented.
+* If you go through any `Local****Repo`, you will find functions that have a param `viaSocket`.
+    * The sole reason this exists is that these functions are called when an operation is
+      initiated by the user and also when an event that is sent via websocket needs the same
+      functionality as whatever a function is doing.
+    * Since an operation is done via web-socket, it must not be sent back to the sync-server.
+      That's also the reason `performLocalOperationWithRemoteSyncFlow` has
+      `performRemoteOperation = !viaSocket` in all implementations.
+    * This helps to not make a loop of calls from local to remote when receiving something via
+      websocket.
+* Do not stick to MVVM/MVI/Clean implementations just because you consider it as your favorite
+  style to do things, or you have read it is the best way to do it.
+    * This codebase isn't based on strict MVVM nor MVI. It is a hybrid based on both
+      implementations, so use whatever makes sense practically and keep it simple.
+    * If you think MVVM makes sense for whatever you are implementing, use it. If you see that a
+      state and action-driven implementation makes sense, use MVI. If you think a hybrid model of
+      these two makes sense, use it.
+* For reusable composables, do not attach them to any specific viewmodel; hoist them via
+  `performAction(SomeAction) -> <WhatEver>` and the actual implementation must be done on the
+  caller side.
 
 The above information should give you a clear idea on how things work, if you think anything is
 missing here, feel free to mail me at sakethh@proton.me or DM on Discord (@sakethpathike).
