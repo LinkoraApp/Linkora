@@ -6,7 +6,7 @@ edition = "2024"
 [lib]
 name = "web_capture"
 crate-type = ["cdylib"]
-path = "src/main/rust/web_capture.rs"
+path = "src/rust/web_capture.rs"
 
 [dependencies]
 monolith = { package = "capture_core", git = "https://github.com/LinkoraApp/capture-core", branch = "base" }
