@@ -21,5 +21,5 @@ data class AddNewLinkDialogParams(
    val performAction: (AddANewLinkDialogBoxAction) -> Unit,
    val url: String = "",
    val title: String = "",
-   val shouldAutofocus: Boolean = True
+   val shouldAutofocus: Boolean = true
 )
