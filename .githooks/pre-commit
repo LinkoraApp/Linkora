@@ -1,0 +1,18 @@
+#!/bin/bash
+
+cd "$(git rev-parse --show-toplevel)" || exit 1
+
+KOTLIN_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E "\.kts?$")
+RUST_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep "\.rs$")
+
+if [ -n "$RUST_FILES" ]; then
+    cd web-capture || exit 1
+    cargo fmt || exit 1
+    cd ..
+    echo "$RUST_FILES" | tr '\n' '\0' | xargs -0 git add
+fi
+
+if [ -n "$KOTLIN_FILES" ]; then
+    ./gradlew spotlessApply -PspotlessFiles="$KOTLIN_FILES" || exit 1
+    echo "$KOTLIN_FILES" | tr '\n' '\0' | xargs -0 git add
+fi
