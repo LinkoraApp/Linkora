@@ -154,7 +154,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddANewLinkDialogBox(
-    addNewLinkDialogParams: AddNewLinkDialogParams, preferences: AppPreferences, shouldAutofocus: Boolean = true
+    addNewLinkDialogParams: AddNewLinkDialogParams, preferences: AppPreferences
 ) {
     val isDataExtractingForTheLink = rememberSaveable {
         mutableStateOf(false)
@@ -215,7 +215,7 @@ fun AddANewLinkDialogBox(
                         imgUrlTextFieldValue = imgUrlTextFieldValue,
                         currentFolder = addNewLinkDialogParams.currentFolder,
                         preferences = preferences,
-                        shouldAutofocus = shouldAutofocus
+                        shouldAutofocus = addNewLinkDialogParams.shouldAutofocus
                     )
                     BottomPartOfAddANewLinkDialogBox(
                         onDismiss = addNewLinkDialogParams.onDismiss,
@@ -258,7 +258,7 @@ fun AddANewLinkDialogBox(
                             currentFolder = addNewLinkDialogParams.currentFolder,
                             imgUrlTextFieldValue = imgUrlTextFieldValue,
                             preferences = preferences,
-                            shouldAutofocus = shouldAutofocus
+                            shouldAutofocus = addNewLinkDialogParams.shouldAutofocus
                         )
                         VerticalDivider(
                             modifier = Modifier.padding(

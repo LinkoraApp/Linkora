@@ -158,7 +158,6 @@ class ShareToSaveActivity : ComponentActivity() {
                     preferredFont = preferences.selectedFont
                 ) {
                     AddANewLinkDialogBox(
-                        shouldAutofocus = false,
                         preferences = preferences,
                         addNewLinkDialogParams = AddNewLinkDialogParams(
                             onDismiss = {
@@ -186,7 +185,8 @@ class ShareToSaveActivity : ComponentActivity() {
                             ).toString(),
                             title = this@ShareToSaveActivity.intent?.getStringExtra(
                                 Intent.EXTRA_SUBJECT
-                            ) ?: ""
+                            ) ?: "",
+                            shouldAutofocus = False
                         ),
                     )
                 }
