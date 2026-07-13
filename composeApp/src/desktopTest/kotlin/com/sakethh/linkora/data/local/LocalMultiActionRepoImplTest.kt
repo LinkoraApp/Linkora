@@ -31,6 +31,7 @@ import io.mockk.mockkStatic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -134,7 +135,7 @@ class LocalMultiActionRepoImplTest {
     @Test
     fun `network failure during archive multiple items captures payload to pending sync queue`() =
         runTest {
-            coEvery { remoteMultiActionRepo.archiveMultipleItems(any()) } throws RuntimeException("Network Timeout")
+            coEvery { remoteMultiActionRepo.archiveMultipleItems(any()) }  returns flowOf(Result.Failure("Network Timeout"))
 
             val linkId = linksDao.addANewLink(
                 Link(
@@ -167,7 +168,7 @@ class LocalMultiActionRepoImplTest {
             )
                 .filterNot { it is Result.Loading }.first()
 
-            assertTrue(result is Result.Failure)
+            assertTrue(result is Result.Success)
 
             coVerify(exactly = 1) {
                 pendingSyncQueueRepo.addInQueue(match { queueItem ->

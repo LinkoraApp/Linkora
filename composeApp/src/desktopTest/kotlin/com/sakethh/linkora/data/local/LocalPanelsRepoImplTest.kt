@@ -23,6 +23,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
@@ -131,7 +132,7 @@ class LocalPanelsRepoImplTest {
     @Test
     fun `network failure during remote panel creation explicitly captures dto to pending sync queue`() =
         runTest {
-            coEvery { remotePanelsRepo.addANewPanel(any()) } throws RuntimeException("Network Timeout")
+            coEvery { remotePanelsRepo.addANewPanel(any()) }  returns flowOf(Result.Failure("Network Timeout"))
 
             val panel = Panel(localId = 0, panelName = "QueuedPanel", lastModified = 0L)
 

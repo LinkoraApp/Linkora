@@ -24,6 +24,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
@@ -131,7 +132,7 @@ class LocalTagsRepoImplTest {
     @Test
     fun `network failure during remote tag creation explicitly captures dto to pending sync queue`() =
         runTest {
-            coEvery { remoteTagsRepo.createATag(any()) } throws RuntimeException("Network Timeout")
+            coEvery { remoteTagsRepo.createATag(any()) }  returns flowOf(Result.Failure("Network Timeout"))
 
             val newTag = Tag(localId = 0, name = "OfflineTag", lastModified = 0L)
 

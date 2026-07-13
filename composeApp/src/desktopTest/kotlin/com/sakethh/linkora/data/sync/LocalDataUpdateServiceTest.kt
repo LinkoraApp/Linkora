@@ -130,7 +130,6 @@ class LocalDataUpdateServiceTest {
                 localFoldersRepo.insertANewFolder(
                     any(),
                     any(),
-                    any()
                 )
             } returns flowOf(Result.Success(1))
 
@@ -139,7 +138,6 @@ class LocalDataUpdateServiceTest {
             coVerify(exactly = 1) {
                 localFoldersRepo.insertANewFolder(
                     match { it.name == "NewRemoteFolder" && it.parentFolderId == 5L && it.remoteId == 200L },
-                    ignoreFolderAlreadyExistsException = true,
                     viaSocket = true
                 )
             }

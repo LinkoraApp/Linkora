@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
@@ -128,7 +129,6 @@ class LocalFoldersRepoImplTest {
             val errorMessage = executeAndGetErrorMessage {
                 localFoldersRepo.insertANewFolder(
                     blankFolder,
-                    ignoreFolderAlreadyExistsException = false
                 ).toList()
             }
 
@@ -210,7 +210,7 @@ class LocalFoldersRepoImplTest {
     @Test
     fun `network failure during remote folder creation caches payload directly into pending sync queue`() =
         runTest {
-            coEvery { remoteFoldersRepo.createFolder(any()) } throws RuntimeException("Network Timeout")
+            coEvery { remoteFoldersRepo.createFolder(any()) } returns flowOf(Result.Failure("Network Timeout"))
 
             val newFolder = Folder(
                 name = "OfflineFolder",
@@ -220,7 +220,7 @@ class LocalFoldersRepoImplTest {
                 lastModified = 0L
             )
 
-            localFoldersRepo.insertANewFolder(newFolder, ignoreFolderAlreadyExistsException = true)
+            localFoldersRepo.insertANewFolder(newFolder)
                 .toList()
 
             coVerify(exactly = 1) {
@@ -243,7 +243,6 @@ class LocalFoldersRepoImplTest {
 
             localFoldersRepo.insertANewFolder(
                 folder,
-                ignoreFolderAlreadyExistsException = false,
                 viaSocket = true
             ).toList()
 

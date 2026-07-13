@@ -29,6 +29,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
@@ -181,7 +182,7 @@ class LocalLinksRepoImplTest {
     @Test
     fun `network failure during remote link creation explicitly captures dto to pending sync queue`() =
         runTest {
-            coEvery { remoteLinksRepo.addANewLink(any()) } throws RuntimeException("Network Timeout")
+            coEvery { remoteLinksRepo.addANewLink(any()) }  returns flowOf(Result.Failure("Network Timeout"))
 
             val link = Link(
                 url = "https://offline.com",
