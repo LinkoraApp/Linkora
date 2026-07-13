@@ -1,0 +1,107 @@
+name: CI & Validation
+
+on:
+  push:
+    branches: [ master ]
+
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to test (REQUIRED)'
+        required: false
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.inputs.pr_number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-unix:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.pr_number && format('refs/pull/{0}/head', github.event.inputs.pr_number) || github.sha }}
+          autocrlf: false
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle & Enable Caching
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,x86_64-linux-android,armv7-linux-androideabi,x86_64-unknown-linux-gnu
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "web-capture -> target"
+          shared-key: "rust-cache-ubuntu-latest"
+
+      - name: Rust Check & Lint
+        run: |
+          cd web-capture
+          cargo fmt -- --check
+          cargo check --all-targets
+
+      - name: Kotlin Format Check
+        run: ./gradlew spotlessCheck
+        shell: bash
+
+      - name: Build Android Debug
+        run: ./gradlew assembleDebug
+        shell: bash
+
+      - name: Build Desktop
+        run: ./gradlew packageUberJarForCurrentOS
+        shell: bash
+
+      - name: Build Web (Wasm)
+        run: ./gradlew wasmJsBrowserDistribution
+        shell: bash
+
+      - name: Run All Tests
+        run: ./gradlew verifyAll
+        shell: bash
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.pr_number && format('refs/pull/{0}/head', github.event.inputs.pr_number) || github.sha }}
+          autocrlf: false
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle & Enable Caching
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "web-capture -> target"
+          shared-key: "rust-cache-windows-latest"
+
+      - name: Build Desktop
+        run: ./gradlew packageUberJarForCurrentOS
+        shell: bash

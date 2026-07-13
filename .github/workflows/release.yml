@@ -19,27 +19,38 @@ jobs:
       matrix:
         include:
           - os: windows-latest
+            rust-target: x86_64-pc-windows-msvc
           - os: ubuntu-latest
+            rust-target: x86_64-unknown-linux-gnu
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.tag }}
+          autocrlf: false
 
       - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 21
+          distribution: 'temurin'
+          java-version: '21'
           cache: gradle
 
-      - name: Make Gradlew executable
-        if: runner.os != 'Windows'
-        run: chmod +x ./gradlew
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust-target }}
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "web-capture -> target"
+          shared-key: "release-rust-${{ matrix.os }}"
 
       - name: Build Windows
         if: matrix.os == 'windows-latest'
-        run: ./gradlew :composeApp:packageMsi :composeApp:packageExe
+        run: .\gradlew :composeApp:packageMsi :composeApp:packageExe
 
       - name: Build Ubuntu
         if: matrix.os == 'ubuntu-latest'
@@ -77,7 +88,7 @@ jobs:
 
           ARCH=x86_64 ./appimagetool --appimage-extract-and-run -u "$UPDATE_INFO" AppDir Linkora.AppImage
 
-      - name: Upload to Release
+      - name: Upload Desktop Artifacts to Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag }}
@@ -102,12 +113,14 @@ jobs:
       - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 21
+          distribution: 'temurin'
+          java-version: '21'
           cache: gradle
 
-      - name: Make Gradlew executable
-        run: chmod +x ./gradlew
+      - name: Verify NDK Availability
+        run: |
+          echo "ANDROID_HOME is: $ANDROID_HOME"
+          ls -d "$ANDROID_HOME/ndk"/* || echo "Warning: NDK not found in ANDROID_HOME"
 
       - name: Decode Keystores
         run: |
@@ -142,7 +155,7 @@ jobs:
           
           mv composeApp/build/outputs/apk/release/*.apk composeApp-release.apk
 
-      - name: Upload to Release
+      - name: Upload Android Artifacts to Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag }}
@@ -163,12 +176,9 @@ jobs:
       - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 21
+          distribution: 'temurin'
+          java-version: '21'
           cache: gradle
-
-      - name: Make Gradlew executable
-        run: chmod +x ./gradlew
 
       - name: Build WasmJs Extension Zip
         run: |
@@ -176,7 +186,7 @@ jobs:
           cd composeApp/build/dist/wasmJs/productionExecutable
           zip -r $GITHUB_WORKSPACE/Linkora-web-wasm.zip .
 
-      - name: Upload to Release
+      - name: Upload Web Artifact to Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag }}
