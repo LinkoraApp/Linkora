@@ -7,14 +7,13 @@ use monolith::core::{
     create_monolithic_document,
 };
 use std::any::Any;
-use std::fs::File;
-use std::io::Write;
-use std::os::fd::FromRawFd;
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, OnceLock, mpsc};
 use tokio::runtime::Runtime;
 use tokio::task::AbortHandle;
+#[cfg(target_os = "android")]
+use {std::fs::File, std::io::Write, std::os::fd::FromRawFd};
 
 static TOKIO_RUNTIME: OnceLock<Runtime> = OnceLock::new();
 
@@ -417,12 +416,14 @@ pub extern "system" fn Java_com_sakethh_linkora_JVMAndAndroidWebCapture_saveHTML
                 }
             };
 
-            let web_capture_file_creation = if file_descriptor == -1 {
-                std::fs::write(file_path_string, html_doc)
-            } else {
+            #[cfg(target_os = "android")]
+            let web_capture_file_creation = {
                 let mut web_capture_file = unsafe { File::from_raw_fd(file_descriptor) };
                 web_capture_file.write_all(&html_doc)
             };
+
+            #[cfg(not(target_os = "android"))]
+            let web_capture_file_creation = { std::fs::write(file_path_string, html_doc) };
 
             match web_capture_file_creation {
                 Ok(_) => {
