@@ -52,6 +52,7 @@ class LinkoraApp : Application() {
                             LocalDatabase.MIGRATION_11_12,
                             LocalDatabase.MIGRATION_12_13,
                             LocalDatabase.MIGRATION_13_14,
+                            LocalDatabase.MIGRATION_14_15,
                         )
                         .build()
                 },

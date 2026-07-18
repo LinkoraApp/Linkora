@@ -7,6 +7,7 @@ import androidx.room3.TypeConverters
 import androidx.room3.migration.Migration
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.executeSQL
+import com.sakethh.linkora.data.local.dao.CaptureTrackDao
 import com.sakethh.linkora.data.local.dao.FoldersDao
 import com.sakethh.linkora.data.local.dao.LinksDao
 import com.sakethh.linkora.data.local.dao.LocalDatabaseUtilsDao
@@ -18,6 +19,7 @@ import com.sakethh.linkora.data.local.dao.SnapshotDao
 import com.sakethh.linkora.data.local.dao.TagsDao
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.PendingSyncQueue
+import com.sakethh.linkora.domain.model.CaptureTrack
 import com.sakethh.linkora.domain.model.RefreshLink
 import com.sakethh.linkora.domain.model.Snapshot
 import com.sakethh.linkora.domain.model.link.Link
@@ -32,7 +34,7 @@ import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.getSystemEpochSeconds
 
 @Database(
-    version = 14,
+    version = 15,
     exportSchema = true,
     entities =
     [
@@ -47,6 +49,7 @@ import com.sakethh.linkora.utils.getSystemEpochSeconds
         Tag::class,
         LinkTag::class,
         RefreshLink::class,
+        CaptureTrack::class,
     ],
 )
 @ConstructedBy(LocalDatabaseConstructor::class)
@@ -544,6 +547,15 @@ abstract class LocalDatabase : RoomDatabase() {
                     connection.executeSQL("CREATE INDEX IF NOT EXISTS idx_tags_name ON tags(name)")
                 }
             }
+
+        val MIGRATION_14_15 =
+            object : Migration(14, 15) {
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.executeSQL(
+                        "CREATE TABLE IF NOT EXISTS `CaptureTrack` (`capturedLinkId` INTEGER NOT NULL, PRIMARY KEY(`capturedLinkId`))",
+                    )
+                }
+            }
     }
 
     abstract val linksDao: LinksDao
@@ -554,5 +566,6 @@ abstract class LocalDatabase : RoomDatabase() {
     abstract val snapshotDao: SnapshotDao
     abstract val tagsDao: TagsDao
     abstract val refreshDao: RefreshLinkDao
+    abstract val captureTrackDao: CaptureTrackDao
     abstract val localDatabaseUtilsDao: LocalDatabaseUtilsDao
 }
