@@ -14,6 +14,7 @@ import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.RefreshLinksRepo
+import com.sakethh.linkora.domain.repository.local.WebCaptureRepo
 import com.sakethh.linkora.linkoraSpecificFolder
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.ui.utils.UIEvent
@@ -82,6 +83,24 @@ actual class NativeUtils {
         refreshLinksRepo: RefreshLinksRepo,
     ) {
         RefreshAllLinksService.invoke(localLinksRepo)
+    }
+
+    actual suspend fun onCaptureAllWebPages(
+        preferences: AppPreferences,
+        localLinksRepo: LocalLinksRepo,
+        webCaptureRepo: WebCaptureRepo,
+        webCapture: WebCapture,
+    ) {
+        BulkWebCaptureService.captureAllWebPages(
+            preferences = preferences,
+            localLinksRepo = localLinksRepo,
+            webCaptureRepo = webCaptureRepo,
+            webCapture,
+        )
+    }
+
+    actual fun cancelBulkWebCapture() {
+        BulkWebCaptureService.cancel()
     }
 
     actual suspend fun isAnyRefreshingScheduled(): Flow<Boolean?> = emptyFlow()

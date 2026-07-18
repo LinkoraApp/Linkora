@@ -12,9 +12,9 @@ import com.sakethh.linkora.data.local.repository.LocalPanelsRepoImpl
 import com.sakethh.linkora.data.local.repository.LocalTagsRepoImpl
 import com.sakethh.linkora.data.local.repository.PendingSyncQueueRepoImpl
 import com.sakethh.linkora.data.local.repository.PreferencesImpl
-import com.sakethh.linkora.data.local.repository.CaptureTrackRepoImpl
 import com.sakethh.linkora.data.local.repository.RefreshLinksRepoImpl
 import com.sakethh.linkora.data.local.repository.SnapshotRepoImpl
+import com.sakethh.linkora.data.local.repository.WebCaptureRepoImpl
 import com.sakethh.linkora.data.remote.repository.GitHubReleasesRepoImpl
 import com.sakethh.linkora.data.remote.repository.RemoteFoldersRepoImpl
 import com.sakethh.linkora.data.remote.repository.RemoteLinksRepoImpl
@@ -243,9 +243,14 @@ object DependencyContainer {
         )
     }
 
-    val captureTrackRepo by lazy {
-        CaptureTrackRepoImpl(
+    val webCaptureRepo by lazy {
+        WebCaptureRepoImpl(
             captureTrackDao = LinkoraSDK.getInstance().localDatabase.captureTrackDao,
+            webCaptureMetadataDao = {
+                LinkoraSDK.getInstance().webCaptureDatabaseManager.getDatabase(
+                    preferencesRepo.getPreferences().webCapturesLocation,
+                ).webCaptureMetadataDao
+            },
         )
     }
 

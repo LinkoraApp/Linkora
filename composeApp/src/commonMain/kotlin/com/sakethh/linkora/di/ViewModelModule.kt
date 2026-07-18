@@ -94,6 +94,8 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
                 fileManager = LinkoraSDK.getInstance().fileManager,
                 permissionManager = LinkoraSDK.getInstance().permissionManager,
                 refreshLinksRepo = DependencyContainer.refreshLinksRepo,
+                webCaptureRepo = DependencyContainer.webCaptureRepo,
+                webCapture = LinkoraSDK.getInstance().webCapture,
             )
 
         else ->

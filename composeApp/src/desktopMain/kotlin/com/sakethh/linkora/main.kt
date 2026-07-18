@@ -60,6 +60,7 @@ import com.sakethh.linkora.ui.theme.LinkoraTheme
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.isServerConfigured
 import com.sakethh.linkora.utils.rememberLocalizedString
+import kotlinx.coroutines.Dispatchers
 import java.awt.Dimension
 import java.io.File
 
@@ -103,6 +104,7 @@ suspend fun main() {
                     File(webCaptureDirPath, "${WebCaptureDatabase.NAME}.db").run {
                         Room.databaseBuilder<WebCaptureDatabase>(name = this.absolutePath)
                             .setDriver(BundledSQLiteDriver())
+                            .setQueryCoroutineContext(Dispatchers.IO)
                             .build()
                     }
                 },

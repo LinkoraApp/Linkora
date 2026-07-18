@@ -23,6 +23,9 @@
         <receiver
             android:name=".service.CancelRefreshingActionReceiver"
             android:exported="true" />
+        <receiver
+            android:name=".service.CancelWebCaptureActionReceiver"
+            android:exported="true" />
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|mnc|colorMode|density|fontScale|fontWeightAdjustment|keyboard|layoutDirection|locale|mcc|navigation|smallestScreenSize|touchscreen|uiMode"

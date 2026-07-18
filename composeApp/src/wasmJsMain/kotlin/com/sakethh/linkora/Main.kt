@@ -39,6 +39,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.room3.Room
 import androidx.sqlite.driver.web.WebWorkerSQLiteDriver
 import com.sakethh.linkora.data.local.LocalDatabase
+import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.Platform
@@ -87,7 +88,9 @@ fun main() {
             network = Network,
             dataSyncingNotificationService = NativeUtils.DataSyncingNotificationService(),
             webCapture = NativeUtils.WebCapture(),
-            webCaptureDatabaseManager = TODO(),
+            webCaptureDatabaseManager = WebCaptureDatabaseManager(databaseBuilder = {
+                error("This call isn't supposed happen")
+            }),
         ),
     )
 

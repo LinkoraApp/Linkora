@@ -18,6 +18,7 @@ import com.sakethh.linkora.domain.model.JSONExportSchema
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.RefreshLinksRepo
+import com.sakethh.linkora.domain.repository.local.WebCaptureRepo
 import com.sakethh.linkora.ui.domain.AppIconCode
 import com.sakethh.linkora.ui.domain.Font
 import com.sakethh.linkora.ui.domain.Layout
@@ -110,6 +111,15 @@ actual class FileManager {
 
 actual class NativeUtils {
     actual fun onShare(url: String) = Unit
+
+    actual suspend fun onCaptureAllWebPages(
+        preferences: AppPreferences,
+        localLinksRepo: LocalLinksRepo,
+        webCaptureRepo: WebCaptureRepo,
+        webCapture: WebCapture,
+    ) = Unit
+
+    actual fun cancelBulkWebCapture() = Unit
 
     actual suspend fun onRefreshAllLinks(
         localLinksRepo: LocalLinksRepo,
@@ -458,13 +468,6 @@ actual object PlatformPreference {
             ?.toBooleanStrictOrNull() ?: false,
         webCaptureMaxVersions =
         localStorage.getItem(AppPreferences.WEB_CAPTURE_MAX_VERSIONS.key)?.toIntOrNull() ?: 3,
-        webCaptureAutoDeleteDays =
-        localStorage.getItem(AppPreferences.WEB_CAPTURE_AUTO_DELETE_DAYS.key)?.toIntOrNull()
-            ?: 30,
-        webCaptureDeleteOnLinkDelete =
-        localStorage
-            .getItem(AppPreferences.WEB_CAPTURE_DELETE_ON_LINK_DELETE.key)
-            ?.toBooleanStrictOrNull() ?: false,
     )
 }
 

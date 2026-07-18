@@ -137,6 +137,11 @@ class PreferencesImpl(
                         refreshLinksWorkerTag = value as String,
                     )
 
+                AppPreferences.WEB_CAPTURE_ALL_LINKS_WORKER_UUID ->
+                    currentPref.copy(
+                        allLinksWebCaptureWorkerTag = value as String,
+                    )
+
                 AppPreferences.SHOW_VIDEO_TAG_IF_APPLICABLE ->
                     currentPref.copy(
                         showVideoTagOnUIIfApplicable = value as Boolean,
@@ -288,14 +293,9 @@ class PreferencesImpl(
                         webCaptureMaxVersions = value as Int,
                     )
 
-                AppPreferences.WEB_CAPTURE_AUTO_DELETE_DAYS ->
+                AppPreferences.WEB_CAPTURE_MAX_CONCURRENCY ->
                     currentPref.copy(
-                        webCaptureAutoDeleteDays = value as Int,
-                    )
-
-                AppPreferences.WEB_CAPTURE_DELETE_ON_LINK_DELETE ->
-                    currentPref.copy(
-                        webCaptureDeleteOnLinkDelete = value as Boolean,
+                        webCaptureMaxConcurrency = value as Int,
                     )
 
                 else -> currentPref

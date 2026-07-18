@@ -21,6 +21,7 @@ import com.sakethh.linkora.domain.repository.ImportDataRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.RefreshLinksRepo
+import com.sakethh.linkora.domain.repository.local.WebCaptureRepo
 import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
 import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.NativeUtils
@@ -57,6 +58,8 @@ class DataSettingsScreenVM(
     private val fileManager: FileManager,
     private val permissionManager: PermissionManager,
     private val refreshLinksRepo: RefreshLinksRepo,
+    private val webCaptureRepo: WebCaptureRepo,
+    private val webCapture: NativeUtils.WebCapture,
 ) : SettingsScreenViewModel(preferencesRepository, nativeUtils, permissionManager) {
     val importExportProgressLogs = mutableStateListOf<String>()
 
@@ -293,6 +296,23 @@ class DataSettingsScreenVM(
         viewModelScope.launch {
             nativeUtils.cancelRefreshingLinks()
         }
+    }
+
+    fun captureAllWebPages() {
+        viewModelScope
+            .launch {
+                if (preferencesAsFlow.value.webCapturesLocation.isBlank()) return@launch
+                nativeUtils.onCaptureAllWebPages(
+                    preferences = preferencesAsFlow.value,
+                    localLinksRepo = linksRepo,
+                    webCaptureRepo = webCaptureRepo,
+                    webCapture = webCapture,
+                )
+            }
+    }
+
+    fun cancelBulkWebCapture() {
+        nativeUtils.cancelBulkWebCapture()
     }
 
     fun forceSetDefaultFolderToInternalIds(

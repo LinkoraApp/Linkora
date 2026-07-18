@@ -23,11 +23,13 @@ import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.RefreshLinksRepo
+import com.sakethh.linkora.domain.repository.local.WebCaptureRepo
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.utils.createNewFile
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.longPreferencesKey
 import com.sakethh.linkora.utils.stringPreferencesKey
+import com.sakethh.linkora.worker.BulkWebCaptureWorker
 import com.sakethh.linkora.worker.RefreshAllLinksWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -41,15 +43,37 @@ actual class NativeUtils(
     private val context: Context,
 ) {
     actual fun onShare(url: String) {
-        val intent =
-            Intent().apply {
-                action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_TEXT, url)
-                type = "text/plain"
-            }
+        val intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, url)
+            type = "text/plain"
+        }
         val shareIntent = Intent.createChooser(intent, null)
         shareIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         context.startActivity(shareIntent)
+    }
+
+    actual suspend fun onCaptureAllWebPages(
+        preferences: AppPreferences,
+        localLinksRepo: LocalLinksRepo,
+        webCaptureRepo: WebCaptureRepo,
+        webCapture: WebCapture,
+    ) {
+        webCaptureRepo.deleteAllProcessedIds()
+
+        val workManager = WorkManager.getInstance(context)
+        val request = OneTimeWorkRequestBuilder<BulkWebCaptureWorker>().setConstraints(
+            Constraints(requiredNetworkType = NetworkType.CONNECTED),
+        ).setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST).build()
+        workManager.enqueueUniqueWork(
+            BulkWebCaptureWorker.WORKER_NAME,
+            ExistingWorkPolicy.REPLACE,
+            request,
+        )
+    }
+
+    actual fun cancelBulkWebCapture() {
+        BulkWebCaptureWorker.cancelWork(context)
     }
 
     actual suspend fun onRefreshAllLinks(
@@ -58,17 +82,12 @@ actual class NativeUtils(
         refreshLinksRepo: RefreshLinksRepo,
     ) {
         val workManager = WorkManager.getInstance(context)
-        val request =
-            OneTimeWorkRequestBuilder<RefreshAllLinksWorker>()
-                .setConstraints(
-                    Constraints(requiredNetworkType = NetworkType.CONNECTED),
-                )
-                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-                .build()
+        val request = OneTimeWorkRequestBuilder<RefreshAllLinksWorker>().setConstraints(
+            Constraints(requiredNetworkType = NetworkType.CONNECTED),
+        ).setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST).build()
 
         preferencesRepository.changePreferenceValue(
-            preferenceKey =
-            stringPreferencesKey(
+            preferenceKey = stringPreferencesKey(
                 AppPreferences.CURRENT_WORK_MANAGER_WORK_UUID.key,
             ),
             newValue = request.id.toString(),
@@ -103,8 +122,7 @@ actual class NativeUtils(
     actual fun cancelRefreshingLinks() {
         RefreshAllLinksWorker.cancelLinksRefreshing(
             context,
-            refreshLinksWorkerTag =
-            DependencyContainer.preferencesRepo.getPreferences().refreshLinksWorkerTag,
+            refreshLinksWorkerTag = DependencyContainer.preferencesRepo.getPreferences().refreshLinksWorkerTag,
         )
     }
 
@@ -116,17 +134,13 @@ actual class NativeUtils(
 
         actual fun showNotification() {
             val notification =
-                NotificationCompat.Builder(context, "1")
-                    .setSmallIcon(R.drawable.ic_stat_name)
+                NotificationCompat.Builder(context, "1").setSmallIcon(R.drawable.ic_stat_name)
                     .setContentTitle(Localization.Key.SyncingDataLabel.getLocalizedString())
                     .setProgress(
                         0,
                         0,
                         true,
-                    )
-                    .setPriority(NotificationCompat.PRIORITY_LOW)
-                    .setSilent(true)
-                    .build()
+                    ).setPriority(NotificationCompat.PRIORITY_LOW).setSilent(true).build()
 
             notificationManager.notify(1, notification)
         }
@@ -192,27 +206,22 @@ actual class NativeUtils(
             includeVideoElements: Boolean,
             includeMetadata: Boolean,
         ): Result<Boolean> = withContext(Dispatchers.IO) {
-            val (webCaptureFile, _) =
-                createNewFile(
-                    context = context,
-                    exportLocation = nativeFolderPath,
-                    exportFileType = ExportFileType.HTML,
-                    exportLocationType = ExportLocationType.WEB_CAPTURE,
-                )
+            val (webCaptureFile, _) = createNewFile(
+                context = context,
+                exportLocation = nativeFolderPath,
+                exportFileType = ExportFileType.HTML,
+                exportLocationType = ExportLocationType.WEB_CAPTURE,
+            )
 
             val webCaptureFileDescriptor =
-                context.applicationContext.contentResolver
-                    .openFileDescriptor(
-                        webCaptureFile?.uri
-                            ?: return@withContext Result.Failure(
-                                "Couldn't get the uri for web-capture file that is created",
-                            ),
-                        "w",
-                    )
-                    ?.detachFd()
-                    ?: return@withContext Result.Failure(
-                        "Couldn't open the file descriptor for web-capture file that is created",
-                    )
+                context.applicationContext.contentResolver.openFileDescriptor(
+                    webCaptureFile?.uri ?: return@withContext Result.Failure(
+                        "Couldn't get the uri for web-capture file that is created",
+                    ),
+                    "w",
+                )?.detachFd() ?: return@withContext Result.Failure(
+                    "Couldn't open the file descriptor for web-capture file that is created",
+                )
 
             androidDesktopWebCapture.saveHTMLPage(
                 url = url,

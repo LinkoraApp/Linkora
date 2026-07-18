@@ -11,29 +11,29 @@ import androidx.room3.Query
 import androidx.room3.RoomDatabase
 
 @Entity(tableName = "metadata")
-data class MetaDataEntity(
+data class WebCaptureMetadata(
     @PrimaryKey val link: String,
     val uuid: String,
 )
 
 @Dao
-interface MetaDataDao {
+interface WebCaptureMetadataDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun insert(metaData: MetaDataEntity)
+    suspend fun insert(metaData: WebCaptureMetadata)
 
     @Query("SELECT uuid FROM metadata WHERE link = :link")
     suspend fun getFolderNameByLink(link: String): String?
 
     @Query("SELECT link FROM metadata")
-    suspend fun getAllCapturedLinks(): List<String>
+    suspend fun getAllLinks(): List<String>
 }
 
-@Database(entities = [MetaDataEntity::class], version = 1)
+@Database(entities = [WebCaptureMetadata::class], version = 1)
 @ConstructedBy(WebCaptureDatabaseConstructor::class)
 abstract class WebCaptureDatabase : RoomDatabase() {
     companion object {
-        const val NAME = "WebCapture"
+        const val NAME = "WebCaptureMetadata"
     }
 
-    abstract val metaDataDao: MetaDataDao
+    abstract val webCaptureMetadataDao: WebCaptureMetadataDao
 }

@@ -41,3 +41,5 @@ suspend fun <T> Result<T>.onLoading(init: suspend (loadingLog: String) -> Unit):
     }
     return this
 }
+
+typealias LinkoraResultFailure<T> = Result.Failure<T>

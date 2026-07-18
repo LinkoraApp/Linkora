@@ -14,6 +14,7 @@ import com.sakethh.linkora.domain.model.JSONExportSchema
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.RefreshLinksRepo
+import com.sakethh.linkora.domain.repository.local.WebCaptureRepo
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.CoroutineDispatcher
@@ -128,6 +129,15 @@ expect class NativeUtils {
     }
 
     fun onIconChange(allIconCodes: List<String>, newIconCode: String, onCompletion: () -> Unit)
+
+    suspend fun onCaptureAllWebPages(
+        preferences: AppPreferences,
+        localLinksRepo: LocalLinksRepo,
+        webCaptureRepo: WebCaptureRepo,
+        webCapture: WebCapture,
+    )
+
+    fun cancelBulkWebCapture()
 
     /**
      * THE WEB IMPLEMENTATION IS A HACK TO KEEP COMPILER HAPPY, THIS FUNCTION SHOULD NOT BE USED

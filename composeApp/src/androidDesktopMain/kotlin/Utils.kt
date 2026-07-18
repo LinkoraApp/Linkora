@@ -221,10 +221,7 @@ suspend fun readAllPreferences(
     webCaptureRetainAllVersions =
     prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_RETAIN_ALL_VERSIONS.key)] ?: false,
     webCaptureMaxVersions = prefs[dsIntKey(AppPreferences.WEB_CAPTURE_MAX_VERSIONS.key)] ?: 3,
-    webCaptureAutoDeleteDays =
-    prefs[dsIntKey(AppPreferences.WEB_CAPTURE_AUTO_DELETE_DAYS.key)] ?: 30,
-    webCaptureDeleteOnLinkDelete =
-    prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_DELETE_ON_LINK_DELETE.key)] ?: false,
+    webCaptureMaxConcurrency = prefs[dsIntKey(AppPreferences.WEB_CAPTURE_MAX_CONCURRENCY.key)] ?: 15,
 )
 
 suspend fun <T> writePreferenceValue(

@@ -17,9 +17,9 @@ import com.sakethh.linkora.data.local.dao.PendingSyncQueueDao
 import com.sakethh.linkora.data.local.dao.RefreshLinkDao
 import com.sakethh.linkora.data.local.dao.SnapshotDao
 import com.sakethh.linkora.data.local.dao.TagsDao
+import com.sakethh.linkora.domain.model.CaptureTrack
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.PendingSyncQueue
-import com.sakethh.linkora.domain.model.CaptureTrack
 import com.sakethh.linkora.domain.model.RefreshLink
 import com.sakethh.linkora.domain.model.Snapshot
 import com.sakethh.linkora.domain.model.link.Link
