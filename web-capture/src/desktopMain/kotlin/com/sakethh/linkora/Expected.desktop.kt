@@ -36,4 +36,6 @@ actual object WebCapture {
         includeMetadata = includeMetadata,
         logStuff = logStuff,
     )
+
+    actual suspend fun nuke(): Result<Boolean> = JVMAndAndroidWebCapture.nuke()
 }

@@ -94,6 +94,8 @@ expect class NativeUtils {
     class WebCapture {
         suspend fun init(): Result<Boolean>
 
+        suspend fun nuke()
+
         suspend fun saveHTMLPage(
             nativeFolderPath: String,
             url: String,
@@ -118,7 +120,7 @@ expect class NativeUtils {
             webCapture: WebCapture,
         )
 
-        fun isAllLinksWebCaptureScheduled(): Flow<Boolean?>
+        fun isWebCaptureWorkerEnqueued(): Flow<Boolean?>
 
         fun cancelBulkWebCapture()
     }
@@ -129,7 +131,7 @@ expect class NativeUtils {
         refreshLinksRepo: RefreshLinksRepo,
     )
 
-    suspend fun isAnyRefreshingScheduled(): Flow<Boolean?>
+    fun isAnyRefreshingEnqueued(): Flow<Boolean?>
 
     fun cancelRefreshingLinks()
 

@@ -44,6 +44,7 @@ open class SettingsScreenViewModel(
     private val preferencesRepository: PreferencesRepository,
     private val nativeUtils: NativeUtils,
     private val permissionManager: PermissionManager,
+    private val webCapture: NativeUtils.WebCapture,
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
 
@@ -711,4 +712,16 @@ open class SettingsScreenViewModel(
                 Slide4()
             },
         )
+
+    fun initWebCapture() {
+        viewModelScope.launch {
+            webCapture.init()
+        }
+    }
+
+    fun nukeWebCapture() {
+        viewModelScope.launch {
+            webCapture.nuke()
+        }
+    }
 }

@@ -40,6 +40,7 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
                 preferencesRepository = DependencyContainer.preferencesRepo,
                 nativeUtils = LinkoraSDK.getInstance().nativeUtils,
                 permissionManager = LinkoraSDK.getInstance().permissionManager,
+                webCapture = LinkoraSDK.getInstance().webCapture,
             )
 
         SearchScreenVM::class ->
@@ -55,6 +56,7 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
                 preferencesRepository = DependencyContainer.preferencesRepo,
                 nativeUtils = LinkoraSDK.getInstance().nativeUtils,
                 permissionManager = LinkoraSDK.getInstance().permissionManager,
+                webCapture = LinkoraSDK.getInstance().webCapture,
             )
 
         LanguageSettingsScreenVM::class ->

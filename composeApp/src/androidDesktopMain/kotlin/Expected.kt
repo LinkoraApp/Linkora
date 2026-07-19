@@ -4,6 +4,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class AndroidDesktopWebCapture {
+
+    suspend fun nuke() = WebCapture.nuke()
+
     suspend fun init(): Result<Boolean> = WebCapture.init()
         .fold(
             onSuccess = {

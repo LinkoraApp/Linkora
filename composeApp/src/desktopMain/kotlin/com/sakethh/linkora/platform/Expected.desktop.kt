@@ -88,7 +88,7 @@ actual class NativeUtils {
         RefreshAllLinksService.invoke(localLinksRepo)
     }
 
-    actual suspend fun isAnyRefreshingScheduled(): Flow<Boolean?> = emptyFlow()
+    actual fun isAnyRefreshingEnqueued(): Flow<Boolean?> = emptyFlow()
 
     actual fun cancelRefreshingLinks() {
         RefreshAllLinksService.cancel()
@@ -170,14 +170,18 @@ actual class NativeUtils {
             AllLinksWebCaptureService.cancel()
         }
 
-        actual fun isAllLinksWebCaptureScheduled(): Flow<Boolean?> = combine(
+        actual fun isWebCaptureWorkerEnqueued(): Flow<Boolean?> = combine(
             WebCaptureService.isProcessing,
             snapshotFlow {
-                DataSettingsScreenVM.webCaptureState
+                DataSettingsScreenVM.onGoingWebCaptureState
             },
         ) { b1, b2 ->
             b1 || b2.isInProgress
         }.distinctUntilChanged()
+
+        actual suspend fun nuke() {
+            androidDesktopWebCapture.nuke()
+        }
     }
 }
 

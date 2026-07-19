@@ -119,7 +119,7 @@ actual class NativeUtils {
         refreshLinksRepo: RefreshLinksRepo,
     ): Unit = RefreshAllLinksService.invoke(localLinksRepo)
 
-    actual suspend fun isAnyRefreshingScheduled(): Flow<Boolean?> = flowOf(false)
+    actual fun isAnyRefreshingEnqueued(): Flow<Boolean?> = flowOf(false)
 
     actual fun cancelRefreshingLinks(): Unit = RefreshAllLinksService.cancel()
 
@@ -181,7 +181,8 @@ actual class NativeUtils {
         ) = Unit
 
         actual fun cancelBulkWebCapture() = Unit
-        actual fun isAllLinksWebCaptureScheduled(): Flow<Boolean?> = emptyFlow()
+        actual fun isWebCaptureWorkerEnqueued(): Flow<Boolean?> = emptyFlow()
+        actual suspend fun nuke() = Unit
     }
 }
 

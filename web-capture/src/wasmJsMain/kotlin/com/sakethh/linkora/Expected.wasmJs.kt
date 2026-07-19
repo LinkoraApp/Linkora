@@ -2,7 +2,7 @@ package com.sakethh.linkora
 
 actual object WebCapture {
     actual suspend fun init(): Result<Boolean> = Result.failure(IllegalStateException("this is not supposed to be called on the web"))
-
+    actual suspend fun nuke(): Result<Boolean> = Result.failure(IllegalStateException("this is not supposed to be called on the web"))
     actual suspend fun saveHTMLPage(
         fileDescriptor: Int,
         filePath: String,

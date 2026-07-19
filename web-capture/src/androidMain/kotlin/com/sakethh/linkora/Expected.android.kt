@@ -2,7 +2,7 @@ package com.sakethh.linkora
 
 actual object WebCapture {
     actual suspend fun init(): Result<Boolean> = JVMAndAndroidWebCapture.init()
-
+    actual suspend fun nuke(): Result<Boolean> = JVMAndAndroidWebCapture.nuke()
     actual suspend fun saveHTMLPage(
         fileDescriptor: Int,
         filePath: String,

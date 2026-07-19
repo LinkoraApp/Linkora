@@ -15,7 +15,8 @@ class SortingBtmSheetVM(
     preferencesRepository: PreferencesRepository,
     nativeUtils: NativeUtils,
     permissionManager: PermissionManager,
-) : SettingsScreenViewModel(preferencesRepository, nativeUtils, permissionManager) {
+    webCapture: NativeUtils.WebCapture,
+) : SettingsScreenViewModel(preferencesRepository, nativeUtils, permissionManager, webCapture) {
     fun sortingBtmSheetData(): List<SortingBtmSheet> = listOf(
         SortingBtmSheet(
             sortingName = Localization.Key.NewestToOldest.getLocalizedString(),
