@@ -40,8 +40,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
@@ -88,7 +88,9 @@ actual class NativeUtils {
         RefreshAllLinksService.invoke(localLinksRepo)
     }
 
-    actual fun isAnyRefreshingEnqueued(): Flow<Boolean?> = emptyFlow()
+    actual fun isAnyRefreshingEnqueued(): Flow<Boolean?> = flow {
+        emit(false)
+    }
 
     actual fun cancelRefreshingLinks() {
         RefreshAllLinksService.cancel()

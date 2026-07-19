@@ -10,7 +10,7 @@ import com.sakethh.linkora.domain.repository.local.WebCaptureRepo
 import com.sakethh.linkora.prepareWebCaptureDir
 import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
-import com.sakethh.linkora.ui.screens.settings.section.data.WebCaptureState
+import com.sakethh.linkora.ui.screens.settings.section.data.OnGoingWebCaptureState
 import com.sakethh.linkora.utils.getOrCreateFolderUuid
 import getFileNameWithTimestamp
 import kotlinx.coroutines.CoroutineScope
@@ -29,7 +29,7 @@ object AllLinksWebCaptureService {
 
     fun cancel() {
         captureJob?.cancel()
-        DataSettingsScreenVM.webCaptureState = WebCaptureState(
+        DataSettingsScreenVM.onGoingWebCaptureState = OnGoingWebCaptureState(
             isInProgress = false,
             currentIteration = 0,
             total = 0,
@@ -55,7 +55,7 @@ object AllLinksWebCaptureService {
             val blacklist = preferences.webCaptureBlacklistDomains.split(",").map { it.trim() }
                 .filter { it.isNotBlank() }
 
-            DataSettingsScreenVM.webCaptureState = WebCaptureState(
+            DataSettingsScreenVM.onGoingWebCaptureState = OnGoingWebCaptureState(
                 isInProgress = true,
                 currentIteration = 0,
                 total = allLinks.size,
@@ -120,15 +120,15 @@ object AllLinksWebCaptureService {
                 .catch { it.printStackTrace() }
                 .collect {
                     processedCount++
-                    DataSettingsScreenVM.webCaptureState =
-                        DataSettingsScreenVM.webCaptureState.copy(
+                    DataSettingsScreenVM.onGoingWebCaptureState =
+                        DataSettingsScreenVM.onGoingWebCaptureState.copy(
                             currentIteration = processedCount,
                         )
                 }
         }
 
         captureJob?.invokeOnCompletion {
-            DataSettingsScreenVM.webCaptureState = WebCaptureState(
+            DataSettingsScreenVM.onGoingWebCaptureState = OnGoingWebCaptureState(
                 isInProgress = false,
                 currentIteration = 0,
                 total = 0,

@@ -80,7 +80,7 @@ actual class NativeUtils(
         )
     }
 
-    actual suspend fun isAnyRefreshingScheduled(): Flow<Boolean?> {
+    actual fun isAnyRefreshingEnqueued(): Flow<Boolean?> {
         val preferences = DependencyContainer.preferencesRepo.getPreferences()
         return channelFlow {
             WorkManager.getInstance(context)
@@ -231,12 +231,12 @@ actual class NativeUtils(
             AllLinksWebCaptureWorker.cancelWork(context)
         }
 
-        actual fun isAllLinksWebCaptureScheduled(): Flow<Boolean?> = channelFlow {
+        actual fun isWebCaptureWorkerEnqueued(): Flow<Boolean?> = channelFlow {
             val workerId = DependencyContainer.preferencesRepo.readPreferenceValue(
                 stringPreferencesKey(
                     AppPreferences.WEB_CAPTURE_ALL_LINKS_WORKER_UUID.key,
                 ),
-            )
+            ) ?: DependencyContainer.preferencesRepo.getPreferences().allLinksWebCaptureWorkerTag
 
             WorkManager.getInstance(context)
                 .getWorkInfoByIdFlow(UUID.fromString(workerId))
@@ -247,6 +247,10 @@ actual class NativeUtils(
                         send(null)
                     }
                 }
+        }
+
+        actual suspend fun nuke() {
+            androidDesktopWebCapture.nuke()
         }
     }
 }

@@ -46,11 +46,11 @@ class RefreshAllLinksNotificationService(
                         )
                         .replace(
                             LinkoraPlaceHolder.Second.value,
-                            DataSettingsScreenVM.totalLinksForRefresh.value.toString(),
+                            DataSettingsScreenVM.refreshLinksState.value.total.toString(),
                         ),
                 )
                 .setProgress(
-                    DataSettingsScreenVM.totalLinksForRefresh.value,
+                    DataSettingsScreenVM.refreshLinksState.value.total,
                     DataSettingsScreenVM.refreshLinksState.value.currentIteration,
                     false,
                 )

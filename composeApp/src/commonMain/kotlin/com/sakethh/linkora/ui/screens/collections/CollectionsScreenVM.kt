@@ -597,7 +597,11 @@ class CollectionsScreenVM(
     ) {
         viewModelScope
             .launch {
-                localLinksRepo.refreshLinkMetadata(link, refreshLinkType).collectLatest {
+                localLinksRepo.refreshLinkMetadata(
+                    link,
+                    refreshLinkType,
+                    preferencesAsFlow.value.useWebCaptures,
+                ).collectLatest {
                     it.onSuccess {
                         pushUIEvent(
                             UIEvent.Type.ShowSnackbar(

@@ -20,6 +20,7 @@ object RefreshAllLinksService {
             RefreshLinksState(
                 isInRefreshingState = false,
                 currentIteration = 0,
+                total = 0,
             )
     }
 
@@ -29,11 +30,11 @@ object RefreshAllLinksService {
         linksRefreshJob =
             CoroutineScope(PlatformIODispatcher).launch {
                 localLinksRepo.getAllLinks().let { allLinks ->
-                    DataSettingsScreenVM.totalLinksForRefresh.value = allLinks.size
                     DataSettingsScreenVM.refreshLinksState.value =
                         DataSettingsScreenVM.refreshLinksState.value.copy(
                             isInRefreshingState = true,
                             currentIteration = 0,
+                            total = allLinks.size,
                         )
 
                     var processedCount = 0
@@ -44,6 +45,7 @@ object RefreshAllLinksService {
                             localLinksRepo.refreshLinkMetadata(
                                 link,
                                 preferences.selectedLinkRefreshType,
+                                preferences.captureWhenRefreshAllLink,
                             )
                         }
                         .catch { it.printStackTrace() }

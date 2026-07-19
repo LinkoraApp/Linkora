@@ -471,6 +471,7 @@ actual object PlatformPreference {
             ?.toBooleanStrictOrNull() ?: false,
         webCaptureMaxVersions =
         localStorage.getItem(AppPreferences.WEB_CAPTURE_MAX_VERSIONS.key)?.toIntOrNull() ?: 3,
+        captureWhenRefreshAllLink = false,
     )
 }
 

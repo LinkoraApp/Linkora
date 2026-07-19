@@ -57,8 +57,6 @@ import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.ui.screens.settings.section.data.components.ToggleButton
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
-import com.sakethh.linkora.utils.booleanPreferencesKey
-import com.sakethh.linkora.utils.stringPreferencesKey
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -118,7 +116,7 @@ fun SnapshotsScreen() {
                                         return@invokeOnCompletion
                                     }
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey = booleanPreferencesKey(AppPreferences.USE_SNAPSHOTS.key),
+                                        preferenceKey = AppPreferences.USE_SNAPSHOTS,
                                         newValue = it,
                                     )
                                 }
@@ -312,8 +310,7 @@ fun SnapshotsScreen() {
                                             checked = checked,
                                             onCheckedChange = {
                                                 dataSettingsScreenVM.changeSettingPreferenceValue(
-                                                    preferenceKey =
-                                                    stringPreferencesKey(AppPreferences.SNAPSHOTS_EXPORT_TYPE.key),
+                                                    preferenceKey = AppPreferences.SNAPSHOTS_EXPORT_TYPE,
                                                     newValue = snapshotFormat.id.toString(),
                                                 )
                                             },

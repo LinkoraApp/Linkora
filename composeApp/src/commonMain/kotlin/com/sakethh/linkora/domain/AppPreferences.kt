@@ -86,6 +86,7 @@ data class AppPreferences(
     val webCaptureRetainAllVersions: Boolean = false,
     val webCaptureMaxVersions: Int = 3,
     val webCaptureMaxConcurrency: Int = 15,
+    val captureWhenRefreshAllLink: Boolean = false,
 ) {
     companion object {
         val DARK_THEME = booleanPreferencesKey("DARK_THEME")
@@ -143,6 +144,7 @@ data class AppPreferences(
         val FONT_TYPE = stringPreferencesKey("FONT_TYPE")
         val FORCE_SAVE_LINKS = booleanPreferencesKey("FORCE_SAVE_LINKS")
         val REFRESH_LINK_TYPE = stringPreferencesKey("REFRESH_LINK_TYPE")
+        val CAPTURE_WHEN_REFRESH_ALL_LINK = booleanPreferencesKey("CAPTURE_WHEN_REFRESH_ALL_LINK")
         val MAX_CONCURRENT_REFRESH_COUNT = intPreferencesKey("MAX_CONCURRENT_REFRESH_COUNT")
         val SHOW_TAGS_IN_LINK_VIEW = booleanPreferencesKey("SHOW_TAGS_IN_LINK_VIEW")
         val SHOW_DATE_IN_LINK_VIEW = booleanPreferencesKey("SHOW_DATE_IN_LINK_VIEW")

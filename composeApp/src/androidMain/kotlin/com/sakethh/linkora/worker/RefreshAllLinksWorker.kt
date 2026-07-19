@@ -39,11 +39,13 @@ class RefreshAllLinksWorker(
             appContext: Context,
             refreshLinksWorkerTag: String,
         ) {
-            WorkManager.getInstance(appContext).cancelWorkById(UUID.fromString(refreshLinksWorkerTag))
+            WorkManager.getInstance(appContext)
+                .cancelWorkById(UUID.fromString(refreshLinksWorkerTag))
             DataSettingsScreenVM.refreshLinksState.value =
                 RefreshLinksState(
                     isInRefreshingState = false,
                     currentIteration = 0,
+                    total = 0,
                 )
             linkoraLog("cancelLinksRefreshing")
         }
@@ -108,8 +110,8 @@ class RefreshAllLinksWorker(
                 DataSettingsScreenVM.refreshLinksState.value.copy(
                     isInRefreshingState = true,
                     currentIteration = 0,
+                    total = allLinks.size,
                 )
-            DataSettingsScreenVM.totalLinksForRefresh.value = allLinks.size
 
             val processedLinkIds = DependencyContainer.refreshLinksRepo.getProcessedLinkIds()
 
@@ -126,6 +128,7 @@ class RefreshAllLinksWorker(
                         .refreshLinkMetadata(
                             link,
                             refreshLinkType = preferences.selectedLinkRefreshType,
+                            preferences.captureWhenRefreshAllLink,
                         )
                         .map {
                             link.localId

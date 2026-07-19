@@ -244,22 +244,24 @@ class LocalLinksRepoImpl(
                     },
                 )
             }
-            webCapture.saveHTMLPage(
-                nativeFolderPath = preferences.webCapturesLocation,
-                url = link.url,
-                userAgent = preferences.primaryJsoupUserAgent,
-                timeout = 15000L,
-                allowInsecureProtocol = false,
-                ignoreDocErrors = true,
-                useCss = preferences.webCaptureSaveCss,
-                embedFonts = preferences.webCaptureSaveFonts,
-                embedImages = preferences.webCaptureSaveImages,
-                restrictJs = preferences.webCaptureExecuteJs,
-                includeAudioElements = preferences.webCaptureSaveAudio,
-                includeVideoElements = preferences.webCaptureSaveVideo,
-                includeMetadata = preferences.webCaptureSaveMetadata,
-                logStuff = false,
-            )
+            if (preferences.useWebCaptures) {
+                webCapture.saveHTMLPage(
+                    nativeFolderPath = preferences.webCapturesLocation,
+                    url = link.url,
+                    userAgent = preferences.primaryJsoupUserAgent,
+                    timeout = 15000L,
+                    allowInsecureProtocol = false,
+                    ignoreDocErrors = true,
+                    useCss = preferences.webCaptureSaveCss,
+                    embedFonts = preferences.webCaptureSaveFonts,
+                    embedImages = preferences.webCaptureSaveImages,
+                    restrictJs = preferences.webCaptureExecuteJs,
+                    includeAudioElements = preferences.webCaptureSaveAudio,
+                    includeVideoElements = preferences.webCaptureSaveVideo,
+                    includeMetadata = preferences.webCaptureSaveMetadata,
+                    logStuff = false,
+                )
+            }
         }
     }
 
@@ -803,6 +805,7 @@ class LocalLinksRepoImpl(
     override suspend fun refreshLinkMetadata(
         link: Link,
         refreshLinkType: RefreshLinkType,
+        useWebCapture: Boolean,
     ): Flow<Result<Unit>> {
         val preferences = preferencesRepository.getPreferences()
         val remoteId = getRemoteIdOfLink(link.localId)
@@ -890,22 +893,24 @@ class LocalLinksRepoImpl(
                     lastModified = getSystemEpochSeconds(),
                 ),
             )
-            webCapture.saveHTMLPage(
-                nativeFolderPath = preferences.webCapturesLocation,
-                url = link.url,
-                userAgent = preferences.primaryJsoupUserAgent,
-                timeout = 15000L,
-                allowInsecureProtocol = false,
-                ignoreDocErrors = true,
-                useCss = preferences.webCaptureSaveCss,
-                embedFonts = preferences.webCaptureSaveFonts,
-                embedImages = preferences.webCaptureSaveImages,
-                restrictJs = preferences.webCaptureExecuteJs,
-                includeAudioElements = preferences.webCaptureSaveAudio,
-                includeVideoElements = preferences.webCaptureSaveVideo,
-                includeMetadata = preferences.webCaptureSaveMetadata,
-                logStuff = false,
-            )
+            if (useWebCapture) {
+                webCapture.saveHTMLPage(
+                    nativeFolderPath = preferences.webCapturesLocation,
+                    url = link.url,
+                    userAgent = preferences.primaryJsoupUserAgent,
+                    timeout = 15000L,
+                    allowInsecureProtocol = false,
+                    ignoreDocErrors = true,
+                    useCss = preferences.webCaptureSaveCss,
+                    embedFonts = preferences.webCaptureSaveFonts,
+                    embedImages = preferences.webCaptureSaveImages,
+                    restrictJs = preferences.webCaptureExecuteJs,
+                    includeAudioElements = preferences.webCaptureSaveAudio,
+                    includeVideoElements = preferences.webCaptureSaveVideo,
+                    includeMetadata = preferences.webCaptureSaveMetadata,
+                    logStuff = false,
+                )
+            }
         }
     }
 

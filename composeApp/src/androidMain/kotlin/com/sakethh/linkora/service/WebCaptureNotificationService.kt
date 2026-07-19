@@ -30,7 +30,7 @@ class WebCaptureNotificationService(
     }
 
     fun showNotification() {
-        val webCaptureState = DataSettingsScreenVM.webCaptureState
+        val webCaptureState = DataSettingsScreenVM.onGoingWebCaptureState
         val notification =
             NotificationCompat.Builder(context, "1")
                 .setSmallIcon(R.drawable.ic_stat_name)

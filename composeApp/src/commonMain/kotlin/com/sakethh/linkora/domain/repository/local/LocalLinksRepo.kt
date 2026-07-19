@@ -112,6 +112,7 @@ interface LocalLinksRepo {
     suspend fun refreshLinkMetadata(
         link: Link,
         refreshLinkType: RefreshLinkType,
+        useWebCapture: Boolean,
     ): Flow<Result<Unit>>
 
     suspend fun getLocalLinkId(remoteID: Long): Long?

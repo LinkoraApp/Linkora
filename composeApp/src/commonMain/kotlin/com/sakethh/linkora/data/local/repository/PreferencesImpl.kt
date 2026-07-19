@@ -298,6 +298,10 @@ class PreferencesImpl(
                         webCaptureMaxConcurrency = value as Int,
                     )
 
+                AppPreferences.CAPTURE_WHEN_REFRESH_ALL_LINK -> currentPref.copy(
+                    captureWhenRefreshAllLink = value as Boolean,
+                )
+
                 else -> currentPref
             }
         }

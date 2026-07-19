@@ -222,6 +222,8 @@ suspend fun readAllPreferences(
     prefs[dsBooleanKey(AppPreferences.WEB_CAPTURE_RETAIN_ALL_VERSIONS.key)] ?: false,
     webCaptureMaxVersions = prefs[dsIntKey(AppPreferences.WEB_CAPTURE_MAX_VERSIONS.key)] ?: 3,
     webCaptureMaxConcurrency = prefs[dsIntKey(AppPreferences.WEB_CAPTURE_MAX_CONCURRENCY.key)] ?: 15,
+    captureWhenRefreshAllLink = prefs[dsBooleanKey(AppPreferences.CAPTURE_WHEN_REFRESH_ALL_LINK.key)]
+        ?: false,
 )
 
 suspend fun <T> writePreferenceValue(

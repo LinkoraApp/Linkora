@@ -207,7 +207,7 @@ class AppVM(
         snapshotRepo.isAnySnapshotOngoing.value
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), false)
 
-    var isWebCaptureInProgress = webCapture.isAllLinksWebCaptureScheduled().stateIn(
+    val isWebCaptureWorkerEnqueued = webCapture.isWebCaptureWorkerEnqueued().stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000L),
         false,

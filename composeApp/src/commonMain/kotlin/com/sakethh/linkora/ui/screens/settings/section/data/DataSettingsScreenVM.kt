@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
@@ -26,9 +27,11 @@ import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
 import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.PermissionManager
+import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.ui.AppVM
 import com.sakethh.linkora.ui.domain.ImportFileSelectionMethod
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
+import com.sakethh.linkora.ui.screens.settings.section.data.capture.WorkerState
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.utils.booleanPreferencesKey
@@ -42,9 +45,12 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -60,20 +66,37 @@ class DataSettingsScreenVM(
     private val refreshLinksRepo: RefreshLinksRepo,
     private val webCaptureRepo: WebCaptureRepo,
     private val webCapture: NativeUtils.WebCapture,
-) : SettingsScreenViewModel(preferencesRepository, nativeUtils, permissionManager) {
+) : SettingsScreenViewModel(preferencesRepository, nativeUtils, permissionManager, webCapture) {
     val importExportProgressLogs = mutableStateListOf<String>()
 
     private var importExportJob: Job? = null
 
-    val isAnyRefreshingScheduledOnAndroid = mutableStateOf(false)
-
-    init {
-        viewModelScope.launch {
-            nativeUtils.isAnyRefreshingScheduled().collectLatest {
-                isAnyRefreshingScheduledOnAndroid.value = it == true
-            }
+    val refreshAllLinksState = combine(
+        snapshotFlow {
+            refreshLinksState.value
+        },
+        nativeUtils.isAnyRefreshingEnqueued(),
+    ) { onGoingRefreshLinksState, enqueued ->
+        when {
+            enqueued == true && platform is Platform.Android -> WorkerState.ENQUEUED
+            onGoingRefreshLinksState.isInRefreshingState -> WorkerState.IN_PROGRESS
+            else -> WorkerState.IDLE
         }
-    }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), WorkerState.IDLE)
+
+    // i dont think i can come up with a better name than this
+    val webCaptureAllLinksState = combine(
+        snapshotFlow {
+            onGoingWebCaptureState
+        },
+        webCapture.isWebCaptureWorkerEnqueued(),
+    ) { onGoingWebCaptureState, enqueued ->
+        when {
+            enqueued == true && platform is Platform.Android -> WorkerState.ENQUEUED
+            onGoingWebCaptureState.isInProgress -> WorkerState.IN_PROGRESS
+            else -> WorkerState.IDLE
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), WorkerState.IDLE)
 
     fun importDataFromAFile(
         importFileType: ImportFileType,
@@ -84,39 +107,35 @@ class DataSettingsScreenVM(
         onStart()
         AppVM.pauseSnapshots = true
         importExportJob?.cancel()
-        importExportJob =
-            viewModelScope.launch(
-                Dispatchers.Default +
-                    CoroutineExceptionHandler { _, throwable ->
-                        throwable.pushSnackbar(viewModelScope)
-                    },
-            ) {
-                if (importFileType == FileType.JSON) {
-                    when (importFileSelectionMethod.first) {
-                        ImportFileSelectionMethod.FilePicker -> fileManager.importFromJSONObj()
+        importExportJob = viewModelScope.launch(
+            Dispatchers.Default + CoroutineExceptionHandler { _, throwable ->
+                throwable.pushSnackbar(viewModelScope)
+            },
+        ) {
+            if (importFileType == FileType.JSON) {
+                when (importFileSelectionMethod.first) {
+                    ImportFileSelectionMethod.FilePicker -> fileManager.importFromJSONObj()
 
-                        ImportFileSelectionMethod.FileLocationString ->
-                            fileManager.importFromJSONObj(
-                                fileLocation = importFileSelectionMethod.second,
-                            )
-                    }.collectData { data ->
-                        importDataRepo.importDataFromObj(data)
-                    }
-                }
-
-                if (importFileType == FileType.HTML) {
-                    when (importFileSelectionMethod.first) {
-                        ImportFileSelectionMethod.FilePicker -> fileManager.importFromHTMLString()
-
-                        ImportFileSelectionMethod.FileLocationString ->
-                            fileManager.importFromHTMLString(
-                                fileLocation = importFileSelectionMethod.second,
-                            )
-                    }.collectData { data ->
-                        importDataRepo.importDataFromHTML(data)
-                    }
+                    ImportFileSelectionMethod.FileLocationString -> fileManager.importFromJSONObj(
+                        fileLocation = importFileSelectionMethod.second,
+                    )
+                }.collectData { data ->
+                    importDataRepo.importDataFromObj(data)
                 }
             }
+
+            if (importFileType == FileType.HTML) {
+                when (importFileSelectionMethod.first) {
+                    ImportFileSelectionMethod.FilePicker -> fileManager.importFromHTMLString()
+
+                    ImportFileSelectionMethod.FileLocationString -> fileManager.importFromHTMLString(
+                        fileLocation = importFileSelectionMethod.second,
+                    )
+                }.collectData { data ->
+                    importDataRepo.importDataFromHTML(data)
+                }
+            }
+        }
         importExportJob?.invokeOnCompletion { cause ->
             AppVM.pauseSnapshots = false
             AppVM.forceSnapshot()
@@ -137,20 +156,17 @@ class DataSettingsScreenVM(
                     onSuccess(result.data)
                 }
             }
+        }.collectLatest {
+            it.onLoading { importLogItem ->
+                importExportProgressLogs.add(importLogItem)
+            }.onSuccess {
+                pushUIEvent(
+                    UIEvent.Type.ShowSnackbar(
+                        Localization.Key.SuccessfullyImportedTheData.getLocalizedString(),
+                    ),
+                )
+            }.pushSnackbarOnFailure()
         }
-            .collectLatest {
-                it.onLoading { importLogItem ->
-                    importExportProgressLogs.add(importLogItem)
-                }
-                    .onSuccess {
-                        pushUIEvent(
-                            UIEvent.Type.ShowSnackbar(
-                                Localization.Key.SuccessfullyImportedTheData.getLocalizedString(),
-                            ),
-                        )
-                    }
-                    .pushSnackbarOnFailure()
-            }
     }
 
     suspend fun isStoragePermissionGranted(): Boolean = permissionManager.isStorageAccessPermitted() is PermissionStatus.Granted
@@ -177,34 +193,30 @@ class DataSettingsScreenVM(
                 exportDataRepo.rawExportDataAsJSON()
             } else {
                 exportDataRepo.rawExportDataAsHTML()
-            }
-                .collectLatest {
-                    it.onLoading { exportLogItem ->
-                        importExportProgressLogs.add(exportLogItem)
-                    }
-                        .onSuccess { (rawExportString) ->
-                            try {
-                                fileManager.writeRawExportStringToFile(
-                                    exportLocation =
-                                    preferencesRepository.getPreferences().currentExportLocation,
-                                    exportFileType = exportFileType,
-                                    rawExportString = rawExportString,
-                                    onCompletion = {
-                                        pushUIEvent(
-                                            UIEvent.Type.ShowSnackbar(
-                                                Localization.Key.ExportedSuccessfully.getLocalizedString(),
-                                            ),
-                                        )
-                                    },
-                                    exportLocationType = ExportLocationType.EXPORT,
+            }.collectLatest {
+                it.onLoading { exportLogItem ->
+                    importExportProgressLogs.add(exportLogItem)
+                }.onSuccess { (rawExportString) ->
+                    try {
+                        fileManager.writeRawExportStringToFile(
+                            exportLocation = preferencesRepository.getPreferences().currentExportLocation,
+                            exportFileType = exportFileType,
+                            rawExportString = rawExportString,
+                            onCompletion = {
+                                pushUIEvent(
+                                    UIEvent.Type.ShowSnackbar(
+                                        Localization.Key.ExportedSuccessfully.getLocalizedString(),
+                                    ),
                                 )
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                                pushUIEvent(UIEvent.Type.ShowSnackbar(message = e.message.toString()))
-                            }
-                        }
-                        .pushSnackbarOnFailure()
-                }
+                            },
+                            exportLocationType = ExportLocationType.EXPORT,
+                        )
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        pushUIEvent(UIEvent.Type.ShowSnackbar(message = e.message.toString()))
+                    }
+                }.pushSnackbarOnFailure()
+            }
         }
         importExportJob?.invokeOnCompletion { cause ->
             onCompletion()
@@ -223,73 +235,66 @@ class DataSettingsScreenVM(
     ) {
         AppVM.pauseSnapshots = true
         var remoteOperationFailed: Boolean? = null
-        viewModelScope
-            .launch {
-                remoteSyncRepo
-                    .deleteEverything(deleteOnRemote = deleteEverythingFromRemote)
-                    .collectLatest {
-                        it.onFailure {
-                            remoteOperationFailed = true
-                        }
-                        it.onSuccess {
-                            remoteOperationFailed = it.isRemoteExecutionSuccessful == false
-                        }
+        viewModelScope.launch {
+            remoteSyncRepo.deleteEverything(deleteOnRemote = deleteEverythingFromRemote)
+                .collectLatest {
+                    it.onFailure {
+                        remoteOperationFailed = true
                     }
-            }
-            .invokeOnCompletion {
-                viewModelScope.launch {
-                    pushUIEvent(
-                        UIEvent.Type.ShowSnackbar(
-                            if (remoteOperationFailed == null || !remoteOperationFailed) {
-                                Localization.Key.DeletedEntireDataPermanently.getLocalizedString()
-                            } else {
-                                Localization.Key.RemoteDataDeletionFailure.getLocalizedString()
-                            },
-                        ),
-                    )
+                    it.onSuccess {
+                        remoteOperationFailed = it.isRemoteExecutionSuccessful == false
+                    }
                 }
-                AppVM.pauseSnapshots = false
-                onCompletion()
+        }.invokeOnCompletion {
+            viewModelScope.launch {
+                pushUIEvent(
+                    UIEvent.Type.ShowSnackbar(
+                        if (remoteOperationFailed == null || !remoteOperationFailed) {
+                            Localization.Key.DeletedEntireDataPermanently.getLocalizedString()
+                        } else {
+                            Localization.Key.RemoteDataDeletionFailure.getLocalizedString()
+                        },
+                    ),
+                )
             }
+            AppVM.pauseSnapshots = false
+            onCompletion()
+        }
     }
 
     companion object {
-        val refreshLinksState =
-            mutableStateOf(
-                RefreshLinksState(
-                    isInRefreshingState = false,
-                    currentIteration = 0,
-                ),
-            )
-        var webCaptureState by
-            mutableStateOf(
-                WebCaptureState(
-                    currentIteration = 0,
-                    isInProgress = false,
-                    total = 0,
-                ),
-            )
-        val totalLinksForRefresh = mutableStateOf(0)
+        val refreshLinksState = mutableStateOf(
+            RefreshLinksState(
+                isInRefreshingState = false,
+                currentIteration = 0,
+                total = 0,
+            ),
+        )
+        var onGoingWebCaptureState by mutableStateOf(
+            OnGoingWebCaptureState(
+                currentIteration = 0,
+                isInProgress = false,
+                total = 0,
+            ),
+        )
     }
 
     fun refreshAllLinks() {
         AppVM.pauseSnapshots = true
-        viewModelScope
-            .launch {
-                launch {
-                    permissionManager.permittedToShowNotification()
-                }
-                launch {
-                    nativeUtils.onRefreshAllLinks(
-                        localLinksRepo = linksRepo,
-                        preferencesRepository = preferencesRepository,
-                        refreshLinksRepo = refreshLinksRepo,
-                    )
-                }
+        viewModelScope.launch {
+            launch {
+                permissionManager.permittedToShowNotification()
             }
-            .invokeOnCompletion {
-                AppVM.pauseSnapshots = false
+            launch {
+                nativeUtils.onRefreshAllLinks(
+                    localLinksRepo = linksRepo,
+                    preferencesRepository = preferencesRepository,
+                    refreshLinksRepo = refreshLinksRepo,
+                )
             }
+        }.invokeOnCompletion {
+            AppVM.pauseSnapshots = false
+        }
     }
 
     fun cancelRefreshingAllLinks() {
@@ -299,16 +304,15 @@ class DataSettingsScreenVM(
     }
 
     fun captureAllWebPages() {
-        viewModelScope
-            .launch {
-                if (preferencesAsFlow.value.webCapturesLocation.isBlank()) return@launch
-                webCapture.onCaptureAllWebPages(
-                    preferences = preferencesAsFlow.value,
-                    localLinksRepo = linksRepo,
-                    webCaptureRepo = webCaptureRepo,
-                    webCapture = webCapture,
-                )
-            }
+        viewModelScope.launch {
+            if (preferencesAsFlow.value.webCapturesLocation.isBlank()) return@launch
+            webCapture.onCaptureAllWebPages(
+                preferences = preferencesAsFlow.value,
+                localLinksRepo = linksRepo,
+                webCaptureRepo = webCaptureRepo,
+                webCapture = webCapture,
+            )
+        }
     }
 
     fun cancelBulkWebCapture() {
@@ -320,15 +324,13 @@ class DataSettingsScreenVM(
         onCompletion: () -> Unit,
     ) {
         onStart()
-        viewModelScope
-            .launch {
-                linksRepo.forceSetDefaultFolderToInternalIds().collectLatest {
-                    it.pushSnackbarOnFailure()
-                }
+        viewModelScope.launch {
+            linksRepo.forceSetDefaultFolderToInternalIds().collectLatest {
+                it.pushSnackbarOnFailure()
             }
-            .invokeOnCompletion {
-                onCompletion()
-            }
+        }.invokeOnCompletion {
+            onCompletion()
+        }
     }
 
     fun deleteDuplicates(
@@ -336,31 +338,28 @@ class DataSettingsScreenVM(
         onCompletion: () -> Unit,
     ) {
         AppVM.pauseSnapshots = true
-        viewModelScope
-            .launch {
-                linksRepo.deleteDuplicateLinks().collectLatest {
-                    it.onSuccess {
-                        onCompletion()
-                        pushUIEvent(
-                            UIEvent.Type.ShowSnackbar(
-                                Localization.Key.DeletedDuplicatedLinksSuccessfully.getLocalizedString() +
-                                    it.getRemoteOnlyFailureMsg(),
-                            ),
-                        )
-                    }
-                    it.onLoading {
-                        onStart()
-                    }
-                    it.onFailure {
-                        onCompletion()
-                        pushUIEvent(UIEvent.Type.ShowSnackbar(it))
-                    }
+        viewModelScope.launch {
+            linksRepo.deleteDuplicateLinks().collectLatest {
+                it.onSuccess {
+                    onCompletion()
+                    pushUIEvent(
+                        UIEvent.Type.ShowSnackbar(
+                            Localization.Key.DeletedDuplicatedLinksSuccessfully.getLocalizedString() + it.getRemoteOnlyFailureMsg(),
+                        ),
+                    )
+                }
+                it.onLoading {
+                    onStart()
+                }
+                it.onFailure {
+                    onCompletion()
+                    pushUIEvent(UIEvent.Type.ShowSnackbar(it))
                 }
             }
-            .invokeOnCompletion {
-                AppVM.pauseSnapshots = false
-                AppVM.forceSnapshot()
-            }
+        }.invokeOnCompletion {
+            AppVM.pauseSnapshots = false
+            AppVM.forceSnapshot()
+        }
     }
 
     fun changeExportLocation(
@@ -371,19 +370,16 @@ class DataSettingsScreenVM(
     ) {
         viewModelScope.launch {
             try {
-                val newExportLocation =
-                    if (platform == Platform.Desktop) {
-                        exportLocation
-                    } else {
-                        fileManager.pickADirectory()
-                            ?: throw NullPointerException(
-                                Localization.Key.InvalidExportDir.getLocalizedString(),
-                            )
-                    }
+                val newExportLocation = if (platform == Platform.Desktop) {
+                    exportLocation
+                } else {
+                    fileManager.pickADirectory() ?: throw NullPointerException(
+                        Localization.Key.InvalidExportDir.getLocalizedString(),
+                    )
+                }
 
                 preferencesRepository.changePreferenceValue(
-                    preferenceKey =
-                    stringPreferencesKey(
+                    preferenceKey = stringPreferencesKey(
                         when (exportLocationType) {
                             ExportLocationType.EXPORT -> AppPreferences.EXPORT_LOCATION.key
                             ExportLocationType.SNAPSHOT -> AppPreferences.BACKUP_LOCATION.key
@@ -402,8 +398,7 @@ class DataSettingsScreenVM(
     fun updateAutoDeletionBackupsState(isEnabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
-                preferenceKey =
-                booleanPreferencesKey(
+                preferenceKey = booleanPreferencesKey(
                     AppPreferences.BACKUP_AUTO_DELETION_ENABLED.key,
                 ),
                 newValue = isEnabled,
@@ -414,8 +409,7 @@ class DataSettingsScreenVM(
     fun updateAutoDeletionBackupsThreshold(count: Int) {
         viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
-                preferenceKey =
-                intPreferencesKey(
+                preferenceKey = intPreferencesKey(
                     AppPreferences.BACKUP_AUTO_DELETION_THRESHOLD.key,
                 ),
                 newValue = count,

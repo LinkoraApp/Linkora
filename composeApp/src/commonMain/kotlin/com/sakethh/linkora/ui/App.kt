@@ -185,7 +185,7 @@ fun App(modifier: Modifier = Modifier) {
     var forceSearchActive by rememberSaveable {
         mutableStateOf(false)
     }
-    val isWebCapturesInProgress by appVM.isWebCaptureInProgress.collectAsStateWithLifecycle()
+    val isWebCapturesInProgress by appVM.isWebCaptureWorkerEnqueued.collectAsStateWithLifecycle()
     val isAnySnapshotInProgress by appVM.isAnySnapshotOngoing.collectAsStateWithLifecycle()
     Row(modifier = Modifier.fillMaxSize().then(modifier)) {
         AnimatedVisibility(
