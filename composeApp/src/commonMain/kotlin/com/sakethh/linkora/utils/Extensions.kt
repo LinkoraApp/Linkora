@@ -33,6 +33,7 @@ import com.composables.core.Thumb
 import com.composables.core.ThumbVisibility
 import com.composables.core.VerticalScrollbar
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.WebCaptureMetadata
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.domain.Platform
@@ -43,6 +44,7 @@ import com.sakethh.linkora.domain.model.FlatChildFolderData
 import com.sakethh.linkora.domain.model.FlatSearchResult
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
+import com.sakethh.linkora.domain.repository.local.WebCaptureRepo
 import com.sakethh.linkora.ui.LastSeenId
 import com.sakethh.linkora.ui.LastSeenString
 import com.sakethh.linkora.ui.domain.PaginationState
@@ -64,6 +66,8 @@ import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.update
 import kotlin.jvm.JvmName
 import kotlin.time.Duration
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 fun String.addZeroAtPrefixOnInt() = try {
     if (toInt() > 9) this else "0$this"
@@ -433,4 +437,11 @@ fun ScrollAreaScope.VerticalScrollbar() {
                 .background(MaterialTheme.colorScheme.secondary.copy(0.65f)),
         )
     }
+}
+
+@OptIn(ExperimentalUuidApi::class)
+suspend fun WebCaptureRepo.getOrCreateFolderUuid(url: String): String = this.getFolderNameByLink(url) ?: run {
+    val newUuid = Uuid.random().toString()
+    this.insertMetadata(WebCaptureMetadata(link = url, uuid = newUuid))
+    newUuid
 }

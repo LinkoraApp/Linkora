@@ -100,6 +100,7 @@ class LocalLinksRepoImplTest {
                 pendingSyncQueueRepo = pendingSyncQueueRepo,
                 preferencesRepository = preferencesRepository,
                 tagsDao = tagsDao,
+                webCapture = mockk(relaxed = true),
             )
     }
 

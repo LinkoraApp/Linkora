@@ -132,7 +132,7 @@ class PreferencesImpl(
                         useLinkoraTopDecoratorOnDesktop = value as Boolean,
                     )
 
-                AppPreferences.CURRENT_WORK_MANAGER_WORK_UUID ->
+                AppPreferences.REFRESH_ALL_LINKS_WORKER_UUID ->
                     currentPref.copy(
                         refreshLinksWorkerTag = value as String,
                     )

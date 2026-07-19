@@ -44,6 +44,7 @@ data class AppPreferences(
     val serverSyncType: SyncType = SyncType.TwoWay,
     val useLinkoraTopDecoratorOnDesktop: Boolean = true,
     val refreshLinksWorkerTag: String = "52ae3f4a-d37f-4fdb-a6b6-4397b99ef1bd",
+    val allLinksWebCaptureWorkerTag: String = "4397b99ef1bd-d37f-52ae3f4a-a6b6-4fdb",
     val showVideoTagOnUIIfApplicable: Boolean = false,
     val forceShuffleLinks: Boolean = false,
     val showNoteInLinkView: Boolean = true,
@@ -95,7 +96,9 @@ data class AppPreferences(
         val AUTO_DETECT_TITLE_FOR_LINK = booleanPreferencesKey("AUTO_DETECT_TITLE_FOR_LINK")
         val HOME_SCREEN_VISIBILITY = booleanPreferencesKey("HOME_SCREEN_VISIBILITY")
         val SORTING_PREFERENCE = stringPreferencesKey("SORTING_PREFERENCE")
-        val CURRENT_WORK_MANAGER_WORK_UUID = stringPreferencesKey("CURRENT_WORK_MANAGER_WORK_UUID")
+        val REFRESH_ALL_LINKS_WORKER_UUID = stringPreferencesKey("CURRENT_WORK_MANAGER_WORK_UUID")
+        val WEB_CAPTURE_ALL_LINKS_WORKER_UUID =
+            stringPreferencesKey("WEB_CAPTURE_ALL_LINKS_WORKER_UUID")
         val LAST_SELECTED_PANEL_ID = intPreferencesKey("LAST_SELECTED_PANEL_ID")
         val APP_LANGUAGE_NAME = stringPreferencesKey("APP_LANGUAGE_NAME")
         val APP_LANGUAGE_CODE = stringPreferencesKey("APP_LANGUAGE_CODE")

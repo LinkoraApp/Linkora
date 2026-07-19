@@ -130,6 +130,7 @@ class UtilsTest {
                         pendingSyncQueueRepo = mockk(),
                         preferencesRepository = mockk(),
                         tagsDao = mockk(),
+                        webCapture = mockk(),
                     ).scrapeLinkData(
                         linkUrl = linkUrl,
                         userAgent = "Twitterbot/1.0",

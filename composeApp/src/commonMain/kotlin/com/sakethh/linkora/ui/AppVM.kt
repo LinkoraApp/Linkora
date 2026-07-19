@@ -47,7 +47,6 @@ import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM.Companion.
 import com.sakethh.linkora.ui.screens.settings.section.data.sync.ServerManagementViewModel
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
-import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.canPushToServer
 import com.sakethh.linkora.utils.canReadFromServer
@@ -64,9 +63,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 
@@ -202,27 +203,20 @@ class AppVM(
         preferenceKey = longPreferencesKey(AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key),
     ) ?: 0
 
-    var isAnySnapshotOngoing by mutableStateOf(false)
+    var isAnySnapshotOngoing = snapshotFlow {
+        snapshotRepo.isAnySnapshotOngoing.value
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), false)
+
+    var isWebCaptureInProgress = webCapture.isAllLinksWebCaptureScheduled().stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000L),
+        false,
+    )
 
     init {
         with(viewModelScope) {
             snapshotRepo.collectLatestAndExport()
         }
-
-        viewModelScope.launch {
-            snapshotFlow {
-                snapshotRepo.isAnySnapshotOngoing.value
-            }
-                .collectLatest {
-                    if (it) {
-                        linkoraLog("Snapshot in progress")
-                    } else {
-                        linkoraLog("No snapshot in progress")
-                    }
-                    isAnySnapshotOngoing = it
-                }
-        }
-
         viewModelScope.launch {
             snapshotFlow {
                 CollectionsScreenVM.isSelectionEnabled.value
@@ -281,7 +275,9 @@ class AppVM(
                                         if (preferences.canReadFromServer()) {
                                             remoteSyncRepo
                                                 .applyUpdatesBasedOnRemoteTombstones(
-                                                    preferences.lastSyncedLocally(preferencesRepository),
+                                                    preferences.lastSyncedLocally(
+                                                        preferencesRepository,
+                                                    ),
                                                 )
                                                 .collectLatest {
                                                     it.pushSnackbarOnFailure()
@@ -292,7 +288,9 @@ class AppVM(
                                         if (preferences.canReadFromServer()) {
                                             remoteSyncRepo
                                                 .applyUpdatesFromRemote(
-                                                    preferences.lastSyncedLocally(preferencesRepository),
+                                                    preferences.lastSyncedLocally(
+                                                        preferencesRepository,
+                                                    ),
                                                 )
                                                 .collectLatest {
                                                     it.pushSnackbarOnFailure()
@@ -445,7 +443,8 @@ class AppVM(
                             .filter { it.link.linkType != LinkType.ARCHIVE_LINK }
                             .map { it.link.localId },
                         folderIds =
-                        selectedFoldersViaLongClick.filter { it.isArchived.not() }.map { it.localId },
+                        selectedFoldersViaLongClick.filter { it.isArchived.not() }
+                            .map { it.localId },
                     )
                     .collectLatest {
                         it.onSuccess {

@@ -14,23 +14,22 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.R
 import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.domain.AppPreferences
-import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.RefreshLinksRepo
 import com.sakethh.linkora.domain.repository.local.WebCaptureRepo
-import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
-import com.sakethh.linkora.utils.createNewFile
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.longPreferencesKey
 import com.sakethh.linkora.utils.stringPreferencesKey
-import com.sakethh.linkora.worker.BulkWebCaptureWorker
+import com.sakethh.linkora.worker.AllLinksWebCaptureWorker
 import com.sakethh.linkora.worker.RefreshAllLinksWorker
+import com.sakethh.linkora.worker.WebCaptureWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
@@ -53,29 +52,6 @@ actual class NativeUtils(
         context.startActivity(shareIntent)
     }
 
-    actual suspend fun onCaptureAllWebPages(
-        preferences: AppPreferences,
-        localLinksRepo: LocalLinksRepo,
-        webCaptureRepo: WebCaptureRepo,
-        webCapture: WebCapture,
-    ) {
-        webCaptureRepo.deleteAllProcessedIds()
-
-        val workManager = WorkManager.getInstance(context)
-        val request = OneTimeWorkRequestBuilder<BulkWebCaptureWorker>().setConstraints(
-            Constraints(requiredNetworkType = NetworkType.CONNECTED),
-        ).setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST).build()
-        workManager.enqueueUniqueWork(
-            BulkWebCaptureWorker.WORKER_NAME,
-            ExistingWorkPolicy.REPLACE,
-            request,
-        )
-    }
-
-    actual fun cancelBulkWebCapture() {
-        BulkWebCaptureWorker.cancelWork(context)
-    }
-
     actual suspend fun onRefreshAllLinks(
         localLinksRepo: LocalLinksRepo,
         preferencesRepository: PreferencesRepository,
@@ -88,7 +64,7 @@ actual class NativeUtils(
 
         preferencesRepository.changePreferenceValue(
             preferenceKey = stringPreferencesKey(
-                AppPreferences.CURRENT_WORK_MANAGER_WORK_UUID.key,
+                AppPreferences.REFRESH_ALL_LINKS_WORKER_UUID.key,
             ),
             newValue = request.id.toString(),
         )
@@ -186,7 +162,7 @@ actual class NativeUtils(
     actual class WebCapture(
         private val context: Context,
     ) {
-        val androidDesktopWebCapture = AndroidDesktopWebCapture()
+        private val androidDesktopWebCapture = AndroidDesktopWebCapture()
 
         actual suspend fun init(): Result<Boolean> = androidDesktopWebCapture.init()
 
@@ -206,40 +182,71 @@ actual class NativeUtils(
             includeVideoElements: Boolean,
             includeMetadata: Boolean,
         ): Result<Boolean> = withContext(Dispatchers.IO) {
-            val (webCaptureFile, _) = createNewFile(
-                context = context,
-                exportLocation = nativeFolderPath,
-                exportFileType = ExportFileType.HTML,
-                exportLocationType = ExportLocationType.WEB_CAPTURE,
-            )
-
-            val webCaptureFileDescriptor =
-                context.applicationContext.contentResolver.openFileDescriptor(
-                    webCaptureFile?.uri ?: return@withContext Result.Failure(
-                        "Couldn't get the uri for web-capture file that is created",
-                    ),
-                    "w",
-                )?.detachFd() ?: return@withContext Result.Failure(
-                    "Couldn't open the file descriptor for web-capture file that is created",
+            val captureData =
+                workDataOf(
+                    WebCaptureWorker.LINK to url,
                 )
-
-            androidDesktopWebCapture.saveHTMLPage(
-                url = url,
-                userAgent = userAgent,
-                timeout = timeout,
-                allowInsecureProtocol = allowInsecureProtocol,
-                ignoreDocErrors = ignoreDocErrors,
-                useCss = useCss,
-                embedFonts = embedFonts,
-                embedImages = embedImages,
-                restrictJs = restrictJs,
-                includeAudioElements = includeAudioElements,
-                includeVideoElements = includeVideoElements,
-                includeMetadata = includeMetadata,
-                logStuff = logStuff,
-                fileDescriptor = webCaptureFileDescriptor,
-                filePath = "",
+            val workManager = WorkManager.getInstance(context)
+            val request = OneTimeWorkRequestBuilder<WebCaptureWorker>().setConstraints(
+                Constraints(requiredNetworkType = NetworkType.CONNECTED),
+            ).setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                .setInputData(captureData)
+                .build()
+            workManager.enqueueUniqueWork(
+                UUID.randomUUID().toString(),
+                ExistingWorkPolicy.REPLACE,
+                request,
             )
+            Result.Success(true)
+        }
+
+        actual suspend fun onCaptureAllWebPages(
+            preferences: AppPreferences,
+            localLinksRepo: LocalLinksRepo,
+            webCaptureRepo: WebCaptureRepo,
+            webCapture: WebCapture,
+        ) {
+            webCaptureRepo.deleteAllProcessedIds()
+
+            val workManager = WorkManager.getInstance(context)
+            val request = OneTimeWorkRequestBuilder<AllLinksWebCaptureWorker>().setConstraints(
+                Constraints(requiredNetworkType = NetworkType.CONNECTED),
+            ).setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST).build()
+
+            DependencyContainer.preferencesRepo.changePreferenceValue(
+                preferenceKey = stringPreferencesKey(
+                    AppPreferences.WEB_CAPTURE_ALL_LINKS_WORKER_UUID.key,
+                ),
+                newValue = request.id.toString(),
+            )
+
+            workManager.enqueueUniqueWork(
+                AllLinksWebCaptureWorker.WORKER_NAME,
+                ExistingWorkPolicy.REPLACE,
+                request,
+            )
+        }
+
+        actual fun cancelBulkWebCapture() {
+            AllLinksWebCaptureWorker.cancelWork(context)
+        }
+
+        actual fun isAllLinksWebCaptureScheduled(): Flow<Boolean?> = channelFlow {
+            val workerId = DependencyContainer.preferencesRepo.readPreferenceValue(
+                stringPreferencesKey(
+                    AppPreferences.WEB_CAPTURE_ALL_LINKS_WORKER_UUID.key,
+                ),
+            )
+
+            WorkManager.getInstance(context)
+                .getWorkInfoByIdFlow(UUID.fromString(workerId))
+                .collectLatest {
+                    if (it != null) {
+                        send(it.state == WorkInfo.State.ENQUEUED)
+                    } else {
+                        send(null)
+                    }
+                }
         }
     }
 }

@@ -131,6 +131,7 @@ object DependencyContainer {
             proxyUrl = {
                 preferencesRepo.getPreferences().proxyUrl
             },
+            webCapture = LinkoraSDK.getInstance().webCapture,
         )
     }
 

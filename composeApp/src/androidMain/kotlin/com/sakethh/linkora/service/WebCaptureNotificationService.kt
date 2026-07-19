@@ -8,7 +8,7 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.sakethh.linkora.R
 import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
-import com.sakethh.linkora.worker.BulkWebCaptureWorker
+import com.sakethh.linkora.worker.AllLinksWebCaptureWorker
 
 class WebCaptureNotificationService(
     private val context: Context,
@@ -62,7 +62,7 @@ class CancelWebCaptureActionReceiver : BroadcastReceiver() {
         intent: Intent?,
     ) {
         if (context != null) {
-            BulkWebCaptureWorker.cancelWork(context)
+            AllLinksWebCaptureWorker.cancelWork(context)
         }
     }
 }

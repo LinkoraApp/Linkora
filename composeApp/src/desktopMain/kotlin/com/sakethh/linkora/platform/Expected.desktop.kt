@@ -3,10 +3,11 @@ package com.sakethh.linkora.platform
 import AndroidDesktopWebCapture
 import RefreshAllLinksService
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.snapshotFlow
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.WebCaptureService
 import com.sakethh.linkora.domain.AppPreferences
-import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.PermissionStatus
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.PreferenceKey
@@ -16,13 +17,13 @@ import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.RefreshLinksRepo
 import com.sakethh.linkora.domain.repository.local.WebCaptureRepo
 import com.sakethh.linkora.linkoraSpecificFolder
-import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
+import com.sakethh.linkora.model.WebCaptureRequest
+import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.getLocalizedString
-import getFileNameWithTimestamp
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.cio.CIO
@@ -37,10 +38,11 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
 import readAllPreferences
@@ -61,7 +63,8 @@ actual val platform: Platform = Platform.Desktop
 
 actual val showDynamicThemingOption: Boolean = false
 
-@Composable actual fun PlatformSpecificBackHandler(init: () -> Unit) = Unit
+@Composable
+actual fun PlatformSpecificBackHandler(init: () -> Unit) = Unit
 
 actual fun platformSpecificLogging(string: String) {
     println("Linkora Log : $string")
@@ -83,24 +86,6 @@ actual class NativeUtils {
         refreshLinksRepo: RefreshLinksRepo,
     ) {
         RefreshAllLinksService.invoke(localLinksRepo)
-    }
-
-    actual suspend fun onCaptureAllWebPages(
-        preferences: AppPreferences,
-        localLinksRepo: LocalLinksRepo,
-        webCaptureRepo: WebCaptureRepo,
-        webCapture: WebCapture,
-    ) {
-        BulkWebCaptureService.captureAllWebPages(
-            preferences = preferences,
-            localLinksRepo = localLinksRepo,
-            webCaptureRepo = webCaptureRepo,
-            webCapture,
-        )
-    }
-
-    actual fun cancelBulkWebCapture() {
-        BulkWebCaptureService.cancel()
     }
 
     actual suspend fun isAnyRefreshingScheduled(): Flow<Boolean?> = emptyFlow()
@@ -146,21 +131,8 @@ actual class NativeUtils {
             includeVideoElements: Boolean,
             includeMetadata: Boolean,
         ): Result<Boolean> {
-            val fileName =
-                getFileNameWithTimestamp(
-                    exportFileType = ExportFileType.HTML,
-                    exportLocationType = ExportLocationType.WEB_CAPTURE,
-                )
-            val captureFile = File(nativeFolderPath, fileName)
-            try {
-                withContext(Dispatchers.IO) {
-                    captureFile.createNewFile()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                return Result.Failure(e.message ?: "Couldn't create web-capture file")
-            }
-            return androidDesktopWebCapture.saveHTMLPage(
+            val request = WebCaptureRequest(
+                nativeFolderPath = nativeFolderPath,
                 url = url,
                 userAgent = userAgent,
                 timeout = timeout,
@@ -170,14 +142,42 @@ actual class NativeUtils {
                 embedFonts = embedFonts,
                 embedImages = embedImages,
                 restrictJs = restrictJs,
+                logStuff = logStuff,
                 includeAudioElements = includeAudioElements,
                 includeVideoElements = includeVideoElements,
                 includeMetadata = includeMetadata,
-                logStuff = logStuff,
-                fileDescriptor = -1,
-                filePath = captureFile.absolutePath,
+            )
+
+            WebCaptureService.queueCapture(request)
+
+            return Result.Success(true)
+        }
+
+        actual suspend fun onCaptureAllWebPages(
+            preferences: AppPreferences,
+            localLinksRepo: LocalLinksRepo,
+            webCaptureRepo: WebCaptureRepo,
+            webCapture: WebCapture,
+        ) {
+            AllLinksWebCaptureService.captureAllWebPages(
+                preferences = preferences,
+                localLinksRepo = localLinksRepo,
+                webCaptureRepo = webCaptureRepo,
             )
         }
+
+        actual fun cancelBulkWebCapture() {
+            AllLinksWebCaptureService.cancel()
+        }
+
+        actual fun isAllLinksWebCaptureScheduled(): Flow<Boolean?> = combine(
+            WebCaptureService.isProcessing,
+            snapshotFlow {
+                DataSettingsScreenVM.webCaptureState
+            },
+        ) { b1, b2 ->
+            b1 || b2.isInProgress
+        }.distinctUntilChanged()
     }
 }
 
@@ -234,7 +234,8 @@ actual object Network {
         if (syncServerCert.exists() && !bypassCertCheck) {
             syncServerCert.inputStream().use {
                 try {
-                    signedCertificate = certificateFactory.generateCertificate(it) as X509Certificate
+                    signedCertificate =
+                        certificateFactory.generateCertificate(it) as X509Certificate
                 } catch (e: Exception) {
                     pushUIEvent(UIEvent.Type.ShowSnackbar(e.message.toString()))
                     null
@@ -260,7 +261,8 @@ actual object Network {
                                 override fun checkClientTrusted(
                                     chain: Array<out X509Certificate?>?,
                                     authType: String?,
-                                ) {}
+                                ) {
+                                }
 
                                 override fun checkServerTrusted(
                                     chain: Array<out X509Certificate?>?,

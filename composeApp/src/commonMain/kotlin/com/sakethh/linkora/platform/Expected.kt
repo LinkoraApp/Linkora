@@ -110,6 +110,17 @@ expect class NativeUtils {
             includeVideoElements: Boolean,
             includeMetadata: Boolean,
         ): Result<Boolean>
+
+        suspend fun onCaptureAllWebPages(
+            preferences: AppPreferences,
+            localLinksRepo: LocalLinksRepo,
+            webCaptureRepo: WebCaptureRepo,
+            webCapture: WebCapture,
+        )
+
+        fun isAllLinksWebCaptureScheduled(): Flow<Boolean?>
+
+        fun cancelBulkWebCapture()
     }
 
     suspend fun onRefreshAllLinks(
@@ -129,15 +140,6 @@ expect class NativeUtils {
     }
 
     fun onIconChange(allIconCodes: List<String>, newIconCode: String, onCompletion: () -> Unit)
-
-    suspend fun onCaptureAllWebPages(
-        preferences: AppPreferences,
-        localLinksRepo: LocalLinksRepo,
-        webCaptureRepo: WebCaptureRepo,
-        webCapture: WebCapture,
-    )
-
-    fun cancelBulkWebCapture()
 
     /**
      * THE WEB IMPLEMENTATION IS A HACK TO KEEP COMPILER HAPPY, THIS FUNCTION SHOULD NOT BE USED

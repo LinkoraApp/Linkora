@@ -247,7 +247,10 @@ fun AddANewLinkDialogBox(
                 }
             } else {
                 Box(Modifier.fillMaxSize()) {
-                    Row(modifier = Modifier.animateContentSize().fillMaxSize().navigationBarsPadding()) {
+                    Row(
+                        modifier = Modifier.animateContentSize().fillMaxSize()
+                            .navigationBarsPadding(),
+                    ) {
                         TopPartOfAddANewLinkDialogBox(
                             isDataExtractingForTheLink = isDataExtractingForTheLink.value,
                             linkTextFieldValue = linkTextFieldValue,
@@ -516,11 +519,16 @@ private fun TopPartOfAddANewLinkDialogBox(
             preferences.forceSaveWithoutFetchingAnyMetaData
         ) {
             InfoCard(
-                if (preferences.isAutoDetectTitleForLinksEnabled) {
+                info = if (preferences.isAutoDetectTitleForLinksEnabled) {
                     Localization.rememberLocalizedString(Localization.Key.AutoDetectTitleIsEnabled)
                 } else {
                     Localization.rememberLocalizedString(Localization.Key.DataRetrievalDisabled)
                 },
+            )
+        }
+        if (preferences.useWebCaptures) {
+            InfoCard(
+                info = "Webpage will also be downloaded to the preferred directory after saving the link",
             )
         }
         Box(modifier = Modifier.fillMaxWidth().animateContentSize()) {
@@ -794,7 +802,8 @@ private fun BottomPartOfAddANewLinkDialogBox(
         if (currentFolder == null) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
-                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(start = 5.dp),
+                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        .padding(start = 5.dp),
                     onClick = {
                         showFolderSearchBtmSheet = true
                     },
@@ -840,7 +849,8 @@ private fun BottomPartOfAddANewLinkDialogBox(
                 }
                 Spacer(modifier = Modifier.width(5.dp))
                 FilledTonalIconButton(
-                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(0.75f),
+                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        .pressScaleEffect(0.75f),
                     onClick = {
                         if (!isDataExtractingForTheLink.value) {
                             isDropDownMenuIconClicked.value = !isDropDownMenuIconClicked.value
@@ -940,7 +950,8 @@ private fun BottomPartOfAddANewLinkDialogBox(
                         item {
                             Box(
                                 modifier =
-                                Modifier.padding(top = 15.dp, bottom = 15.dp).fillMaxWidth().height(50.dp),
+                                Modifier.padding(top = 15.dp, bottom = 15.dp).fillMaxWidth()
+                                    .height(50.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 ContainedLoadingIndicator()
@@ -1140,7 +1151,8 @@ private fun BottomPartOfAddANewLinkDialogBox(
                 containerColor = BottomSheetDefaults.ContainerColor,
             ) { paddingValues ->
                 LazyColumn(
-                    Modifier.addEdgeToEdgeScaffoldPadding(paddingValues).fillMaxWidth().wrapContentHeight(),
+                    Modifier.addEdgeToEdgeScaffoldPadding(paddingValues).fillMaxWidth()
+                        .wrapContentHeight(),
                 ) {
                     if (foldersSearchQueryResult.isEmpty()) {
                         item {
@@ -1251,32 +1263,35 @@ private fun BottomPartOfAddANewLinkDialogBox(
                                     style = MaterialTheme.typography.titleMedium,
                                     fontSize = 16.sp,
                                     modifier =
-                                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand).clickable {
-                                        AddANewLinkDialogBox.changeParentFolderId(subFolder.localId)
-                                        selectedFolderForSavingTheLink.value = subFolder
-                                        if (
-                                            AddANewLinkDialogBox.subFoldersList.indexOf(subFolder) !=
-                                            AddANewLinkDialogBox.subFoldersList.indexOf(
-                                                AddANewLinkDialogBox.subFoldersList.last(),
-                                            )
-                                        ) {
-                                            AddANewLinkDialogBox.subFoldersList.removeAll(
-                                                AddANewLinkDialogBox.subFoldersList
-                                                    .toList()
-                                                    .subList(
-                                                        fromIndex =
-                                                        AddANewLinkDialogBox.subFoldersList.indexOf(
-                                                            AddANewLinkDialogBox.subFoldersList.find {
-                                                                it.localId ==
-                                                                    selectedFolderForSavingTheLink.value.localId
-                                                            },
-                                                        ) + 1,
-                                                        toIndex = AddANewLinkDialogBox.subFoldersList.size,
-                                                    )
-                                                    .toSet(),
-                                            )
-                                        }
-                                    },
+                                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                        .clickable {
+                                            AddANewLinkDialogBox.changeParentFolderId(subFolder.localId)
+                                            selectedFolderForSavingTheLink.value = subFolder
+                                            if (
+                                                AddANewLinkDialogBox.subFoldersList.indexOf(
+                                                    subFolder,
+                                                ) !=
+                                                AddANewLinkDialogBox.subFoldersList.indexOf(
+                                                    AddANewLinkDialogBox.subFoldersList.last(),
+                                                )
+                                            ) {
+                                                AddANewLinkDialogBox.subFoldersList.removeAll(
+                                                    AddANewLinkDialogBox.subFoldersList
+                                                        .toList()
+                                                        .subList(
+                                                            fromIndex =
+                                                            AddANewLinkDialogBox.subFoldersList.indexOf(
+                                                                AddANewLinkDialogBox.subFoldersList.find {
+                                                                    it.localId ==
+                                                                        selectedFolderForSavingTheLink.value.localId
+                                                                },
+                                                            ) + 1,
+                                                            toIndex = AddANewLinkDialogBox.subFoldersList.size,
+                                                        )
+                                                        .toSet(),
+                                                )
+                                            }
+                                        },
                                 )
                             }
                         }

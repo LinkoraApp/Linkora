@@ -65,7 +65,8 @@ actual fun platformSpecificLogging(string: String) {
     println(string)
 }
 
-@Composable actual fun PlatformSpecificBackHandler(init: () -> Unit) = Unit
+@Composable
+actual fun PlatformSpecificBackHandler(init: () -> Unit) = Unit
 
 actual class FileManager {
     actual suspend fun writeRawExportStringToFile(
@@ -111,15 +112,6 @@ actual class FileManager {
 
 actual class NativeUtils {
     actual fun onShare(url: String) = Unit
-
-    actual suspend fun onCaptureAllWebPages(
-        preferences: AppPreferences,
-        localLinksRepo: LocalLinksRepo,
-        webCaptureRepo: WebCaptureRepo,
-        webCapture: WebCapture,
-    ) = Unit
-
-    actual fun cancelBulkWebCapture() = Unit
 
     actual suspend fun onRefreshAllLinks(
         localLinksRepo: LocalLinksRepo,
@@ -180,6 +172,16 @@ actual class NativeUtils {
             includeVideoElements: Boolean,
             includeMetadata: Boolean,
         ): Result<Boolean> = Result.Failure("huh")
+
+        actual suspend fun onCaptureAllWebPages(
+            preferences: AppPreferences,
+            localLinksRepo: LocalLinksRepo,
+            webCaptureRepo: WebCaptureRepo,
+            webCapture: WebCapture,
+        ) = Unit
+
+        actual fun cancelBulkWebCapture() = Unit
+        actual fun isAllLinksWebCaptureScheduled(): Flow<Boolean?> = emptyFlow()
     }
 }
 
@@ -360,7 +362,7 @@ actual object PlatformPreference {
         localStorage.getItem(AppPreferences.DESKTOP_TOP_DECORATOR.key)?.toBooleanStrictOrNull()
             ?: true,
         refreshLinksWorkerTag =
-        localStorage.getItem(AppPreferences.CURRENT_WORK_MANAGER_WORK_UUID.key)
+        localStorage.getItem(AppPreferences.REFRESH_ALL_LINKS_WORKER_UUID.key)
             ?: "52ae3f4a-d37f-4fdb-a6b6-4397b99ef1bd",
         showVideoTagOnUIIfApplicable =
         localStorage

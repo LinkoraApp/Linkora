@@ -148,7 +148,7 @@ suspend fun readAllPreferences(
     useLinkoraTopDecoratorOnDesktop =
     prefs[dsBooleanKey(AppPreferences.DESKTOP_TOP_DECORATOR.key)] ?: true,
     refreshLinksWorkerTag =
-    prefs[dsStringKey(AppPreferences.CURRENT_WORK_MANAGER_WORK_UUID.key)]
+    prefs[dsStringKey(AppPreferences.REFRESH_ALL_LINKS_WORKER_UUID.key)]
         ?: "52ae3f4a-d37f-4fdb-a6b6-4397b99ef1bd",
     showVideoTagOnUIIfApplicable =
     prefs[dsBooleanKey(AppPreferences.SHOW_VIDEO_TAG_IF_APPLICABLE.key)] ?: false,

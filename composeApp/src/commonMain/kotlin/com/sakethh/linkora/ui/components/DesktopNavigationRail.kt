@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BackupTable
 import androidx.compose.material.icons.filled.CloudSync
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
@@ -52,6 +53,7 @@ fun DesktopNavigationRail(
     isPerformingStartupSync: Boolean,
     getLastSyncedTime: suspend () -> Long,
     isAnySnapshotOngoing: Boolean,
+    isWebCaptureInProgress: Boolean,
     performAction: (AppAction) -> Unit,
 ) {
     val localNavController = LocalNavController.current
@@ -64,22 +66,17 @@ fun DesktopNavigationRail(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 rootRouteList.forEach { navRouteItem ->
-                    if (
-                        !preferences.isHomeScreenEnabled &&
-                        navRouteItem.toString() == Navigation.Root.HomeScreen.toString()
-                    ) {
+                    if (!preferences.isHomeScreenEnabled && navRouteItem.toString() == Navigation.Root.HomeScreen.toString()) {
                         return@forEach
                     }
 
                     val isSelected = currentRoute?.hasRoute(navRouteItem::class) == true
                     NavigationRailItem(
-                        modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .padding(
-                                start = 15.dp,
-                                end = 15.dp,
-                                top = 15.dp,
-                            ),
+                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(
+                            start = 15.dp,
+                            end = 15.dp,
+                            top = 15.dp,
+                        ),
                         selected = isSelected,
                         onClick = {
                             if (currentRoute?.hasRoute(navRouteItem::class) == false) {
@@ -89,8 +86,7 @@ fun DesktopNavigationRail(
                         },
                         icon = {
                             Icon(
-                                imageVector =
-                                if (isSelected) {
+                                imageVector = if (isSelected) {
                                     when (navRouteItem) {
                                         Navigation.Root.HomeScreen -> Icons.Filled.Home
                                         Navigation.Root.SearchScreen -> Icons.Filled.Search
@@ -163,9 +159,7 @@ fun DesktopNavigationRail(
                 if (preferences.areSnapshotsEnabled && platform == Platform.Desktop) {
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier =
-                        Modifier.align(Alignment.BottomCenter)
-                            .padding(bottom = 20.dp)
+                        modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
                             .alpha(
                                 if (!Platform.Android.onMobile() && isAnySnapshotOngoing) 1f else 0.25f,
                             ),
@@ -176,6 +170,19 @@ fun DesktopNavigationRail(
                         )
 
                         if (isAnySnapshotOngoing) CircularProgressIndicator()
+                    }
+                }
+                if (isWebCaptureInProgress && platform == Platform.Desktop) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Download,
+                            contentDescription = null,
+                        )
+
+                        CircularProgressIndicator()
                     }
                 }
             }

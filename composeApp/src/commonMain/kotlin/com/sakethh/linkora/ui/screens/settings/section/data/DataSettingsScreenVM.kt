@@ -302,7 +302,7 @@ class DataSettingsScreenVM(
         viewModelScope
             .launch {
                 if (preferencesAsFlow.value.webCapturesLocation.isBlank()) return@launch
-                nativeUtils.onCaptureAllWebPages(
+                webCapture.onCaptureAllWebPages(
                     preferences = preferencesAsFlow.value,
                     localLinksRepo = linksRepo,
                     webCaptureRepo = webCaptureRepo,
@@ -312,7 +312,7 @@ class DataSettingsScreenVM(
     }
 
     fun cancelBulkWebCapture() {
-        nativeUtils.cancelBulkWebCapture()
+        webCapture.cancelBulkWebCapture()
     }
 
     fun forceSetDefaultFolderToInternalIds(

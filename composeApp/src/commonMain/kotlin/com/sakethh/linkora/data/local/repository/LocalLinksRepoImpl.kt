@@ -30,6 +30,7 @@ import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PendingSyncQueueRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.remote.RemoteLinksRepo
+import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.PlatformIODispatcher
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
 import com.sakethh.linkora.ui.utils.linkoraLog
@@ -70,6 +71,7 @@ class LocalLinksRepoImpl(
     private val pendingSyncQueueRepo: PendingSyncQueueRepo,
     private val preferencesRepository: PreferencesRepository,
     private val tagsDao: TagsDao,
+    private val webCapture: NativeUtils.WebCapture,
 ) : LocalLinksRepo {
     override suspend fun changeIdOfALink(
         existingId: Long,
@@ -91,12 +93,11 @@ class LocalLinksRepoImpl(
         }
         var newLinkId: Long? = null
         val eventTimestamp = getSystemEpochSeconds()
-        val remoteTagIds =
-            if (selectedTagIds != null) {
-                tagsDao.getRemoteTagIds(selectedTagIds)
-            } else {
-                emptyList()
-            }
+        val remoteTagIds = if (selectedTagIds != null) {
+            tagsDao.getRemoteTagIds(selectedTagIds)
+        } else {
+            emptyList()
+        }
         val preferences = preferencesRepository.getPreferences()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
@@ -108,34 +109,23 @@ class LocalLinksRepoImpl(
                 pendingSyncQueueRepo.addInQueue(
                     PendingSyncQueue(
                         operation = SyncServerRoute.CREATE_A_NEW_LINK.name,
-                        payload =
-                        if (
-                            link.idOfLinkedFolder != null &&
-                            link.idOfLinkedFolder !in defaultFolderIds()
-                        ) {
+                        payload = if (link.idOfLinkedFolder != null && link.idOfLinkedFolder !in defaultFolderIds()) {
                             Json.encodeToString(
-                                linksDao
-                                    .getLink(newLinkId!!)
-                                    .copy(
-                                        idOfLinkedFolder = link.idOfLinkedFolder,
-                                        lastModified = eventTimestamp,
-                                    )
-                                    .asAddLinkDTO(
-                                        remoteTagIds,
-                                        correlation = preferences.correlation,
-                                    )
-                                    .copy(offlineSyncItemId = newLinkId!!),
+                                linksDao.getLink(newLinkId!!).copy(
+                                    idOfLinkedFolder = link.idOfLinkedFolder,
+                                    lastModified = eventTimestamp,
+                                ).asAddLinkDTO(
+                                    remoteTagIds,
+                                    correlation = preferences.correlation,
+                                ).copy(offlineSyncItemId = newLinkId!!),
                             )
                         } else {
                             Json.encodeToString(
-                                linksDao
-                                    .getLink(newLinkId!!)
-                                    .copy(lastModified = eventTimestamp)
+                                linksDao.getLink(newLinkId!!).copy(lastModified = eventTimestamp)
                                     .asAddLinkDTO(
                                         remoteTagIds,
                                         correlation = preferences.correlation,
-                                    )
-                                    .copy(offlineSyncItemId = newLinkId!!),
+                                    ).copy(offlineSyncItemId = newLinkId!!),
                             )
                         },
                     ),
@@ -147,19 +137,14 @@ class LocalLinksRepoImpl(
                 if (link.idOfLinkedFolder != null && link.idOfLinkedFolder !in defaultFolderIds()) {
                     val remoteIdOfLinkedFolder = foldersDao.getRemoteFolderId(link.idOfLinkedFolder)
                     remoteLinksRepo.addANewLink(
-                        linksDao
-                            .getLink(newLinkId!!)
-                            .copy(
-                                idOfLinkedFolder = remoteIdOfLinkedFolder,
-                                lastModified = eventTimestamp,
-                            )
-                            .asAddLinkDTO(remoteTagIds, preferences.correlation),
+                        linksDao.getLink(newLinkId!!).copy(
+                            idOfLinkedFolder = remoteIdOfLinkedFolder,
+                            lastModified = eventTimestamp,
+                        ).asAddLinkDTO(remoteTagIds, preferences.correlation),
                     )
                 } else {
                     remoteLinksRepo.addANewLink(
-                        linksDao
-                            .getLink(newLinkId!!)
-                            .copy(lastModified = eventTimestamp)
+                        linksDao.getLink(newLinkId!!).copy(lastModified = eventTimestamp)
                             .asAddLinkDTO(remoteTagIds, correlation = preferences.correlation),
                     )
                 }
@@ -168,12 +153,10 @@ class LocalLinksRepoImpl(
                 if (newLinkId == null) return@performLocalOperationWithRemoteSyncFlow
 
                 linksDao.updateALink(
-                    linksDao
-                        .getLink(newLinkId)
-                        .copy(
-                            remoteId = it.id,
-                            lastModified = it.timeStampBasedResponse.eventTimestamp,
-                        ),
+                    linksDao.getLink(newLinkId).copy(
+                        remoteId = it.id,
+                        lastModified = it.timeStampBasedResponse.eventTimestamp,
+                    ),
                 )
                 preferencesRepository.updateLastSyncedWithServerTimeStamp(
                     it.timeStampBasedResponse.eventTimestamp,
@@ -187,11 +170,10 @@ class LocalLinksRepoImpl(
                 when (val linkType = link.linkType) {
                     LinkType.FOLDER_LINK -> {
                         require(
-                            link.idOfLinkedFolder != null &&
-                                !linksDao.doesLinkExist(
-                                    folderId = link.idOfLinkedFolder,
-                                    url = link.url,
-                                ),
+                            link.idOfLinkedFolder != null && !linksDao.doesLinkExist(
+                                folderId = link.idOfLinkedFolder,
+                                url = link.url,
+                            ),
                         ) {
                             Localization.Key.LinkExistsInSelectedFolderMsg.getLocalizedString()
                         }
@@ -200,17 +182,10 @@ class LocalLinksRepoImpl(
                     else -> {
                         require(!linksDao.doesLinkExist(linkType = linkType, url = link.url)) {
                             when (linkType) {
-                                LinkType.SAVED_LINK ->
-                                    Localization.Key.LinkExistsInSavedLinksMsg.getLocalizedString()
-
-                                LinkType.HISTORY_LINK ->
-                                    Localization.Key.LinkExistsInHistoryMsg.getLocalizedString()
-
-                                LinkType.IMPORTANT_LINK ->
-                                    Localization.Key.LinkExistsInImportantLinksMsg.getLocalizedString()
-
-                                LinkType.ARCHIVE_LINK ->
-                                    Localization.Key.LinkExistsInArchivedLinksMsg.getLocalizedString()
+                                LinkType.SAVED_LINK -> Localization.Key.LinkExistsInSavedLinksMsg.getLocalizedString()
+                                LinkType.HISTORY_LINK -> Localization.Key.LinkExistsInHistoryMsg.getLocalizedString()
+                                LinkType.IMPORTANT_LINK -> Localization.Key.LinkExistsInImportantLinksMsg.getLocalizedString()
+                                LinkType.ARCHIVE_LINK -> Localization.Key.LinkExistsInArchivedLinksMsg.getLocalizedString()
                             }
                         }
                     }
@@ -218,40 +193,35 @@ class LocalLinksRepoImpl(
             }
 
             newLinkId =
-                if (
-                    linkSaveConfig.forceSaveWithoutRetrievingData ||
-                    (!linkSaveConfig.forceAutoDetectTitle && link.imgURL.isNotBlank())
-                ) {
+                if (linkSaveConfig.forceSaveWithoutRetrievingData || (!linkSaveConfig.forceAutoDetectTitle && link.imgURL.isNotBlank())) {
                     link.url.isAValidLink().ifNot {
                         throw Link.Invalid()
                     }
                     linksDao.addANewLink(link.copy(lastModified = eventTimestamp, localId = 0))
                 } else {
-                    val scrapedLinkInfo =
-                        try {
-                            if (linkSaveConfig.useProxy) {
-                                retrieveFromProxy(link.url)
+                    val scrapedLinkInfo = try {
+                        if (linkSaveConfig.useProxy) {
+                            retrieveFromProxy(link.url)
+                        } else {
+                            if (link.url.isATwitterUrl()) {
+                                retrieveFromVxTwitterApi(link.url)
                             } else {
-                                if (link.url.isATwitterUrl()) {
-                                    retrieveFromVxTwitterApi(link.url)
-                                } else {
-                                    scrapeLinkData(
-                                        link.url,
-                                        link.userAgent ?: primaryUserAgent(),
-                                    )
-                                }
-                            }
-                        } catch (e: Exception) {
-                            if (linkSaveConfig.forceSaveIfRetrievalFails) {
-                                ScrapedLinkInfo(title = "", imgUrl = "")
-                            } else {
-                                throw e
+                                scrapeLinkData(
+                                    link.url,
+                                    link.userAgent ?: primaryUserAgent(),
+                                )
                             }
                         }
+                    } catch (e: Exception) {
+                        if (linkSaveConfig.forceSaveIfRetrievalFails) {
+                            ScrapedLinkInfo(title = "", imgUrl = "")
+                        } else {
+                            throw e
+                        }
+                    }
                     linksDao.addANewLink(
                         link.copy(
-                            title =
-                            if (linkSaveConfig.forceAutoDetectTitle) {
+                            title = if (linkSaveConfig.forceAutoDetectTitle) {
                                 scrapedLinkInfo.title
                             } else {
                                 link.title
@@ -266,8 +236,7 @@ class LocalLinksRepoImpl(
 
             selectedTagIds?.let { selectedTagIds ->
                 tagsDao.createLinkTags(
-                    linksTags =
-                    selectedTagIds.map { tagId ->
+                    linksTags = selectedTagIds.map { tagId ->
                         LinkTag(
                             linkId = newLinkId,
                             tagId = tagId,
@@ -275,6 +244,22 @@ class LocalLinksRepoImpl(
                     },
                 )
             }
+            webCapture.saveHTMLPage(
+                nativeFolderPath = preferences.webCapturesLocation,
+                url = link.url,
+                userAgent = preferences.primaryJsoupUserAgent,
+                timeout = 15000L,
+                allowInsecureProtocol = false,
+                ignoreDocErrors = true,
+                useCss = preferences.webCaptureSaveCss,
+                embedFonts = preferences.webCaptureSaveFonts,
+                embedImages = preferences.webCaptureSaveImages,
+                restrictJs = preferences.webCaptureExecuteJs,
+                includeAudioElements = preferences.webCaptureSaveAudio,
+                includeVideoElements = preferences.webCaptureSaveVideo,
+                includeMetadata = preferences.webCaptureSaveMetadata,
+                logStuff = false,
+            )
         }
     }
 
@@ -290,22 +275,20 @@ class LocalLinksRepoImpl(
     ): Flow<Result<List<Link>>> = when (sortOption) {
         Sorting.A_TO_Z,
         Sorting.Z_TO_A,
-        ->
-            linksDao.getLinksSortedByTitle(
-                linkType = linkType.name,
-                lastSeenTitle = lastSeenTitle?.takeIf { it.isNotEmpty() },
-                lastSeenId = lastSeenId,
-                isAscending = sortOption == Sorting.A_TO_Z,
-                pageSize = pageSize,
-            )
+        -> linksDao.getLinksSortedByTitle(
+            linkType = linkType.name,
+            lastSeenTitle = lastSeenTitle?.takeIf { it.isNotEmpty() },
+            lastSeenId = lastSeenId,
+            isAscending = sortOption == Sorting.A_TO_Z,
+            pageSize = pageSize,
+        )
 
-        else ->
-            linksDao.getLinksSortedById(
-                linkType = linkType.name,
-                lastSeenId = lastSeenId,
-                isAscending = sortOption == Sorting.OLD_TO_NEW,
-                pageSize = pageSize,
-            )
+        else -> linksDao.getLinksSortedById(
+            linkType = linkType.name,
+            lastSeenId = lastSeenId,
+            isAscending = sortOption == Sorting.OLD_TO_NEW,
+            pageSize = pageSize,
+        )
     }.mapToResultFlow()
 
     override suspend fun getLinks(
@@ -317,22 +300,20 @@ class LocalLinksRepoImpl(
     ): Flow<Result<List<Link>>> = when (sortOption) {
         Sorting.A_TO_Z,
         Sorting.Z_TO_A,
-        ->
-            linksDao.getLinksSortedByTitle(
-                tagId = tagId,
-                lastSeenTitle = lastSeenTitle?.takeIf { it.isNotEmpty() },
-                lastSeenId = lastSeenId,
-                isAscending = sortOption == Sorting.A_TO_Z,
-                pageSize = pageSize,
-            )
+        -> linksDao.getLinksSortedByTitle(
+            tagId = tagId,
+            lastSeenTitle = lastSeenTitle?.takeIf { it.isNotEmpty() },
+            lastSeenId = lastSeenId,
+            isAscending = sortOption == Sorting.A_TO_Z,
+            pageSize = pageSize,
+        )
 
-        else ->
-            linksDao.getLinksSortedById(
-                tagId = tagId,
-                lastSeenId = lastSeenId,
-                isAscending = sortOption == Sorting.OLD_TO_NEW,
-                pageSize = pageSize,
-            )
+        else -> linksDao.getLinksSortedById(
+            tagId = tagId,
+            lastSeenId = lastSeenId,
+            isAscending = sortOption == Sorting.OLD_TO_NEW,
+            pageSize = pageSize,
+        )
     }.mapToResultFlow()
 
     override fun getLinksAsNonResultFlow(
@@ -350,22 +331,20 @@ class LocalLinksRepoImpl(
     ): Flow<Result<List<Link>>> = when (sortOption) {
         Sorting.A_TO_Z,
         Sorting.Z_TO_A,
-        ->
-            linksDao.getLinksSortedByTitle(
-                linkType = linkType.name,
-                lastSeenTitle = lastSeenTitle?.takeIf { it.isNotEmpty() },
-                lastSeenId = lastSeenId,
-                isAscending = sortOption == Sorting.A_TO_Z,
-                pageSize = pageSize,
-            )
+        -> linksDao.getLinksSortedByTitle(
+            linkType = linkType.name,
+            lastSeenTitle = lastSeenTitle?.takeIf { it.isNotEmpty() },
+            lastSeenId = lastSeenId,
+            isAscending = sortOption == Sorting.A_TO_Z,
+            pageSize = pageSize,
+        )
 
-        else ->
-            linksDao.getLinksSortedById(
-                linkType = linkType.name,
-                lastSeenId = lastSeenId,
-                isAscending = sortOption == Sorting.OLD_TO_NEW,
-                pageSize = pageSize,
-            )
+        else -> linksDao.getLinksSortedById(
+            linkType = linkType.name,
+            lastSeenId = lastSeenId,
+            isAscending = sortOption == Sorting.OLD_TO_NEW,
+            pageSize = pageSize,
+        )
     }.mapToResultFlow()
 
     override fun getLinksAsNonResultFlow(
@@ -376,17 +355,14 @@ class LocalLinksRepoImpl(
     override suspend fun getAllLinks(sortOption: String): Flow<Result<List<Link>>> = linksDao.getAllLinks(sortOption).mapToResultFlow()
 
     private suspend fun retrieveFromProxy(url: String): ScrapedLinkInfo {
-        val proxyResponse =
-            standardClient
-                .get(
-                    proxyUrl().run {
-                        if (endsWith("/")) this + "metadata" else "$this/metadata"
-                    },
-                ) {
-                    parameter("url", url)
-                    userAgent(primaryUserAgent())
-                }
-                .body<ProxyInfoDTO>()
+        val proxyResponse = standardClient.get(
+            proxyUrl().run {
+                if (endsWith("/")) this + "metadata" else "$this/metadata"
+            },
+        ) {
+            parameter("url", url)
+            userAgent(primaryUserAgent())
+        }.body<ProxyInfoDTO>()
         return ScrapedLinkInfo(
             title = proxyResponse.title ?: "",
             imgUrl = proxyResponse.image ?: "",
@@ -396,22 +372,15 @@ class LocalLinksRepoImpl(
 
     private suspend fun retrieveFromVxTwitterApi(tweetURL: String): ScrapedLinkInfo {
         val vxTwitterResponseBody =
-            standardClient
-                .get("https://api.vxtwitter.com/${tweetURL.substringAfter(".com/")}")
+            standardClient.get("https://api.vxtwitter.com/${tweetURL.substringAfter(".com/")}")
                 .body<TwitterMetaDataDTO>()
         return ScrapedLinkInfo(
             title = vxTwitterResponseBody.text,
-            imgUrl =
-            vxTwitterResponseBody.media
-                .takeIf { vxTwitterResponseBody.hasMedia && it.isNotEmpty() }
+            imgUrl = vxTwitterResponseBody.media.takeIf { vxTwitterResponseBody.hasMedia && it.isNotEmpty() }
                 ?.find { it.type in listOf("image", "video", "gif") }
                 ?.let { if (it.type == "image") it.url else it.thumbnailUrl }
                 ?: vxTwitterResponseBody.userPfp,
-            mediaType =
-            if (
-                vxTwitterResponseBody.media.isNotEmpty() &&
-                vxTwitterResponseBody.media.first().type == "video"
-            ) {
+            mediaType = if (vxTwitterResponseBody.media.isNotEmpty() && vxTwitterResponseBody.media.first().type == "video") {
                 MediaType.VIDEO
             } else {
                 MediaType.IMAGE
@@ -431,21 +400,21 @@ class LocalLinksRepoImpl(
             throw Link.Invalid()
         }
 
-        val rawHTML =
-            withContext(PlatformIODispatcher) {
-                Ksoup.parseGetRequest(
-                    ("http" + linkUrl.substringAfter("http").substringBefore(" ").trim()).also { linkUrl ->
-                        linkoraLog("scrapeLinkData for $linkUrl")
-                    },
-                ) {
-                    this.userAgent(userAgent)
-                    this.header("Accept", "text/html")
-                    this.header("Accept-Language", "en;q=1.0")
-                    this.header("Connection", "keep-alive")
-                }
-                    .head()
-            }
-                .toString()
+        val rawHTML = withContext(PlatformIODispatcher) {
+            Ksoup.parseGetRequest(
+                (
+                    "http" + linkUrl.substringAfter("http").substringBefore(" ")
+                        .trim()
+                    ).also { linkUrl ->
+                    linkoraLog("scrapeLinkData for $linkUrl")
+                },
+            ) {
+                this.userAgent(userAgent)
+                this.header("Accept", "text/html")
+                this.header("Accept-Language", "en;q=1.0")
+                this.header("Connection", "keep-alive")
+            }.head()
+        }.toString()
 
         val document = Ksoup.parse(rawHTML)
         val ogImage = document.select("meta[property=og:image]").attr("content")
@@ -454,43 +423,39 @@ class LocalLinksRepoImpl(
         val ogTitle = document.select("meta[property=og:title]").attr("content")
         val pageTitle = document.title()
 
-        val imgURL =
-            when {
-                ogImage.isNotNullOrNotBlank() -> {
-                    if (ogImage.startsWith("/")) {
-                        "https://$baseUrl$ogImage"
-                    } else {
-                        ogImage
-                    }
+        val imgURL = when {
+            ogImage.isNotNullOrNotBlank() -> {
+                if (ogImage.startsWith("/")) {
+                    "https://$baseUrl$ogImage"
+                } else {
+                    ogImage
                 }
-
-                ogImage.isBlank() && twitterImage.isNotNullOrNotBlank() ->
-                    if (
-                        twitterImage.startsWith(
-                            "/",
-                        )
-                    ) {
-                        "https://$baseUrl$twitterImage"
-                    } else {
-                        twitterImage
-                    }
-
-                ogImage.isBlank() && twitterImage.isBlank() && favicon.isNotNullOrNotBlank() -> {
-                    if (favicon.startsWith("/")) {
-                        "https://$baseUrl$favicon"
-                    } else {
-                        favicon
-                    }
-                }
-
-                else -> ""
             }
 
-        val title =
-            when {
-                ogTitle.isNotNullOrNotBlank() -> ogTitle
-                else -> pageTitle
+            ogImage.isBlank() && twitterImage.isNotNullOrNotBlank() -> if (twitterImage.startsWith(
+                    "/",
+                )
+            ) {
+                "https://$baseUrl$twitterImage"
+            } else {
+                twitterImage
             }
+
+            ogImage.isBlank() && twitterImage.isBlank() && favicon.isNotNullOrNotBlank() -> {
+                if (favicon.startsWith("/")) {
+                    "https://$baseUrl$favicon"
+                } else {
+                    favicon
+                }
+            }
+
+            else -> ""
+        }
+
+        val title = when {
+            ogTitle.isNotNullOrNotBlank() -> ogTitle
+            else -> pageTitle
+        }
         return ScrapedLinkInfo(title, imgURL)
     }
 
@@ -526,8 +491,7 @@ class LocalLinksRepoImpl(
                 pendingSyncQueueRepo.addInQueue(
                     PendingSyncQueue(
                         operation = SyncServerRoute.UPDATE_LINK_NOTE.name,
-                        payload =
-                        Json.encodeToString(
+                        payload = Json.encodeToString(
                             UpdateNoteOfALinkDTO(
                                 linkId,
                                 newNote = "",
@@ -574,8 +538,7 @@ class LocalLinksRepoImpl(
                     pendingSyncQueueRepo.addInQueue(
                         PendingSyncQueue(
                             operation = SyncServerRoute.DELETE_A_LINK.name,
-                            payload =
-                            Json.encodeToString(
+                            payload = Json.encodeToString(
                                 IDBasedDTO(
                                     remoteId,
                                     getSystemEpochSeconds(),
@@ -628,8 +591,7 @@ class LocalLinksRepoImpl(
                 pendingSyncQueueRepo.addInQueue(
                     PendingSyncQueue(
                         operation = SyncServerRoute.ARCHIVE_LINK.name,
-                        payload =
-                        Json.encodeToString(
+                        payload = Json.encodeToString(
                             IDBasedDTO(
                                 linkId,
                                 eventTimestamp,
@@ -677,8 +639,7 @@ class LocalLinksRepoImpl(
                 pendingSyncQueueRepo.addInQueue(
                     PendingSyncQueue(
                         operation = SyncServerRoute.UPDATE_LINK_NOTE.name,
-                        payload =
-                        Json.encodeToString(
+                        payload = Json.encodeToString(
                             UpdateNoteOfALinkDTO(
                                 linkId = linkId,
                                 newNote = newNote,
@@ -727,8 +688,7 @@ class LocalLinksRepoImpl(
                 pendingSyncQueueRepo.addInQueue(
                     PendingSyncQueue(
                         operation = SyncServerRoute.UPDATE_LINK_TITLE.name,
-                        payload =
-                        Json.encodeToString(
+                        payload = Json.encodeToString(
                             UpdateTitleOfTheLinkDTO(
                                 linkId,
                                 newTitle,
@@ -765,14 +725,13 @@ class LocalLinksRepoImpl(
         updatedLinkTagsPair: LinkTagsPair?,
         viaSocket: Boolean,
     ): Flow<Result<Unit>> {
-        val remoteLinkTagDTOs =
-            if (link.remoteId != null) {
-                updatedLinkTagsPair?.tags?.map {
-                    LinkTagDTO(linkId = link.remoteId, tagId = it.remoteId ?: -54545)
-                }
-            } else {
-                null
+        val remoteLinkTagDTOs = if (link.remoteId != null) {
+            updatedLinkTagsPair?.tags?.map {
+                LinkTagDTO(linkId = link.remoteId, tagId = it.remoteId ?: -54545)
             }
+        } else {
+            null
+        }
         val remoteId = getRemoteIdOfLink(link.localId)
         val preferences = preferencesRepository.getPreferences()
         val eventTimestamp = getSystemEpochSeconds()
@@ -799,15 +758,12 @@ class LocalLinksRepoImpl(
                 pendingSyncQueueRepo.addInQueue(
                     PendingSyncQueue(
                         operation = SyncServerRoute.UPDATE_LINK.name,
-                        payload =
-                        Json.encodeToString(
-                            link
-                                .asLinkDTO(
-                                    id = link.localId,
-                                    remoteLinkTags = remoteLinkTagDTOs ?: emptyList(),
-                                    correlation = preferences.correlation,
-                                )
-                                .copy(eventTimestamp = eventTimestamp),
+                        payload = Json.encodeToString(
+                            link.asLinkDTO(
+                                id = link.localId,
+                                remoteLinkTags = remoteLinkTagDTOs ?: emptyList(),
+                                correlation = preferences.correlation,
+                            ).copy(eventTimestamp = eventTimestamp),
                         ),
                     ),
                 )
@@ -820,10 +776,9 @@ class LocalLinksRepoImpl(
 
             val tagsAttachedToTheLink = tagsDao.getTags(linkId = updatedLinkTagsPair.link.localId)
 
-            val newlySelectedTags =
-                updatedLinkTagsPair.tags.filter { curFilterTag ->
-                    curFilterTag !in tagsAttachedToTheLink
-                }
+            val newlySelectedTags = updatedLinkTagsPair.tags.filter { curFilterTag ->
+                curFilterTag !in tagsAttachedToTheLink
+            }
 
             val unselectedTags = tagsAttachedToTheLink.filter { curFilterTag ->
                 curFilterTag !in updatedLinkTagsPair.tags
@@ -852,14 +807,13 @@ class LocalLinksRepoImpl(
         val preferences = preferencesRepository.getPreferences()
         val remoteId = getRemoteIdOfLink(link.localId)
         val eventTimestamp = getSystemEpochSeconds()
-        val remoteLinkTagDTOs =
-            if (link.remoteId != null) {
-                tagsDao.getTags(link.localId).map {
-                    LinkTagDTO(linkId = link.remoteId, tagId = it.remoteId ?: -54545)
-                }
-            } else {
-                null
+        val remoteLinkTagDTOs = if (link.remoteId != null) {
+            tagsDao.getTags(link.localId).map {
+                LinkTagDTO(linkId = link.remoteId, tagId = it.remoteId ?: -54545)
             }
+        } else {
+            null
+        }
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -868,21 +822,17 @@ class LocalLinksRepoImpl(
             remoteOperation = {
                 require(remoteId != null)
                 remoteLinksRepo.updateLink(
-                    linksDao
-                        .getLink(link.localId)
-                        .asLinkDTO(
-                            id = remoteId,
-                            remoteLinkTags = remoteLinkTagDTOs ?: emptyList(),
-                            correlation = preferences.correlation,
+                    linksDao.getLink(link.localId).asLinkDTO(
+                        id = remoteId,
+                        remoteLinkTags = remoteLinkTagDTOs ?: emptyList(),
+                        correlation = preferences.correlation,
+                    ).run {
+                        copy(
+                            idOfLinkedFolder = foldersDao.getRemoteFolderId(
+                                idOfLinkedFolder ?: -45454,
+                            ),
                         )
-                        .run {
-                            copy(
-                                idOfLinkedFolder =
-                                foldersDao.getRemoteFolderId(
-                                    idOfLinkedFolder ?: -45454,
-                                ),
-                            )
-                        },
+                    },
                 )
             },
             remoteOperationOnSuccess = {
@@ -893,40 +843,32 @@ class LocalLinksRepoImpl(
                 pendingSyncQueueRepo.addInQueue(
                     PendingSyncQueue(
                         operation = SyncServerRoute.UPDATE_LINK.name,
-                        payload =
-                        Json.encodeToString(
-                            linksDao
-                                .getLink(link.localId)
-                                .asLinkDTO(
-                                    id = link.localId,
-                                    remoteLinkTags = remoteLinkTagDTOs ?: emptyList(),
-                                    correlation = preferences.correlation,
-                                )
-                                .copy(eventTimestamp = eventTimestamp),
+                        payload = Json.encodeToString(
+                            linksDao.getLink(link.localId).asLinkDTO(
+                                id = link.localId,
+                                remoteLinkTags = remoteLinkTagDTOs ?: emptyList(),
+                                correlation = preferences.correlation,
+                            ).copy(eventTimestamp = eventTimestamp),
                         ),
                     ),
                 )
             },
         ) {
-            val scrapedLinkInfo =
-                if (preferences.useProxy) {
-                    retrieveFromProxy(link.url)
+            val scrapedLinkInfo = if (preferences.useProxy) {
+                retrieveFromProxy(link.url)
+            } else {
+                if (link.url.isATwitterUrl()) {
+                    retrieveFromVxTwitterApi(link.url)
                 } else {
-                    if (link.url.isATwitterUrl()) {
-                        retrieveFromVxTwitterApi(link.url)
-                    } else {
-                        scrapeLinkData(
-                            link.url,
-                            link.userAgent ?: primaryUserAgent(),
-                        )
-                    }
+                    scrapeLinkData(
+                        link.url,
+                        link.userAgent ?: primaryUserAgent(),
+                    )
                 }
+            }
             linksDao.updateALink(
                 link.copy(
-                    title =
-                    if (
-                        refreshLinkType in
-                        listOf(
+                    title = if (refreshLinkType in listOf(
                             RefreshLinkType.Title,
                             RefreshLinkType.Both,
                         )
@@ -935,10 +877,7 @@ class LocalLinksRepoImpl(
                     } else {
                         link.title
                     },
-                    imgURL =
-                    if (
-                        refreshLinkType in
-                        listOf(
+                    imgURL = if (refreshLinkType in listOf(
                             RefreshLinkType.Image,
                             RefreshLinkType.Both,
                         )
@@ -950,6 +889,22 @@ class LocalLinksRepoImpl(
                     mediaType = scrapedLinkInfo.mediaType,
                     lastModified = getSystemEpochSeconds(),
                 ),
+            )
+            webCapture.saveHTMLPage(
+                nativeFolderPath = preferences.webCapturesLocation,
+                url = link.url,
+                userAgent = preferences.primaryJsoupUserAgent,
+                timeout = 15000L,
+                allowInsecureProtocol = false,
+                ignoreDocErrors = true,
+                useCss = preferences.webCaptureSaveCss,
+                embedFonts = preferences.webCaptureSaveFonts,
+                embedImages = preferences.webCaptureSaveImages,
+                restrictJs = preferences.webCaptureExecuteJs,
+                includeAudioElements = preferences.webCaptureSaveAudio,
+                includeVideoElements = preferences.webCaptureSaveVideo,
+                includeMetadata = preferences.webCaptureSaveMetadata,
+                logStuff = false,
             )
         }
     }
@@ -983,12 +938,9 @@ class LocalLinksRepoImpl(
             remoteOperation = {
                 remoteLinksRepo.deleteDuplicateLinks(
                     DeleteDuplicateLinksDTO(
-                        linkIds =
-                        linksToBeDeleted
-                            .filter {
-                                it.remoteId != null
-                            }
-                            .map { it.remoteId!! },
+                        linkIds = linksToBeDeleted.filter {
+                            it.remoteId != null
+                        }.map { it.remoteId!! },
                         eventTimestamp = eventTimestamp,
                         correlation = preferences.correlation,
                     ),
@@ -998,17 +950,13 @@ class LocalLinksRepoImpl(
                 pendingSyncQueueRepo.addInQueue(
                     PendingSyncQueue(
                         operation = SyncServerRoute.DELETE_DUPLICATE_LINKS.name,
-                        payload =
-                        Json.encodeToString(
+                        payload = Json.encodeToString(
                             DeleteDuplicateLinksDTO(
-                                linkIds =
-                                linksToBeDeleted
-                                    .filterNot {
-                                        it.remoteId == null
-                                    }
-                                    .map {
-                                        it.remoteId!!
-                                    },
+                                linkIds = linksToBeDeleted.filterNot {
+                                    it.remoteId == null
+                                }.map {
+                                    it.remoteId!!
+                                },
                                 eventTimestamp = eventTimestamp,
                                 correlation = preferences.correlation,
                             ),
@@ -1019,17 +967,14 @@ class LocalLinksRepoImpl(
             localOperation = {
                 coroutineScope {
                     val allLinks = linksDao.getAllLinks()
-                    val allFolders =
-                        allLinks
-                            .map {
-                                it.idOfLinkedFolder
-                            }
-                            .filter {
-                                it != null && it !in defaultFolderIds()
-                            }
-                            .distinct()
+                    val allFolders = allLinks.map {
+                        it.idOfLinkedFolder
+                    }.filter {
+                        it != null && it !in defaultFolderIds()
+                    }.distinct()
 
-                    val historyLinks = async { allLinks.filter { it.linkType == LinkType.HISTORY_LINK } }
+                    val historyLinks =
+                        async { allLinks.filter { it.linkType == LinkType.HISTORY_LINK } }
                     val importantLinks = async {
                         allLinks.filter { it.linkType == LinkType.IMPORTANT_LINK }
                     }
@@ -1043,34 +988,27 @@ class LocalLinksRepoImpl(
                         allLinks.filter { it.linkType == LinkType.FOLDER_LINK }
                     }
 
-                    val filteredHistoryLinks =
-                        historyLinks.await().distinctBy {
-                            it.url
-                        }
-                    val filteredImportantLinks =
-                        importantLinks.await().distinctBy {
-                            it.url
-                        }
-                    val filteredSavedLinks =
-                        savedLinks.await().distinctBy {
-                            it.url
-                        }
-                    val filteredArchiveLinks =
-                        archiveLinks.await().distinctBy {
-                            it.url
-                        }
+                    val filteredHistoryLinks = historyLinks.await().distinctBy {
+                        it.url
+                    }
+                    val filteredImportantLinks = importantLinks.await().distinctBy {
+                        it.url
+                    }
+                    val filteredSavedLinks = savedLinks.await().distinctBy {
+                        it.url
+                    }
+                    val filteredArchiveLinks = archiveLinks.await().distinctBy {
+                        it.url
+                    }
                     val filteredFolderLinks = mutableListOf<Link>()
 
                     allFolders.forEach { currentFolderId ->
                         filteredFolderLinks.addAll(
-                            folderLinks
-                                .await()
-                                .filter {
-                                    it.idOfLinkedFolder == currentFolderId
-                                }
-                                .distinctBy {
-                                    it.url
-                                },
+                            folderLinks.await().filter {
+                                it.idOfLinkedFolder == currentFolderId
+                            }.distinctBy {
+                                it.url
+                            },
                         )
                     }
 
@@ -1131,24 +1069,22 @@ class LocalLinksRepoImpl(
     ): Flow<Result<List<Link>>> = when (sortOption) {
         Sorting.A_TO_Z,
         Sorting.Z_TO_A,
-        ->
-            linksDao.getAllLinksSortedByTitle(
-                lastSeenId = lastSeenId,
-                lastSeenTitle = lastSeenName?.takeIf { it.isNotEmpty() },
-                pageSize = pageSize,
-                isAscending = sortOption == Sorting.A_TO_Z,
-                applyLinkFilters = applyLinkFilters,
-                activeLinkFilters = activeLinkFilters,
-            )
+        -> linksDao.getAllLinksSortedByTitle(
+            lastSeenId = lastSeenId,
+            lastSeenTitle = lastSeenName?.takeIf { it.isNotEmpty() },
+            pageSize = pageSize,
+            isAscending = sortOption == Sorting.A_TO_Z,
+            applyLinkFilters = applyLinkFilters,
+            activeLinkFilters = activeLinkFilters,
+        )
 
-        else ->
-            linksDao.getAllLinksSortedById(
-                lastSeenId = lastSeenId,
-                isAscending = sortOption == Sorting.OLD_TO_NEW,
-                pageSize = pageSize,
-                applyLinkFilters = applyLinkFilters,
-                activeLinkFilters = activeLinkFilters,
-            )
+        else -> linksDao.getAllLinksSortedById(
+            lastSeenId = lastSeenId,
+            isAscending = sortOption == Sorting.OLD_TO_NEW,
+            pageSize = pageSize,
+            applyLinkFilters = applyLinkFilters,
+            activeLinkFilters = activeLinkFilters,
+        )
     }.mapToResultFlow()
 
     override suspend fun isLinksTableEmpty(): Boolean = !linksDao.doesLinkTableHaveData()
