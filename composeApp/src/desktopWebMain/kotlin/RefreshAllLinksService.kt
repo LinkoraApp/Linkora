@@ -1,4 +1,5 @@
 import com.sakethh.linkora.di.DependencyContainer
+import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onSuccess
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.platform.PlatformIODispatcher
@@ -56,6 +57,9 @@ object RefreshAllLinksService {
                                     DataSettingsScreenVM.refreshLinksState.value.copy(
                                         currentIteration = processedCount,
                                     )
+                            }
+                            result.onFailure {
+                                processedCount++
                             }
                         }
                 }
