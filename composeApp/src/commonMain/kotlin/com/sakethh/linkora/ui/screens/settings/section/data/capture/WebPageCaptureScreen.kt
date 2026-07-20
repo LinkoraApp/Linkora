@@ -5,6 +5,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,7 +25,6 @@ import androidx.compose.material.icons.filled.Web
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -55,6 +55,8 @@ import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.platform.platform
+import com.sakethh.linkora.ui.components.HorizontalInfoCard
+import com.sakethh.linkora.ui.components.VerticalInfoCard
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
@@ -107,6 +109,8 @@ fun WebPageCaptureScreen() {
                         isSwitchNeeded = true,
                         isSwitchEnabled = preferences.useWebCaptures,
                         onSwitchStateChange = {
+                            if (preferences.webCapturesLocation.isBlank()) return@SettingComponentParam
+
                             dataSettingsScreenVM.changeSettingPreferenceValue(
                                 preferenceKey = AppPreferences.USE_WEB_CAPTURES,
                                 newValue = !preferences.useWebCaptures,
@@ -117,17 +121,22 @@ fun WebPageCaptureScreen() {
                         shouldFilledIconBeUsed = false,
                     ),
                 )
+                if (preferences.webCapturesLocation.isNotBlank()) {
+                    VerticalInfoCard(
+                        info = "Web-page Captures directory: ${preferences.webCapturesLocation}",
+                        paddingValues = PaddingValues(start = 15.dp, end = 15.dp, top = 15.dp),
+                    )
+                }
             }
 
-            if (preferences.useWebCaptures) {
+            if (preferences.webCapturesLocation.isBlank()) {
                 item {
+                    VerticalInfoCard(
+                        info =
+                        "You can enable the webpage captures feature only after selecting a directory.\n\nSelecting the web-page captures directory is a one-time operation. You will not be able to switch directories after you set it.\n\nA new database will be created in the path you choose. Linkora will gain ownership of it even if a database already exists there from previous installs. It will be used to map web-capture folders to their links. This database is portable and not locked to the Linkora app.\n\nDeleting the database files will result in a loss of mapping. This can lead to duplicate folders and other unusual behavior.\n\nIf the selected directory is moved or deleted, web-captures will silently fail. Make sure the selected directory always exists.",
+                        paddingValues = PaddingValues(start = 15.dp, end = 15.dp, bottom = 15.dp),
+                    )
                     TextField(
-                        supportingText = {
-                            Text(
-                                text = "If the selected directory is moved or deleted, web-captures will silently fail. Make sure the selected directory always exists.",
-                                style = MaterialTheme.typography.titleSmall,
-                            )
-                        },
                         textStyle = MaterialTheme.typography.titleSmall,
                         trailingIcon = {
                             FilledTonalIconButton(
@@ -154,7 +163,7 @@ fun WebPageCaptureScreen() {
                         readOnly = platform is Platform.Android,
                         label = {
                             Text(
-                                text = "Current web-captures location",
+                                text = "Select Web-captures directory",
                                 style = MaterialTheme.typography.titleMedium,
                                 textAlign = TextAlign.Start,
                             )
@@ -165,7 +174,11 @@ fun WebPageCaptureScreen() {
                         },
                         modifier = Modifier.padding(horizontal = 15.dp).fillMaxWidth(),
                     )
+                    Spacer(modifier = Modifier.height(150.dp))
                 }
+                return@LazyColumn
+            }
+            if (preferences.useWebCaptures) {
                 item {
                     Column(
                         modifier = Modifier.padding(horizontal = 15.dp).fillMaxWidth(),
@@ -561,19 +574,7 @@ fun WebPageCaptureScreen() {
                     }
                 }
             }
-            item {
-                HorizontalDivider()
-            }
-            item {
-                Text(
-                    text = "Even when web-captures is disabled, you can save individual pages anytime from a link’s menu. Alternatively, use the main screen’s + button to download a page locally without adding a link.",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontSize = 14.sp,
-                    lineHeight = 20.sp,
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.padding(horizontal = 15.dp),
-                )
-            }
+
             item {
                 Spacer(Modifier.height(150.dp))
             }
