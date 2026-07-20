@@ -1,6 +1,8 @@
 package com.sakethh.linkora.ui.components.sorting
 
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
+import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.platform.NativeUtils
@@ -16,7 +18,8 @@ class SortingBtmSheetVM(
     nativeUtils: NativeUtils,
     permissionManager: PermissionManager,
     webCapture: NativeUtils.WebCapture,
-) : SettingsScreenViewModel(preferencesRepository, nativeUtils, permissionManager, webCapture) {
+    webCaptureDatabaseManager : WebCaptureDatabaseManager
+) : SettingsScreenViewModel(preferencesRepository, nativeUtils, permissionManager, webCapture,webCaptureDatabaseManager) {
     fun sortingBtmSheetData(): List<SortingBtmSheet> = listOf(
         SortingBtmSheet(
             sortingName = Localization.Key.NewestToOldest.getLocalizedString(),

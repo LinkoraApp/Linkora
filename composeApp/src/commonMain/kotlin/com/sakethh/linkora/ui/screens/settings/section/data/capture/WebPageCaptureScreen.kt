@@ -111,7 +111,7 @@ fun WebPageCaptureScreen() {
                                 preferenceKey = AppPreferences.USE_WEB_CAPTURES,
                                 newValue = !preferences.useWebCaptures,
                             )
-                            if (it) dataSettingsScreenVM.initWebCapture() else dataSettingsScreenVM.nukeWebCapture()
+                            if (it) dataSettingsScreenVM.initWebCapture(onCompletion = {}) else dataSettingsScreenVM.nukeWebCapture()
                         },
                         icon = Icons.Default.Web,
                         shouldFilledIconBeUsed = false,

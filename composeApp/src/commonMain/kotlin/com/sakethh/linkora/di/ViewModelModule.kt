@@ -41,6 +41,7 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
                 nativeUtils = LinkoraSDK.getInstance().nativeUtils,
                 permissionManager = LinkoraSDK.getInstance().permissionManager,
                 webCapture = LinkoraSDK.getInstance().webCapture,
+                webCaptureDatabaseManager = LinkoraSDK.getInstance().webCaptureDatabaseManager,
             )
 
         SearchScreenVM::class ->
@@ -57,6 +58,7 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
                 nativeUtils = LinkoraSDK.getInstance().nativeUtils,
                 permissionManager = LinkoraSDK.getInstance().permissionManager,
                 webCapture = LinkoraSDK.getInstance().webCapture,
+                webCaptureDatabaseManager = LinkoraSDK.getInstance().webCaptureDatabaseManager
             )
 
         LanguageSettingsScreenVM::class ->
@@ -98,6 +100,7 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
                 refreshLinksRepo = DependencyContainer.refreshLinksRepo,
                 webCaptureRepo = DependencyContainer.webCaptureRepo,
                 webCapture = LinkoraSDK.getInstance().webCapture,
+                webCaptureDatabaseManager = LinkoraSDK.getInstance().webCaptureDatabaseManager,
             )
 
         else ->

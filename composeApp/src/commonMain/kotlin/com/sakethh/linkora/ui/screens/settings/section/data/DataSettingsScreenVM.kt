@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.FileType
@@ -66,7 +67,8 @@ class DataSettingsScreenVM(
     private val refreshLinksRepo: RefreshLinksRepo,
     private val webCaptureRepo: WebCaptureRepo,
     private val webCapture: NativeUtils.WebCapture,
-) : SettingsScreenViewModel(preferencesRepository, nativeUtils, permissionManager, webCapture) {
+    webCaptureDatabaseManager: WebCaptureDatabaseManager
+) : SettingsScreenViewModel(preferencesRepository, nativeUtils, permissionManager, webCapture,webCaptureDatabaseManager) {
     val importExportProgressLogs = mutableStateListOf<String>()
 
     private var importExportJob: Job? = null

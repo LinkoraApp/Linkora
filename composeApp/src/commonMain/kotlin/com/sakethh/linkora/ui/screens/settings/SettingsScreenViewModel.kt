@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.UriHandler
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.MediaType
@@ -38,6 +39,8 @@ import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.openUriOrNotify
 import com.sakethh.linkora.utils.stringPreferencesKey
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 
 open class SettingsScreenViewModel(
@@ -45,6 +48,7 @@ open class SettingsScreenViewModel(
     private val nativeUtils: NativeUtils,
     private val permissionManager: PermissionManager,
     private val webCapture: NativeUtils.WebCapture,
+    private val webCaptureDatabaseManager: WebCaptureDatabaseManager
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
 
@@ -713,9 +717,22 @@ open class SettingsScreenViewModel(
             },
         )
 
-    fun initWebCapture() {
+    fun initWebCapture(onCompletion: () -> Unit) {
         viewModelScope.launch {
-            webCapture.init()
+            // both handle exceptions internally
+            awaitAll(
+                async {
+                    webCapture.prepareExternalDatabase(
+                        captureLocation = preferencesAsFlow.value.webCapturesLocation,
+                        webCaptureDatabaseManager = webCaptureDatabaseManager,
+                    )
+                },
+                async {
+                    webCapture.init()
+                },
+            )
+        }.invokeOnCompletion {
+            onCompletion()
         }
     }
 

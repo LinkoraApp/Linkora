@@ -17,7 +17,7 @@ class WebCaptureDatabaseManager(
     private var database: WebCaptureDatabase? = null
     private val mutex = Mutex()
 
-    suspend fun getDatabase(webCaptureDirPath: String): WebCaptureDatabase {
+    suspend fun initAndGetDatabase(webCaptureDirPath: String): WebCaptureDatabase {
         database?.let {
             return it
         }

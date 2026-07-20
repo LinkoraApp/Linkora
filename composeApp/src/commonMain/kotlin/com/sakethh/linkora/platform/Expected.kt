@@ -3,6 +3,7 @@ package com.sakethh.linkora.platform
 import androidx.compose.runtime.Composable
 import androidx.room3.RoomDatabaseConstructor
 import com.sakethh.linkora.data.local.LocalDatabase
+import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.PermissionStatus
@@ -123,6 +124,11 @@ expect class NativeUtils {
         fun isWebCaptureWorkerEnqueued(): Flow<Boolean?>
 
         fun cancelBulkWebCapture()
+
+        suspend fun prepareExternalDatabase(
+            captureLocation: String,
+            webCaptureDatabaseManager: WebCaptureDatabaseManager,
+        )
     }
 
     suspend fun onRefreshAllLinks(

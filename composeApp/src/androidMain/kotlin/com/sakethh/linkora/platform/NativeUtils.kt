@@ -7,6 +7,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.core.app.NotificationCompat
+import androidx.core.net.toUri
+import androidx.documentfile.provider.DocumentFile
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
@@ -17,6 +19,8 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.R
+import com.sakethh.linkora.WebCaptureDatabase
+import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Result
@@ -24,6 +28,7 @@ import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.RefreshLinksRepo
 import com.sakethh.linkora.domain.repository.local.WebCaptureRepo
+import com.sakethh.linkora.utils.getAbsolutePathFromSafUri
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.longPreferencesKey
 import com.sakethh.linkora.utils.stringPreferencesKey
@@ -36,6 +41,10 @@ import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.RandomAccessFile
 import java.util.UUID
 
 actual class NativeUtils(
@@ -251,6 +260,69 @@ actual class NativeUtils(
 
         actual suspend fun nuke() {
             androidDesktopWebCapture.nuke()
+        }
+
+        actual suspend fun prepareExternalDatabase(
+            captureLocation: String,
+            webCaptureDatabaseManager: WebCaptureDatabaseManager,
+        ): Unit = withContext(Dispatchers.IO) {
+            val rawDirPath = getAbsolutePathFromSafUri(
+                context.applicationContext,
+                captureLocation.toUri(),
+            ).toString()
+            val dbFilePath = "$rawDirPath/${WebCaptureDatabase.NAME}.db"
+            try {
+                RandomAccessFile(
+                    dbFilePath,
+                    "r",
+                ).use { it.close() }
+            } catch (e: FileNotFoundException) {
+                // we get the same exception when file literally doesn't exist
+                // or even if we are blocked from accessing the file
+
+                if (e.message?.contains("EACCES") == true) {
+                    val webCaptureLocation =
+                        DocumentFile.fromTreeUri(context, captureLocation.toUri())
+                            ?: return@withContext
+                    val existingDbFile =
+                        webCaptureLocation.findFile("${WebCaptureDatabase.NAME}.db")
+                    val tempDbFile = File(context.cacheDir, "temp.db")
+
+                    if (existingDbFile != null && existingDbFile.exists()) {
+                        context.contentResolver.openInputStream(existingDbFile.uri)?.use { input ->
+                            tempDbFile.outputStream().use { output ->
+                                input.copyTo(output)
+                            }
+                        }
+                    }
+
+                    listOf(
+                        "${WebCaptureDatabase.NAME}.db",
+                        "${WebCaptureDatabase.NAME}.db-wal",
+                        "${WebCaptureDatabase.NAME}.db-shm",
+                        "${WebCaptureDatabase.NAME}.db.lck"
+                    ).forEach { fileName ->
+                        webCaptureLocation.findFile(fileName)?.delete()
+                    }
+
+                    // ownership of the database is now set to app UID and not the underlying system handling it;
+                    // SAF WILL NOT WORK IN OUR CASE
+                    val newDbFile = File(dbFilePath)
+                    newDbFile.parentFile?.mkdirs()
+                    newDbFile.createNewFile()
+
+                    if (tempDbFile.exists()) {
+                        tempDbFile.inputStream().use { input ->
+                            FileOutputStream(newDbFile).use { output ->
+                                input.copyTo(output)
+                            }
+                        }
+                        tempDbFile.delete()
+                    }
+                }
+            } finally {
+                webCaptureDatabaseManager.initAndGetDatabase(captureLocation)
+            }
         }
     }
 }

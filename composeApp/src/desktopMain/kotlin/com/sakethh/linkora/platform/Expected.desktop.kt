@@ -7,6 +7,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.WebCaptureService
+import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.PermissionStatus
 import com.sakethh.linkora.domain.Platform
@@ -184,6 +185,13 @@ actual class NativeUtils {
         actual suspend fun nuke() {
             androidDesktopWebCapture.nuke()
         }
+
+        actual suspend fun prepareExternalDatabase(
+            captureLocation: String,
+            webCaptureDatabaseManager: WebCaptureDatabaseManager
+        ) {
+            webCaptureDatabaseManager.initAndGetDatabase(captureLocation)
+        }
     }
 }
 
@@ -290,7 +298,8 @@ actual object Network {
                                     serverCert?.checkValidity()
                                 }
 
-                                override fun getAcceptedIssuers(): Array<out X509Certificate?> = if (bypassCertCheck) arrayOf() else arrayOf(signedCertificate)
+                                override fun getAcceptedIssuers(): Array<out X509Certificate?> =
+                                    if (bypassCertCheck) arrayOf() else arrayOf(signedCertificate)
                             }
                     }
                 }
@@ -325,7 +334,8 @@ actual object PlatformPreference {
         )
     }
 
-    actual suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T? = readPreferenceValue(dataStore = dataStore, preferenceKey = preferenceKey)
+    actual suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T? =
+        readPreferenceValue(dataStore = dataStore, preferenceKey = preferenceKey)
 
     actual suspend fun readAllPreferences(): AppPreferences {
         val prefs = dataStore.data.first()

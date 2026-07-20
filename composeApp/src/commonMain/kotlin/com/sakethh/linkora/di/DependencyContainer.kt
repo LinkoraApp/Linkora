@@ -248,7 +248,7 @@ object DependencyContainer {
         WebCaptureRepoImpl(
             captureTrackDao = LinkoraSDK.getInstance().localDatabase.captureTrackDao,
             webCaptureMetadataDao = {
-                LinkoraSDK.getInstance().webCaptureDatabaseManager.getDatabase(
+                LinkoraSDK.getInstance().webCaptureDatabaseManager.initAndGetDatabase(
                     preferencesRepo.getPreferences().webCapturesLocation,
                 ).webCaptureMetadataDao
             },
