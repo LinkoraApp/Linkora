@@ -12,11 +12,14 @@ import com.sakethh.linkora.R
 import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.LinkoraResultFailure
+import com.sakethh.linkora.domain.model.CaptureTrack
 import com.sakethh.linkora.domain.onSuccess
 import com.sakethh.linkora.utils.getOrCreateFolderUuid
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
+import java.util.UUID
 
 class WebCaptureWorker(
     appContext: Context,
@@ -27,6 +30,7 @@ class WebCaptureWorker(
 
     companion object {
         const val LINK = "LINK"
+        const val WORKER_ID = "WORKER_ID"
     }
 
     override suspend fun getForegroundInfo(): ForegroundInfo = ForegroundInfo(
@@ -46,11 +50,27 @@ class WebCaptureWorker(
         if (initResult is LinkoraResultFailure) {
             return@coroutineScope Result.failure()
         }
+        val linkUrl = inputData.getString(LINK) ?: return@coroutineScope Result.failure()
+        val captureWorkerId =
+            inputData.getString(WORKER_ID) ?: return@coroutineScope Result.failure()
+
+        val webCaptureRepo = DependencyContainer.webCaptureRepo
+
+        DependencyContainer.webCaptureRepo.insertAProcessedId(
+            CaptureTrack(
+                capturedLinkId = CaptureTrack.getCaptureLinkId(
+                    inAllLinksWorker = false,
+                    linkId = null,
+                    // we don't care about the link, we only care about the captureWorkerId on Android;
+                    // this should generally be in its own table, so the data won't be scattered around,
+                    // but for our case, this should be fine
+                    link = UUID.randomUUID().toString(),
+                ),
+                captureWorkerId = captureWorkerId,
+            ),
+        )
 
         return@coroutineScope try {
-            val linkUrl = inputData.getString(LINK) ?: return@coroutineScope Result.failure()
-            val webCaptureRepo = DependencyContainer.webCaptureRepo
-
             val whitelist = preferences.webCaptureWhitelistDomains.split(",").map { it.trim() }
                 .filter { it.isNotBlank() }
             val blacklist = preferences.webCaptureBlacklistDomains.split(",").map { it.trim() }
@@ -106,6 +126,12 @@ class WebCaptureWorker(
         } catch (e: Exception) {
             e.printStackTrace()
             Result.failure()
+        } finally {
+            if (isActive) {
+                DependencyContainer.webCaptureRepo.deleteByWorkerId(
+                    id = captureWorkerId,
+                )
+            }
         }
     }
 }

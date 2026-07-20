@@ -67,8 +67,8 @@ class DataSettingsScreenVM(
     private val refreshLinksRepo: RefreshLinksRepo,
     private val webCaptureRepo: WebCaptureRepo,
     private val webCapture: NativeUtils.WebCapture,
-    webCaptureDatabaseManager: WebCaptureDatabaseManager
-) : SettingsScreenViewModel(preferencesRepository, nativeUtils, permissionManager, webCapture,webCaptureDatabaseManager) {
+    webCaptureDatabaseManager: WebCaptureDatabaseManager,
+) : SettingsScreenViewModel(preferencesRepository, nativeUtils, permissionManager, webCapture, webCaptureDatabaseManager) {
     val importExportProgressLogs = mutableStateListOf<String>()
 
     private var importExportJob: Job? = null
@@ -318,7 +318,7 @@ class DataSettingsScreenVM(
     }
 
     fun cancelBulkWebCapture() {
-        webCapture.cancelBulkWebCapture()
+        webCapture.cancelAllWebPagesBulkCaptures()
     }
 
     fun forceSetDefaultFolderToInternalIds(
@@ -381,13 +381,11 @@ class DataSettingsScreenVM(
                 }
 
                 preferencesRepository.changePreferenceValue(
-                    preferenceKey = stringPreferencesKey(
-                        when (exportLocationType) {
-                            ExportLocationType.EXPORT -> AppPreferences.EXPORT_LOCATION.key
-                            ExportLocationType.SNAPSHOT -> AppPreferences.BACKUP_LOCATION.key
-                            ExportLocationType.WEB_CAPTURE -> AppPreferences.WEB_CAPTURES_LOCATION.key
-                        },
-                    ),
+                    preferenceKey = when (exportLocationType) {
+                        ExportLocationType.EXPORT -> AppPreferences.EXPORT_LOCATION
+                        ExportLocationType.SNAPSHOT -> AppPreferences.BACKUP_LOCATION
+                        ExportLocationType.WEB_CAPTURE -> AppPreferences.WEB_CAPTURES_LOCATION
+                    },
                     newValue = newExportLocation,
                 )
             } catch (e: Exception) {

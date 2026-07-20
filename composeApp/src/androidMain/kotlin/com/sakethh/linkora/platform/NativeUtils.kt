@@ -191,16 +191,22 @@ actual class NativeUtils(
             includeVideoElements: Boolean,
             includeMetadata: Boolean,
         ): Result<Boolean> = withContext(Dispatchers.IO) {
+            val workerUUID = UUID.randomUUID()
+
             val captureData =
                 workDataOf(
                     WebCaptureWorker.LINK to url,
+                    WebCaptureWorker.WORKER_ID to workerUUID.toString(),
                 )
+
             val workManager = WorkManager.getInstance(context)
             val request = OneTimeWorkRequestBuilder<WebCaptureWorker>().setConstraints(
                 Constraints(requiredNetworkType = NetworkType.CONNECTED),
             ).setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                 .setInputData(captureData)
+                .setId(workerUUID)
                 .build()
+
             workManager.enqueueUniqueWork(
                 UUID.randomUUID().toString(),
                 ExistingWorkPolicy.REPLACE,
@@ -236,7 +242,7 @@ actual class NativeUtils(
             )
         }
 
-        actual fun cancelBulkWebCapture() {
+        actual fun cancelAllWebPagesBulkCaptures() {
             AllLinksWebCaptureWorker.cancelWork(context)
         }
 
@@ -259,6 +265,10 @@ actual class NativeUtils(
         }
 
         actual suspend fun nuke() {
+            val workManager = WorkManager.getInstance(context = context.applicationContext)
+            DependencyContainer.webCaptureRepo.getAllWorkerIds().forEach { workerId ->
+                workManager.cancelWorkById(UUID.fromString(workerId))
+            }
             androidDesktopWebCapture.nuke()
         }
 
@@ -300,7 +310,7 @@ actual class NativeUtils(
                         "${WebCaptureDatabase.NAME}.db",
                         "${WebCaptureDatabase.NAME}.db-wal",
                         "${WebCaptureDatabase.NAME}.db-shm",
-                        "${WebCaptureDatabase.NAME}.db.lck"
+                        "${WebCaptureDatabase.NAME}.db.lck",
                     ).forEach { fileName ->
                         webCaptureLocation.findFile(fileName)?.delete()
                     }

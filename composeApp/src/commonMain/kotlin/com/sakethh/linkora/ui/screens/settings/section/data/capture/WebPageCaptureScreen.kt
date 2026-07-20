@@ -161,10 +161,7 @@ fun WebPageCaptureScreen() {
                         },
                         value = webCaptureLocation,
                         onValueChange = {
-                            dataSettingsScreenVM.changeSettingPreferenceValue(
-                                preferenceKey = AppPreferences.WEB_CAPTURES_LOCATION,
-                                newValue = it,
-                            )
+                            webCaptureLocation = it
                         },
                         modifier = Modifier.padding(horizontal = 15.dp).fillMaxWidth(),
                     )

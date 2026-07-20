@@ -116,7 +116,10 @@ actual class NativeUtils {
     actual class WebCapture {
         val androidDesktopWebCapture = AndroidDesktopWebCapture()
 
-        actual suspend fun init(): Result<Boolean> = androidDesktopWebCapture.init()
+        actual suspend fun init(): Result<Boolean> {
+            WebCaptureService.startService()
+            return androidDesktopWebCapture.init()
+        }
 
         actual suspend fun saveHTMLPage(
             nativeFolderPath: String,
@@ -169,7 +172,7 @@ actual class NativeUtils {
             )
         }
 
-        actual fun cancelBulkWebCapture() {
+        actual fun cancelAllWebPagesBulkCaptures() {
             AllLinksWebCaptureService.cancel()
         }
 
@@ -183,12 +186,13 @@ actual class NativeUtils {
         }.distinctUntilChanged()
 
         actual suspend fun nuke() {
+            WebCaptureService.killService()
             androidDesktopWebCapture.nuke()
         }
 
         actual suspend fun prepareExternalDatabase(
             captureLocation: String,
-            webCaptureDatabaseManager: WebCaptureDatabaseManager
+            webCaptureDatabaseManager: WebCaptureDatabaseManager,
         ) {
             webCaptureDatabaseManager.initAndGetDatabase(captureLocation)
         }
@@ -298,8 +302,7 @@ actual object Network {
                                     serverCert?.checkValidity()
                                 }
 
-                                override fun getAcceptedIssuers(): Array<out X509Certificate?> =
-                                    if (bypassCertCheck) arrayOf() else arrayOf(signedCertificate)
+                                override fun getAcceptedIssuers(): Array<out X509Certificate?> = if (bypassCertCheck) arrayOf() else arrayOf(signedCertificate)
                             }
                     }
                 }
@@ -334,8 +337,7 @@ actual object PlatformPreference {
         )
     }
 
-    actual suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T? =
-        readPreferenceValue(dataStore = dataStore, preferenceKey = preferenceKey)
+    actual suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T? = readPreferenceValue(dataStore = dataStore, preferenceKey = preferenceKey)
 
     actual suspend fun readAllPreferences(): AppPreferences {
         val prefs = dataStore.data.first()

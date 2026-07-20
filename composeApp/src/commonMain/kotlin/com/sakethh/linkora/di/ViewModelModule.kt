@@ -58,7 +58,7 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
                 nativeUtils = LinkoraSDK.getInstance().nativeUtils,
                 permissionManager = LinkoraSDK.getInstance().permissionManager,
                 webCapture = LinkoraSDK.getInstance().webCapture,
-                webCaptureDatabaseManager = LinkoraSDK.getInstance().webCaptureDatabaseManager
+                webCaptureDatabaseManager = LinkoraSDK.getInstance().webCaptureDatabaseManager,
             )
 
         LanguageSettingsScreenVM::class ->

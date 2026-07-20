@@ -39,7 +39,6 @@ suspend fun createNewFile(
     }
 }
 
-
 fun getAbsolutePathFromSafUri(context: Context, uri: Uri): String? {
     if (uri.authority != "com.android.externalstorage.documents") {
         return null

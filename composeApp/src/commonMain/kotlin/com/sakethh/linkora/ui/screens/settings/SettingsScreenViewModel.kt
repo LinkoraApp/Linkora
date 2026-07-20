@@ -48,7 +48,7 @@ open class SettingsScreenViewModel(
     private val nativeUtils: NativeUtils,
     private val permissionManager: PermissionManager,
     private val webCapture: NativeUtils.WebCapture,
-    private val webCaptureDatabaseManager: WebCaptureDatabaseManager
+    private val webCaptureDatabaseManager: WebCaptureDatabaseManager,
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
 
@@ -738,6 +738,7 @@ open class SettingsScreenViewModel(
 
     fun nukeWebCapture() {
         viewModelScope.launch {
+            webCapture.cancelAllWebPagesBulkCaptures()
             webCapture.nuke()
         }
     }

@@ -5,5 +5,18 @@ import androidx.room3.PrimaryKey
 
 @Entity
 data class CaptureTrack(
-    @PrimaryKey val capturedLinkId: Long,
-)
+    @PrimaryKey val capturedLinkId: String,
+    val captureWorkerId: String? = null,
+) {
+    companion object {
+        fun getCaptureLinkId(
+            inAllLinksWorker: Boolean,
+            linkId: Long?,
+            link: String? = null,
+        ): String = if (inAllLinksWorker) {
+            "all_"
+        } else {
+            "individual_"
+        } + (linkId ?: link)
+    }
+}

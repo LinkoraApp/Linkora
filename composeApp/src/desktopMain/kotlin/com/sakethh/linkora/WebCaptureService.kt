@@ -40,18 +40,15 @@ object WebCaptureService {
         )
 
     private val androidDesktopWebCapture = AndroidDesktopWebCapture()
+    private val preferencesRepository = DependencyContainer.preferencesRepo
+    private val webCaptureRepo = DependencyContainer.webCaptureRepo
 
-    init {
-        startService(
-            preferencesRepository = DependencyContainer.preferencesRepo,
-            webCaptureRepo = DependencyContainer.webCaptureRepo,
-        )
+    fun killService() {
+        processingJob?.cancel()
+        processingJob = null
     }
 
-    private fun startService(
-        preferencesRepository: PreferencesRepository,
-        webCaptureRepo: WebCaptureRepo,
-    ) {
+    fun startService() {
         if (processingJob?.isActive == true) return
 
         processingJob = serviceScope.launch {

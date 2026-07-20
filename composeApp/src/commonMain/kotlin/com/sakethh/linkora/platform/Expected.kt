@@ -123,7 +123,7 @@ expect class NativeUtils {
 
         fun isWebCaptureWorkerEnqueued(): Flow<Boolean?>
 
-        fun cancelBulkWebCapture()
+        fun cancelAllWebPagesBulkCaptures()
 
         suspend fun prepareExternalDatabase(
             captureLocation: String,

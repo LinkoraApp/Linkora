@@ -6,9 +6,11 @@ import com.sakethh.linkora.domain.model.CaptureTrack
 interface WebCaptureRepo {
     suspend fun insertAProcessedId(captureTrack: CaptureTrack)
 
-    suspend fun getProcessedLinkIds(): List<Long>
+    suspend fun getAllLinksCaptureProcessedLinkIds(): List<String>
 
     suspend fun deleteAllProcessedIds()
+    suspend fun deleteByWorkerId(id: String)
+    suspend fun getAllWorkerIds(): List<String?>
 
     suspend fun insertMetadata(metadata: WebCaptureMetadata)
 

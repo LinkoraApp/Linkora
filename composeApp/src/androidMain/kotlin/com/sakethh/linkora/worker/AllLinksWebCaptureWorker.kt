@@ -71,8 +71,8 @@ class AllLinksWebCaptureWorker(
             val preferences = DependencyContainer.preferencesRepo.getPreferences()
             val webCaptureRepo = DependencyContainer.webCaptureRepo
             val allLinks = DependencyContainer.localLinksRepo.getAllLinks()
-            val processedIds = DependencyContainer.webCaptureRepo.getProcessedLinkIds().toSet()
-            val linksToCapture = allLinks.filter { it.localId !in processedIds }
+            val processedIds = DependencyContainer.webCaptureRepo.getAllLinksCaptureProcessedLinkIds().toSet()
+            val linksToCapture = allLinks.filter { "all_${it.localId}" !in processedIds }
 
             val whitelist = preferences.webCaptureWhitelistDomains.split(",").map { it.trim() }
                 .filter { it.isNotBlank() }
@@ -98,7 +98,14 @@ class AllLinksWebCaptureWorker(
                 .flatMapMerge(concurrency = preferences.webCaptureMaxConcurrency) { link ->
                     flow {
                         if (!link.url.isAllowedByWebCapturePolicies(whitelist, blacklist)) {
-                            DependencyContainer.webCaptureRepo.insertAProcessedId(CaptureTrack(link.localId))
+                            DependencyContainer.webCaptureRepo.insertAProcessedId(
+                                CaptureTrack(
+                                    capturedLinkId = CaptureTrack.getCaptureLinkId(
+                                        inAllLinksWorker = true,
+                                        linkId = link.localId,
+                                    ),
+                                ),
+                            )
                             emit(link.localId)
                             return@flow
                         }
@@ -136,7 +143,14 @@ class AllLinksWebCaptureWorker(
                             )
                         }
 
-                        DependencyContainer.webCaptureRepo.insertAProcessedId(CaptureTrack(link.localId))
+                        DependencyContainer.webCaptureRepo.insertAProcessedId(
+                            CaptureTrack(
+                                capturedLinkId = CaptureTrack.getCaptureLinkId(
+                                    inAllLinksWorker = true,
+                                    linkId = link.localId,
+                                ),
+                            ),
+                        )
                         emit(link.localId)
                     }
                 }.onEach {

@@ -12,11 +12,17 @@ class WebCaptureRepoImpl(
 ) : WebCaptureRepo {
     override suspend fun insertAProcessedId(captureTrack: CaptureTrack) = captureTrackDao.insertAProcessedId(captureTrack)
 
-    override suspend fun getProcessedLinkIds(): List<Long> = captureTrackDao.getProcessedLinkIds()
+    override suspend fun getAllLinksCaptureProcessedLinkIds(): List<String> = captureTrackDao.getAllLinksCaptureProcessedLinkIds()
 
     override suspend fun deleteAllProcessedIds() {
-        captureTrackDao.deleteAllIds()
+        captureTrackDao.deleteAllBulkCaptureIds()
     }
+
+    override suspend fun deleteByWorkerId(id: String) {
+        captureTrackDao.deleteByWorkerId(id)
+    }
+
+    override suspend fun getAllWorkerIds(): List<String?> = captureTrackDao.getAllWorkerIds()
 
     override suspend fun insertMetadata(metadata: WebCaptureMetadata) {
         webCaptureMetadataDao().insert(metadata)
