@@ -98,7 +98,7 @@ import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.components.DeleteDialogBoxType
 import com.sakethh.linkora.ui.components.DeleteFolderOrLinkDialog
 import com.sakethh.linkora.ui.components.DeleteFolderOrLinkDialogParam
-import com.sakethh.linkora.ui.components.InfoCard
+import com.sakethh.linkora.ui.components.HorizontalInfoCard
 import com.sakethh.linkora.ui.domain.ImportFileSelectionMethod
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.SettingSectionComponent
@@ -724,7 +724,7 @@ fun DataSettingsScreen() {
                     when (state) {
                         WorkerState.ENQUEUED -> {
                             if (platform !is Platform.Android) return@AnimatedContent
-                            InfoCard(
+                            HorizontalInfoCard(
                                 info = Localization.Key.WorkManagerDesc.rememberLocalizedString(),
                                 paddingValues = PaddingValues(
                                     start = 20.dp,

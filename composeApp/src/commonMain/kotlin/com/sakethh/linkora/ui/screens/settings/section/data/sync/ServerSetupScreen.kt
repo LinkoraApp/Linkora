@@ -58,7 +58,7 @@ import com.sakethh.linkora.domain.SyncServerRoute
 import com.sakethh.linkora.domain.SyncType
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.ui.LocalNavController
-import com.sakethh.linkora.ui.components.InfoCard
+import com.sakethh.linkora.ui.components.HorizontalInfoCard
 import com.sakethh.linkora.ui.domain.model.ServerConnection
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.collections.components.ItemDivider
@@ -340,7 +340,7 @@ fun ServerSetupScreen() {
                 if (serverManagementViewModel.serverSetupState.value.isConnecting) {
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidthWithPadding())
                 } else if (serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully) {
-                    InfoCard(
+                    HorizontalInfoCard(
                         info = Localization.rememberLocalizedString(Localization.Key.ServerIsReachable),
                         paddingValues = PaddingValues(start = 15.dp, end = 15.dp),
                     )

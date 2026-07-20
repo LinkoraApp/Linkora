@@ -64,7 +64,7 @@ import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.ui.LocalNavController
-import com.sakethh.linkora.ui.components.InfoCard
+import com.sakethh.linkora.ui.components.HorizontalInfoCard
 import com.sakethh.linkora.ui.domain.AppIconCode
 import com.sakethh.linkora.ui.domain.Font
 import com.sakethh.linkora.ui.navigation.Navigation
@@ -397,7 +397,7 @@ fun GeneralSettingsScreen() {
                         fontSize = 18.sp,
                     )
                     if (tempSelectedAppIcon == AppIconCode.must_be_weather.name) {
-                        InfoCard(
+                        HorizontalInfoCard(
                             paddingValues = PaddingValues(top = 10.dp),
                             info = Localization.Key.ChangeInAppNameDesc.rememberLocalizedString(),
                         )

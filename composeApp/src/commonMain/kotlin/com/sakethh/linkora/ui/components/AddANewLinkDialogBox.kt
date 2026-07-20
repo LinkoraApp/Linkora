@@ -518,7 +518,7 @@ private fun TopPartOfAddANewLinkDialogBox(
             preferences.isAutoDetectTitleForLinksEnabled ||
             preferences.forceSaveWithoutFetchingAnyMetaData
         ) {
-            InfoCard(
+            HorizontalInfoCard(
                 info = if (preferences.isAutoDetectTitleForLinksEnabled) {
                     Localization.rememberLocalizedString(Localization.Key.AutoDetectTitleIsEnabled)
                 } else {
@@ -527,7 +527,7 @@ private fun TopPartOfAddANewLinkDialogBox(
             )
         }
         if (preferences.useWebCaptures) {
-            InfoCard(
+            HorizontalInfoCard(
                 info = "Webpage will also be downloaded to the preferred directory after saving the link",
             )
         }

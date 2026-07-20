@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun InfoCard(
+fun HorizontalInfoCard(
     info: String,
     paddingValues: PaddingValues = PaddingValues(start = 20.dp, end = 20.dp, top = 15.dp),
 ) {

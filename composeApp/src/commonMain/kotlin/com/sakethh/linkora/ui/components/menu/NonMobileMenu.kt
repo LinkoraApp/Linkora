@@ -32,7 +32,7 @@ import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ComposableContent
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.ui.components.CoilImage
-import com.sakethh.linkora.ui.components.InfoCard
+import com.sakethh.linkora.ui.components.HorizontalInfoCard
 import com.sakethh.linkora.ui.components.link.TagsRow
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
 import com.sakethh.linkora.utils.rememberLocalizedString
@@ -106,7 +106,7 @@ fun NonMobileMenu(
                         style = MaterialTheme.typography.titleMedium,
                     )
                 } else {
-                    InfoCard(
+                    HorizontalInfoCard(
                         info = Localization.Key.NoNoteAdded.rememberLocalizedString(),
                         paddingValues = PaddingValues(top = 2.dp),
                     )
@@ -143,7 +143,7 @@ fun NonMobileMenu(
                         style = MaterialTheme.typography.titleMedium,
                     )
                 } else {
-                    InfoCard(
+                    HorizontalInfoCard(
                         info = Localization.Key.NoNoteAdded.rememberLocalizedString(),
                         paddingValues = PaddingValues(top = 2.dp),
                     )
