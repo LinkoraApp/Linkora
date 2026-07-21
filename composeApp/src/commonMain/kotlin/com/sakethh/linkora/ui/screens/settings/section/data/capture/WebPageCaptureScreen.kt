@@ -55,7 +55,6 @@ import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.platform.platform
-import com.sakethh.linkora.ui.components.HorizontalInfoCard
 import com.sakethh.linkora.ui.components.VerticalInfoCard
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
@@ -123,7 +122,7 @@ fun WebPageCaptureScreen() {
                 )
                 if (preferences.webCapturesLocation.isNotBlank()) {
                     VerticalInfoCard(
-                        info = "Web-page Captures directory: ${preferences.webCapturesLocation}",
+                        info = "Open any link's menu and select 'Open Capture Folder' to view its saved webpage files.\n\nWeb-page Captures directory: ${preferences.webCapturesLocation}",
                         paddingValues = PaddingValues(start = 15.dp, end = 15.dp, top = 15.dp),
                     )
                 }
@@ -133,7 +132,7 @@ fun WebPageCaptureScreen() {
                 item {
                     VerticalInfoCard(
                         info =
-                        "You can enable the webpage captures feature only after selecting a directory.\n\nSelecting the web-page captures directory is a one-time operation. You will not be able to switch directories after you set it.\n\nA new database will be created in the path you choose. Linkora will gain ownership of it even if a database already exists there from previous installs. It will be used to map web-capture folders to their links. This database is portable and not locked to the Linkora app.\n\nDeleting the database files will result in a loss of mapping. This can lead to duplicate folders and other unusual behavior.\n\nIf the selected directory is moved or deleted, web-captures will silently fail. Make sure the selected directory always exists.",
+                            "You can enable the webpage captures feature only after selecting a directory.\n\nSelecting the web-page captures directory is a one-time operation. You will not be able to switch directories after you set it.\n\nA new database will be created in the path you choose. Linkora will gain ownership of it even if a database already exists there from previous installs. It will be used to map web-capture folders to their links. This database is portable and not locked to the Linkora app.\n\nDeleting the database files will result in a loss of mapping. This can lead to duplicate folders and other unusual behavior.\n\nIf the selected directory is moved or deleted, web-captures will silently fail. Make sure the selected directory always exists.",
                         paddingValues = PaddingValues(start = 15.dp, end = 15.dp, bottom = 15.dp),
                     )
                     TextField(

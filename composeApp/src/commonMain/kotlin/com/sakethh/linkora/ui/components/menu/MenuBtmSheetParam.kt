@@ -22,6 +22,7 @@ constructor(
     val onDelete: () -> Unit,
     val onDeleteNote: () -> Unit,
     val onRename: () -> Unit,
+    val onOpenWebCaptureFolder: (url: String) -> Unit,
     val onRefresh: (RefreshLinkType) -> Unit,
     val onArchive: () -> Unit,
     val onAddToImportantLinks: (() -> Unit?)?,

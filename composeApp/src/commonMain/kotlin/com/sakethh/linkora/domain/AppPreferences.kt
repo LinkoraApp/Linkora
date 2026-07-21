@@ -24,6 +24,7 @@ data class AppPreferences(
     val isAutoDetectTitleForLinksEnabled: Boolean = false,
     val showAssociatedImageInLinkMenu: Boolean = false,
     val isHomeScreenEnabled: Boolean = true,
+    val alwaysShowOpenWebCaptureFolderInMenu: Boolean = true,
     val useRemoteStrings: Boolean = false,
     val selectedSortingType: String = SortingType.NEW_TO_OLD.name,
     val primaryJsoupUserAgent: String = Constants.DEFAULT_USER_AGENT,
@@ -104,6 +105,8 @@ data class AppPreferences(
         val APP_LANGUAGE_NAME = stringPreferencesKey("APP_LANGUAGE_NAME")
         val APP_LANGUAGE_CODE = stringPreferencesKey("APP_LANGUAGE_CODE")
         val USE_REMOTE_LANGUAGE_STRINGS = booleanPreferencesKey("USE_REMOTE_LANGUAGE_STRINGS")
+        val ALWAYS_SHOW_OPEN_WEB_CAPTURE_FOLDER_IN_MENU =
+            booleanPreferencesKey("ALWAYS_SHOW_OPEN_WEB_CAPTURE_FOLDER_IN_MENU")
         val LOCALIZATION_SERVER_URL = stringPreferencesKey("LOCALIZATION_SERVER_URL")
         val ASSOCIATED_IMAGES_IN_LINK_MENU_VISIBILITY =
             booleanPreferencesKey("ASSOCIATED_IMAGES_IN_LINK_MENU_VISIBILITY")

@@ -70,6 +70,9 @@ class PreferencesImpl(
                 AppPreferences.USE_REMOTE_LANGUAGE_STRINGS ->
                     currentPref.copy(useRemoteStrings = value as Boolean)
 
+                AppPreferences.ALWAYS_SHOW_OPEN_WEB_CAPTURE_FOLDER_IN_MENU ->
+                    currentPref.copy(alwaysShowOpenWebCaptureFolderInMenu = value as Boolean)
+
                 AppPreferences.SORTING_PREFERENCE -> currentPref.copy(selectedSortingType = value as String)
 
                 AppPreferences.JSOUP_USER_AGENT -> currentPref.copy(primaryJsoupUserAgent = value as String)

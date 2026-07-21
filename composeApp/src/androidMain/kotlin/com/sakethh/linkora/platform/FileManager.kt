@@ -1,6 +1,11 @@
 package com.sakethh.linkora.platform
 
+import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
+import android.provider.DocumentsContract
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
@@ -39,6 +44,7 @@ import java.io.ByteArrayInputStream
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 
+
 actual class FileManager(
     private val context: Context,
 ) {
@@ -49,27 +55,25 @@ actual class FileManager(
         byteArray: ByteArray,
         onCompletion: suspend (String) -> Unit,
     ) {
-        val (newFile, exportFileName) =
-            createNewFile(
-                context = context,
-                exportLocation = exportLocation,
-                exportFileType = exportFileType,
-                exportLocationType = exportLocationType,
-            )
-        val isSuccess =
-            withContext(Dispatchers.IO) {
-                try {
-                    newFile?.uri?.let { fileUri ->
-                        context.contentResolver.openOutputStream(fileUri)?.use { outputStream ->
-                            outputStream.write(byteArray)
-                        }
+        val (newFile, exportFileName) = createNewFile(
+            context = context,
+            exportLocation = exportLocation,
+            exportFileType = exportFileType,
+            exportLocationType = exportLocationType,
+        )
+        val isSuccess = withContext(Dispatchers.IO) {
+            try {
+                newFile?.uri?.let { fileUri ->
+                    context.contentResolver.openOutputStream(fileUri)?.use { outputStream ->
+                        outputStream.write(byteArray)
                     }
-                    true
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    false
                 }
+                true
+            } catch (e: Exception) {
+                e.printStackTrace()
+                false
             }
+        }
         if (isSuccess) {
             onCompletion(exportFileName)
         } else {
@@ -112,10 +116,8 @@ actual class FileManager(
             DependencyContainer.snapshotRepo.addASnapshot(Snapshot(content = rawExportString))
 
         val parameters =
-            Data.Builder()
-                .putLong(key = "rawExportStringID", value = rawExportStringID)
-                .putString(key = "fileType", value = fileType.name)
-                .build()
+            Data.Builder().putLong(key = "rawExportStringID", value = rawExportStringID)
+                .putString(key = "fileType", value = fileType.name).build()
         snapshotWorker.setInputData(parameters)
         WorkManager.getInstance(context).enqueue(snapshotWorker.build())
     }
@@ -139,20 +141,14 @@ actual class FileManager(
     ) {
         try {
             withContext(Dispatchers.IO) {
-                DocumentFile.fromTreeUri(context, backupLocation.toUri())
-                    ?.listFiles()
-                    ?.filter {
+                DocumentFile.fromTreeUri(context, backupLocation.toUri())?.listFiles()?.filter {
                         it.name?.startsWith("LinkoraSnapshot-") == true
-                    }
-                    ?.let { snapshots ->
+                }?.let { snapshots ->
                         val snapshotsCount = snapshots.count()
                         if (snapshotsCount > threshold) {
-                            snapshots
-                                .sortedBy {
+                            snapshots.sortedBy {
                                     it.lastModified()
-                                }
-                                .take(snapshotsCount - threshold)
-                                .apply {
+                            }.take(snapshotsCount - threshold).apply {
                                     forEach {
                                         it.delete()
                                     }
@@ -172,8 +168,7 @@ actual class FileManager(
     suspend fun importFile(importFileType: ImportFileType): String? {
         AndroidUIEvent.pushUIEvent(
             AndroidUIEvent.Type.ImportAFile(
-                fileType =
-                when (importFileType) {
+                fileType = when (importFileType) {
                     ImportFileType.JSON -> "application/json"
                     ImportFileType.HTML -> "text/html"
                     else -> "*/*"
@@ -181,14 +176,12 @@ actual class FileManager(
             ),
         )
 
-        val importEvent =
-            try {
-                AndroidUIEvent.androidUIEventChannel.first()
-                    as? AndroidUIEvent.Type.UriOfTheFileForImporting
-            } catch (e: Exception) {
-                e.printStackTrace()
-                return null
-            }
+        val importEvent = try {
+            AndroidUIEvent.androidUIEventChannel.first() as? AndroidUIEvent.Type.UriOfTheFileForImporting
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
+        }
 
         val uri = importEvent?.uri ?: return null
 
@@ -216,8 +209,7 @@ actual class FileManager(
 
         emit(
             Result.Loading(
-                message =
-                if (!basedOnNewExportSchema) {
+                message = if (!basedOnNewExportSchema) {
                     "This JSON file is based on the legacy schema."
                 } else {
                     "This JSON file is based on latest schema."
@@ -225,53 +217,47 @@ actual class FileManager(
             ),
         )
 
-        val jsonObj =
-            if (!basedOnNewExportSchema) {
-                Json.decodeFromString<LegacyExportSchema>(jsonContent)
-                    .asJSONExportSchema(
-                        userAgent =
-                        DependencyContainer.preferencesRepo.getPreferences().primaryJsoupUserAgent,
-                    )
-            } else {
-                Utils.json.decodeFromString<JSONExportSchema>(jsonContent).run {
-                    JSONExportSchema(
-                        schemaVersion = schemaVersion,
-                        links =
-                        links.map {
-                            it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
-                        },
-                        folders =
-                        folders.map {
-                            it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
-                        },
-                        panels =
-                        PanelForJSONExportSchema(
-                            panels =
-                            panels.panels.map {
-                                it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
-                            },
-                            panelFolders =
-                            panels.panelFolders.map {
-                                it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
-                            },
-                        ),
-                        tags =
-                        tags.map {
+        val jsonObj = if (!basedOnNewExportSchema) {
+            Json.decodeFromString<LegacyExportSchema>(jsonContent).asJSONExportSchema(
+                userAgent = DependencyContainer.preferencesRepo.getPreferences().primaryJsoupUserAgent,
+            )
+        } else {
+            Utils.json.decodeFromString<JSONExportSchema>(jsonContent).run {
+                JSONExportSchema(
+                    schemaVersion = schemaVersion,
+                    links = links.map {
+                        it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
+                    },
+                    folders = folders.map {
+                        it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
+                    },
+                    panels = PanelForJSONExportSchema(
+                        panels = panels.panels.map {
                             it.copy(
-                                remoteId = null,
-                                lastModified = currentSystemEpochSeconds,
+                                remoteId = null, lastModified = currentSystemEpochSeconds
                             )
                         },
-                        linkTags =
-                        linkTags.map {
+                        panelFolders = panels.panelFolders.map {
                             it.copy(
-                                remoteId = null,
-                                lastModified = currentSystemEpochSeconds,
+                                remoteId = null, lastModified = currentSystemEpochSeconds
                             )
                         },
-                    )
-                }
+                    ),
+                    tags = tags.map {
+                        it.copy(
+                            remoteId = null,
+                            lastModified = currentSystemEpochSeconds,
+                        )
+                    },
+                    linkTags = linkTags.map {
+                        it.copy(
+                            remoteId = null,
+                            lastModified = currentSystemEpochSeconds,
+                        )
+                    },
+                )
             }
+        }
         emit(Result.Success(jsonObj))
     }
 
@@ -293,9 +279,7 @@ actual class FileManager(
         )
         var certInfo = ""
         return try {
-            val (uri) =
-                AndroidUIEvent.androidUIEventChannel.first()
-                    as AndroidUIEvent.Type.UriOfTheFileForImporting
+            val (uri) = AndroidUIEvent.androidUIEventChannel.first() as AndroidUIEvent.Type.UriOfTheFileForImporting
             if (uri == null) {
                 return null
             }
@@ -304,13 +288,11 @@ actual class FileManager(
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
                     val factory = CertificateFactory.getInstance("X.509")
                     val inputStreamBytes = inputStream.readBytes()
-                    certInfo =
-                        getCertificateInfo(
-                            factory = factory,
-                            inputStream = ByteArrayInputStream(inputStreamBytes),
-                        )
-                    (factory.generateCertificate(ByteArrayInputStream(inputStreamBytes)) as X509Certificate)
-                        .encoded
+                    certInfo = getCertificateInfo(
+                        factory = factory,
+                        inputStream = ByteArrayInputStream(inputStreamBytes),
+                    )
+                    (factory.generateCertificate(ByteArrayInputStream(inputStreamBytes)) as X509Certificate).encoded
                 }
             }
         } catch (e: Exception) {
@@ -322,7 +304,37 @@ actual class FileManager(
     }
 
     // these two operations aren't called on android
-    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> = emptyFlow()
+    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> =
+        emptyFlow()
 
-    actual suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>> = emptyFlow()
+    actual suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>> =
+        emptyFlow()
+
+    actual suspend fun openWebCaptureFolder(link: String) {
+        val captureFolderUUID =
+            DependencyContainer.webCaptureRepo.getFolderNameByLink(link) ?: return pushUIEvent(
+                UIEvent.Type.ShowSnackbar("No saved webpage found for this link.")
+            )
+
+        val rootFolderUri = DependencyContainer.preferencesRepo.getPreferences().webCapturesLocation
+        val captureFolderUri = DocumentFile.fromTreeUri(context, rootFolderUri.toUri())
+            ?.findFile(captureFolderUUID)?.uri ?: return pushUIEvent(
+            UIEvent.Type.ShowSnackbar("No saved webpage found for this link.")
+        )
+
+        val intent = Intent(Intent.ACTION_VIEW)
+        intent.setDataAndType(captureFolderUri, DocumentsContract.Document.MIME_TYPE_DIR)
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        try {
+            context.startActivity(intent)
+        } catch (_: ActivityNotFoundException) {
+            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("Folder Name", captureFolderUUID)
+            clipboard.setPrimaryClip(clip)
+            pushUIEvent(
+                UIEvent.Type.ShowSnackbar("Couldn't open the folder. The folder name has been copied to your clipboard.")
+            )
+        }
+    }
 }

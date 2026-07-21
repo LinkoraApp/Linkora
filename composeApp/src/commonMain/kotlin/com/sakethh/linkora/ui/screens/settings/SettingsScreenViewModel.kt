@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.PriorityHigh
 import androidx.compose.material.icons.filled.PublicOff
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.UriHandler
 import androidx.lifecycle.ViewModel
@@ -67,14 +68,14 @@ open class SettingsScreenViewModel(
                     onSwitchStateChange = {
                         changeSettingPreferenceValue(
                             preferenceKey =
-                            AppPreferences.AUTO_DETECT_TITLE_FOR_LINK,
+                                AppPreferences.AUTO_DETECT_TITLE_FOR_LINK,
                             newValue = it,
                         )
 
                         if (it) {
                             changeSettingPreferenceValue(
                                 preferenceKey =
-                                AppPreferences.FORCE_SAVE_WITHOUT_FETCHING_META_DATA,
+                                    AppPreferences.FORCE_SAVE_WITHOUT_FETCHING_META_DATA,
                                 newValue = false,
                             )
                         }
@@ -82,14 +83,14 @@ open class SettingsScreenViewModel(
                 ),
                 SettingComponentParam(
                     title =
-                    Localization.getLocalizedString(
-                        Localization.Key.ForceSaveWithoutRetrievingMetadata,
-                    ),
+                        Localization.getLocalizedString(
+                            Localization.Key.ForceSaveWithoutRetrievingMetadata,
+                        ),
                     doesDescriptionExists = true,
                     description =
-                    Localization.getLocalizedString(
-                        Localization.Key.ForceSaveWithoutRetrievingMetadataDesc,
-                    ),
+                        Localization.getLocalizedString(
+                            Localization.Key.ForceSaveWithoutRetrievingMetadataDesc,
+                        ),
                     isSwitchNeeded = true,
                     isSwitchEnabled = preferences.forceSaveWithoutFetchingAnyMetaData,
                     isIconNeeded = true,
@@ -97,14 +98,14 @@ open class SettingsScreenViewModel(
                     onSwitchStateChange = {
                         changeSettingPreferenceValue(
                             preferenceKey =
-                            AppPreferences.FORCE_SAVE_WITHOUT_FETCHING_META_DATA,
+                                AppPreferences.FORCE_SAVE_WITHOUT_FETCHING_META_DATA,
                             newValue = it,
                         )
 
                         if (it) {
                             changeSettingPreferenceValue(
                                 preferenceKey =
-                                AppPreferences.AUTO_DETECT_TITLE_FOR_LINK,
+                                    AppPreferences.AUTO_DETECT_TITLE_FOR_LINK,
                                 newValue = false,
                             )
                         }
@@ -121,7 +122,7 @@ open class SettingsScreenViewModel(
                     onSwitchStateChange = {
                         changeSettingPreferenceValue(
                             preferenceKey =
-                            AppPreferences.SKIP_SAVING_EXISTING_LINK,
+                                AppPreferences.SKIP_SAVING_EXISTING_LINK,
                             newValue = it,
                         )
                     },
@@ -133,12 +134,12 @@ open class SettingsScreenViewModel(
             add(
                 SettingComponentParam(
                     title =
-                    Localization.getLocalizedString(Localization.Key.ShowAssociatedImageInLinkMenu),
+                        Localization.getLocalizedString(Localization.Key.ShowAssociatedImageInLinkMenu),
                     doesDescriptionExists = true,
                     description =
-                    Localization.getLocalizedString(
-                        Localization.Key.ShowAssociatedImageInLinkMenuDesc,
-                    ),
+                        Localization.getLocalizedString(
+                            Localization.Key.ShowAssociatedImageInLinkMenuDesc,
+                        ),
                     isSwitchNeeded = true,
                     isSwitchEnabled = preferences.showAssociatedImageInLinkMenu,
                     isIconNeeded = true,
@@ -146,7 +147,7 @@ open class SettingsScreenViewModel(
                     onSwitchStateChange = {
                         changeSettingPreferenceValue(
                             preferenceKey =
-                            AppPreferences.ASSOCIATED_IMAGES_IN_LINK_MENU_VISIBILITY,
+                                AppPreferences.ASSOCIATED_IMAGES_IN_LINK_MENU_VISIBILITY,
                             newValue = it,
                         )
                     },
@@ -185,15 +186,15 @@ open class SettingsScreenViewModel(
                             if (permissionManager.permittedToShowNotification() == PermissionStatus.Granted) {
                                 changeSettingPreferenceValue(
                                     preferenceKey =
-                                    AppPreferences.AUTO_SAVE_ON_SHARE_INTENT,
+                                        AppPreferences.AUTO_SAVE_ON_SHARE_INTENT,
                                     newValue = it,
                                 )
                             } else {
                                 UIEvent.pushUIEvent(
                                     UIEvent.Type.ShowSnackbar(
                                         message =
-                                        Localization.Key.AutoSaveNotificationPermission
-                                            .getLocalizedString(),
+                                            Localization.Key.AutoSaveNotificationPermission
+                                                .getLocalizedString(),
                                     ),
                                 )
                             }
@@ -222,6 +223,24 @@ open class SettingsScreenViewModel(
                 icon = Icons.Rounded.Home,
             ),
         )
+
+        add(
+            SettingComponentParam(
+                title = "Always show 'Open WebCapture Folder' menu item",
+                doesDescriptionExists = true,
+                description = "When turned off, the 'Open WebCapture Folder' menu item is shown only when web-captures is enabled.",
+                isSwitchNeeded = true,
+                isSwitchEnabled = preferences.alwaysShowOpenWebCaptureFolderInMenu,
+                onSwitchStateChange = {
+                    changeSettingPreferenceValue(
+                        preferenceKey = AppPreferences.ALWAYS_SHOW_OPEN_WEB_CAPTURE_FOLDER_IN_MENU,
+                        newValue = it,
+                    )
+                },
+                isIconNeeded = true,
+                icon = Icons.Rounded.Menu,
+            ),
+        )
     }
 
     fun <T> changeSettingPreferenceValue(
@@ -241,10 +260,10 @@ open class SettingsScreenViewModel(
     fun currInitialRoute(init: (String) -> Unit) {
         viewModelScope.launch {
             (
-                preferencesRepository.readPreferenceValue(
-                    preferenceKey = AppPreferences.INITIAL_ROUTE,
-                ) ?: Navigation.Root.HomeScreen.toString()
-                )
+                    preferencesRepository.readPreferenceValue(
+                        preferenceKey = AppPreferences.INITIAL_ROUTE,
+                    ) ?: Navigation.Root.HomeScreen.toString()
+                    )
                 .let {
                     init(it)
                 }
@@ -257,18 +276,18 @@ open class SettingsScreenViewModel(
     ): List<LinkComponentParam> = listOf(
         LinkComponentParam(
             link =
-            Link(
-                title = "This Could Be A Dream - YouTube Music",
-                host = "music.youtube.com",
-                imgURL =
-                "https://lh3.googleusercontent.com/KMdNxgppeQ_CEAv3mcwYde9s6ehw-r9MWnE4wC2T0Yhax1aOwYvfRLfHCbLBbW-UVQQEdYniiXThgso",
-                url = "https://music.youtube.com/watch?v=DbiB1AtCA9k",
-                userAgent = preferences.primaryJsoupUserAgent,
-                linkType = LinkType.SAVED_LINK,
-                localId = 0L,
-                note = "",
-                idOfLinkedFolder = null,
-            ),
+                Link(
+                    title = "This Could Be A Dream - YouTube Music",
+                    host = "music.youtube.com",
+                    imgURL =
+                        "https://lh3.googleusercontent.com/KMdNxgppeQ_CEAv3mcwYde9s6ehw-r9MWnE4wC2T0Yhax1aOwYvfRLfHCbLBbW-UVQQEdYniiXThgso",
+                    url = "https://music.youtube.com/watch?v=DbiB1AtCA9k",
+                    userAgent = preferences.primaryJsoupUserAgent,
+                    linkType = LinkType.SAVED_LINK,
+                    localId = 0L,
+                    note = "",
+                    idOfLinkedFolder = null,
+                ),
             onMoreIconClick = {},
             onLinkClick = {
                 viewModelScope.launch {
@@ -288,19 +307,19 @@ open class SettingsScreenViewModel(
         ),
         LinkComponentParam(
             link =
-            Link(
-                title = "Red Dead Redemption 2 - Rockstar Games",
-                host = "rockstargames.com",
-                imgURL =
-                "https://media-rockstargames-com.akamaized.net/rockstargames-newsite/img/global/games/fob/640/reddeadredemption2.jpg",
-                url = "https://www.rockstargames.com/reddeadredemption2",
-                userAgent = preferences.primaryJsoupUserAgent,
-                linkType = LinkType.SAVED_LINK,
-                localId = 0L,
-                note =
-                "RDR2 is the epic tale of outlaw Arthur Morgan and the infamous Van der Linde gang, on the run across America at the dawn of the modern age.",
-                idOfLinkedFolder = null,
-            ),
+                Link(
+                    title = "Red Dead Redemption 2 - Rockstar Games",
+                    host = "rockstargames.com",
+                    imgURL =
+                        "https://media-rockstargames-com.akamaized.net/rockstargames-newsite/img/global/games/fob/640/reddeadredemption2.jpg",
+                    url = "https://www.rockstargames.com/reddeadredemption2",
+                    userAgent = preferences.primaryJsoupUserAgent,
+                    linkType = LinkType.SAVED_LINK,
+                    localId = 0L,
+                    note =
+                        "RDR2 is the epic tale of outlaw Arthur Morgan and the infamous Van der Linde gang, on the run across America at the dawn of the modern age.",
+                    idOfLinkedFolder = null,
+                ),
             onMoreIconClick = {},
             onLinkClick = {
                 viewModelScope.launch {
@@ -320,32 +339,32 @@ open class SettingsScreenViewModel(
         ),
         LinkComponentParam(
             link =
-            Link(
-                title =
-                "A Plague Tale: Requiem | Download and Buy Today - Epic Games Store",
-                host = "store.epicgames.com",
-                imgURL =
-                listOf(
-                    "https://pbs.twimg.com/media/FUPM2TrWYAAQsXm?format=jpg",
-                    "https://pbs.twimg.com/media/FLJx9epWYAADM0O?format=jpg",
-                    "https://pbs.twimg.com/media/FAdLIY8WUAEgLRM?format=jpg",
-                    "https://pbs.twimg.com/media/ETUI-RDWsAE2UYR?format=jpg",
-                    "https://pbs.twimg.com/media/ET9J7vTWsAYVtvG?format=jpg",
-                    "https://pbs.twimg.com/media/GRo2CKkWUAEsdEl?format=jpg",
-                    "https://pbs.twimg.com/media/FezZxQYWQAQ4K3f?format=jpg",
-                    "https://pbs.twimg.com/media/FezaHWkX0AIWvvU?format=jpg",
-                    "https://i.redd.it/qoa6gk4ii8571.jpg",
-                    "https://i.redd.it/8psapajhi8571.jpg",
-                )
-                    .random(),
-                url = "https://store.epicgames.com/en-US/p/a-plague-tale-requiem",
-                userAgent = preferences.primaryJsoupUserAgent,
-                linkType = LinkType.SAVED_LINK,
-                localId = 0L,
-                note =
-                "The plague ravages the Kingdom of France. Amicia and her younger brother Hugo are pursued by the Inquisition through villages devastated by the disease.",
-                idOfLinkedFolder = null,
-            ),
+                Link(
+                    title =
+                        "A Plague Tale: Requiem | Download and Buy Today - Epic Games Store",
+                    host = "store.epicgames.com",
+                    imgURL =
+                        listOf(
+                            "https://pbs.twimg.com/media/FUPM2TrWYAAQsXm?format=jpg",
+                            "https://pbs.twimg.com/media/FLJx9epWYAADM0O?format=jpg",
+                            "https://pbs.twimg.com/media/FAdLIY8WUAEgLRM?format=jpg",
+                            "https://pbs.twimg.com/media/ETUI-RDWsAE2UYR?format=jpg",
+                            "https://pbs.twimg.com/media/ET9J7vTWsAYVtvG?format=jpg",
+                            "https://pbs.twimg.com/media/GRo2CKkWUAEsdEl?format=jpg",
+                            "https://pbs.twimg.com/media/FezZxQYWQAQ4K3f?format=jpg",
+                            "https://pbs.twimg.com/media/FezaHWkX0AIWvvU?format=jpg",
+                            "https://i.redd.it/qoa6gk4ii8571.jpg",
+                            "https://i.redd.it/8psapajhi8571.jpg",
+                        )
+                            .random(),
+                    url = "https://store.epicgames.com/en-US/p/a-plague-tale-requiem",
+                    userAgent = preferences.primaryJsoupUserAgent,
+                    linkType = LinkType.SAVED_LINK,
+                    localId = 0L,
+                    note =
+                        "The plague ravages the Kingdom of France. Amicia and her younger brother Hugo are pursued by the Inquisition through villages devastated by the disease.",
+                    idOfLinkedFolder = null,
+                ),
             onMoreIconClick = {},
             onLinkClick = {
                 viewModelScope.launch {
@@ -365,19 +384,19 @@ open class SettingsScreenViewModel(
         ),
         LinkComponentParam(
             link =
-            Link(
-                title = "Shadow of the Tomb Raider",
-                imgURL =
-                "https://images.ctfassets.net/x77ixfmkpoiv/4UnPNfdN8Yq2aZvOhIdBx9/1b641d296ebb37bfa3eca8873c25a321/SOTTR_Product_Image.jpg",
-                url =
-                "https://www.tombraider.com/products/games/shadow-of-the-tomb-raider",
-                userAgent = preferences.primaryJsoupUserAgent,
-                linkType = LinkType.SAVED_LINK,
-                localId = 0L,
-                note =
-                "As Lara Croft races to save the world from a Maya apocalypse, she must become the Tomb Raider she is destined to be.",
-                idOfLinkedFolder = null,
-            ),
+                Link(
+                    title = "Shadow of the Tomb Raider",
+                    imgURL =
+                        "https://images.ctfassets.net/x77ixfmkpoiv/4UnPNfdN8Yq2aZvOhIdBx9/1b641d296ebb37bfa3eca8873c25a321/SOTTR_Product_Image.jpg",
+                    url =
+                        "https://www.tombraider.com/products/games/shadow-of-the-tomb-raider",
+                    userAgent = preferences.primaryJsoupUserAgent,
+                    linkType = LinkType.SAVED_LINK,
+                    localId = 0L,
+                    note =
+                        "As Lara Croft races to save the world from a Maya apocalypse, she must become the Tomb Raider she is destined to be.",
+                    idOfLinkedFolder = null,
+                ),
             onMoreIconClick = {},
             onLinkClick = {
                 viewModelScope.launch {
@@ -397,18 +416,18 @@ open class SettingsScreenViewModel(
         ),
         LinkComponentParam(
             link =
-            Link(
-                title = "Nas | Spotify",
-                host = "open.spotify.com",
-                imgURL =
-                "https://cdn.prod.website-files.com/673de86e5b9b97bfffe3e0e4/67563ebf6f96ce8ad4d79ae4_Nas-Website.png",
-                url = "https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q",
-                userAgent = preferences.primaryJsoupUserAgent,
-                linkType = LinkType.SAVED_LINK,
-                localId = 0L,
-                note = "he's da man",
-                idOfLinkedFolder = null,
-            ),
+                Link(
+                    title = "Nas | Spotify",
+                    host = "open.spotify.com",
+                    imgURL =
+                        "https://cdn.prod.website-files.com/673de86e5b9b97bfffe3e0e4/67563ebf6f96ce8ad4d79ae4_Nas-Website.png",
+                    url = "https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q",
+                    userAgent = preferences.primaryJsoupUserAgent,
+                    linkType = LinkType.SAVED_LINK,
+                    localId = 0L,
+                    note = "he's da man",
+                    idOfLinkedFolder = null,
+                ),
             onForceOpenInExternalBrowserClicked = {},
             isSelectionModeEnabled = mutableStateOf(false),
             isItemSelected = mutableStateOf(false),
@@ -428,19 +447,19 @@ open class SettingsScreenViewModel(
         ),
         LinkComponentParam(
             link =
-            Link(
-                title = "Listen Gentle - YouTube Music",
-                host = "music.youtube.com",
-                imgURL =
-                "https://lh3.googleusercontent.com/hloaKrX1jN1EfSLOUA11tgHZ3faSc5QFHNbMuB9bO-QTAdQRl-1oMZEXNQxOlk-p_sWBlf9Dd-4cal14",
-                url = "https://music.youtube.com/watch?v=Q5jl_fmMd8M",
-                userAgent = preferences.primaryJsoupUserAgent,
-                linkType = LinkType.SAVED_LINK,
-                localId = 0L,
-                note =
-                "listen to this RN!!! If you like this (you will), you'll love the album, also check out McKinley's previous work such as Beautiful Paradise Jazz.",
-                idOfLinkedFolder = null,
-            ),
+                Link(
+                    title = "Listen Gentle - YouTube Music",
+                    host = "music.youtube.com",
+                    imgURL =
+                        "https://lh3.googleusercontent.com/hloaKrX1jN1EfSLOUA11tgHZ3faSc5QFHNbMuB9bO-QTAdQRl-1oMZEXNQxOlk-p_sWBlf9Dd-4cal14",
+                    url = "https://music.youtube.com/watch?v=Q5jl_fmMd8M",
+                    userAgent = preferences.primaryJsoupUserAgent,
+                    linkType = LinkType.SAVED_LINK,
+                    localId = 0L,
+                    note =
+                        "listen to this RN!!! If you like this (you will), you'll love the album, also check out McKinley's previous work such as Beautiful Paradise Jazz.",
+                    idOfLinkedFolder = null,
+                ),
             onForceOpenInExternalBrowserClicked = {},
             isSelectionModeEnabled = mutableStateOf(false),
             isItemSelected = mutableStateOf(false),
@@ -460,17 +479,17 @@ open class SettingsScreenViewModel(
         ),
         LinkComponentParam(
             link =
-            Link(
-                title = "Hacker (small type)",
-                host = "twitter.com",
-                imgURL = "https://pbs.twimg.com/media/GT7RIrWWwAAjZzg.jpg",
-                url = "https://twitter.com/CatWorkers/status/1819121250226127061",
-                userAgent = preferences.primaryJsoupUserAgent,
-                linkType = LinkType.SAVED_LINK,
-                localId = 0L,
-                note = "",
-                idOfLinkedFolder = null,
-            ),
+                Link(
+                    title = "Hacker (small type)",
+                    host = "twitter.com",
+                    imgURL = "https://pbs.twimg.com/media/GT7RIrWWwAAjZzg.jpg",
+                    url = "https://twitter.com/CatWorkers/status/1819121250226127061",
+                    userAgent = preferences.primaryJsoupUserAgent,
+                    linkType = LinkType.SAVED_LINK,
+                    localId = 0L,
+                    note = "",
+                    idOfLinkedFolder = null,
+                ),
             onForceOpenInExternalBrowserClicked = {},
             isSelectionModeEnabled = mutableStateOf(false),
             isItemSelected = mutableStateOf(false),
@@ -490,18 +509,18 @@ open class SettingsScreenViewModel(
         ),
         LinkComponentParam(
             link =
-            Link(
-                title = "Nas - You're da Man (from Made You Look: God's Son Live)",
-                host = "youtube.com",
-                imgURL = "https://i.ytimg.com/vi/3vlqI5TPVjQ/maxresdefault.jpg",
-                url = "https://www.youtube.com/watch?v=3vlqI5TPVjQ",
-                userAgent = preferences.primaryJsoupUserAgent,
-                linkType = LinkType.SAVED_LINK,
-                localId = 0L,
-                note = "",
-                idOfLinkedFolder = null,
-                mediaType = MediaType.VIDEO,
-            ),
+                Link(
+                    title = "Nas - You're da Man (from Made You Look: God's Son Live)",
+                    host = "youtube.com",
+                    imgURL = "https://i.ytimg.com/vi/3vlqI5TPVjQ/maxresdefault.jpg",
+                    url = "https://www.youtube.com/watch?v=3vlqI5TPVjQ",
+                    userAgent = preferences.primaryJsoupUserAgent,
+                    linkType = LinkType.SAVED_LINK,
+                    localId = 0L,
+                    note = "",
+                    idOfLinkedFolder = null,
+                    mediaType = MediaType.VIDEO,
+                ),
             onForceOpenInExternalBrowserClicked = {},
             isSelectionModeEnabled = mutableStateOf(false),
             isItemSelected = mutableStateOf(false),
@@ -519,19 +538,19 @@ open class SettingsScreenViewModel(
         ),
         LinkComponentParam(
             link =
-            Link(
-                title =
-                "Clipse, Nas, Pusha T, Malice - Let God Sort Em Out/Chandeliers - YouTube Music",
-                host = "music.youtube.com",
-                imgURL = "https://i.ytimg.com/vi/qQH24C1Jrx0/maxresdefault.jpg",
-                url = "https://music.youtube.com/watch?v=78YNulckDng",
-                userAgent = preferences.primaryJsoupUserAgent,
-                linkType = LinkType.SAVED_LINK,
-                localId = 0L,
-                note = "",
-                idOfLinkedFolder = null,
-                mediaType = MediaType.IMAGE,
-            ),
+                Link(
+                    title =
+                        "Clipse, Nas, Pusha T, Malice - Let God Sort Em Out/Chandeliers - YouTube Music",
+                    host = "music.youtube.com",
+                    imgURL = "https://i.ytimg.com/vi/qQH24C1Jrx0/maxresdefault.jpg",
+                    url = "https://music.youtube.com/watch?v=78YNulckDng",
+                    userAgent = preferences.primaryJsoupUserAgent,
+                    linkType = LinkType.SAVED_LINK,
+                    localId = 0L,
+                    note = "",
+                    idOfLinkedFolder = null,
+                    mediaType = MediaType.IMAGE,
+                ),
             onForceOpenInExternalBrowserClicked = {},
             isSelectionModeEnabled = mutableStateOf(false),
             isItemSelected = mutableStateOf(false),
@@ -551,18 +570,18 @@ open class SettingsScreenViewModel(
         ),
         LinkComponentParam(
             link =
-            Link(
-                title = "Nas - Rare (Official Video)",
-                host = "youtube.com",
-                imgURL = "https://i.ytimg.com/vi/66OFYWBrg3o/maxresdefault.jpg",
-                url = "https://www.youtube.com/watch?v=66OFYWBrg3o",
-                userAgent = preferences.primaryJsoupUserAgent,
-                linkType = LinkType.SAVED_LINK,
-                localId = 0L,
-                note = "",
-                idOfLinkedFolder = null,
-                mediaType = MediaType.VIDEO,
-            ),
+                Link(
+                    title = "Nas - Rare (Official Video)",
+                    host = "youtube.com",
+                    imgURL = "https://i.ytimg.com/vi/66OFYWBrg3o/maxresdefault.jpg",
+                    url = "https://www.youtube.com/watch?v=66OFYWBrg3o",
+                    userAgent = preferences.primaryJsoupUserAgent,
+                    linkType = LinkType.SAVED_LINK,
+                    localId = 0L,
+                    note = "",
+                    idOfLinkedFolder = null,
+                    mediaType = MediaType.VIDEO,
+                ),
             onForceOpenInExternalBrowserClicked = {},
             isSelectionModeEnabled = mutableStateOf(false),
             isItemSelected = mutableStateOf(false),
@@ -588,7 +607,7 @@ open class SettingsScreenViewModel(
             onClick = {
                 changeSettingPreferenceValue(
                     preferenceKey =
-                    AppPreferences.TITLE_VISIBILITY_FOR_NON_LIST_VIEWS,
+                        AppPreferences.TITLE_VISIBILITY_FOR_NON_LIST_VIEWS,
                     newValue = !preferences.showTitleInLinkGridView,
                 )
             },
@@ -599,7 +618,7 @@ open class SettingsScreenViewModel(
             onClick = {
                 changeSettingPreferenceValue(
                     preferenceKey =
-                    AppPreferences.NOTE_VISIBILITY_IN_LIST_VIEWS,
+                        AppPreferences.NOTE_VISIBILITY_IN_LIST_VIEWS,
                     newValue = !preferences.showNoteInLinkView,
                 )
             },
@@ -610,7 +629,7 @@ open class SettingsScreenViewModel(
             onClick = {
                 changeSettingPreferenceValue(
                     preferenceKey =
-                    AppPreferences.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS,
+                        AppPreferences.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS,
                     newValue = !preferences.showHostInLinkListView,
                 )
             },
@@ -621,7 +640,7 @@ open class SettingsScreenViewModel(
             onClick = {
                 changeSettingPreferenceValue(
                     preferenceKey =
-                    AppPreferences.SHOW_TAGS_IN_LINK_VIEW,
+                        AppPreferences.SHOW_TAGS_IN_LINK_VIEW,
                     newValue = !preferences.showTagsInLinkView,
                 )
             },
@@ -632,7 +651,7 @@ open class SettingsScreenViewModel(
             onClick = {
                 changeSettingPreferenceValue(
                     preferenceKey =
-                    AppPreferences.SHOW_DATE_IN_LINK_VIEW,
+                        AppPreferences.SHOW_DATE_IN_LINK_VIEW,
                     newValue = !preferences.showDateInLinkView,
                 )
             },
@@ -643,7 +662,7 @@ open class SettingsScreenViewModel(
             onClick = {
                 changeSettingPreferenceValue(
                     preferenceKey =
-                    AppPreferences.FADED_EDGE_VISIBILITY_FOR_NON_LIST_VIEWS,
+                        AppPreferences.FADED_EDGE_VISIBILITY_FOR_NON_LIST_VIEWS,
                     newValue = !preferences.enableFadedEdgeForNonListViews,
                 )
             },
@@ -654,7 +673,7 @@ open class SettingsScreenViewModel(
             onClick = {
                 changeSettingPreferenceValue(
                     preferenceKey =
-                    AppPreferences.SHOW_MENU_ON_GRID_LINK_CLICK,
+                        AppPreferences.SHOW_MENU_ON_GRID_LINK_CLICK,
                     newValue = !preferences.showMenuOnGridLinkClick,
                 )
             },

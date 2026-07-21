@@ -27,6 +27,7 @@ import androidx.compose.material.icons.outlined.FolderDelete
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material.icons.outlined.Unarchive
+import androidx.compose.material.icons.outlined.Web
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -80,32 +81,25 @@ fun MenuBtmSheet(
         menuBtmSheetParam.showProgressBarDuringRemoteSave.value,
         menuBtmSheetParam.btmModalSheetState.isVisible,
     ) {
-        if (
-            menuBtmSheetParam.showProgressBarDuringRemoteSave.value &&
-            !menuBtmSheetParam.btmModalSheetState.isVisible
-        ) {
+        if (menuBtmSheetParam.showProgressBarDuringRemoteSave.value && !menuBtmSheetParam.btmModalSheetState.isVisible) {
             menuBtmSheetParam.btmModalSheetState.expand()
         }
     }
-    val showNote =
-        rememberSaveable(menuBtmSheetParam.showNote.value) {
-            mutableStateOf(menuBtmSheetParam.showNote.value)
-        }
+    val showNote = rememberSaveable(menuBtmSheetParam.showNote.value) {
+        mutableStateOf(menuBtmSheetParam.showNote.value)
+    }
     val localClipboard = LocalClipboardManager.current
-    val currentFolder =
-        remember(menuBtmSheetParam.folder) {
-            menuBtmSheetParam.folder
-        }
+    val currentFolder = remember(menuBtmSheetParam.folder) {
+        menuBtmSheetParam.folder
+    }
     val hideContent: () -> Unit = {
-        coroutineScope
-            .launch {
-                if (menuBtmSheetParam.btmModalSheetState.isVisible) {
-                    menuBtmSheetParam.btmModalSheetState.hide()
-                }
+        coroutineScope.launch {
+            if (menuBtmSheetParam.btmModalSheetState.isVisible) {
+                menuBtmSheetParam.btmModalSheetState.hide()
             }
-            .invokeOnCompletion {
-                menuBtmSheetParam.onDismiss()
-            }
+        }.invokeOnCompletion {
+            menuBtmSheetParam.onDismiss()
+        }
     }
     val onAndroidMobile = Platform.Android.onMobile()
     val quickActions: ComposableContent = {
@@ -115,15 +109,13 @@ fun MenuBtmSheet(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             QuickActionItem(
-                shape =
-                RoundedCornerShape(
+                shape = RoundedCornerShape(
                     topStart = 20.dp,
                     topEnd = 8.dp,
                     bottomStart = 20.dp,
                     bottomEnd = 8.dp,
                 ),
-                modifier =
-                Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f)
+                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f)
                     .pressScaleEffect(),
                 onClick = {
                     menuBtmSheetParam.onForceLaunchInAnExternalBrowser()
@@ -132,17 +124,15 @@ fun MenuBtmSheet(
                 text = Localization.Key.Open.rememberLocalizedString(),
                 icon = Icons.Default.OpenInNew,
             )
-            val lastItemShape =
-                RoundedCornerShape(
-                    topStart = 8.dp,
-                    topEnd = 20.dp,
-                    bottomStart = 8.dp,
-                    bottomEnd = 20.dp,
-                )
+            val lastItemShape = RoundedCornerShape(
+                topStart = 8.dp,
+                topEnd = 20.dp,
+                bottomStart = 8.dp,
+                bottomEnd = 20.dp,
+            )
             QuickActionItem(
                 shape = if (onAndroidMobile) RoundedCornerShape(8.dp) else lastItemShape,
-                modifier =
-                Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f)
+                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f)
                     .pressScaleEffect(),
                 onClick = {
                     localClipboard.setText(
@@ -157,8 +147,7 @@ fun MenuBtmSheet(
             if (onAndroidMobile) {
                 QuickActionItem(
                     shape = lastItemShape,
-                    modifier =
-                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f)
+                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f)
                         .pressScaleEffect(),
                     onClick = {
                         menuBtmSheetParam.onShare(menuBtmSheetParam.linkTagsPair!!.link.url)
@@ -188,18 +177,16 @@ fun MenuBtmSheet(
             if (onAndroidMobile) {
                 IndividualMenuComponent(
                     onClick = {
-                        coroutineScope
-                            .launch {
-                                if (menuBtmSheetParam.btmModalSheetState.isVisible) {
-                                    menuBtmSheetParam.btmModalSheetState.hide()
-                                }
+                        coroutineScope.launch {
+                            if (menuBtmSheetParam.btmModalSheetState.isVisible) {
+                                menuBtmSheetParam.btmModalSheetState.hide()
                             }
-                            .invokeOnCompletion {
-                                showNote.value = true
-                                coroutineScope.launch {
-                                    menuBtmSheetParam.btmModalSheetState.show()
-                                }
+                        }.invokeOnCompletion {
+                            showNote.value = true
+                            coroutineScope.launch {
+                                menuBtmSheetParam.btmModalSheetState.show()
                             }
+                        }
                     },
                     elementName = Localization.Key.ViewNote.rememberLocalizedString(),
                     elementImageVector = Icons.AutoMirrored.Outlined.TextSnippet,
@@ -213,20 +200,27 @@ fun MenuBtmSheet(
                 elementName = Localization.Key.Edit.rememberLocalizedString(),
                 elementImageVector = Icons.Outlined.Edit,
             )
+            if (menuBtmSheetParam.linkTagsPair?.link != null && (preferences.alwaysShowOpenWebCaptureFolderInMenu || preferences.useWebCaptures)) {
+                IndividualMenuComponent(
+                    onClick = {
+                        hideContent()
+                        menuBtmSheetParam.onOpenWebCaptureFolder(
+                            menuBtmSheetParam.linkTagsPair.link.url
+                        )
+                    },
+                    elementName = "Open Captured Folder",
+                    elementImageVector = Icons.Outlined.Web,
+                )
+            }
             if (menuBtmSheetLinkEntries().contains(menuBtmSheetParam.menuBtmSheetFor)) {
                 Row(
-                    modifier =
-                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .combinedClickable(
-                            interactionSource = null,
-                            indication = null,
-                            onClick = {
-                                showRefreshOptions = !showRefreshOptions
-                            },
-                        )
-                        .pressScaleEffect()
-                        .padding(end = 10.dp)
-                        .wrapContentHeight()
+                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).combinedClickable(
+                        interactionSource = null,
+                        indication = null,
+                        onClick = {
+                            showRefreshOptions = !showRefreshOptions
+                        },
+                    ).pressScaleEffect().padding(end = 10.dp).wrapContentHeight()
                         .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -292,23 +286,20 @@ fun MenuBtmSheet(
                         menuBtmSheetParam.onAddToImportantLinks?.let { it() }
                         hideContent()
                     },
-                    elementName =
-                    if (!markedAsImportant) {
+                    elementName = if (!markedAsImportant) {
                         Localization.Key.MarkALinkAsImpLink.getLocalizedString()
                     } else {
                         Localization.Key.RemoveALinkFromImpLink.getLocalizedString()
                     },
-                    elementImageVector =
-                    if (markedAsImportant) Icons.Outlined.DeleteForever else Icons.Outlined.StarOutline,
+                    elementImageVector = if (markedAsImportant) Icons.Outlined.DeleteForever else Icons.Outlined.StarOutline,
                 )
             }
 
-            val isArchived =
-                if (menuBtmSheetParam.menuBtmSheetFor is MenuBtmSheetType.Folder) {
-                    currentFolder!!.isArchived
-                } else {
-                    menuBtmSheetParam.linkTagsPair!!.link.linkType == LinkType.ARCHIVE_LINK
-                }
+            val isArchived = if (menuBtmSheetParam.menuBtmSheetFor is MenuBtmSheetType.Folder) {
+                currentFolder!!.isArchived
+            } else {
+                menuBtmSheetParam.linkTagsPair!!.link.linkType == LinkType.ARCHIVE_LINK
+            }
             val inChildFolder = currentFolder != null && currentFolder.parentFolderId != null
 
             if (!inChildFolder) {
@@ -317,26 +308,18 @@ fun MenuBtmSheet(
                         menuBtmSheetParam.onArchive()
                         hideContent()
                     },
-                    elementName =
-                    if (isArchived) {
+                    elementName = if (isArchived) {
                         Localization.Key.UnArchive.getLocalizedString()
                     } else {
                         Localization.Key.Archive.getLocalizedString()
                     },
-                    elementImageVector =
-                    if (isArchived) Icons.Outlined.Unarchive else Icons.Outlined.Archive,
+                    elementImageVector = if (isArchived) Icons.Outlined.Unarchive else Icons.Outlined.Archive,
                 )
             }
 
-            if (
-                (
-                    menuBtmSheetLinkEntries().contains(menuBtmSheetParam.menuBtmSheetFor) &&
-                        menuBtmSheetParam.linkTagsPair!!.link.note.isNotBlank()
-                    ) ||
-                (
-                    menuBtmSheetFolderEntries().contains(menuBtmSheetParam.menuBtmSheetFor) &&
-                        currentFolder!!.note.isNotBlank()
-                    )
+            if ((menuBtmSheetLinkEntries().contains(menuBtmSheetParam.menuBtmSheetFor) && menuBtmSheetParam.linkTagsPair!!.link.note.isNotBlank()) || (menuBtmSheetFolderEntries().contains(
+                    menuBtmSheetParam.menuBtmSheetFor
+                ) && currentFolder!!.note.isNotBlank())
             ) {
                 IndividualMenuComponent(
                     onClick = {
@@ -351,41 +334,30 @@ fun MenuBtmSheet(
                 IndividualMenuComponent(
                     onClick = {
                         menuBtmSheetParam.onDelete()
-                        coroutineScope
-                            .launch {
-                                if (menuBtmSheetParam.btmModalSheetState.isVisible) {
-                                    menuBtmSheetParam.btmModalSheetState.hide()
-                                }
+                        coroutineScope.launch {
+                            if (menuBtmSheetParam.btmModalSheetState.isVisible) {
+                                menuBtmSheetParam.btmModalSheetState.hide()
                             }
-                            .invokeOnCompletion {
-                                menuBtmSheetParam.onDismiss()
-                            }
+                        }.invokeOnCompletion {
+                            menuBtmSheetParam.onDismiss()
+                        }
                     },
-                    elementName =
-                    if (menuBtmSheetParam.menuBtmSheetFor == MenuBtmSheetType.Folder.RegularFolder) {
+                    elementName = if (menuBtmSheetParam.menuBtmSheetFor == MenuBtmSheetType.Folder.RegularFolder) {
                         Localization.Key.DeleteTheFolder.rememberLocalizedString()
                     } else {
                         Localization.Key.DeleteTheLink.rememberLocalizedString()
                     },
-                    elementImageVector =
-                    if (menuBtmSheetParam.menuBtmSheetFor == MenuBtmSheetType.Folder.RegularFolder) {
+                    elementImageVector = if (menuBtmSheetParam.menuBtmSheetFor == MenuBtmSheetType.Folder.RegularFolder) {
                         Icons.Outlined.FolderDelete
                     } else {
                         Icons.Outlined.DeleteForever
                     },
                 )
             }
-            if (
-                (
-                    onAndroidMobile &&
-                        preferences.selectedLinkLayout in
-                        listOf(
-                            Layout.STAGGERED_VIEW.name,
-                            Layout.GRID_VIEW.name,
-                        ) &&
-                        menuBtmSheetParam.menuBtmSheetFor in menuBtmSheetLinkEntries()
-                    ) ||
-                (!onAndroidMobile && menuBtmSheetParam.menuBtmSheetFor in menuBtmSheetLinkEntries())
+            if ((onAndroidMobile && preferences.selectedLinkLayout in listOf(
+                    Layout.STAGGERED_VIEW.name,
+                    Layout.GRID_VIEW.name,
+                ) && menuBtmSheetParam.menuBtmSheetFor in menuBtmSheetLinkEntries()) || (!onAndroidMobile && menuBtmSheetParam.menuBtmSheetFor in menuBtmSheetLinkEntries())
             ) {
                 quickActions()
             }
@@ -395,10 +367,8 @@ fun MenuBtmSheet(
         }
     }
     ModalBottomSheet(
-        properties =
-        ModalBottomSheetProperties(
-            shouldDismissOnBackPress =
-            menuBtmSheetParam.showProgressBarDuringRemoteSave.value.not(),
+        properties = ModalBottomSheetProperties(
+            shouldDismissOnBackPress = menuBtmSheetParam.showProgressBarDuringRemoteSave.value.not(),
         ),
         onDismissRequest = {
             if (menuBtmSheetParam.showProgressBarDuringRemoteSave.value) return@ModalBottomSheet
@@ -410,8 +380,7 @@ fun MenuBtmSheet(
             }
         },
         sheetState = menuBtmSheetParam.btmModalSheetState,
-        shape =
-        if (menuBtmSheetParam.showProgressBarDuringRemoteSave.value && onAndroidMobile) {
+        shape = if (menuBtmSheetParam.showProgressBarDuringRemoteSave.value && onAndroidMobile) {
             RectangleShape
         } else {
             BottomSheetDefaults.ExpandedShape
@@ -423,8 +392,7 @@ fun MenuBtmSheet(
             ) {
                 Spacer(modifier = Modifier.height(15.dp))
                 Text(
-                    text =
-                    Localization.rememberLocalizedString(
+                    text = Localization.rememberLocalizedString(
                         Localization.Key.UpdatingChangesOnRemoteServer,
                     ),
                     style = MaterialTheme.typography.titleLarge,

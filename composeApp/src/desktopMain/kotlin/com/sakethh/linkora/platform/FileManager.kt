@@ -28,8 +28,11 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import java.awt.Desktop
 import java.awt.FileDialog
 import java.awt.Frame
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.nio.file.Files
@@ -195,7 +198,8 @@ actual class FileManager {
     }
 
     actual suspend fun importFromJSONObj(): Flow<Result<JSONExportSchema>> = flow {
-        val importFile = getFile(FileType.JSON) ?: return@flow emit(Result.Failure("Importing Failed."))
+        val importFile =
+            getFile(FileType.JSON) ?: return@flow emit(Result.Failure("Importing Failed."))
 
         getJsonObj(importFile, importFile.name)
     }
@@ -217,11 +221,11 @@ actual class FileManager {
             emit(
                 Result.Loading(
                     message =
-                    if (!basedOnNewExportSchema) {
-                        "This JSON file is based on the legacy export schema."
-                    } else {
-                        "This JSON file is based on schema version."
-                    },
+                        if (!basedOnNewExportSchema) {
+                            "This JSON file is based on the legacy export schema."
+                        } else {
+                            "This JSON file is based on schema version."
+                        },
                 ),
             )
 
@@ -238,44 +242,50 @@ actual class FileManager {
                         JSONExportSchema(
                             schemaVersion = schemaVersion,
                             links =
-                            links.map {
-                                it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
-                            },
+                                links.map {
+                                    it.copy(
+                                        remoteId = null,
+                                        lastModified = currentSystemEpochSeconds
+                                    )
+                                },
                             folders =
-                            folders.map {
-                                it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
-                            },
+                                folders.map {
+                                    it.copy(
+                                        remoteId = null,
+                                        lastModified = currentSystemEpochSeconds
+                                    )
+                                },
                             panels =
-                            PanelForJSONExportSchema(
-                                panels =
-                                panels.panels.map {
-                                    it.copy(
-                                        remoteId = null,
-                                        lastModified = currentSystemEpochSeconds,
-                                    )
-                                },
-                                panelFolders =
-                                panels.panelFolders.map {
-                                    it.copy(
-                                        remoteId = null,
-                                        lastModified = currentSystemEpochSeconds,
-                                    )
-                                },
-                            ),
+                                PanelForJSONExportSchema(
+                                    panels =
+                                        panels.panels.map {
+                                            it.copy(
+                                                remoteId = null,
+                                                lastModified = currentSystemEpochSeconds,
+                                            )
+                                        },
+                                    panelFolders =
+                                        panels.panelFolders.map {
+                                            it.copy(
+                                                remoteId = null,
+                                                lastModified = currentSystemEpochSeconds,
+                                            )
+                                        },
+                                ),
                             tags =
-                            tags.map {
-                                it.copy(
-                                    remoteId = null,
-                                    lastModified = currentSystemEpochSeconds,
-                                )
-                            },
+                                tags.map {
+                                    it.copy(
+                                        remoteId = null,
+                                        lastModified = currentSystemEpochSeconds,
+                                    )
+                                },
                             linkTags =
-                            linkTags.map {
-                                it.copy(
-                                    remoteId = null,
-                                    lastModified = currentSystemEpochSeconds,
-                                )
-                            },
+                                linkTags.map {
+                                    it.copy(
+                                        remoteId = null,
+                                        lastModified = currentSystemEpochSeconds,
+                                    )
+                                },
                         )
                     }
                 }
@@ -302,15 +312,16 @@ actual class FileManager {
         }
     }
 
-    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> = flow {
-        val importFile =
-            getFile(fileType = FileType.JSON, fileLocation = fileLocation)
-                ?: return@flow emit(
-                    Result.Failure("Importing Failed."),
-                )
+    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> =
+        flow {
+            val importFile =
+                getFile(fileType = FileType.JSON, fileLocation = fileLocation)
+                    ?: return@flow emit(
+                        Result.Failure("Importing Failed."),
+                    )
 
-        getJsonObj(importFile, importFile.name)
-    }
+            getJsonObj(importFile, importFile.name)
+        }
 
     actual suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>> = flow {
         val file =
@@ -360,6 +371,44 @@ actual class FileManager {
             null
         } finally {
             onCompletion(certInfo)
+        }
+    }
+
+    actual suspend fun openWebCaptureFolder(link: String) {
+        val captureFolderUUID =
+            DependencyContainer.webCaptureRepo.getFolderNameByLink(link)
+                ?: return UIEvent.pushUIEvent(
+                    UIEvent.Type.ShowSnackbar("No saved webpage found for this link.")
+                )
+
+        val rootFolderPath =
+            DependencyContainer.preferencesRepo.getPreferences().webCapturesLocation
+        val captureFolder = File(rootFolderPath, captureFolderUUID)
+
+        if (!captureFolder.exists() || !captureFolder.isDirectory) {
+            return UIEvent.pushUIEvent(
+                UIEvent.Type.ShowSnackbar("No saved webpage found for this link.")
+            )
+        }
+
+        try {
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop()
+                    .isSupported(Desktop.Action.OPEN)
+            ) {
+                withContext(Dispatchers.IO) {
+                    Desktop.getDesktop().open(captureFolder)
+                }
+            } else {
+                throw UnsupportedOperationException("OS does not support opening folders.")
+            }
+        } catch (_: Exception) {
+            val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+            val selection = StringSelection(captureFolderUUID)
+            clipboard.setContents(selection, selection)
+
+            UIEvent.pushUIEvent(
+                UIEvent.Type.ShowSnackbar("Couldn't open the folder. The folder name has been copied to your clipboard.")
+            )
         }
     }
 }

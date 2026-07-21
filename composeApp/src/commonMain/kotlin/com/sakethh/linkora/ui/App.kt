@@ -189,7 +189,7 @@ fun App(modifier: Modifier = Modifier) {
     Row(modifier = Modifier.fillMaxSize().then(modifier)) {
         AnimatedVisibility(
             visible =
-            (appVM.onBoardingCompleted.value || platform == Platform.Web) && supportsWideDisplay(),
+                (appVM.onBoardingCompleted.value || platform == Platform.Web) && supportsWideDisplay(),
             exit = slideOutHorizontally(targetOffsetX = { -it }),
             enter = slideInHorizontally(initialOffsetX = { -it }),
         ) {
@@ -253,10 +253,10 @@ fun App(modifier: Modifier = Modifier) {
                     enter = fadeIn(),
                     exit = fadeOut(),
                     visible =
-                    currentRoute?.hasRoute<Navigation.Root.SettingsScreen>() == false &&
-                        !currentRoute.hasRoute<Navigation.Home.PanelsManagerScreen>() &&
-                        currentFABContext.fabContext != FABContext.HIDE &&
-                        !CollectionsScreenVM.isSelectionEnabled.value,
+                        currentRoute?.hasRoute<Navigation.Root.SettingsScreen>() == false &&
+                                !currentRoute.hasRoute<Navigation.Home.PanelsManagerScreen>() &&
+                                currentFABContext.fabContext != FABContext.HIDE &&
+                                !CollectionsScreenVM.isSelectionEnabled.value,
                 ) {
                     AnimatedContent(
                         targetState = currentFABContext.fabContext,
@@ -321,16 +321,16 @@ fun App(modifier: Modifier = Modifier) {
                 SnackbarHost(appVM.snackbarHostState) { snackbarData ->
                     Box(
                         modifier =
-                        Modifier.fillMaxWidth()
-                            .padding(7.5.dp)
-                            .clip(RoundedCornerShape(15.dp))
-                            .background(MaterialTheme.colorScheme.secondary)
-                            .border(
-                                width = 1.5.dp,
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = RoundedCornerShape(15.dp),
-                            )
-                            .padding(15.dp),
+                            Modifier.fillMaxWidth()
+                                .padding(7.5.dp)
+                                .clip(RoundedCornerShape(15.dp))
+                                .background(MaterialTheme.colorScheme.secondary)
+                                .border(
+                                    width = 1.5.dp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = RoundedCornerShape(15.dp),
+                                )
+                                .padding(15.dp),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
@@ -354,40 +354,40 @@ fun App(modifier: Modifier = Modifier) {
         ) {
             Box(
                 modifier =
-                if (preferences.isServerConfigured()) {
-                    Modifier.pullToRefresh(
-                        isRefreshing = isDataSyncingFromPullRefresh.value,
-                        state = pullToRefreshState,
-                        enabled =
-                        rememberSaveable(preferences.serverBaseUrl) {
-                            preferences.serverBaseUrl.isNotBlank() && onAndroidMobile
-                        },
-                        onRefresh = {
-                            if (appVM.isPerformingStartupSync || isDataSyncingFromPullRefresh.value) {
-                                coroutineScope.pushUIEvent(
-                                    UIEvent.Type.ShowSnackbar(
-                                        Localization.Key.SyncInProgress.getLocalizedString(),
-                                    ),
+                    if (preferences.isServerConfigured()) {
+                        Modifier.pullToRefresh(
+                            isRefreshing = isDataSyncingFromPullRefresh.value,
+                            state = pullToRefreshState,
+                            enabled =
+                                rememberSaveable(preferences.serverBaseUrl) {
+                                    preferences.serverBaseUrl.isNotBlank() && onAndroidMobile
+                                },
+                            onRefresh = {
+                                if (appVM.isPerformingStartupSync || isDataSyncingFromPullRefresh.value) {
+                                    coroutineScope.pushUIEvent(
+                                        UIEvent.Type.ShowSnackbar(
+                                            Localization.Key.SyncInProgress.getLocalizedString(),
+                                        ),
+                                    )
+                                    return@pullToRefresh
+                                }
+                                appVM.saveServerConnectionAndSync(
+                                    serverConnection = preferences.currentSavedServerConfig(),
+                                    timeStampAfter = {
+                                        appVM.getLastSyncedTime()
+                                    },
+                                    onSyncStart = {
+                                        isDataSyncingFromPullRefresh.value = true
+                                    },
+                                    onCompletion = {
+                                        isDataSyncingFromPullRefresh.value = false
+                                    },
                                 )
-                                return@pullToRefresh
-                            }
-                            appVM.saveServerConnectionAndSync(
-                                serverConnection = preferences.currentSavedServerConfig(),
-                                timeStampAfter = {
-                                    appVM.getLastSyncedTime()
-                                },
-                                onSyncStart = {
-                                    isDataSyncingFromPullRefresh.value = true
-                                },
-                                onCompletion = {
-                                    isDataSyncingFromPullRefresh.value = false
-                                },
-                            )
-                        },
-                    )
-                } else {
-                    Modifier
-                },
+                            },
+                        )
+                    } else {
+                        Modifier
+                    },
             ) {
                 LinkoraNavHost(
                     startDestination = appVM.startDestination,
@@ -398,20 +398,20 @@ fun App(modifier: Modifier = Modifier) {
                     },
                     preferences = preferences,
                     collectionScreenParams =
-                    CollectionScreenParams(
-                        collectionPagerState = collectionsScreenVM.collectionPagerState,
-                        rootRegularFolders = collectionsScreenVM.rootRegularFolders,
-                        allTags = collectionsScreenVM.allTags,
-                        currentCollectionSource = collectionsScreenVM.currentCollectionSource,
-                        performAction = collectionsScreenVM::performAction,
-                        onRetrieveNextRegularRootFolderPage =
-                        collectionsScreenVM::retrieveNextBatchOfRegularRootFolders,
-                        onRegularRootFolderFirstVisibleItemIndexChange =
-                        collectionsScreenVM::updateStartingIndexForRegularRootFoldersPaginator,
-                        onRetrieveNextTagsPage = collectionsScreenVM::retrieveNextBatchOfTags,
-                        onTagsFirstVisibleItemIndexChange =
-                        collectionsScreenVM::updateStartingIndexForTagsPaginator,
-                    ),
+                        CollectionScreenParams(
+                            collectionPagerState = collectionsScreenVM.collectionPagerState,
+                            rootRegularFolders = collectionsScreenVM.rootRegularFolders,
+                            allTags = collectionsScreenVM.allTags,
+                            currentCollectionSource = collectionsScreenVM.currentCollectionSource,
+                            performAction = collectionsScreenVM::performAction,
+                            onRetrieveNextRegularRootFolderPage =
+                                collectionsScreenVM::retrieveNextBatchOfRegularRootFolders,
+                            onRegularRootFolderFirstVisibleItemIndexChange =
+                                collectionsScreenVM::updateStartingIndexForRegularRootFoldersPaginator,
+                            onRetrieveNextTagsPage = collectionsScreenVM::retrieveNextBatchOfTags,
+                            onTagsFirstVisibleItemIndexChange =
+                                collectionsScreenVM::updateStartingIndexForTagsPaginator,
+                        ),
                 )
                 if (preferences.isServerConfigured()) {
                     Indicator(
@@ -428,38 +428,38 @@ fun App(modifier: Modifier = Modifier) {
             ) {
                 Box(
                     modifier =
-                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background.copy(0.95f))
-                        .clickable {
-                            AppVM.isMainFabRotated.value = false
-                        },
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background.copy(0.95f))
+                            .clickable {
+                                AppVM.isMainFabRotated.value = false
+                            },
                 )
             }
             if (appVM.showAddLinkDialog) {
                 AddANewLinkDialogBox(
                     preferences = preferences,
                     addNewLinkDialogParams =
-                    AddNewLinkDialogParams(
-                        onDismiss = {
-                            appVM.showAddLinkDialog = false
-                        },
-                        currentFolder =
-                        if (
-                            (inRootScreen == true && currentFABContext.currentFolder == null) ||
-                            currentFABContext.currentFolder?.localId == Constants.ALL_LINKS_ID
-                        ) {
-                            null
-                        } else {
-                            currentFABContext.currentFolder
-                        },
-                        allTags = collectionsScreenVM.allTags,
-                        selectedTags = collectionsScreenVM.selectedTags,
-                        foldersSearchQuery = collectionsScreenVM.foldersSearchQuery,
-                        foldersSearchQueryResult = collectionsScreenVM.foldersSearchQueryResult,
-                        rootRegularFolders = collectionsScreenVM.rootRegularFolders,
-                        performAction = collectionsScreenVM::performAction,
-                    ),
+                        AddNewLinkDialogParams(
+                            onDismiss = {
+                                appVM.showAddLinkDialog = false
+                            },
+                            currentFolder =
+                                if (
+                                    (inRootScreen == true && currentFABContext.currentFolder == null) ||
+                                    currentFABContext.currentFolder?.localId == Constants.ALL_LINKS_ID
+                                ) {
+                                    null
+                                } else {
+                                    currentFABContext.currentFolder
+                                },
+                            allTags = collectionsScreenVM.allTags,
+                            selectedTags = collectionsScreenVM.selectedTags,
+                            foldersSearchQuery = collectionsScreenVM.foldersSearchQuery,
+                            foldersSearchQueryResult = collectionsScreenVM.foldersSearchQueryResult,
+                            rootRegularFolders = collectionsScreenVM.rootRegularFolders,
+                            performAction = collectionsScreenVM::performAction,
+                        ),
                 )
             }
 
@@ -474,22 +474,22 @@ fun App(modifier: Modifier = Modifier) {
                             if (menuBtmSheetFolderEntries().contains(appVM.menuBtmSheetFor)) {
                                 collectionsScreenVM.insertANewFolder(
                                     folder =
-                                    Folder(
-                                        name = folderName,
-                                        note = folderNote,
-                                        parentFolderId =
-                                        currentFABContext.currentFolder?.run {
-                                            if (this.localId > 0) this.localId else null
-                                        },
-                                    ),
+                                        Folder(
+                                            name = folderName,
+                                            note = folderNote,
+                                            parentFolderId =
+                                                currentFABContext.currentFolder?.run {
+                                                    if (this.localId > 0) this.localId else null
+                                                },
+                                        ),
                                     onCompletion = onCompletion,
                                 )
                             }
                         },
                         currentFolder =
-                        currentFABContext.currentFolder?.run {
-                            if (this.localId > 0) this else null
-                        },
+                            currentFABContext.currentFolder?.run {
+                                if (this.localId > 0) this else null
+                            },
                     ),
                 )
             }
@@ -510,180 +510,183 @@ fun App(modifier: Modifier = Modifier) {
                 MenuBtmSheet(
                     preferences = preferences,
                     menuBtmSheetParam =
-                    MenuBtmSheetParam(
-                        onDismiss = {
-                            appVM.showMenuSheet = false
-                        },
-                        btmModalSheetState = appVM.menuBtmSheetState,
-                        menuBtmSheetFor = appVM.menuBtmSheetFor,
-                        onDelete = {
-                            appVM.showDeleteDialogBox = true
-                        },
-                        onRename = {
-                            appVM.showRenameDialogBox = true
-                        },
-                        onArchive = {
-                            preferences.ifServerConfigured {
-                                showProgressBarDuringRemoteSave.value = true
-                            }
-                            if (menuBtmSheetFolderEntries().contains(appVM.menuBtmSheetFor)) {
-                                collectionsScreenVM.archiveAFolder(
-                                    appVM.selectedFolderForMenuBtmSheet,
+                        MenuBtmSheetParam(
+                            onDismiss = {
+                                appVM.showMenuSheet = false
+                            },
+                            btmModalSheetState = appVM.menuBtmSheetState,
+                            menuBtmSheetFor = appVM.menuBtmSheetFor,
+                            onDelete = {
+                                appVM.showDeleteDialogBox = true
+                            },
+                            onRename = {
+                                appVM.showRenameDialogBox = true
+                            },
+                            onArchive = {
+                                preferences.ifServerConfigured {
+                                    showProgressBarDuringRemoteSave.value = true
+                                }
+                                if (menuBtmSheetFolderEntries().contains(appVM.menuBtmSheetFor)) {
+                                    collectionsScreenVM.archiveAFolder(
+                                        appVM.selectedFolderForMenuBtmSheet,
+                                        onCompletion = {
+                                            showProgressBarDuringRemoteSave.value = false
+                                            hideMenuSheet()
+                                        },
+                                    )
+                                } else {
+                                    collectionsScreenVM.archiveALink(
+                                        appVM.selectedLinkTagsForMenuBtmSheet.link,
+                                        onCompletion = {
+                                            showProgressBarDuringRemoteSave.value = false
+                                            hideMenuSheet()
+                                        },
+                                    )
+                                }
+                            },
+                            onDeleteNote = {
+                                preferences.ifServerConfigured {
+                                    showProgressBarDuringRemoteSave.value = true
+                                }
+                                if (menuBtmSheetFolderEntries().contains(appVM.menuBtmSheetFor)) {
+                                    collectionsScreenVM.deleteTheNote(
+                                        appVM.selectedFolderForMenuBtmSheet,
+                                        onCompletion = {
+                                            showProgressBarDuringRemoteSave.value = false
+                                            hideMenuSheet()
+                                        },
+                                    )
+                                } else {
+                                    collectionsScreenVM.deleteTheNote(
+                                        appVM.selectedLinkTagsForMenuBtmSheet.link,
+                                        onCompletion = {
+                                            showProgressBarDuringRemoteSave.value = false
+                                            hideMenuSheet()
+                                        },
+                                    )
+                                }
+                            },
+                            onForceLaunchInAnExternalBrowser = {
+                                collectionsScreenVM.addANewLink(
+                                    link =
+                                        appVM.selectedLinkTagsForMenuBtmSheet.link.copy(
+                                            linkType = LinkType.HISTORY_LINK,
+                                            localId = 0,
+                                        ),
+                                    linkSaveConfig =
+                                        LinkSaveConfig(
+                                            forceAutoDetectTitle = false,
+                                            forceSaveWithoutRetrievingData = true,
+                                            useProxy = preferences.useProxy,
+                                            skipSavingIfExists = preferences.skipSavingExistingLink,
+                                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
+                                        ),
+                                    onCompletion = {},
+                                    pushSnackbarOnSuccess = false,
+                                    selectedTags = appVM.selectedLinkTagsForMenuBtmSheet.tags,
+                                )
+                                coroutineScope.launch {
+                                    localUriHandler.openUriOrNotify(
+                                        appVM.selectedLinkTagsForMenuBtmSheet.link.url,
+                                    )
+                                }
+                            },
+                            onShare = {
+                                LinkoraSDK.getInstance().nativeUtils.onShare(it)
+                            },
+                            showQuickActions = rememberSaveable { mutableStateOf(false) },
+                            shouldTransferringOptionShouldBeVisible = true,
+                            linkTagsPair = appVM.selectedLinkTagsForMenuBtmSheet,
+                            folder = appVM.selectedFolderForMenuBtmSheet,
+                            onAddToImportantLinks = {
+                                preferences.ifServerConfigured {
+                                    showProgressBarDuringRemoteSave.value = true
+                                }
+                                collectionsScreenVM.markALinkAsImp(
+                                    appVM.selectedLinkTagsForMenuBtmSheet.link,
                                     onCompletion = {
                                         showProgressBarDuringRemoteSave.value = false
                                         hideMenuSheet()
                                     },
+                                    tagIds = appVM.selectedLinkTagsForMenuBtmSheet.tags.map { it.localId },
                                 )
-                            } else {
-                                collectionsScreenVM.archiveALink(
+                            },
+                            shouldShowArchiveOption = {
+                                appVM.selectedLinkTagsForMenuBtmSheet.link.linkType == LinkType.ARCHIVE_LINK
+                            },
+                            showProgressBarDuringRemoteSave = showProgressBarDuringRemoteSave,
+                            onTagClick = {
+                                val collectionDetailPaneInfo =
+                                    CollectionDetailPaneInfo(
+                                        currentFolder = null,
+                                        currentTag = it,
+                                        collectionType = CollectionType.TAG,
+                                    )
+                                localNavController.navigate(
+                                    Navigation.Collection.CollectionDetailScreen(
+                                        Json.encodeToString(collectionDetailPaneInfo),
+                                    ),
+                                )
+                                hideMenuSheet()
+                            },
+                            onOpenWebCaptureFolder = { link ->
+                                appVM.openWebCaptureFolder(link)
+                            },
+                            onRefresh = { refreshLinkType ->
+                                preferences.ifServerConfigured {
+                                    showProgressBarDuringRemoteSave.value = true
+                                }
+                                collectionsScreenVM.refreshLinkMetadata(
+                                    refreshLinkType = refreshLinkType,
                                     appVM.selectedLinkTagsForMenuBtmSheet.link,
                                     onCompletion = {
                                         showProgressBarDuringRemoteSave.value = false
                                         hideMenuSheet()
                                     },
                                 )
-                            }
-                        },
-                        onDeleteNote = {
-                            preferences.ifServerConfigured {
-                                showProgressBarDuringRemoteSave.value = true
-                            }
-                            if (menuBtmSheetFolderEntries().contains(appVM.menuBtmSheetFor)) {
-                                collectionsScreenVM.deleteTheNote(
-                                    appVM.selectedFolderForMenuBtmSheet,
-                                    onCompletion = {
-                                        showProgressBarDuringRemoteSave.value = false
-                                        hideMenuSheet()
-                                    },
-                                )
-                            } else {
-                                collectionsScreenVM.deleteTheNote(
-                                    appVM.selectedLinkTagsForMenuBtmSheet.link,
-                                    onCompletion = {
-                                        showProgressBarDuringRemoteSave.value = false
-                                        hideMenuSheet()
-                                    },
-                                )
-                            }
-                        },
-                        onForceLaunchInAnExternalBrowser = {
-                            collectionsScreenVM.addANewLink(
-                                link =
-                                appVM.selectedLinkTagsForMenuBtmSheet.link.copy(
-                                    linkType = LinkType.HISTORY_LINK,
-                                    localId = 0,
-                                ),
-                                linkSaveConfig =
-                                LinkSaveConfig(
-                                    forceAutoDetectTitle = false,
-                                    forceSaveWithoutRetrievingData = true,
-                                    useProxy = preferences.useProxy,
-                                    skipSavingIfExists = preferences.skipSavingExistingLink,
-                                    forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
-                                ),
-                                onCompletion = {},
-                                pushSnackbarOnSuccess = false,
-                                selectedTags = appVM.selectedLinkTagsForMenuBtmSheet.tags,
-                            )
-                            coroutineScope.launch {
-                                localUriHandler.openUriOrNotify(
-                                    appVM.selectedLinkTagsForMenuBtmSheet.link.url,
-                                )
-                            }
-                        },
-                        onShare = {
-                            LinkoraSDK.getInstance().nativeUtils.onShare(it)
-                        },
-                        showQuickActions = rememberSaveable { mutableStateOf(false) },
-                        shouldTransferringOptionShouldBeVisible = true,
-                        linkTagsPair = appVM.selectedLinkTagsForMenuBtmSheet,
-                        folder = appVM.selectedFolderForMenuBtmSheet,
-                        onAddToImportantLinks = {
-                            preferences.ifServerConfigured {
-                                showProgressBarDuringRemoteSave.value = true
-                            }
-                            collectionsScreenVM.markALinkAsImp(
-                                appVM.selectedLinkTagsForMenuBtmSheet.link,
-                                onCompletion = {
-                                    showProgressBarDuringRemoteSave.value = false
-                                    hideMenuSheet()
-                                },
-                                tagIds = appVM.selectedLinkTagsForMenuBtmSheet.tags.map { it.localId },
-                            )
-                        },
-                        shouldShowArchiveOption = {
-                            appVM.selectedLinkTagsForMenuBtmSheet.link.linkType == LinkType.ARCHIVE_LINK
-                        },
-                        showProgressBarDuringRemoteSave = showProgressBarDuringRemoteSave,
-                        onTagClick = {
-                            val collectionDetailPaneInfo =
-                                CollectionDetailPaneInfo(
-                                    currentFolder = null,
-                                    currentTag = it,
-                                    collectionType = CollectionType.TAG,
-                                )
-                            localNavController.navigate(
-                                Navigation.Collection.CollectionDetailScreen(
-                                    Json.encodeToString(collectionDetailPaneInfo),
-                                ),
-                            )
-                            hideMenuSheet()
-                        },
-                        onRefresh = { refreshLinkType ->
-                            preferences.ifServerConfigured {
-                                showProgressBarDuringRemoteSave.value = true
-                            }
-                            collectionsScreenVM.refreshLinkMetadata(
-                                refreshLinkType = refreshLinkType,
-                                appVM.selectedLinkTagsForMenuBtmSheet.link,
-                                onCompletion = {
-                                    showProgressBarDuringRemoteSave.value = false
-                                    hideMenuSheet()
-                                },
-                            )
-                        },
-                    ),
+                            },
+                        ),
                 )
             }
             if (appVM.showDeleteDialogBox) {
                 DeleteFolderOrLinkDialog(
                     preferences = preferences,
                     deleteFolderOrLinkDialogParam =
-                    DeleteFolderOrLinkDialogParam(
-                        onDismiss = {
-                            appVM.showDeleteDialogBox = false
-                        },
-                        if (CollectionsScreenVM.isSelectionEnabled.value) {
-                            DeleteDialogBoxType.SELECTED_DATA
-                        } else if (menuBtmSheetFolderEntries().contains(appVM.menuBtmSheetFor)) {
-                            DeleteDialogBoxType.FOLDER
-                        } else {
-                            DeleteDialogBoxType.LINK
-                        },
-                        onDeleteClick = { onCompletion, _ ->
+                        DeleteFolderOrLinkDialogParam(
+                            onDismiss = {
+                                appVM.showDeleteDialogBox = false
+                            },
                             if (CollectionsScreenVM.isSelectionEnabled.value) {
-                                appVM.deleteSelectedItems(onStart = {}, onCompletion)
-                                return@DeleteFolderOrLinkDialogParam
-                            }
-                            if (menuBtmSheetFolderEntries().contains(appVM.menuBtmSheetFor)) {
-                                collectionsScreenVM.deleteAFolder(
-                                    appVM.selectedFolderForMenuBtmSheet,
-                                    onCompletion = {
-                                        hideMenuSheet()
-                                        onCompletion()
-                                    },
-                                )
+                                DeleteDialogBoxType.SELECTED_DATA
+                            } else if (menuBtmSheetFolderEntries().contains(appVM.menuBtmSheetFor)) {
+                                DeleteDialogBoxType.FOLDER
                             } else {
-                                collectionsScreenVM.deleteALink(
-                                    appVM.selectedLinkTagsForMenuBtmSheet.link,
-                                    onCompletion = {
-                                        hideMenuSheet()
-                                        onCompletion()
-                                    },
-                                )
-                            }
-                        },
-                    ),
+                                DeleteDialogBoxType.LINK
+                            },
+                            onDeleteClick = { onCompletion, _ ->
+                                if (CollectionsScreenVM.isSelectionEnabled.value) {
+                                    appVM.deleteSelectedItems(onStart = {}, onCompletion)
+                                    return@DeleteFolderOrLinkDialogParam
+                                }
+                                if (menuBtmSheetFolderEntries().contains(appVM.menuBtmSheetFor)) {
+                                    collectionsScreenVM.deleteAFolder(
+                                        appVM.selectedFolderForMenuBtmSheet,
+                                        onCompletion = {
+                                            hideMenuSheet()
+                                            onCompletion()
+                                        },
+                                    )
+                                } else {
+                                    collectionsScreenVM.deleteALink(
+                                        appVM.selectedLinkTagsForMenuBtmSheet.link,
+                                        onCompletion = {
+                                            hideMenuSheet()
+                                            onCompletion()
+                                        },
+                                    )
+                                }
+                            },
+                        ),
                 )
             }
             val renameDialogSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -699,75 +702,75 @@ fun App(modifier: Modifier = Modifier) {
             val allTags = collectionsScreenVM.allTags.collectAsStateWithLifecycle()
             RenameFolderOrLinkDialog(
                 renameFolderOrLinkDialogParam =
-                RenameFolderOrLinkDialogParam(
-                    selectedTags = appVM.selectedLinkTagsForMenuBtmSheet.tags,
-                    allTags = allTags,
-                    onSave = {
-                            newTitle: String,
-                            newNote: String,
-                            newImageUrl: String,
-                            newUrl: String,
-                            selectedTags: List<Tag>,
-                            onCompletion: () -> Unit,
-                        ->
-                        if (appVM.menuBtmSheetFor is MenuBtmSheetType.Link) {
-                            collectionsScreenVM.updateLink(
-                                updatedLinkTagsPair =
-                                appVM.selectedLinkTagsForMenuBtmSheet.run {
-                                    copy(
-                                        link =
-                                        link.copy(
-                                            url = newUrl.trim(),
-                                            title = newTitle.trim(),
-                                            imgURL = newImageUrl.trim(),
-                                            note = newNote.trim(),
-                                            host = newUrl.host(throwOnException = false),
+                    RenameFolderOrLinkDialogParam(
+                        selectedTags = appVM.selectedLinkTagsForMenuBtmSheet.tags,
+                        allTags = allTags,
+                        onSave = {
+                                newTitle: String,
+                                newNote: String,
+                                newImageUrl: String,
+                                newUrl: String,
+                                selectedTags: List<Tag>,
+                                onCompletion: () -> Unit,
+                            ->
+                            if (appVM.menuBtmSheetFor is MenuBtmSheetType.Link) {
+                                collectionsScreenVM.updateLink(
+                                    updatedLinkTagsPair =
+                                        appVM.selectedLinkTagsForMenuBtmSheet.run {
+                                            copy(
+                                                link =
+                                                    link.copy(
+                                                        url = newUrl.trim(),
+                                                        title = newTitle.trim(),
+                                                        imgURL = newImageUrl.trim(),
+                                                        note = newNote.trim(),
+                                                        host = newUrl.host(throwOnException = false),
+                                                    ),
+                                                tags = selectedTags,
+                                            )
+                                        },
+                                    onCompletion = {
+                                        slideDownAndHideRenameSheet()
+                                        onCompletion()
+                                    },
+                                )
+                            } else {
+                                collectionsScreenVM.updateFolder(
+                                    newFolderData =
+                                        appVM.selectedFolderForMenuBtmSheet.copy(
+                                            name = newTitle,
+                                            note = newNote,
                                         ),
-                                        tags = selectedTags,
-                                    )
-                                },
-                                onCompletion = {
-                                    slideDownAndHideRenameSheet()
-                                    onCompletion()
-                                },
-                            )
-                        } else {
-                            collectionsScreenVM.updateFolder(
-                                newFolderData =
-                                appVM.selectedFolderForMenuBtmSheet.copy(
-                                    name = newTitle,
-                                    note = newNote,
-                                ),
-                                onCompletion = {
-                                    slideDownAndHideRenameSheet()
-                                    onCompletion()
-                                },
-                            )
-                        }
-                    },
-                    showDialogBox = appVM.showRenameDialogBox,
-                    existingFolderName = appVM.selectedFolderForMenuBtmSheet.name,
-                    existingTitle =
-                    if (menuBtmSheetFolderEntries().contains(appVM.menuBtmSheetFor)) {
-                        appVM.selectedFolderForMenuBtmSheet.name
-                    } else {
-                        appVM.selectedLinkTagsForMenuBtmSheet.link.title
-                    },
-                    existingNote =
-                    if (menuBtmSheetFolderEntries().contains(appVM.menuBtmSheetFor)) {
-                        appVM.selectedFolderForMenuBtmSheet.note
-                    } else {
-                        appVM.selectedLinkTagsForMenuBtmSheet.link.note
-                    },
-                    existingImageUrl = appVM.selectedLinkTagsForMenuBtmSheet.link.imgURL,
-                    existingUrl = appVM.selectedLinkTagsForMenuBtmSheet.link.url,
-                    onHide = slideDownAndHideRenameSheet,
-                    sheetState = renameDialogSheetState,
-                    dialogBoxFor = appVM.menuBtmSheetFor,
-                    onRetrieveNextTagsPage = collectionsScreenVM::retrieveNextBatchOfTags,
-                    onFirstVisibleIndexChange =
-                    collectionsScreenVM::updateStartingIndexForTagsPaginator,
-                ),
+                                    onCompletion = {
+                                        slideDownAndHideRenameSheet()
+                                        onCompletion()
+                                    },
+                                )
+                            }
+                        },
+                        showDialogBox = appVM.showRenameDialogBox,
+                        existingFolderName = appVM.selectedFolderForMenuBtmSheet.name,
+                        existingTitle =
+                            if (menuBtmSheetFolderEntries().contains(appVM.menuBtmSheetFor)) {
+                                appVM.selectedFolderForMenuBtmSheet.name
+                            } else {
+                                appVM.selectedLinkTagsForMenuBtmSheet.link.title
+                            },
+                        existingNote =
+                            if (menuBtmSheetFolderEntries().contains(appVM.menuBtmSheetFor)) {
+                                appVM.selectedFolderForMenuBtmSheet.note
+                            } else {
+                                appVM.selectedLinkTagsForMenuBtmSheet.link.note
+                            },
+                        existingImageUrl = appVM.selectedLinkTagsForMenuBtmSheet.link.imgURL,
+                        existingUrl = appVM.selectedLinkTagsForMenuBtmSheet.link.url,
+                        onHide = slideDownAndHideRenameSheet,
+                        sheetState = renameDialogSheetState,
+                        dialogBoxFor = appVM.menuBtmSheetFor,
+                        onRetrieveNextTagsPage = collectionsScreenVM::retrieveNextBatchOfTags,
+                        onFirstVisibleIndexChange =
+                            collectionsScreenVM::updateStartingIndexForTagsPaginator,
+                    ),
             )
 
             if (appVM.showSortingBtmSheet) {
@@ -780,13 +783,13 @@ fun App(modifier: Modifier = Modifier) {
                         bottomModalSheetState = appVM.sortingBtmSheetState,
                         sortingBtmSheetType = SortingBtmSheetType.COLLECTIONS_SCREEN,
                         showFoldersSelection =
-                        rememberSaveable {
-                            mutableStateOf(false)
-                        },
+                            rememberSaveable {
+                                mutableStateOf(false)
+                            },
                         showLinksSelection =
-                        rememberSaveable {
-                            mutableStateOf(false)
-                        },
+                            rememberSaveable {
+                                mutableStateOf(false)
+                            },
                     ),
                 )
             }
@@ -897,11 +900,11 @@ fun App(modifier: Modifier = Modifier) {
                 ) {
                     Column(
                         modifier =
-                        Modifier.padding(
-                            start = 15.dp,
-                            end = 15.dp,
-                            bottom = 7.5.dp,
-                        ),
+                            Modifier.padding(
+                                start = 15.dp,
+                                end = 15.dp,
+                                bottom = 7.5.dp,
+                            ),
                     ) {
                         Icon(
                             imageVector = Icons.Default.Analytics,
@@ -910,8 +913,8 @@ fun App(modifier: Modifier = Modifier) {
                         Spacer(modifier = Modifier.height(7.5.dp))
                         Text(
                             text =
-                            "Hey, you're using the sync server. I'm considering rewriting it in Rust since the current Java setup uses around 300 MB just sitting idle, and Rust gets that down to ~5 MB. " +
-                                "Your input would help me figure out if it's worth the time.",
+                                "Hey, you're using the sync server. I'm considering rewriting it in Rust since the current Java setup uses around 300 MB just sitting idle, and Rust gets that down to ~5 MB. " +
+                                        "Your input would help me figure out if it's worth the time.",
                             fontSize = 16.sp,
                             style = MaterialTheme.typography.titleSmall,
                         )
@@ -920,7 +923,7 @@ fun App(modifier: Modifier = Modifier) {
                             onClick = {
                                 appVM.updatePreference(
                                     key =
-                                    AppPreferences.SHOW_SYNC_SERVER_SURVEY_NOTICE,
+                                        AppPreferences.SHOW_SYNC_SERVER_SURVEY_NOTICE,
                                     newValue = false,
                                     onCompletion = {
                                         coroutineScope
@@ -939,9 +942,9 @@ fun App(modifier: Modifier = Modifier) {
                                 )
                             },
                             modifier =
-                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                .pressScaleEffect()
-                                .fillMaxWidth(),
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .pressScaleEffect()
+                                    .fillMaxWidth(),
                         ) {
                             Text(
                                 text = "Take the survey",
@@ -952,7 +955,7 @@ fun App(modifier: Modifier = Modifier) {
                             onClick = {
                                 appVM.updatePreference(
                                     key =
-                                    AppPreferences.SHOW_SYNC_SERVER_SURVEY_NOTICE,
+                                        AppPreferences.SHOW_SYNC_SERVER_SURVEY_NOTICE,
                                     newValue = false,
                                     onCompletion = {
                                         coroutineScope
@@ -966,9 +969,9 @@ fun App(modifier: Modifier = Modifier) {
                                 )
                             },
                             modifier =
-                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                .pressScaleEffect()
-                                .fillMaxWidth(),
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .pressScaleEffect()
+                                    .fillMaxWidth(),
                         ) {
                             Text(
                                 text = "Not Interested",

@@ -79,7 +79,7 @@ class AppVM(
     private val localMultiActionRepo: LocalMultiActionRepo,
     private val localPanelsRepo: LocalPanelsRepo,
     permissionManager: PermissionManager,
-    fileManager: FileManager,
+    private val fileManager: FileManager,
     private val dataSyncingNotificationService: NativeUtils.DataSyncingNotificationService,
     private val snapshotRepo: SnapshotRepo,
     nativeUtils: NativeUtils,
@@ -324,6 +324,12 @@ class AppVM(
             .invokeOnCompletion {
                 onBoardingCompleted.value = true
             }
+    }
+
+    fun openWebCaptureFolder(link: String) {
+        viewModelScope.launch {
+            fileManager.openWebCaptureFolder(link)
+        }
     }
 
     companion object {

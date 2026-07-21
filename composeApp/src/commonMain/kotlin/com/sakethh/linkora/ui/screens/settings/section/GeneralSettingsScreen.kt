@@ -93,6 +93,8 @@ fun GeneralSettingsScreen() {
     }
     val platform = platform
     val onAndroidMobile = Platform.Android.onMobile()
+
+    // TODO: GET RID OF THIS
     val generalSectionData =
         retain(preferences) {
             settingsScreenViewModel.generalSection(

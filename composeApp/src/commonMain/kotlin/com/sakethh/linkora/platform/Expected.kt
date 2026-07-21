@@ -87,6 +87,8 @@ expect class FileManager {
         threshold: Int,
         onCompletion: (deletionCount: Int) -> Unit,
     )
+
+    suspend fun openWebCaptureFolder(link: String)
 }
 
 expect class NativeUtils {
