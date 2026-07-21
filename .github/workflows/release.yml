@@ -117,17 +117,20 @@ jobs:
           java-version: '21'
           cache: gradle
 
-      - name: Verify NDK Availability
-        run: |
-          echo "ANDROID_HOME is: $ANDROID_HOME"
-          ls -d "$ANDROID_HOME/ndk"/* || echo "Warning: NDK not found in ANDROID_HOME"
+      - name: Make Gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Setup Android SDK & Install NDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'ndk'
 
       - name: Decode Keystores
         run: |
           echo "${{ secrets.PREVIEW_KEYSTORE_BASE64 }}" | base64 --decode > $GITHUB_WORKSPACE/preview_keystore.jks
           echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 --decode > $GITHUB_WORKSPACE/release_keystore.jks
 
-      - name: Build and Sign Preview APK
+      - name: Build and Sign Preview APKs
         env:
           STORE_PASSWORD: ${{ secrets.PREVIEW_STORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.PREVIEW_KEY_ALIAS }}
@@ -139,9 +142,13 @@ jobs:
           -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
           -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
           
-          mv composeApp/build/outputs/apk/preview/*.apk composeApp-preview.apk
+          mkdir -p preview-apks
+          mv composeApp/build/outputs/apk/preview/*-arm64-v8a-preview.apk preview-apks/Linkora-arm64-v8a-preview.apk
+          mv composeApp/build/outputs/apk/preview/*-armeabi-v7a-preview.apk preview-apks/Linkora-armeabi-v7a-preview.apk
+          mv composeApp/build/outputs/apk/preview/*-x86_64-preview.apk preview-apks/Linkora-x86_64-preview.apk
+          mv composeApp/build/outputs/apk/preview/*-universal-preview.apk preview-apks/Linkora-universal-preview.apk
 
-      - name: Build and Sign Release APK
+      - name: Build and Sign Release APKs
         env:
           STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
@@ -153,7 +160,11 @@ jobs:
           -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
           -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
           
-          mv composeApp/build/outputs/apk/release/*.apk composeApp-release.apk
+          mkdir -p release-apks
+          mv composeApp/build/outputs/apk/release/*-arm64-v8a-release.apk release-apks/Linkora-arm64-v8a-release.apk
+          mv composeApp/build/outputs/apk/release/*-armeabi-v7a-release.apk release-apks/Linkora-armeabi-v7a-release.apk
+          mv composeApp/build/outputs/apk/release/*-x86_64-release.apk release-apks/Linkora-x86_64-release.apk
+          mv composeApp/build/outputs/apk/release/*-universal-release.apk release-apks/Linkora-universal-release.apk
 
       - name: Upload Android Artifacts to Release
         uses: softprops/action-gh-release@v2
@@ -161,8 +172,8 @@ jobs:
           tag_name: ${{ inputs.tag }}
           draft: true
           files: |
-            composeApp-preview.apk
-            composeApp-release.apk
+            preview-apks/*.apk
+            release-apks/*.apk
 
   build-wasm:
     name: Build WasmJs Distribution
