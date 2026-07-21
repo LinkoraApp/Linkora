@@ -121,18 +121,16 @@ class AppVM(
                 preferencesRepository.readPreferenceValue(
                     AppPreferences.SHOULD_SHOW_ONBOARDING,
                 ) != false &&
-                    linksRepo.isLinksTableEmpty() &&
-                    foldersRepo.isFoldersTableEmpty() &&
-                    localPanelsRepo.isPanelsTableEmpty()
+                        linksRepo.isLinksTableEmpty() &&
+                        foldersRepo.isFoldersTableEmpty() &&
+                        localPanelsRepo.isPanelsTableEmpty()
 
             if (showOnboarding) {
                 Navigation.Root.OnboardingSlidesScreen
             } else {
                 onBoardingCompleted.value = true
                 when (
-                    preferencesRepository.readPreferenceValue(
-                        AppPreferences.INITIAL_ROUTE,
-                    )
+                    preferencesAsFlow.value.startDestination
                 ) {
                     Navigation.Root.HomeScreen.toString() ->
                         if (
@@ -301,8 +299,8 @@ class AppVM(
                                     pushUIEvent(
                                         UIEvent.Type.ShowSnackbar(
                                             Localization.Key.ConnectionToServerFailed.getLocalizedString() +
-                                                "\n" +
-                                                it,
+                                                    "\n" +
+                                                    it,
                                         ),
                                     )
                                 }
@@ -375,13 +373,13 @@ class AppVM(
                 localMultiActionRepo
                     .moveMultipleItems(
                         linkIds =
-                        selectedLinkTagPairsViaLongClick.map {
-                            it.link.localId
-                        },
+                            selectedLinkTagPairsViaLongClick.map {
+                                it.link.localId
+                            },
                         folderIds =
-                        selectedFoldersViaLongClick.map {
-                            it.localId
-                        },
+                            selectedFoldersViaLongClick.map {
+                                it.localId
+                            },
                         linkType = folderId.asLinkType(),
                         newParentFolderId = folderId,
                     )
@@ -436,19 +434,19 @@ class AppVM(
                 localMultiActionRepo
                     .archiveMultipleItems(
                         linkIds =
-                        selectedLinkTagPairsViaLongClick
-                            .filter { it.link.linkType != LinkType.ARCHIVE_LINK }
-                            .map { it.link.localId },
+                            selectedLinkTagPairsViaLongClick
+                                .filter { it.link.linkType != LinkType.ARCHIVE_LINK }
+                                .map { it.link.localId },
                         folderIds =
-                        selectedFoldersViaLongClick.filter { it.isArchived.not() }
-                            .map { it.localId },
+                            selectedFoldersViaLongClick.filter { it.isArchived.not() }
+                                .map { it.localId },
                     )
                     .collectLatest {
                         it.onSuccess {
                             pushUIEvent(
                                 UIEvent.Type.ShowSnackbar(
                                     Localization.getLocalizedString(Localization.Key.ArchivedSuccessfully) +
-                                        it.getRemoteOnlyFailureMsg(),
+                                            it.getRemoteOnlyFailureMsg(),
                                 ),
                             )
                         }
@@ -478,7 +476,7 @@ class AppVM(
                             pushUIEvent(
                                 UIEvent.Type.ShowSnackbar(
                                     Localization.getLocalizedString(Localization.Key.DeletedSuccessfully) +
-                                        it.getRemoteOnlyFailureMsg(),
+                                            it.getRemoteOnlyFailureMsg(),
                                 ),
                             )
                         }
@@ -518,11 +516,11 @@ class AppVM(
                 localMultiActionRepo
                     .unArchiveMultipleItems(
                         folderIds =
-                        selectedFoldersViaLongClick.filter { it.isArchived }.map { it.localId },
+                            selectedFoldersViaLongClick.filter { it.isArchived }.map { it.localId },
                         linkIds =
-                        selectedLinkTagPairsViaLongClick
-                            .filter { it.link.linkType == LinkType.ARCHIVE_LINK }
-                            .map { it.link.localId },
+                            selectedLinkTagPairsViaLongClick
+                                .filter { it.link.linkType == LinkType.ARCHIVE_LINK }
+                                .map { it.link.localId },
                     )
                     .collect()
             }
@@ -551,19 +549,19 @@ class AppVM(
             },
         )
     var selectedFolderForMenuBtmSheet by
-        mutableStateOf(
-            Folder(
-                name = "",
-                note = "",
-                parentFolderId = null,
-                localId = 0L,
-                isArchived = false,
-            ),
-        )
+    mutableStateOf(
+        Folder(
+            name = "",
+            note = "",
+            parentFolderId = null,
+            localId = 0L,
+            isArchived = false,
+        ),
+    )
     var selectedLinkTagsForMenuBtmSheet by
-        mutableStateOf(
-            LinkTagsPair(
-                link =
+    mutableStateOf(
+        LinkTagsPair(
+            link =
                 Link(
                     linkType = LinkType.SAVED_LINK,
                     localId = 0L,
@@ -575,9 +573,9 @@ class AppVM(
                     idOfLinkedFolder = null,
                     userAgent = null,
                 ),
-                tags = emptyList(),
-            ),
-        )
+            tags = emptyList(),
+        ),
+    )
     var showMenuSheet by mutableStateOf(false)
     var showAddLinkDialog by mutableStateOf(false)
     var showNewFolderDialog by mutableStateOf(false)
