@@ -405,7 +405,7 @@ fun Slide2() {
                             )
                         }
                     },
-                    tags = listOf(Tag(name = "half man half amazing")),
+                    tags = listOf(),
                     onTagClick = {},
                     showPath = false,
                     onFolderClick = {},
@@ -544,12 +544,12 @@ fun Slide3() {
                             LinkComponentParam(
                                 link =
                                 Link(
-                                    title = "Synchronization in Linkora • Saketh Pathike",
+                                    title = "Building Webpage Capture in Linkora | Saketh Pathike",
                                     host = "sakethpathike.github.io",
                                     imgURL =
-                                    "https://sakethpathike.github.io/images/ogImage-synchronization-in-linkora.png",
+                                        "https://sakethpathike.github.io/images/web-capture-in-linkora/og.png",
                                     url =
-                                    "https://sakethpathike.github.io/blog/synchronization-in-linkora",
+                                        "https://sakethpathike.github.io/blog/web-capture-in-linkora",
                                     userAgent = "Twitterbot/1.0",
                                     linkType = LinkType.SAVED_LINK,
                                     localId = 0L,
@@ -560,7 +560,7 @@ fun Slide3() {
                                 onLinkClick = {
                                     coroutineScope.launch {
                                         localUriHandler.openUriOrNotify(
-                                            "https://sakethpathike.github.io/blog/synchronization-in-linkora",
+                                            "https://sakethpathike.github.io/blog/web-capture-in-linkora",
                                         )
                                     }
                                 },
@@ -684,6 +684,7 @@ fun Slide4() {
         listOf(
             Localization.Key.AppIntroSlide4Label1Desc1.getLocalizedString(),
             Localization.Key.AppIntroSlide4Label1Desc2.getLocalizedString(),
+            Localization.Key.AppIntroSlide4Label1Desc2_1.getLocalizedString(),
             Localization.Key.AppIntroSlide4Label1Desc3.getLocalizedString(),
             Localization.Key.AppIntroSlide4Label1Desc4.getLocalizedString(),
             Localization.Key.AppIntroSlide4Label1Desc5.getLocalizedString(),

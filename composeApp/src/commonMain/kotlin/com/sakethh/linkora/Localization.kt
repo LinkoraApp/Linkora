@@ -101,14 +101,14 @@ object Localization {
     fun getLocalizedString(key: Key): String = localizedStrings[key.name] ?: key.defaultValue
 
     // very bad way but fine for now, will be replaced with build-time generation
-  /* fun generateKeysAndDefaultValues() {
-      File("/home/saketh/StudioProjects/Linkora/locales/default_en.json").writeText(
-          Key.entries.joinToString(
-              separator = ",\n", prefix = "{", postfix = "}"
-          ) {
-              """"${it.name}":"${it.defaultValue.replace("\n", "\\n").replace("\"", "\\\"")}""""
-          })
-  }*/
+    /* fun generateKeysAndDefaultValues() {
+        File("/home/saketh/StudioProjects/Linkora/locales/default_en.json").writeText(
+            Key.entries.joinToString(
+                separator = ",\n", prefix = "{", postfix = "}"
+            ) {
+                """"${it.name}":"${it.defaultValue.replace("\n", "\\n").replace("\"", "\\\"")}""""
+            })
+    }*/
 
     enum class Key(val defaultValue: String) {
 
@@ -120,7 +120,7 @@ object Localization {
         SkipSavingExistingLinksLabel(defaultValue = "Skip saving existing links"),
         SkipSavingExistingLinksDesc(
             defaultValue =
-            "If enabled, a link won't be saved if it already exists in the destination. An error will be thrown instead.",
+                "If enabled, a link won't be saved if it already exists in the destination. An error will be thrown instead.",
         ),
         Copy(defaultValue = "Copy"),
         Open(defaultValue = "Open"),
@@ -134,11 +134,11 @@ object Localization {
         ChangeAppIcon(defaultValue = "Change App Icon"),
         ChangeAppIconDesc(
             defaultValue =
-            "After confirming changes, the app will close automatically to apply them. Notifications will continue to display the default Linkora icon and name.",
+                "After confirming changes, the app will close automatically to apply them. Notifications will continue to display the default Linkora icon and name.",
         ),
         ChangeInAppNameDesc(
             defaultValue =
-            "The app name will be displayed as \"Weather\" instead of \"Linkora\" in your app drawer.",
+                "The app name will be displayed as \"Weather\" instead of \"Linkora\" in your app drawer.",
         ),
         AppIconCurrentlyInUse(defaultValue = "App Icon Currently in Use"),
         NoTagsFound(defaultValue = "No tags found"),
@@ -191,6 +191,7 @@ object Localization {
         AppIntroSlide4Label1("Wait,\nThere's More."),
         AppIntroSlide4Label1Desc1("Search, sort, auto title and image detection (when available)."),
         AppIntroSlide4Label1Desc2("Export or import as JSON or HTML, with auto-backup support."),
+        AppIntroSlide4Label1Desc2_1("Save webpages as standalone HTML files, with all processing happening completely on your device."),
         AppIntroSlide4Label1Desc3("Sync with your own server if you want."),
         AppIntroSlide4Label1Desc4(
             "Opened links are saved in history — even if the original link is deleted.",
@@ -226,7 +227,7 @@ object Localization {
         AppIntroSlide2Folder1Note("cool stuff i might use later"),
         AppIntroSlide1SwipeLabel("Swipe through or hit Next to discover Linkora's features."),
         AppIntroSlide1Label(
-            "Linkora keeps your links private.\nSync and organize—nothing leaves your device unless you set up your own server.\nNo tracking, no cloud.",
+            "Linkora keeps your links and web captures private.\nSync, organize, and save pages offline: nothing leaves your device unless you set up your own data sync server.",
         ),
         CreateANewFolderIn(defaultValue = "Create A New Folder In ${LinkoraPlaceHolder.First.value}"),
         Create(defaultValue = "Create"),
@@ -241,7 +242,7 @@ object Localization {
         AutoDetectTitleIsEnabled(defaultValue = "Auto Detect Title is currently active."),
         DataRetrievalDisabled(
             defaultValue =
-            "Data retrieval is blocked as the 'Force Save Links without retrieval' feature is currently active.",
+                "Data retrieval is blocked as the 'Force Save Links without retrieval' feature is currently active.",
         ),
         ForceAutoDetectTitle(defaultValue = "Force Auto-Detect Title"),
         RetryingWithSecondaryUserAgent(
@@ -275,18 +276,18 @@ object Localization {
         ),
         UseInAppBrowserDesc(
             defaultValue =
-            "Enable this to open links within the app; otherwise, your default browser will open when clicking on links.",
+                "Enable this to open links within the app; otherwise, your default browser will open when clicking on links.",
         ),
         EnableHomeScreen(defaultValue = "Enable Home Screen"),
         EnableHomeScreenDesc(
             defaultValue =
-            "When disabled, Collections opens on launch if Home is set as the initial route.",
+                "When disabled, Collections opens on launch if Home is set as the initial route.",
         ),
         AutoDetectTitle(defaultValue = "Auto-Detect Title"),
         AutoDetectTitleDesc(defaultValue = "Note: This may not detect every website."),
         ForceSaveWithoutRetrievingMetadataDesc(
             defaultValue =
-            "Link will be saved as you save it, nothing gets fetched. Note that this will impact on refreshing links from link menu, link will NOT be refreshed if this is enabled.",
+                "Link will be saved as you save it, nothing gets fetched. Note that this will impact on refreshing links from link menu, link will NOT be refreshed if this is enabled.",
         ),
         ShowAssociatedImageInLinkMenu(defaultValue = "Show associated image in link menu"),
         ShowAssociatedImageInLinkMenuDesc(
@@ -301,7 +302,7 @@ object Localization {
         ShowDescriptionForSettings(defaultValue = "Show description for Settings"),
         ShowDescriptionForSettingsDesc(
             defaultValue =
-            "Enable to show detailed descriptions for settings. Disable to show only titles.",
+                "Enable to show detailed descriptions for settings. Disable to show only titles.",
         ),
         ManageConnectedServer(defaultValue = "Manage Connected Server"),
         ManageConnectedServerDesc(
@@ -315,7 +316,7 @@ object Localization {
         ServerURL(defaultValue = "Server URL"),
         ServerSetupInstruction(
             defaultValue =
-            "Ensure the server is running. The URL pattern should be: https://<IPv4>:<HTTPS_PORT>/",
+                "Ensure the server is running. The URL pattern should be: https://<IPv4>:<HTTPS_PORT>/",
         ),
         SecurityToken(defaultValue = "Security Token"),
         ServerIsReachable(defaultValue = "Server Exists and Is Reachable!"),
@@ -324,27 +325,27 @@ object Localization {
         ClientToServer(defaultValue = "Client To Server"),
         ClientToServerDesc(
             defaultValue =
-            "Client changes are sent to the server, but client is not updated with server changes.",
+                "Client changes are sent to the server, but client is not updated with server changes.",
         ),
         ServerToClient(defaultValue = "Server To Client"),
         ServerToClientDesc(
             defaultValue =
-            "Server changes are sent to the client, but server is not updated with client changes.",
+                "Server changes are sent to the client, but server is not updated with client changes.",
         ),
         TwoWaySync(defaultValue = "Two-Way Sync"),
         TwoWaySyncDesc(
             defaultValue =
-            "Changes are sent both ways: client updates the server, and server updates the client.",
+                "Changes are sent both ways: client updates the server, and server updates the client.",
         ),
         ImportLabel(defaultValue = "Import"),
         ImportLabelDesc(
             defaultValue =
-            "You are connected to a sync server. To load existing data from the remote database, use server-sync instead of manual import. Importing externally will duplicate data, even if it already exists remotely.",
+                "You are connected to a sync server. To load existing data from the remote database, use server-sync instead of manual import. Importing externally will duplicate data, even if it already exists remotely.",
         ),
         ExportLabel(defaultValue = "Export"),
         ExportLabelDesc(
             defaultValue =
-            "Exporting will remove all data linked to the remote database, making the exported data portable across different clients.",
+                "Exporting will remove all data linked to the remote database, making the exported data portable across different clients.",
         ),
         ImportUsingJsonFile(defaultValue = "Import using JSON file"),
         ImportUsingJsonFileDesc(
@@ -357,13 +358,13 @@ object Localization {
         ExportDataAsHtml(defaultValue = "Export Data as HTML"),
         ExportDataAsHtmlDesc(
             defaultValue =
-            "Export all your data as an HTML file (excluding Panels and Tags). Compatible with browser-based import tools.",
+                "Export all your data as an HTML file (excluding Panels and Tags). Compatible with browser-based import tools.",
         ),
         Sync(defaultValue = "Sync"),
         ConnectToALinkoraServer(defaultValue = "Connect to a Linkora Server"),
         ConnectToALinkoraServerDesc(
             defaultValue =
-            "By connecting to a Linkora server, you can sync your data and access it on any device using the Linkora app.",
+                "By connecting to a Linkora server, you can sync your data and access it on any device using the Linkora app.",
         ),
         DeleteEntireDataPermanently(defaultValue = "Delete entire data permanently"),
         DeleteEntireDataPermanentlyDesc(
@@ -372,14 +373,14 @@ object Localization {
         DeleteDuplicateLinksFromAllCollections(defaultValue = "Delete Duplicate Links"),
         DeleteDuplicateLinksFromAllCollectionsDesc(
             defaultValue =
-            "Removes all duplicate links from your local storage and the database connected via Linkora’s sync server.",
+                "Removes all duplicate links from your local storage and the database connected via Linkora’s sync server.",
         ),
         DeletedDuplicatedLinksSuccessfully(defaultValue = "Deleted Duplicate Links Successfully."),
         DeletedEntireDataPermanently(defaultValue = "Deleted entire data permanently."),
         ClearImageCache(defaultValue = "Clear Image Cache"),
         ClearImageCacheDesc(
             defaultValue =
-            "Images are cached by default. Changing the user agent might affect what you see. Clear the cache to resolve it.",
+                "Images are cached by default. Changing the user agent might affect what you see. Clear the cache to resolve it.",
         ),
         RefreshAllLinksTitlesAndImages(defaultValue = "Refresh Titles and Images of all links"),
         RefreshAllLinksTitlesAndImagesDesc(
@@ -388,13 +389,13 @@ object Localization {
         RefreshingLinks(defaultValue = "Refreshing links…"),
         RefreshingLinksAndroidDesc(
             defaultValue =
-            "Closing Linkora won\'t interrupt link refreshing, but newly added links might not be processed.",
+                "Closing Linkora won\'t interrupt link refreshing, but newly added links might not be processed.",
         ),
         RefreshingLinksDesktopDesc(defaultValue = "Closing Linkora will cancel link refreshing."),
         InitialScreenOnLaunch(defaultValue = "Initial Screen on Launch"),
         InitialScreenOnLaunchDesc(
             defaultValue =
-            "Changes made with this option will reflect in the navigation of the initial screen that will open when you launch Linkora.",
+                "Changes made with this option will reflect in the navigation of the initial screen that will open when you launch Linkora.",
         ),
         Confirm(defaultValue = "Confirm"),
         SelectTheInitialScreen(defaultValue = "Choose the screen to launch the app with"),
@@ -438,7 +439,7 @@ object Localization {
         Linkora(defaultValue = "Linkora"),
         LinkoraIsConnectedToAServer(
             defaultValue =
-            "Linkora is connected to the server; syncing is based on ${LinkoraPlaceHolder.First.value}.",
+                "Linkora is connected to the server; syncing is based on ${LinkoraPlaceHolder.First.value}.",
         ),
         CopiedLinkToClipboard(defaultValue = "Copied Link to Clipboard"),
         FetchingAvailableLanguages(defaultValue = "Fetching Available Languages"),
@@ -462,7 +463,7 @@ object Localization {
         DeleteTheFolder(defaultValue = "Delete The Folder"),
         DeletedTheFolder(
             defaultValue =
-            "Folder ${LinkoraPlaceHolder.First.value}, all internal folders, and associated links have been successfully deleted.",
+                "Folder ${LinkoraPlaceHolder.First.value}, all internal folders, and associated links have been successfully deleted.",
         ),
         DeletedTheNoteOfAFolder(
             defaultValue = "Successfully deleted the note of the ${LinkoraPlaceHolder.First.value}.",
@@ -482,7 +483,7 @@ object Localization {
         ),
         AreYouSureDeleteEverything(
             defaultValue =
-            "Are you sure you want to delete all folders, links, panels, tags, and localized strings?",
+                "Are you sure you want to delete all folders, links, panels, tags, and localized strings?",
         ),
         SavedNote(defaultValue = "Saved Note"),
         NoNoteAdded(defaultValue = "You haven't added a note for this yet."),
@@ -545,7 +546,7 @@ object Localization {
         ),
         AreYouSureWantToDeleteThePanel(
             defaultValue =
-            "Are you sure want to delete the panel named ${LinkoraPlaceHolder.First.value}?",
+                "Are you sure want to delete the panel named ${LinkoraPlaceHolder.First.value}?",
         ),
         NewNameForPanel(defaultValue = "New Name for Panel"),
         ChangePanelName(defaultValue = "Change Panel Name"),
@@ -566,7 +567,7 @@ object Localization {
         ),
         GithubDesc(
             defaultValue =
-            "The Linkora app, sync server, and localization server are public and open-source—feel free to explore the code.",
+                "The Linkora app, sync server, and localization server are public and open-source—feel free to explore the code.",
         ),
         Github(defaultValue = "Github"),
         Discord(defaultValue = "Discord"),
@@ -580,16 +581,16 @@ object Localization {
         ),
         LinkoraOpenSourceAcknowledgement(
             defaultValue =
-            "Linkora wouldn't be possible without the following open-source software, libraries.",
+                "Linkora wouldn't be possible without the following open-source software, libraries.",
         ),
         UserAgent(defaultValue = "User Agent"),
         UserAgentDesc(
             defaultValue =
-            "Helps detect images and titles from webpage meta tags. Results may vary based on the agent string.",
+                "Helps detect images and titles from webpage meta tags. Results may vary based on the agent string.",
         ),
         LocalizationServerDesc(
             defaultValue =
-            "Linkora’s localization server lets you update strings without updating the app. By default, it uses Linkora’s server.\n\nYou can switch to your own server if needed. Changes will reflect in Linkora’s network requests for language or string updates.\n\nOnly change this if you’re sure about what you’re doing.",
+                "Linkora’s localization server lets you update strings without updating the app. By default, it uses Linkora’s server.\n\nYou can switch to your own server if needed. Changes will reflect in Linkora’s network requests for language or string updates.\n\nOnly change this if you’re sure about what you’re doing.",
         ),
         LocalizationServer(defaultValue = "Localization Server"),
         PreparingToExportYourData(defaultValue = "Preparing to export your data..."),
@@ -610,14 +611,14 @@ object Localization {
         ExportedSuccessfully(defaultValue = "Exported Successfully"),
         StoragePermissionIsRequired(
             defaultValue =
-            "Storage permission is required to store or export the file. Please grant the permission to proceed.",
+                "Storage permission is required to store or export the file. Please grant the permission to proceed.",
         ),
         NotificationPermissionIsRequired(
             defaultValue = "Enable notification permission to view the progress of link refreshes.",
         ),
         PermissionGranted(
             defaultValue =
-            "Permission granted. Please retry the action to continue with your import/export.",
+                "Permission granted. Please retry the action to continue with your import/export.",
         ),
         LinkRefreshedSuccessfully(defaultValue = "The link data has been successfully refreshed."),
         Share(defaultValue = "Share"),
@@ -626,16 +627,16 @@ object Localization {
         ForceOpenInABrowser(defaultValue = "Open In A Browser"),
         WorkManagerDesc(
             defaultValue =
-            "Work Manager is scheduling the links refreshing task. It will continue shortly.\nYou can close the app; this task will continue in the background.",
+                "Work Manager is scheduling the links refreshing task. It will continue shortly.\nYou can close the app; this task will continue in the background.",
         ),
         NoOfLinksRefreshed(
             defaultValue =
-            "${LinkoraPlaceHolder.First.value} of ${LinkoraPlaceHolder.Second.value} links refreshed.",
+                "${LinkoraPlaceHolder.First.value} of ${LinkoraPlaceHolder.Second.value} links refreshed.",
         ),
         TopDecoratorSetting(defaultValue = "Use Linkora's Top Decorator"),
         TopDecoratorSettingDesc(
             defaultValue =
-            "When disabled, the default decorator will be used. Changes will apply on the next launch.",
+                "When disabled, the default decorator will be used. Changes will apply on the next launch.",
         ),
         ThisFolderHasNoSubfolders(defaultValue = "This folder does not contain any subfolders."),
         PanelCreatedSuccessfully(
@@ -648,7 +649,7 @@ object Localization {
         ImportingDataFromTheSever(defaultValue = "Importing Data from the Remote Server"),
         ImportingDataFromTheSeverDesc(
             defaultValue =
-            "If you cancel the import, some data may still be saved, and the server connection will be removed.",
+                "If you cancel the import, some data may still be saved, and the server connection will be removed.",
         ),
         SuccessfullyConnectedToTheServer(defaultValue = "Server connection established successfully."),
         ConnectionToServerFailed(
@@ -657,12 +658,12 @@ object Localization {
         UpdatingChangesOnRemoteServer(defaultValue = "Updating Changes on Remote Server"),
         LOLCATplAck(
             defaultValue =
-            "LOLCATpl made this logo. Across the app on all platforms, Linkora's improved UI components are inspired and based on the designs made by LOLCATpl.",
+                "LOLCATpl made this logo. Across the app on all platforms, Linkora's improved UI components are inspired and based on the designs made by LOLCATpl.",
         ),
         MondsternAck(defaultValue = "mondstern painted this logo, which was based on the legacy logo."),
         AckEndingText(
             defaultValue =
-            "And, of course, the underlying libraries used by these also impact Linkora's behavior.",
+                "And, of course, the underlying libraries used by these also impact Linkora's behavior.",
         ),
         LOLCATplOnDiscord(defaultValue = "LOLCATpl on Discord"),
         MondsternOnDiscord(defaultValue = "mondstern on Pixelfed"),
@@ -679,7 +680,7 @@ object Localization {
         SelectAValidFile(defaultValue = "Select a valid ${LinkoraPlaceHolder.First.value} File"),
         FileTypeNotSupportedOnDesktopImport(
             defaultValue =
-            "${LinkoraPlaceHolder.First.value} files are not supported for importing, pick valid ${LinkoraPlaceHolder.Second.value} file.",
+                "${LinkoraPlaceHolder.First.value} files are not supported for importing, pick valid ${LinkoraPlaceHolder.Second.value} file.",
         ),
         NoFoldersInThePanel(
             defaultValue = "No folders in this panel. Add folders in this panel to get started.",
@@ -688,21 +689,21 @@ object Localization {
         NoArchiveLinksFound(defaultValue = "No links found."),
         NoRemoteLangPacks(
             defaultValue =
-            "No remote language packs found.\nLoad from the server to start using Linkora in your language.",
+                "No remote language packs found.\nLoad from the server to start using Linkora in your language.",
         ),
         StringsLocalizedStatus(
             defaultValue =
-            "${LinkoraPlaceHolder.First.value}/${LinkoraPlaceHolder.Second.value} strings localized",
+                "${LinkoraPlaceHolder.First.value}/${LinkoraPlaceHolder.Second.value} strings localized",
         ),
         EnableNotifications(defaultValue = "Enable Notifications"),
         NotificationPermissionRequired(defaultValue = "Notification Permission Required"),
         NotificationPermissionDesc(
             defaultValue =
-            "Linkora needs notification permission to display sync progress, link refreshes, and auto-save status.",
+                "Linkora needs notification permission to display sync progress, link refreshes, and auto-save status.",
         ),
         NoPanelsFound(
             defaultValue =
-            "No panels yet.\nCreate panels and link folders to organize your work by topic or purpose.",
+                "No panels yet.\nCreate panels and link folders to organize your work by topic or purpose.",
         ),
         SearchInLinkora(
             defaultValue = "Search Linkora: Find your links, folders, and tags in one place",
@@ -718,11 +719,11 @@ object Localization {
         InitiateManualSync(defaultValue = "Initiate Manual Sync"),
         InitiateManualSyncDesc(
             defaultValue =
-            "Pending queue items will be force-pushed, while non-synced server items will be pulled.",
+                "Pending queue items will be force-pushed, while non-synced server items will be pulled.",
         ),
         InitiateManualSyncDescAlt(
             defaultValue =
-            "Pending items will be pushed, and unsynced data from the server will be pulled.",
+                "Pending items will be pushed, and unsynced data from the server will be pulled.",
         ),
         SyncingDataLabel(defaultValue = "Syncing Data..."),
         RemoteDataDeletionFailure(
@@ -737,11 +738,11 @@ object Localization {
         FilePickerLabel(defaultValue = "File Picker"),
         NavigateAndCopyDesc(
             defaultValue =
-            "Navigate to the folder where you want to copy the selected items and hit the paste button to copy them there.",
+                "Navigate to the folder where you want to copy the selected items and hit the paste button to copy them there.",
         ),
         NavigateAndMoveDesc(
             defaultValue =
-            "Navigate to the folder where you want to move the selected items and hit the paste button to move them there.",
+                "Navigate to the folder where you want to move the selected items and hit the paste button to move them there.",
         ),
         Moving(defaultValue = "Moving..."),
         Copying(defaultValue = "Copying..."),
@@ -755,15 +756,15 @@ object Localization {
         CurrentExportLocation(defaultValue = "Current export location"),
         CurrentExportLocationSupportingText(
             defaultValue =
-            "If the selected directory is deleted or moved, export will silently fail. Make sure the selected directory always exists.",
+                "If the selected directory is deleted or moved, export will silently fail. Make sure the selected directory always exists.",
         ),
         ServerCertificateAlreadyImported(
             defaultValue =
-            "A certificate has already been imported. If you're unsure whether it matches the server-generated certificate, you can import the updated certificate to replace the existing one.\n\n${LinkoraPlaceHolder.First.value}",
+                "A certificate has already been imported. If you're unsure whether it matches the server-generated certificate, you can import the updated certificate to replace the existing one.\n\n${LinkoraPlaceHolder.First.value}",
         ),
         ImportServerCertificateDescription(
             defaultValue =
-            "To connect securely, please import the .cer certificate automatically generated by your server.",
+                "To connect securely, please import the .cer certificate automatically generated by your server.",
         ),
         ImportedServerCertificate(
             defaultValue = "Import Successful, Info:\n${LinkoraPlaceHolder.First.value}",
@@ -773,24 +774,24 @@ object Localization {
         ForceBypassCertificateChecking(defaultValue = "Force bypass certificate checking"),
         ForceBypassCertificateCheckingDescription(
             defaultValue =
-            "Bypasses certificate validation. This is not recommended. If you have a valid .cer certificate, keep this disabled and import the certificate instead.",
+                "Bypasses certificate validation. This is not recommended. If you have a valid .cer certificate, keep this disabled and import the certificate instead.",
         ),
         Translate(defaultValue = "Translate"),
         BuyMeACoffee(defaultValue = "Buy me a Coffee"),
         UseSnapshots(defaultValue = "Use snapshots"),
         UseSnapshotsDescription(
             defaultValue =
-            "Links, folders, panels, and panel folders will be auto-exported in your chosen format.",
+                "Links, folders, panels, and panel folders will be auto-exported in your chosen format.",
         ),
         SnapshotsBackupLocationWarning(
             defaultValue =
-            "If the selected directory is moved or deleted, backup will silently fail. Make sure the selected directory always exists.",
+                "If the selected directory is moved or deleted, backup will silently fail. Make sure the selected directory always exists.",
         ),
         SnapshotsBackupLocation(defaultValue = "Current backup location"),
         EnableAutoDeleteSnapshots(defaultValue = "Enable Auto-Deletion of Old Snapshots"),
         EnableAutoDeleteSnapshotsDescription(
             defaultValue =
-            "When enabled, the app will automatically delete the oldest snapshots once they exceed the configured limit.",
+                "When enabled, the app will automatically delete the oldest snapshots once they exceed the configured limit.",
         ),
         SnapshotsFileLimitWarning(
             defaultValue = "File limit is exclusive - checked before creating new backups, not after.",
@@ -799,11 +800,11 @@ object Localization {
         ExportAs(defaultValue = "Export As"),
         SnapshotsExportDescriptionDesktop(
             defaultValue =
-            "Each create, update, or delete action on a link, folder, panel, or panel folder triggers an export. Progress is shown in the side navigation rail.",
+                "Each create, update, or delete action on a link, folder, panel, or panel folder triggers an export. Progress is shown in the side navigation rail.",
         ),
         SnapshotsExportDescriptionAndroid(
             defaultValue =
-            "Any time you add, edit, or delete a link, folder, panel, or panel folder, Linkora auto-exports in the background.",
+                "Any time you add, edit, or delete a link, folder, panel, or panel folder, Linkora auto-exports in the background.",
         ),
         BackupsWorkOnlyWithDirectory("Backups will only work if you pick a directory first."),
         ExportRequiresDirectory("You need to pick a directory before exporting."),
@@ -861,7 +862,7 @@ object Localization {
         UseAProxyServerDesc("Relay requests through the Proxy Server"),
         UseAProxyServerLongDesc(
             "All traffic sent from your device is routed via this proxy. Ensure you are using a Linkora-compatible proxy.\n\n" +
-                "Note: Public proxy instance does not guarantee continuous uptime. Use a self-hosted version if a proxy is really necessary.",
+                    "Note: Public proxy instance does not guarantee continuous uptime. Use a self-hosted version if a proxy is really necessary.",
         ),
         InvalidExportDir("Looks like you skipped picking an export location."),
     }
