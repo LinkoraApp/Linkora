@@ -4,11 +4,10 @@ import androidx.room3.ConstructedBy
 import androidx.room3.Dao
 import androidx.room3.Database
 import androidx.room3.Entity
-import androidx.room3.Insert
-import androidx.room3.OnConflictStrategy
 import androidx.room3.PrimaryKey
 import androidx.room3.Query
 import androidx.room3.RoomDatabase
+import androidx.room3.Upsert
 
 @Entity(tableName = "metadata")
 data class WebCaptureMetadata(
@@ -18,7 +17,7 @@ data class WebCaptureMetadata(
 
 @Dao
 interface WebCaptureMetadataDao {
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Upsert
     suspend fun insert(metaData: WebCaptureMetadata)
 
     @Query("SELECT uuid FROM metadata WHERE link = :link")

@@ -864,31 +864,34 @@ fun DataSettingsScreen() {
                                             )
                                         }
                                     }
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.clickable(onClick = {
-                                            dataSettingsScreenVM.changeSettingPreferenceValue(
-                                                preferenceKey = AppPreferences.CAPTURE_WHEN_REFRESH_ALL_LINK,
-                                                newValue = !preferences.captureWhenRefreshAllLink,
-                                            )
-                                        }, indication = null, interactionSource = null)
-                                            .pointerHoverIcon(
-                                                PointerIcon.Hand,
-                                            ),
-                                    ) {
-                                        Checkbox(
-                                            checked = preferences.captureWhenRefreshAllLink,
-                                            onCheckedChange = {
+                                    if (preferences.useWebCaptures) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.clickable(onClick = {
                                                 dataSettingsScreenVM.changeSettingPreferenceValue(
                                                     preferenceKey = AppPreferences.CAPTURE_WHEN_REFRESH_ALL_LINK,
-                                                    newValue = it,
+                                                    newValue = !preferences.captureWhenRefreshAllLink,
                                                 )
-                                            },
-                                        )
-                                        Text(
-                                            text = "Use web-capture",
-                                            style = MaterialTheme.typography.titleSmall,
-                                        )
+                                            }, indication = null, interactionSource = null)
+                                                .pointerHoverIcon(
+                                                    PointerIcon.Hand,
+                                                ),
+                                        ) {
+                                            Checkbox(
+                                                checked = preferences.captureWhenRefreshAllLink,
+                                                onCheckedChange = {
+                                                    dataSettingsScreenVM.changeSettingPreferenceValue(
+                                                        preferenceKey = AppPreferences.CAPTURE_WHEN_REFRESH_ALL_LINK,
+                                                        newValue = it,
+                                                    )
+                                                },
+                                            )
+                                            Text(
+                                                text = "Use web-capture",
+                                                style = MaterialTheme.typography.titleSmall,
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(8.dp))
                                     }
                                     TextField(
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

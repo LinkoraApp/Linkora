@@ -893,7 +893,7 @@ class LocalLinksRepoImpl(
                     lastModified = getSystemEpochSeconds(),
                 ),
             )
-            if (useWebCapture) {
+            if (preferences.useWebCaptures && useWebCapture) {
                 webCapture.saveHTMLPage(
                     nativeFolderPath = preferences.webCapturesLocation,
                     url = link.url,
