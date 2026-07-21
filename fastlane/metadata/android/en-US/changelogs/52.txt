@@ -1,0 +1,5 @@
+- You can now download webpages for the links you've saved, all the processing happens on your device.
+  - Disabled by default, you can enable it in Data Settings Screen -> Webpage Capture
+  - All the processing happens in background.
+- Refreshing all links will now not lead to any unusual cancellation.
+- link text field will now not be autofocused by default when sharing links from external apps (by @gycgabriel)

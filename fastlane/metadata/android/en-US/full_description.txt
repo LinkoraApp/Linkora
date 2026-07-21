@@ -9,6 +9,7 @@ Features
 - Customize link names and auto-recognize images/titles from web pages
 - Share from other apps (Android) and add folders to Panels for quick access
 - Sort, search, import/export data in JSON and HTML formats with auto-backups
+- Save webpages as standalone HTML files, with all processing happening completely on your device.
 - Keep your links in sync across devices with optional self-hostable server (https://github.com/LinkoraApp/sync-server)
 - A fully featured web app: https://linkora-app.netlify.app
 - Browser extension support for saving web links (https://github.com/LinkoraApp/browser-extension)
