@@ -56,6 +56,10 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
 
         targetExclude("**/build/**", "**/build-generated/**", "**/bin/**")
 
+        trimTrailingWhitespace()
+        endWithNewline()
+        leadingTabsToSpaces(4)
+
         ktlint("1.8.0").editorConfigOverride(
             mapOf(
                 "ktlint_standard_function-naming" to "disabled",
@@ -65,12 +69,12 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
                 "ktlint_standard_no-consecutive-comments" to "disabled",
                 "ktlint_standard_enum-entry-name-case" to "disabled",
                 "ktlint_standard_backing-property-naming" to "disabled",
+                "ktlint_standard_trailing-comma-on-call-site" to "disabled",
+                "ktlint_standard_trailing-comma-on-declaration-site" to "disabled",
+                "ktlint_standard_wrapping" to "disabled",
+                "ktlint_standard_indent" to "disabled",
             ),
         )
-
-        trimTrailingWhitespace()
-        endWithNewline()
-        leadingTabsToSpaces(4)
     }
 
     kotlinGradle {
