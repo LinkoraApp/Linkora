@@ -122,8 +122,6 @@ jobs:
 
       - name: Setup Android SDK & Install NDK
         uses: android-actions/setup-android@v3
-        with:
-          packages: 'ndk'
 
       - name: Decode Keystores
         run: |
