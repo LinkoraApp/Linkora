@@ -42,7 +42,6 @@ import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.Utils.json
 import com.sakethh.linkora.utils.canPushToServer
 import com.sakethh.linkora.utils.catchAsThrowableAndEmitFailure
-import com.sakethh.linkora.utils.longPreferencesKey
 import com.sakethh.linkora.utils.performLocalOperationWithRemoteSyncFlow
 import com.sakethh.linkora.utils.postFlow
 import com.sakethh.linkora.utils.updateLastSyncedWithServerTimeStamp
@@ -584,7 +583,7 @@ class RemoteSyncRepoImpl(
     ) {
         localDatabaseUtilsRepo.resetDatabase()
         preferencesRepository.changePreferenceValue(
-            preferenceKey = longPreferencesKey(AppPreferences.LAST_SELECTED_PANEL_ID.key),
+            preferenceKey = AppPreferences.LAST_SELECTED_PANEL_ID,
             newValue = Constants.DEFAULT_PANELS_ID,
         )
     }

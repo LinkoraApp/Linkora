@@ -271,11 +271,11 @@ fun AppPreferences.canReadFromServer(): Boolean = listOf(SyncType.TwoWay, SyncTy
 }
 
 suspend fun AppPreferences.lastSyncedLocally(preferencesRepository: PreferencesRepository): Long = preferencesRepository.readPreferenceValue(
-    preferenceKey = longPreferencesKey(AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key),
+    preferenceKey = AppPreferences.LAST_TIME_SYNCED_WITH_SERVER,
 ) ?: 0
 
 suspend fun PreferencesRepository.updateLastSyncedWithServerTimeStamp(newValue: Long) {
-    val preferenceKey = longPreferencesKey(AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key)
+    val preferenceKey = AppPreferences.LAST_TIME_SYNCED_WITH_SERVER
     if ((this.readPreferenceValue(preferenceKey) ?: 0) < newValue) {
         this.changePreferenceValue(
             preferenceKey = preferenceKey,

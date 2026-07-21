@@ -113,7 +113,6 @@ import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.Constants
-import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.currentSavedServerConfig
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.host
@@ -921,7 +920,7 @@ fun App(modifier: Modifier = Modifier) {
                             onClick = {
                                 appVM.updatePreference(
                                     key =
-                                    booleanPreferencesKey(AppPreferences.SHOW_SYNC_SERVER_SURVEY_NOTICE.key),
+                                    AppPreferences.SHOW_SYNC_SERVER_SURVEY_NOTICE,
                                     newValue = false,
                                     onCompletion = {
                                         coroutineScope
@@ -953,7 +952,7 @@ fun App(modifier: Modifier = Modifier) {
                             onClick = {
                                 appVM.updatePreference(
                                     key =
-                                    booleanPreferencesKey(AppPreferences.SHOW_SYNC_SERVER_SURVEY_NOTICE.key),
+                                    AppPreferences.SHOW_SYNC_SERVER_SURVEY_NOTICE,
                                     newValue = false,
                                     onCompletion = {
                                         coroutineScope

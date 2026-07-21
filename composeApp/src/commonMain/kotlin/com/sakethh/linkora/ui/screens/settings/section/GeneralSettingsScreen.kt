@@ -73,9 +73,7 @@ import com.sakethh.linkora.ui.screens.settings.common.composables.SettingCompone
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
-import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.rememberLocalizedString
-import com.sakethh.linkora.utils.stringPreferencesKey
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
@@ -147,7 +145,7 @@ fun GeneralSettingsScreen() {
                             onSwitchStateChange = {
                                 settingsScreenViewModel.changeSettingPreferenceValue(
                                     preferenceKey =
-                                    booleanPreferencesKey(AppPreferences.DESKTOP_TOP_DECORATOR.key),
+                                    AppPreferences.DESKTOP_TOP_DECORATOR,
                                     newValue = it,
                                 )
                             },
@@ -429,7 +427,7 @@ fun GeneralSettingsScreen() {
             },
             onConfirm = {
                 settingsScreenViewModel.changeSettingPreferenceValue(
-                    stringPreferencesKey(AppPreferences.INITIAL_ROUTE.key),
+                    AppPreferences.INITIAL_ROUTE,
                     currentlySelectedRoute.value,
                 )
                 showInitialNavigationChangerDialogBox = false
@@ -454,7 +452,7 @@ fun GeneralSettingsScreen() {
             },
             onConfirm = {
                 settingsScreenViewModel.changeSettingPreferenceValue(
-                    stringPreferencesKey(AppPreferences.FONT_TYPE.key),
+                    AppPreferences.FONT_TYPE,
                     tempSelectedFont,
                 )
                 showFontFamilySwitcherDialogBox = false

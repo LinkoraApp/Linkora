@@ -22,7 +22,6 @@ import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.getRemoteOnlyFailureMsg
-import com.sakethh.linkora.utils.longPreferencesKey
 import com.sakethh.linkora.utils.pushSnackbarOnFailure
 import com.sakethh.linkora.utils.replaceFirstPlaceHolderWith
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -244,14 +243,12 @@ class SpecificPanelManagerScreenVM(
             .launch {
                 if (
                     preferencesRepository.readPreferenceValue(
-                        longPreferencesKey(AppPreferences.LAST_SELECTED_PANEL_ID.key),
+                        preferenceKey = AppPreferences.LAST_SELECTED_PANEL_ID,
                     ) == panelId
                 ) {
                     preferencesRepository.changePreferenceValue(
                         preferenceKey =
-                        longPreferencesKey(
-                            AppPreferences.LAST_SELECTED_PANEL_ID.key,
-                        ),
+                        AppPreferences.LAST_SELECTED_PANEL_ID,
                         newValue = Constants.DEFAULT_PANELS_ID,
                     )
                 }

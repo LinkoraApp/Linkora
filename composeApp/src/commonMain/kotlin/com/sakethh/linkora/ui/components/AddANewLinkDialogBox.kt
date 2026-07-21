@@ -130,7 +130,6 @@ import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.ui.utils.rememberDeserializableMutableObject
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
-import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.defaultFolderIds
 import com.sakethh.linkora.utils.defaultImpLinksFolder
 import com.sakethh.linkora.utils.defaultSavedLinksFolder
@@ -1580,7 +1579,7 @@ object AddANewLinkDialogBox {
         updateTagSectionVisibilityJob = addANewLinkDialogBoxScope.launch {
             DependencyContainer.preferencesRepo.changePreferenceValue(
                 preferenceKey =
-                booleanPreferencesKey(AppPreferences.SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK.key),
+                AppPreferences.SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK,
                 newValue = show,
             )
         }

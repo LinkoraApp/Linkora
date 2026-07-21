@@ -100,7 +100,7 @@ data class AppPreferences(
         val REFRESH_ALL_LINKS_WORKER_UUID = stringPreferencesKey("CURRENT_WORK_MANAGER_WORK_UUID")
         val WEB_CAPTURE_ALL_LINKS_WORKER_UUID =
             stringPreferencesKey("WEB_CAPTURE_ALL_LINKS_WORKER_UUID")
-        val LAST_SELECTED_PANEL_ID = intPreferencesKey("LAST_SELECTED_PANEL_ID")
+        val LAST_SELECTED_PANEL_ID = longPreferencesKey("LAST_SELECTED_PANEL_ID")
         val APP_LANGUAGE_NAME = stringPreferencesKey("APP_LANGUAGE_NAME")
         val APP_LANGUAGE_CODE = stringPreferencesKey("APP_LANGUAGE_CODE")
         val USE_REMOTE_LANGUAGE_STRINGS = booleanPreferencesKey("USE_REMOTE_LANGUAGE_STRINGS")
@@ -121,7 +121,7 @@ data class AppPreferences(
         val SERVER_SYNC_TYPE = stringPreferencesKey("SERVER_SYNC_TYPE")
         val SERVER_AUTH_TOKEN = stringPreferencesKey("SERVER_AUTH_TOKEN")
         val DESKTOP_TOP_DECORATOR = booleanPreferencesKey("DESKTOP_TOP_DECORATOR")
-        val REFRESHED_LINKS_COUNT = intPreferencesKey("REFRESHED_LINKS_COUNT")
+        val REFRESHED_LINKS_COUNT = longPreferencesKey("REFRESHED_LINKS_COUNT")
         val SERVER_CORRELATION = stringPreferencesKey("SERVER_CORRELATION")
         val LAST_TIME_SYNCED_WITH_SERVER = longPreferencesKey("LAST_TIME_SYNCED_WITH_SERVER")
         val SHOW_VIDEO_TAG_IF_APPLICABLE = booleanPreferencesKey("SHOW_VIDEO_TAG_IF_APPLICABLE")

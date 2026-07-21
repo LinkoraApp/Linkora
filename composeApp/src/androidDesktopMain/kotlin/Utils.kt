@@ -26,7 +26,6 @@ import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.getLocalizedString
-import com.sakethh.linkora.utils.stringPreferencesKey
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
 import java.security.cert.CertificateFactory
@@ -84,7 +83,7 @@ suspend fun readAllPreferences(
             val randomCorrelation = Correlation.generateRandomCorrelation()
             externalAction { platformPreference ->
                 platformPreference.writePreferenceValue(
-                    preferenceKey = stringPreferencesKey(AppPreferences.SERVER_CORRELATION.key),
+                    preferenceKey = AppPreferences.SERVER_CORRELATION,
                     newValue = Json.encodeToString(randomCorrelation),
                 )
             }

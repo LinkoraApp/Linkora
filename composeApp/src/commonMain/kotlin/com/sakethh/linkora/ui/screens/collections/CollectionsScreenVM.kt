@@ -35,7 +35,6 @@ import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.asStateInWhileSubscribed
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.getRemoteOnlyFailureMsg
-import com.sakethh.linkora.utils.intPreferencesKey
 import com.sakethh.linkora.utils.onError
 import com.sakethh.linkora.utils.onPagesFinished
 import com.sakethh.linkora.utils.onRetrieved
@@ -96,7 +95,7 @@ class CollectionsScreenVM(
                         }
 
                     preferencesRepo.changePreferenceValue(
-                        preferenceKey = intPreferencesKey(AppPreferences.COLLECTION_SOURCE_ID.key),
+                        preferenceKey = AppPreferences.COLLECTION_SOURCE_ID,
                         newValue = currentPage,
                     )
                 }

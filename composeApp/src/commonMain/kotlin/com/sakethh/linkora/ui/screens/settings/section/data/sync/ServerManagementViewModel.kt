@@ -19,12 +19,10 @@ import com.sakethh.linkora.ui.AppVM
 import com.sakethh.linkora.ui.domain.model.ServerConnection
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
-import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.canPushToServer
 import com.sakethh.linkora.utils.canReadFromServer
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.pushSnackbarOnFailure
-import com.sakethh.linkora.utils.stringPreferencesKey
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.channelFlow
@@ -105,11 +103,11 @@ open class ServerManagementViewModel(
         }
         viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
-                preferenceKey = stringPreferencesKey(AppPreferences.SERVER_URL.key),
+                preferenceKey = AppPreferences.SERVER_URL,
                 newValue = "",
             )
             preferencesRepository.changePreferenceValue(
-                preferenceKey = stringPreferencesKey(AppPreferences.SERVER_AUTH_TOKEN.key),
+                preferenceKey = AppPreferences.SERVER_AUTH_TOKEN,
                 newValue = "",
             )
         }
@@ -128,17 +126,17 @@ open class ServerManagementViewModel(
         dataSyncLogs.clear()
         saveServerConnectionAndSyncJob = viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
-                preferenceKey = stringPreferencesKey(AppPreferences.SERVER_URL.key),
+                preferenceKey = AppPreferences.SERVER_URL,
                 newValue = serverConnection.serverUrl,
             )
 
             preferencesRepository.changePreferenceValue(
-                preferenceKey = stringPreferencesKey(AppPreferences.SERVER_AUTH_TOKEN.key),
+                preferenceKey = AppPreferences.SERVER_AUTH_TOKEN,
                 newValue = serverConnection.authToken,
             )
 
             preferencesRepository.changePreferenceValue(
-                preferenceKey = stringPreferencesKey(AppPreferences.SERVER_SYNC_TYPE.key),
+                preferenceKey = AppPreferences.SERVER_SYNC_TYPE,
                 newValue = serverConnection.syncType.name,
             )
             onSyncStart()
@@ -200,17 +198,17 @@ open class ServerManagementViewModel(
         viewModelScope
             .launch {
                 preferencesRepository.changePreferenceValue(
-                    preferenceKey = stringPreferencesKey(AppPreferences.SERVER_URL.key),
+                    preferenceKey = AppPreferences.SERVER_URL,
                     newValue = "",
                 )
 
                 preferencesRepository.changePreferenceValue(
-                    preferenceKey = stringPreferencesKey(AppPreferences.SERVER_AUTH_TOKEN.key),
+                    preferenceKey = AppPreferences.SERVER_AUTH_TOKEN,
                     newValue = "",
                 )
 
                 preferencesRepository.changePreferenceValue(
-                    preferenceKey = stringPreferencesKey(AppPreferences.SERVER_SYNC_TYPE.key),
+                    preferenceKey = AppPreferences.SERVER_SYNC_TYPE,
                     newValue = "",
                 )
 
@@ -268,7 +266,7 @@ open class ServerManagementViewModel(
     fun updateCertificateBypassRule(bypass: Boolean) {
         viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
-                preferenceKey = booleanPreferencesKey(AppPreferences.SKIP_CERT_CHECK_FOR_SYNC_SERVER.key),
+                preferenceKey = AppPreferences.SKIP_CERT_CHECK_FOR_SYNC_SERVER,
                 newValue = bypass,
             )
         }

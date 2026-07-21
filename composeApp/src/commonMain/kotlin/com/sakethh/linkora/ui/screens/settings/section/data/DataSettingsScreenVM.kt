@@ -35,13 +35,10 @@ import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.screens.settings.section.data.capture.WorkerState
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
-import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.getRemoteOnlyFailureMsg
-import com.sakethh.linkora.utils.intPreferencesKey
 import com.sakethh.linkora.utils.pushSnackbar
 import com.sakethh.linkora.utils.pushSnackbarOnFailure
-import com.sakethh.linkora.utils.stringPreferencesKey
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -398,9 +395,7 @@ class DataSettingsScreenVM(
     fun updateAutoDeletionBackupsState(isEnabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
-                preferenceKey = booleanPreferencesKey(
-                    AppPreferences.BACKUP_AUTO_DELETION_ENABLED.key,
-                ),
+                preferenceKey = AppPreferences.BACKUP_AUTO_DELETION_ENABLED,
                 newValue = isEnabled,
             )
         }
@@ -409,9 +404,7 @@ class DataSettingsScreenVM(
     fun updateAutoDeletionBackupsThreshold(count: Int) {
         viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
-                preferenceKey = intPreferencesKey(
-                    AppPreferences.BACKUP_AUTO_DELETION_THRESHOLD.key,
-                ),
+                preferenceKey = AppPreferences.BACKUP_AUTO_DELETION_THRESHOLD,
                 newValue = count,
             )
         }

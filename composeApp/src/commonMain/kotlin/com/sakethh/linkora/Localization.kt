@@ -9,7 +9,6 @@ import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
-import com.sakethh.linkora.utils.stringPreferencesKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -62,12 +61,12 @@ object Localization {
         linkoraLog("${preferences.preferredAppLanguageCode}, $languageCode")
         if (preferences.preferredAppLanguageCode != languageCode) {
             DependencyContainer.preferencesRepo.changePreferenceValue(
-                stringPreferencesKey(AppPreferences.APP_LANGUAGE_NAME.key),
-                languageName,
+                preferenceKey = AppPreferences.APP_LANGUAGE_NAME,
+                newValue = languageName,
             )
             DependencyContainer.preferencesRepo.changePreferenceValue(
-                stringPreferencesKey(AppPreferences.APP_LANGUAGE_CODE.key),
-                languageCode,
+                preferenceKey = AppPreferences.APP_LANGUAGE_CODE,
+                newValue = languageCode,
             )
         }
         Key.entries.forEach { key ->

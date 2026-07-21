@@ -26,7 +26,6 @@ import com.sakethh.linkora.ui.domain.PaginationState
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.asStateInWhileSubscribed
 import com.sakethh.linkora.utils.getLocalizedString
-import com.sakethh.linkora.utils.longPreferencesKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -130,7 +129,7 @@ class HomeScreenVM(
         _activePanelAssociatedFoldersJob =
             viewModelScope.launch(Dispatchers.Default) {
                 preferencesRepository.changePreferenceValue(
-                    preferenceKey = longPreferencesKey(AppPreferences.LAST_SELECTED_PANEL_ID.key),
+                    preferenceKey = AppPreferences.LAST_SELECTED_PANEL_ID,
                     newValue = panel.localId,
                 )
             }
@@ -151,7 +150,7 @@ class HomeScreenVM(
         viewModelScope.launch {
             selectedPanelData =
                 preferencesRepository
-                    .readPreferenceValue(longPreferencesKey(AppPreferences.LAST_SELECTED_PANEL_ID.key))
+                    .readPreferenceValue(preferenceKey = AppPreferences.LAST_SELECTED_PANEL_ID)
                     .let {
                         try {
                             if (it === null || it == Constants.DEFAULT_PANELS_ID) throw Exception()

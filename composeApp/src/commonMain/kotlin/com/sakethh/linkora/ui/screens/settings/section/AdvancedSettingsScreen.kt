@@ -33,9 +33,7 @@ import com.sakethh.linkora.ui.screens.settings.common.composables.SettingCompone
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
-import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.rememberLocalizedString
-import com.sakethh.linkora.utils.stringPreferencesKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,7 +95,7 @@ fun AdvancedSettingsScreen() {
                             isSwitchEnabled = useProxy,
                             onSwitchStateChange = {
                                 settingsScreenVM.changeSettingPreferenceValue(
-                                    preferenceKey = booleanPreferencesKey(AppPreferences.USE_PROXY.key),
+                                    preferenceKey = AppPreferences.USE_PROXY,
                                     newValue = it,
                                 )
                             },
@@ -117,8 +115,8 @@ fun AdvancedSettingsScreen() {
                         textFieldValue = proxyServerUrl,
                         onResetButtonClick = {
                             settingsScreenVM.changeSettingPreferenceValue(
-                                stringPreferencesKey(AppPreferences.PROXY_URL.key),
-                                Constants.PROXY_SERVER_URL,
+                                preferenceKey = AppPreferences.PROXY_URL,
+                                newValue = Constants.PROXY_SERVER_URL,
                             )
                         },
                         onTextFieldValueChange = {
@@ -133,7 +131,7 @@ fun AdvancedSettingsScreen() {
                             }
                             if (isReadOnlyTextFieldForProxyServer) {
                                 settingsScreenVM.changeSettingPreferenceValue(
-                                    stringPreferencesKey(AppPreferences.PROXY_URL.key),
+                                    AppPreferences.PROXY_URL,
                                     proxyServerUrl,
                                 )
                             }
@@ -151,7 +149,7 @@ fun AdvancedSettingsScreen() {
                     textFieldValue = primaryJsoupStringAgent.value,
                     onResetButtonClick = {
                         settingsScreenVM.changeSettingPreferenceValue(
-                            stringPreferencesKey(AppPreferences.JSOUP_USER_AGENT.key),
+                            AppPreferences.JSOUP_USER_AGENT,
                             Constants.DEFAULT_USER_AGENT,
                         )
                     },
@@ -168,7 +166,7 @@ fun AdvancedSettingsScreen() {
                         }
                         if (isReadOnlyTextFieldForPrimaryUserAgent.value) {
                             settingsScreenVM.changeSettingPreferenceValue(
-                                stringPreferencesKey(AppPreferences.JSOUP_USER_AGENT.key),
+                                AppPreferences.JSOUP_USER_AGENT,
                                 primaryJsoupStringAgent.value,
                             )
                         }
@@ -185,7 +183,7 @@ fun AdvancedSettingsScreen() {
                     textFieldValue = localizationServerURL.value,
                     onResetButtonClick = {
                         settingsScreenVM.changeSettingPreferenceValue(
-                            stringPreferencesKey(AppPreferences.LOCALIZATION_SERVER_URL.key),
+                            AppPreferences.LOCALIZATION_SERVER_URL,
                             Constants.LOCALIZATION_SERVER_URL,
                         )
                     },
@@ -202,7 +200,7 @@ fun AdvancedSettingsScreen() {
                         }
                         if (isReadOnlyTextFieldForLocalizationServer.value) {
                             settingsScreenVM.changeSettingPreferenceValue(
-                                stringPreferencesKey(AppPreferences.LOCALIZATION_SERVER_URL.key),
+                                AppPreferences.LOCALIZATION_SERVER_URL,
                                 localizationServerURL.value,
                             )
                         }

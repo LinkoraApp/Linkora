@@ -25,7 +25,6 @@ import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
-import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.rememberLocalizedString
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,7 +57,7 @@ fun ThemeSettingsScreen() {
                             isSwitchEnabled = preferences.useSystemTheme,
                             onSwitchStateChange = {
                                 settingsScreenViewModel.changeSettingPreferenceValue(
-                                    booleanPreferencesKey(AppPreferences.FOLLOW_SYSTEM_THEME.key),
+                                    AppPreferences.FOLLOW_SYSTEM_THEME,
                                     it,
                                 )
                             },
@@ -78,7 +77,7 @@ fun ThemeSettingsScreen() {
                             isSwitchEnabled = preferences.useDarkTheme,
                             onSwitchStateChange = {
                                 settingsScreenViewModel.changeSettingPreferenceValue(
-                                    booleanPreferencesKey(AppPreferences.DARK_THEME.key),
+                                    AppPreferences.DARK_THEME,
                                     it,
                                 )
                             },
@@ -101,7 +100,7 @@ fun ThemeSettingsScreen() {
                             isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
                                 settingsScreenViewModel.changeSettingPreferenceValue(
-                                    booleanPreferencesKey(AppPreferences.AMOLED_THEME_STATE.key),
+                                    AppPreferences.AMOLED_THEME_STATE,
                                     it,
                                 )
                             },
@@ -121,7 +120,7 @@ fun ThemeSettingsScreen() {
                             isSwitchEnabled = preferences.useDynamicTheming,
                             onSwitchStateChange = {
                                 settingsScreenViewModel.changeSettingPreferenceValue(
-                                    booleanPreferencesKey(AppPreferences.DYNAMIC_THEMING.key),
+                                    AppPreferences.DYNAMIC_THEMING,
                                     it,
                                 )
                             },

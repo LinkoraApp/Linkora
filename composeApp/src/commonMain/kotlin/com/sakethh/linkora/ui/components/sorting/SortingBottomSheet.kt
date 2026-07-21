@@ -43,7 +43,6 @@ import com.sakethh.linkora.ui.domain.SortingType
 import com.sakethh.linkora.ui.screens.collections.components.ItemDivider
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
 import com.sakethh.linkora.ui.utils.pressScaleEffect
-import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
 
@@ -190,7 +189,7 @@ fun SortingBottomSheet(sortingBottomSheetParam: SortingBottomSheetParam) {
                     isSwitchEnabled = preferences.forceShuffleLinks,
                     onSwitchStateChange = {
                         sortingBtmSheetVM.changeSettingPreferenceValue(
-                            preferenceKey = booleanPreferencesKey(AppPreferences.FORCE_SHUFFLE_LINKS.key),
+                            preferenceKey = AppPreferences.FORCE_SHUFFLE_LINKS,
                             newValue = it,
                             onCompletion = hideBtmSheet,
                         )

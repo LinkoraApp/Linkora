@@ -30,8 +30,6 @@ import com.sakethh.linkora.domain.repository.local.RefreshLinksRepo
 import com.sakethh.linkora.domain.repository.local.WebCaptureRepo
 import com.sakethh.linkora.utils.getAbsolutePathFromSafUri
 import com.sakethh.linkora.utils.getLocalizedString
-import com.sakethh.linkora.utils.longPreferencesKey
-import com.sakethh.linkora.utils.stringPreferencesKey
 import com.sakethh.linkora.worker.AllLinksWebCaptureWorker
 import com.sakethh.linkora.worker.RefreshAllLinksWorker
 import com.sakethh.linkora.worker.WebCaptureWorker
@@ -72,13 +70,11 @@ actual class NativeUtils(
         ).setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST).build()
 
         preferencesRepository.changePreferenceValue(
-            preferenceKey = stringPreferencesKey(
-                AppPreferences.REFRESH_ALL_LINKS_WORKER_UUID.key,
-            ),
+            preferenceKey = AppPreferences.REFRESH_ALL_LINKS_WORKER_UUID,
             newValue = request.id.toString(),
         )
         preferencesRepository.changePreferenceValue(
-            preferenceKey = longPreferencesKey(AppPreferences.REFRESHED_LINKS_COUNT.key),
+            preferenceKey = AppPreferences.REFRESHED_LINKS_COUNT,
             newValue = 0,
         )
         refreshLinksRepo.deleteAllIds()
@@ -229,9 +225,7 @@ actual class NativeUtils(
             ).setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST).build()
 
             DependencyContainer.preferencesRepo.changePreferenceValue(
-                preferenceKey = stringPreferencesKey(
-                    AppPreferences.WEB_CAPTURE_ALL_LINKS_WORKER_UUID.key,
-                ),
+                preferenceKey = AppPreferences.WEB_CAPTURE_ALL_LINKS_WORKER_UUID,
                 newValue = request.id.toString(),
             )
 
@@ -248,9 +242,7 @@ actual class NativeUtils(
 
         actual fun isWebCaptureWorkerEnqueued(): Flow<Boolean?> = channelFlow {
             val workerId = DependencyContainer.preferencesRepo.readPreferenceValue(
-                stringPreferencesKey(
-                    AppPreferences.WEB_CAPTURE_ALL_LINKS_WORKER_UUID.key,
-                ),
+                preferenceKey = AppPreferences.WEB_CAPTURE_ALL_LINKS_WORKER_UUID,
             ) ?: DependencyContainer.preferencesRepo.getPreferences().allLinksWebCaptureWorkerTag
 
             WorkManager.getInstance(context)

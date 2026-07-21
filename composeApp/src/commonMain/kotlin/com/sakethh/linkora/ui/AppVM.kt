@@ -47,17 +47,14 @@ import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM.Companion.
 import com.sakethh.linkora.ui.screens.settings.section.data.sync.ServerManagementViewModel
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
-import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.canPushToServer
 import com.sakethh.linkora.utils.canReadFromServer
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.getRemoteOnlyFailureMsg
 import com.sakethh.linkora.utils.isServerConfigured
 import com.sakethh.linkora.utils.lastSyncedLocally
-import com.sakethh.linkora.utils.longPreferencesKey
 import com.sakethh.linkora.utils.pushSnackbar
 import com.sakethh.linkora.utils.pushSnackbarOnFailure
-import com.sakethh.linkora.utils.stringPreferencesKey
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -122,7 +119,7 @@ class AppVM(
         nativeUtils.platformRunBlocking {
             val showOnboarding =
                 preferencesRepository.readPreferenceValue(
-                    booleanPreferencesKey(AppPreferences.SHOULD_SHOW_ONBOARDING.key),
+                    AppPreferences.SHOULD_SHOW_ONBOARDING,
                 ) != false &&
                     linksRepo.isLinksTableEmpty() &&
                     foldersRepo.isFoldersTableEmpty() &&
@@ -134,13 +131,13 @@ class AppVM(
                 onBoardingCompleted.value = true
                 when (
                     preferencesRepository.readPreferenceValue(
-                        stringPreferencesKey(AppPreferences.INITIAL_ROUTE.key),
+                        AppPreferences.INITIAL_ROUTE,
                     )
                 ) {
                     Navigation.Root.HomeScreen.toString() ->
                         if (
                             preferencesRepository.readPreferenceValue(
-                                booleanPreferencesKey(AppPreferences.HOME_SCREEN_VISIBILITY.key),
+                                AppPreferences.HOME_SCREEN_VISIBILITY,
                             ) == false
                         ) {
                             Navigation.Root.CollectionsScreen
@@ -200,7 +197,7 @@ class AppVM(
     }
 
     suspend fun getLastSyncedTime(): Long = preferencesRepository.readPreferenceValue(
-        preferenceKey = longPreferencesKey(AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key),
+        preferenceKey = AppPreferences.LAST_TIME_SYNCED_WITH_SERVER,
     ) ?: 0
 
     var isAnySnapshotOngoing = snapshotFlow {
@@ -322,7 +319,7 @@ class AppVM(
         viewModelScope
             .launch {
                 preferencesRepository.changePreferenceValue(
-                    preferenceKey = booleanPreferencesKey(AppPreferences.SHOULD_SHOW_ONBOARDING.key),
+                    preferenceKey = AppPreferences.SHOULD_SHOW_ONBOARDING,
                     newValue = false,
                 )
             }

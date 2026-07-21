@@ -10,7 +10,6 @@ import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
-import com.sakethh.linkora.utils.stringPreferencesKey
 
 class SnapshotWorker(
     appContext: Context,
@@ -23,7 +22,7 @@ class SnapshotWorker(
             val fileType = inputData.getString(key = "fileType")!!
             val exportLocation =
                 DependencyContainer.preferencesRepo.readPreferenceValue(
-                    stringPreferencesKey(AppPreferences.BACKUP_LOCATION.key),
+                    preferenceKey = AppPreferences.BACKUP_LOCATION,
                 )
                     ?: return Result.failure().also {
                         val failureMsg = "Couldn't save snapshot as save location can't be retrieved"

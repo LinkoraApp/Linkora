@@ -16,7 +16,6 @@ import com.sakethh.linkora.service.RefreshAllLinksNotificationService
 import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
 import com.sakethh.linkora.ui.screens.settings.section.data.RefreshLinksState
 import com.sakethh.linkora.ui.utils.linkoraLog
-import com.sakethh.linkora.utils.longPreferencesKey
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
@@ -67,7 +66,7 @@ class RefreshAllLinksWorker(
     override suspend fun doWork(): Result = coroutineScope {
         val preferences = DependencyContainer.preferencesRepo.getPreferences()
         processedLinksCount = DependencyContainer.preferencesRepo.readPreferenceValue(
-            longPreferencesKey(AppPreferences.REFRESHED_LINKS_COUNT.key),
+            preferenceKey = AppPreferences.REFRESHED_LINKS_COUNT,
         ) ?: 0
 
         refreshAllLinksNotificationService.clearNotifications()
@@ -78,7 +77,7 @@ class RefreshAllLinksWorker(
         linksProcessedChannelJob = launch {
             linksProcessedChannel?.consumeAsFlow()?.cancellable()?.collect { refreshedLinkId ->
                 DependencyContainer.preferencesRepo.changePreferenceValue(
-                    preferenceKey = longPreferencesKey(AppPreferences.REFRESHED_LINKS_COUNT.key),
+                    preferenceKey = AppPreferences.REFRESHED_LINKS_COUNT,
                     newValue = ++processedLinksCount,
                 )
 

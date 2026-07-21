@@ -2,7 +2,6 @@ package com.sakethh.linkora.ui.components.sorting
 
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
-import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.platform.NativeUtils
@@ -11,24 +10,21 @@ import com.sakethh.linkora.ui.domain.SortingType
 import com.sakethh.linkora.ui.domain.model.SortingBtmSheet
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.utils.getLocalizedString
-import com.sakethh.linkora.utils.stringPreferencesKey
 
 class SortingBtmSheetVM(
     preferencesRepository: PreferencesRepository,
     nativeUtils: NativeUtils,
     permissionManager: PermissionManager,
     webCapture: NativeUtils.WebCapture,
-    webCaptureDatabaseManager : WebCaptureDatabaseManager
-) : SettingsScreenViewModel(preferencesRepository, nativeUtils, permissionManager, webCapture,webCaptureDatabaseManager) {
+    webCaptureDatabaseManager: WebCaptureDatabaseManager,
+) : SettingsScreenViewModel(preferencesRepository, nativeUtils, permissionManager, webCapture, webCaptureDatabaseManager) {
     fun sortingBtmSheetData(): List<SortingBtmSheet> = listOf(
         SortingBtmSheet(
             sortingName = Localization.Key.NewestToOldest.getLocalizedString(),
             onClick = {
                 changeSettingPreferenceValue(
                     preferenceKey =
-                    stringPreferencesKey(
-                        AppPreferences.SORTING_PREFERENCE.key,
-                    ),
+                    AppPreferences.SORTING_PREFERENCE,
                     newValue = SortingType.NEW_TO_OLD.name,
                 )
             },
@@ -39,9 +35,7 @@ class SortingBtmSheetVM(
             onClick = {
                 changeSettingPreferenceValue(
                     preferenceKey =
-                    stringPreferencesKey(
-                        AppPreferences.SORTING_PREFERENCE.key,
-                    ),
+                    AppPreferences.SORTING_PREFERENCE,
                     newValue = SortingType.OLD_TO_NEW.name,
                 )
             },
@@ -52,9 +46,7 @@ class SortingBtmSheetVM(
             onClick = {
                 changeSettingPreferenceValue(
                     preferenceKey =
-                    stringPreferencesKey(
-                        AppPreferences.SORTING_PREFERENCE.key,
-                    ),
+                    AppPreferences.SORTING_PREFERENCE,
                     newValue = SortingType.A_TO_Z.name,
                 )
             },
@@ -66,9 +58,7 @@ class SortingBtmSheetVM(
             onClick = {
                 changeSettingPreferenceValue(
                     preferenceKey =
-                    stringPreferencesKey(
-                        AppPreferences.SORTING_PREFERENCE.key,
-                    ),
+                    AppPreferences.SORTING_PREFERENCE,
                     newValue = SortingType.Z_TO_A.name,
                 )
             },
