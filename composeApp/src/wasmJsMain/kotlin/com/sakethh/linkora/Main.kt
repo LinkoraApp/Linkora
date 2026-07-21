@@ -82,6 +82,7 @@ fun main() {
             permissionManager = PermissionManager(),
             localDatabase =
             Room.databaseBuilder<LocalDatabase>("${LocalDatabase.NAME}.db")
+                .addMigrations(LocalDatabase.MIGRATION_14_15)
                 .setDriver(WebWorkerSQLiteDriver(createWorker()))
                 .build(),
             platformPreference = PlatformPreference,

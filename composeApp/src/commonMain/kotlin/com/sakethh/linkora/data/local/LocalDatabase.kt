@@ -37,20 +37,20 @@ import com.sakethh.linkora.utils.getSystemEpochSeconds
     version = 15,
     exportSchema = true,
     entities =
-    [
-        Link::class,
-        Folder::class,
-        LocalizedString::class,
-        LocalizedLanguage::class,
-        Panel::class,
-        PanelFolder::class,
-        PendingSyncQueue::class,
-        Snapshot::class,
-        Tag::class,
-        LinkTag::class,
-        RefreshLink::class,
-        CaptureTrack::class,
-    ],
+        [
+            Link::class,
+            Folder::class,
+            LocalizedString::class,
+            LocalizedLanguage::class,
+            Panel::class,
+            PanelFolder::class,
+            PendingSyncQueue::class,
+            Snapshot::class,
+            Tag::class,
+            LinkTag::class,
+            RefreshLink::class,
+            CaptureTrack::class,
+        ],
 )
 @ConstructedBy(LocalDatabaseConstructor::class)
 @TypeConverters(TypeConverter::class)
@@ -130,7 +130,7 @@ abstract class LocalDatabase : RoomDatabase() {
                     )
                     connection.executeSQL(
                         "INSERT INTO folders_table_new (folderName, infoForSaving, id) " +
-                            "SELECT folderName, infoForSaving, id FROM folders_table",
+                                "SELECT folderName, infoForSaving, id FROM folders_table",
                     )
                     connection.executeSQL("DROP TABLE folders_table")
                     connection.executeSQL("ALTER TABLE folders_table_new RENAME TO folders_table")
@@ -141,14 +141,14 @@ abstract class LocalDatabase : RoomDatabase() {
                     )
                     connection.executeSQL(
                         "INSERT INTO links_table_new (id, title, webURL, baseURL, imgURL, infoForSaving, " +
-                            "isLinkedWithSavedLinks, isLinkedWithFolders, keyOfLinkedFolder, " +
-                            "isLinkedWithImpFolder, keyOfImpLinkedFolder, " +
-                            "isLinkedWithArchivedFolder, keyOfArchiveLinkedFolder) " +
-                            "SELECT id, title, webURL, baseURL, imgURL, infoForSaving, " +
-                            "isLinkedWithSavedLinks, isLinkedWithFolders, keyOfLinkedFolder, " +
-                            "isLinkedWithImpFolder, keyOfImpLinkedFolder," +
-                            "isLinkedWithArchivedFolder, keyOfArchiveLinkedFolder " +
-                            "FROM links_table",
+                                "isLinkedWithSavedLinks, isLinkedWithFolders, keyOfLinkedFolder, " +
+                                "isLinkedWithImpFolder, keyOfImpLinkedFolder, " +
+                                "isLinkedWithArchivedFolder, keyOfArchiveLinkedFolder) " +
+                                "SELECT id, title, webURL, baseURL, imgURL, infoForSaving, " +
+                                "isLinkedWithSavedLinks, isLinkedWithFolders, keyOfLinkedFolder, " +
+                                "isLinkedWithImpFolder, keyOfImpLinkedFolder," +
+                                "isLinkedWithArchivedFolder, keyOfArchiveLinkedFolder " +
+                                "FROM links_table",
                     )
                     connection.executeSQL("DROP TABLE links_table")
                     connection.executeSQL("ALTER TABLE links_table_new RENAME TO links_table")
@@ -551,9 +551,7 @@ abstract class LocalDatabase : RoomDatabase() {
         val MIGRATION_14_15 =
             object : Migration(14, 15) {
                 override suspend fun migrate(connection: SQLiteConnection) {
-                    connection.executeSQL(
-                        "CREATE TABLE IF NOT EXISTS `CaptureTrack` (`capturedLinkId` INTEGER NOT NULL, PRIMARY KEY(`capturedLinkId`))",
-                    )
+                    connection.executeSQL("CREATE TABLE IF NOT EXISTS `CaptureTrack` (`capturedLinkId` TEXT NOT NULL, `captureWorkerId` TEXT, PRIMARY KEY(`capturedLinkId`))")
                 }
             }
     }
