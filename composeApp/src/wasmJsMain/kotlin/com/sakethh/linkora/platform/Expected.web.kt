@@ -57,8 +57,7 @@ actual val showDynamicThemingOption: Boolean = false
 actual val platform: Platform = Platform.Web
 
 actual class PermissionManager {
-    actual suspend fun permittedToShowNotification(): PermissionStatus =
-        PermissionStatus.NeedsRequest
+    actual suspend fun permittedToShowNotification(): PermissionStatus = PermissionStatus.NeedsRequest
 
     actual suspend fun isStorageAccessPermitted(): PermissionStatus = PermissionStatus.NeedsRequest
 }
@@ -103,11 +102,9 @@ actual class FileManager {
 
     actual suspend fun importFromHTMLString(): Flow<Result<String>> = emptyFlow()
 
-    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> =
-        emptyFlow()
+    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> = emptyFlow()
 
-    actual suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>> =
-        emptyFlow()
+    actual suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>> = emptyFlow()
 
     actual suspend fun getSyncServerCertificate(
         onCompletion: (provider: String) -> Unit,

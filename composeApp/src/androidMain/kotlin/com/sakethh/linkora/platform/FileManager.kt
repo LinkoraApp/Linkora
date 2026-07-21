@@ -44,7 +44,6 @@ import java.io.ByteArrayInputStream
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 
-
 actual class FileManager(
     private val context: Context,
 ) {
@@ -234,12 +233,14 @@ actual class FileManager(
                     panels = PanelForJSONExportSchema(
                         panels = panels.panels.map {
                             it.copy(
-                                remoteId = null, lastModified = currentSystemEpochSeconds
+                                remoteId = null,
+                                lastModified = currentSystemEpochSeconds
                             )
                         },
                         panelFolders = panels.panelFolders.map {
                             it.copy(
-                                remoteId = null, lastModified = currentSystemEpochSeconds
+                                remoteId = null,
+                                lastModified = currentSystemEpochSeconds
                             )
                         },
                     ),
@@ -304,11 +305,9 @@ actual class FileManager(
     }
 
     // these two operations aren't called on android
-    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> =
-        emptyFlow()
+    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> = emptyFlow()
 
-    actual suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>> =
-        emptyFlow()
+    actual suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>> = emptyFlow()
 
     actual suspend fun openWebCaptureFolder(link: String) {
         val captureFolderUUID =

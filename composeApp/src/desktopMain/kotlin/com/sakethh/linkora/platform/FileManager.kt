@@ -312,8 +312,7 @@ actual class FileManager {
         }
     }
 
-    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> =
-        flow {
+    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> = flow {
             val importFile =
                 getFile(fileType = FileType.JSON, fileLocation = fileLocation)
                     ?: return@flow emit(
