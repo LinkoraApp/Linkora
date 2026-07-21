@@ -1,8 +1,8 @@
 # Linkora
 
 Save, organize, and sync your links between Android, desktop, and web. Whether you're quickly
-bookmarking something or managing a structured folder hierarchy with tags, Linkora handles it all
-with optional self-hosted sync.
+bookmarking something, saving webpages locally as standalone HTML files, or managing a structured
+folder hierarchy with tags, Linkora handles it all with optional self-hosted sync.
 
 A browser extension is available for saving web links directly to Linkora via the sync-server.
 
@@ -42,6 +42,7 @@ Get it on Arch Linux:
 - **Customize link metadata** and auto-recognize images/titles from web pages
 - **Share from other apps** (Android) and add folders to **_Panels_** for quick access
 - **Sort, search, import/export** data in JSON and HTML formats with **auto-backups**
+- **Save webpages as standalone HTML files** with all processing happening completely on your device
 - **Keep your data in sync across devices** with
   optional [self-hostable sync-server](https://github.com/LinkoraApp/sync-server)
 
@@ -71,6 +72,8 @@ Get it on Arch Linux:
 - Coroutines and Flows for async operations
 - [Ksoup](https://github.com/fleeksoft/ksoup) for HTML parsing and metadata extraction
 - [Coil](https://github.com/coil-kt/coil) for image loading
+- [capture-core](https://github.com/LinkoraApp/capture-core) (
+  a [monolith](https://github.com/Y2Z/monolith) fork) for saving webpages as standalone HTML files
 - Custom syncing mechanisms for handling syncing with remote server
 - [Android-specific] WorkManager for snapshots and bulk metadata refresh for links
 
