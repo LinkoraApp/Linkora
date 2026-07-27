@@ -37,10 +37,25 @@ jobs:
           java-version: '21'
           cache: gradle
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Read Rust Toolchain Version
+        id: rust-toolchain
+        uses: SebRollen/toml-action@v1.2.0
         with:
+          file: 'web-capture/rust-toolchain.toml'
+          field: 'toolchain.channel'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ steps.rust-toolchain.outputs.value }}
           targets: ${{ matrix.rust-target }}
+
+      - name: Verify Rust Version
+        run: |
+          rustc --version
+          cargo --version
+          echo "--- Content of rust-toolchain.toml ---"
+          cat web-capture/rust-toolchain.toml
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
