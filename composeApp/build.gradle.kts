@@ -246,7 +246,7 @@ compose.desktop {
             )
             packageName = "Linkora"
             this.vendor = "Saketh Pathike"
-            this.packageVersion = "1.0.16"
+            this.packageVersion = "1.0.17"
 
             windows {
                 this.iconFile.set(project.file("src/desktopMain/resources/logo.ico"))
