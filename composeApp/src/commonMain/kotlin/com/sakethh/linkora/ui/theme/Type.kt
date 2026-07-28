@@ -15,7 +15,7 @@ import linkora.composeapp.generated.resources.regular
 import linkora.composeapp.generated.resources.semibold
 import org.jetbrains.compose.resources.Font
 
-private val googleSansFlexFontFamily
+ val googleSansFlexFontFamily
     @Composable
     get() =
         FontFamily(

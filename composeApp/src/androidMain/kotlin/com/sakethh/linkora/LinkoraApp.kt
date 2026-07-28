@@ -3,6 +3,7 @@ package com.sakethh.linkora
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.Intent
 import android.os.Build
 import androidx.core.net.toUri
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
@@ -19,6 +20,7 @@ import com.sakethh.linkora.platform.Network
 import com.sakethh.linkora.platform.PermissionManager
 import com.sakethh.linkora.platform.PlatformPreference
 import com.sakethh.linkora.ui.utils.linkoraLog
+import com.sakethh.linkora.utils.AndroidConstants
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.getAbsolutePathFromSafUri
 import kotlinx.coroutines.Dispatchers
@@ -90,6 +92,15 @@ class LinkoraApp : Application() {
                 languageCode = preferences.preferredAppLanguageCode,
                 languageName = preferences.preferredAppLanguageName,
             )?.join()
+        }
+        Thread.setDefaultUncaughtExceptionHandler { _, throwable ->
+            val crashLogActivityIntent = Intent(this, CrashLogActivity::class.java)
+            crashLogActivityIntent.putExtra(
+                AndroidConstants.CRASH_LOG_KEY,
+                throwable.stackTraceToString()
+            )
+            crashLogActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(crashLogActivityIntent)
         }
         createNotificationChannel()
     }

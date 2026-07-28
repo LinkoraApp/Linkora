@@ -20,6 +20,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Linkora"
         android:usesCleartextTraffic="true">
+        <activity
+            android:name=".CrashLogActivity"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.Linkora">
+        </activity>
         <receiver
             android:name=".service.CancelRefreshingActionReceiver"
             android:exported="true" />

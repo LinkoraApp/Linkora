@@ -35,7 +35,6 @@ import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
 import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.PermissionManager
-import com.sakethh.linkora.platform.PlatformIODispatcher
 import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
 import com.sakethh.linkora.ui.domain.AppAction
 import com.sakethh.linkora.ui.domain.TransferActionType
@@ -279,7 +278,7 @@ class AppVM(
                 dataSyncingNotificationService.clearNotification()
             }
 
-        viewModelScope.launch(PlatformIODispatcher) {
+        viewModelScope.launch(Dispatchers.Default) {
             if (preferencesAsFlow.value.useWebCaptures) {
                 webCapture.init()
             }
