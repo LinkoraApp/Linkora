@@ -23,32 +23,35 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.retain.retain
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
-import com.sakethh.linkora.ui.domain.Font
-import com.sakethh.linkora.ui.theme.DarkColors
-import com.sakethh.linkora.ui.theme.LightColors
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.ui.theme.LinkoraTheme
-import com.sakethh.linkora.ui.theme.googleSansFlexFontFamily
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.AndroidConstants
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
+import com.sakethh.linkora.utils.getAppColorScheme
 
 class CrashLogActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val preferencesRepo = DependencyContainer.preferencesRepo
+
         setContent {
             val localClipboardManager = LocalClipboardManager.current
             val crashLogs = retain {
@@ -56,9 +59,15 @@ class CrashLogActivity : ComponentActivity() {
                     ?: "Nothing found"
             }
             val localContext = LocalContext.current
+            val context = LocalContext.current
+            val isSystemInDarkTheme = isSystemInDarkTheme()
+            val preferences by preferencesRepo.preferencesAsFlow.collectAsStateWithLifecycle()
+            val colorScheme = retain(isSystemInDarkTheme, preferences) {
+                getAppColorScheme(preferences, context, isSystemInDarkTheme)
+            }
             LinkoraTheme(
-                colorScheme = if (isSystemInDarkTheme()) DarkColors else LightColors,
-                preferredFont = Font.GOOGLE_SANS_FLEX
+                colorScheme = colorScheme,
+                preferredFont = preferences.selectedFont
             ) {
                 Surface {
                     Scaffold(bottomBar = {
@@ -79,9 +88,8 @@ class CrashLogActivity : ComponentActivity() {
                                     .pressScaleEffect()
                             ) {
                                 Text(
-                                    fontFamily = googleSansFlexFontFamily,
+                                    style = MaterialTheme.typography.titleMedium,
                                     fontSize = 16.sp,
-                                    fontWeight = FontWeight.Medium,
                                     text = "Copy Crash Log"
                                 )
                             }
@@ -114,9 +122,8 @@ class CrashLogActivity : ComponentActivity() {
                                     .pressScaleEffect()
                             ) {
                                 Text(
-                                    fontFamily = googleSansFlexFontFamily,
+                                    style = MaterialTheme.typography.titleMedium,
                                     fontSize = 16.sp,
-                                    fontWeight = FontWeight.Medium,
                                     text = "Report Crash"
                                 )
                             }
@@ -134,16 +141,14 @@ class CrashLogActivity : ComponentActivity() {
                         ) {
                             Text(
                                 fontSize = 24.sp,
-                                fontFamily = googleSansFlexFontFamily,
-                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleLarge,
                                 text = "Linkora Crashed",
                                 modifier = Modifier
                                     .padding(top = 25.dp)
                             )
                             Text(
                                 fontSize = 16.sp,
-                                fontFamily = googleSansFlexFontFamily,
-                                fontWeight = FontWeight.Medium,
+                                style = MaterialTheme.typography.titleMedium,
                                 text = crashLogs,
                                 softWrap = false,
                                 modifier = Modifier

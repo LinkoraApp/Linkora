@@ -9,10 +9,17 @@ import android.os.Build
 import android.os.Environment
 import android.os.storage.StorageManager
 import android.provider.DocumentsContract
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.ui.graphics.Color
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
+import com.sakethh.linkora.ui.theme.DarkColors
+import com.sakethh.linkora.ui.theme.LightColors
 import getFileNameWithTimestamp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -74,4 +81,88 @@ fun getAbsolutePathFromSafUri(context: Context, uri: Uri): String? {
     }
 
     return null
+}
+
+fun getAppColorScheme(
+    preferences: AppPreferences,
+    context: Context,
+    isSystemInDarkTheme: Boolean
+): ColorScheme {
+    val darkColors =
+        DarkColors.copy(
+            background =
+                if (preferences.useAmoledTheme) Color(0xFF000000) else DarkColors.background,
+            surface = if (preferences.useAmoledTheme) Color(0xFF000000) else DarkColors.surface,
+        )
+
+    return when {
+        preferences.useDynamicTheming && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            if (preferences.useSystemTheme) {
+                if (isSystemInDarkTheme) {
+                    dynamicDarkColorScheme(context)
+                        .copy(
+                            background =
+                                if (preferences.useAmoledTheme) {
+                                    Color(
+                                        0xFF000000,
+                                    )
+                                } else {
+                                    dynamicDarkColorScheme(context).background
+                                },
+                            surface =
+                                if (preferences.useAmoledTheme) {
+                                    Color(
+                                        0xFF000000,
+                                    )
+                                } else {
+                                    dynamicDarkColorScheme(
+                                        context,
+                                    )
+                                        .surface
+                                },
+                        )
+                } else {
+                    dynamicLightColorScheme(
+                        context,
+                    )
+                }
+            } else {
+                if (preferences.useDarkTheme) {
+                    dynamicDarkColorScheme(
+                        context,
+                    )
+                        .copy(
+                            background =
+                                if (preferences.useAmoledTheme) {
+                                    Color(
+                                        0xFF000000,
+                                    )
+                                } else {
+                                    dynamicDarkColorScheme(context).background
+                                },
+                            surface =
+                                if (preferences.useAmoledTheme) {
+                                    Color(
+                                        0xFF000000,
+                                    )
+                                } else {
+                                    dynamicDarkColorScheme(
+                                        context,
+                                    )
+                                        .surface
+                                },
+                        )
+                } else {
+                    dynamicLightColorScheme(context)
+                }
+            }
+        }
+
+        else ->
+            if (preferences.useSystemTheme) {
+                if (isSystemInDarkTheme) darkColors else LightColors
+            } else {
+                if (preferences.useDarkTheme) darkColors else LightColors
+            }
+    }
 }

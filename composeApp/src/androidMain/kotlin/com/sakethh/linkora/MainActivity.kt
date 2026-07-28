@@ -12,8 +12,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,7 +19,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -35,11 +32,10 @@ import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.components.NotificationPermissionDialogBox
-import com.sakethh.linkora.ui.theme.DarkColors
-import com.sakethh.linkora.ui.theme.LightColors
 import com.sakethh.linkora.ui.theme.LinkoraTheme
 import com.sakethh.linkora.utils.AndroidUIEvent
 import com.sakethh.linkora.utils.AndroidUIEvent.pushUIEvent
+import com.sakethh.linkora.utils.getAppColorScheme
 
 class MainActivity : ComponentActivity() {
     companion object {
@@ -115,125 +111,56 @@ class MainActivity : ComponentActivity() {
             val mainVM =
                 viewModel<MainVM>(
                     factory =
-                    viewModelFactory {
-                        initializer {
-                            MainVM(
-                                launchAction = {
-                                    when (it) {
-                                        Action.LaunchDirectoryPicker -> {
-                                            activityResultLauncherForPickingADirectory.launch(null)
-                                        }
+                        viewModelFactory {
+                            initializer {
+                                MainVM(
+                                    launchAction = {
+                                        when (it) {
+                                            Action.LaunchDirectoryPicker -> {
+                                                activityResultLauncherForPickingADirectory.launch(
+                                                    null
+                                                )
+                                            }
 
-                                        is Action.LaunchFileImport -> {
-                                            activityResultLauncherForFileImport.launch(it.fileType)
-                                        }
+                                            is Action.LaunchFileImport -> {
+                                                activityResultLauncherForFileImport.launch(it.fileType)
+                                            }
 
-                                        Action.LaunchWriteExternalStoragePermission -> {
-                                            storageRuntimePermission.launch(
-                                                android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                                            )
-                                        }
+                                            Action.LaunchWriteExternalStoragePermission -> {
+                                                storageRuntimePermission.launch(
+                                                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                                )
+                                            }
 
-                                        Action.Minimize -> moveTaskToBack(true)
+                                            Action.Minimize -> moveTaskToBack(true)
 
-                                        Action.ShowNotificationPermissionDialog -> {
-                                            showNotificationPermissionDialog = true
+                                            Action.ShowNotificationPermissionDialog -> {
+                                                showNotificationPermissionDialog = true
+                                            }
                                         }
-                                    }
-                                },
-                            )
-                        }
-                    },
+                                    },
+                                )
+                            }
+                        },
                 )
             val preferences by mainVM.preferencesAsFlow.collectAsStateWithLifecycle()
             CompositionLocalProvider(
                 LocalNavController provides navController,
                 LocalFabController provides
-                    retain {
-                        FabStateController()
-                    },
+                        retain {
+                            FabStateController()
+                        },
                 LocalPlatform provides Platform.Android,
             ) {
                 val context = LocalContext.current
-                val darkColors =
-                    DarkColors.copy(
-                        background =
-                        if (preferences.useAmoledTheme) Color(0xFF000000) else DarkColors.background,
-                        surface = if (preferences.useAmoledTheme) Color(0xFF000000) else DarkColors.surface,
-                    )
-                val colors =
-                    when {
-                        preferences.useDynamicTheming && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                            if (preferences.useSystemTheme) {
-                                if (isSystemInDarkTheme()) {
-                                    dynamicDarkColorScheme(context)
-                                        .copy(
-                                            background =
-                                            if (preferences.useAmoledTheme) {
-                                                Color(
-                                                    0xFF000000,
-                                                )
-                                            } else {
-                                                dynamicDarkColorScheme(context).background
-                                            },
-                                            surface =
-                                            if (preferences.useAmoledTheme) {
-                                                Color(
-                                                    0xFF000000,
-                                                )
-                                            } else {
-                                                dynamicDarkColorScheme(
-                                                    context,
-                                                )
-                                                    .surface
-                                            },
-                                        )
-                                } else {
-                                    dynamicLightColorScheme(
-                                        context,
-                                    )
-                                }
-                            } else {
-                                if (preferences.useDarkTheme) {
-                                    dynamicDarkColorScheme(
-                                        context,
-                                    )
-                                        .copy(
-                                            background =
-                                            if (preferences.useAmoledTheme) {
-                                                Color(
-                                                    0xFF000000,
-                                                )
-                                            } else {
-                                                dynamicDarkColorScheme(context).background
-                                            },
-                                            surface =
-                                            if (preferences.useAmoledTheme) {
-                                                Color(
-                                                    0xFF000000,
-                                                )
-                                            } else {
-                                                dynamicDarkColorScheme(
-                                                    context,
-                                                )
-                                                    .surface
-                                            },
-                                        )
-                                } else {
-                                    dynamicLightColorScheme(context)
-                                }
-                            }
-                        }
+                val isSystemInDarkTheme = isSystemInDarkTheme()
 
-                        else ->
-                            if (preferences.useSystemTheme) {
-                                if (isSystemInDarkTheme()) darkColors else LightColors
-                            } else {
-                                if (preferences.useDarkTheme) darkColors else LightColors
-                            }
-                    }
+                val colorScheme = retain(isSystemInDarkTheme, preferences) {
+                    getAppColorScheme(preferences, context, isSystemInDarkTheme)
+                }
+
                 LinkoraTheme(
-                    colorScheme = colors,
+                    colorScheme = colorScheme,
                     preferredFont = preferences.selectedFont,
                 ) {
                     Surface {
