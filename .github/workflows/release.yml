@@ -7,9 +7,6 @@ on:
         description: 'Release tag to upload assets to'
         required: true
 
-env:
-  RUSTFLAGS: "--remap-path-prefix=${{ github.workspace }}=. --remap-path-prefix=${{ env.HOME }}/.cargo=.cargo"
-
 permissions:
   contents: write
 
@@ -52,6 +49,10 @@ jobs:
         with:
           toolchain: ${{ steps.rust-toolchain.outputs.value }}
           targets: ${{ matrix.rust-target }}
+
+      - name: Set RUSTFLAGS
+        shell: bash
+        run: echo "RUSTFLAGS=--remap-path-prefix=${{ github.workspace }}=. --remap-path-prefix=$HOME/.cargo=.cargo" >> $GITHUB_ENV
 
       - name: Verify Rust Version
         run: |
