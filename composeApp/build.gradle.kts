@@ -230,6 +230,29 @@ dependencies {
     add("kspWasmJs", libs.androidx.room3.compiler)
 }
 
+private val rustDesktopLibDir =
+    project(":web-capture").layout.buildDirectory.dir("rustLibs/desktop")
+rustDesktopLibDir.get().asFile.mkdirs()
+
+private val buildTasks =
+    listOf(
+        "createDistributable",
+        "packageMsi",
+        "packageExe",
+        "packageDeb",
+        "packageAppImage",
+        "packageRpm",
+        "packageDmg",
+        "packagePkg",
+        "packageUberJarForCurrentOS",
+        "packageDistributionForCurrentOS",
+        "runDistributable",
+    )
+
+tasks.matching { it.name in buildTasks }.configureEach {
+    dependsOn(":web-capture:cargoBuildDesktop")
+}
+
 compose.desktop {
     application {
         mainClass = "com.sakethh.linkora.MainKt"
@@ -246,7 +269,7 @@ compose.desktop {
             )
             packageName = "Linkora"
             this.vendor = "Saketh Pathike"
-            this.packageVersion = "1.0.17"
+            this.packageVersion = "1.0.18"
 
             windows {
                 this.iconFile.set(project.file("src/desktopMain/resources/logo.ico"))
@@ -258,28 +281,35 @@ compose.desktop {
             modules("jdk.unsupported")
             modules("jdk.unsupported.desktop")
 
-            val rustTarget = "x86_64-unknown-linux-gnu"
-            val rustBuildDir =
-                project(":web-capture").projectDir.resolve("target/$rustTarget/release")
-            jvmArgs += "-Djava.library.path=${rustBuildDir.absolutePath}"
+            appResourcesRootDir.set(rustDesktopLibDir.get().asFile)
+
+            jvmArgs +=
+                if (OperatingSystem.current().isWindows) {
+                    "-Djava.library.path=%APPDIR%;%APPDIR%/resources;%APPDIR%/app;%APPDIR%/app/resources;%APPDIR%/lib;%APPDIR%/lib/app;%APPDIR%/lib/app/resources"
+                } else {
+                    "-Djava.library.path=\$APPDIR:\$APPDIR/resources:\$APPDIR/app:\$APPDIR/app/resources:\$APPDIR/lib:\$APPDIR/lib/app:\$APPDIR/lib/app/resources"
+                }
         }
     }
 }
 
 tasks.withType<JavaExec>().configureEach {
-    val currentOs = OperatingSystem.current()
+    if (name != "run") return@configureEach
 
-    val rustTarget =
-        when {
-            currentOs.isLinux -> "x86_64-unknown-linux-gnu"
-            currentOs.isWindows -> "x86_64-pc-windows-msvc"
-            else -> "unknown"
-        }
-
-    val rustBuildDir = project(":web-capture").projectDir.resolve("target/$rustTarget/release")
-
-    systemProperty("java.library.path", rustBuildDir.absolutePath)
     dependsOn(":web-capture:cargoBuildDesktop")
+
+    doFirst {
+        val libPath = rustDesktopLibDir.get().asFile.absolutePath
+
+        val currentJvmArgs = jvmArgs ?: emptyList()
+        val cleanedJvmArgs =
+            currentJvmArgs.filterNot {
+                it.startsWith("-Djava.library.path=")
+            }
+
+        jvmArgs = cleanedJvmArgs + "-Djava.library.path=$libPath"
+        systemProperties.remove("java.library.path")
+    }
 }
 
 val addNetlifyHeadersToDist =
