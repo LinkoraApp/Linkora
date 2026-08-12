@@ -21,7 +21,6 @@ plugins {
 }
 
 kotlin {
-
     compilerOptions {
         freeCompilerArgs.add("-Xcontext-parameters")
     }
@@ -42,10 +41,12 @@ kotlin {
     wasmJs {
         browser {
             outputModuleName = "composeApp"
+
             commonWebpackConfig {
                 outputFileName = "composeApp.js"
             }
         }
+
         binaries.executable()
     }
 
@@ -56,6 +57,7 @@ kotlin {
         val desktopWebMain by creating {
             dependsOn(commonMain.get())
         }
+
         desktopMain.dependsOn(desktopWebMain)
         wasmJsMain.get().dependsOn(desktopWebMain)
 
@@ -80,6 +82,7 @@ kotlin {
             implementation(libs.ktor.client.android)
             implementation(libs.androidx.datastore.preferences.core)
         }
+
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -96,7 +99,6 @@ kotlin {
             implementation(libs.navigation.compose)
             implementation(libs.lifecycle.viewmodel.compose)
             implementation(libs.androidx.room3.runtime)
-
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.cio)
             implementation(libs.ktor.client.content.negotiation)
@@ -115,6 +117,7 @@ kotlin {
             implementation("com.composables:composeunstyled:1.49.6")
             implementation(project(":web-capture"))
         }
+
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
@@ -122,6 +125,7 @@ kotlin {
             implementation(libs.ktor.client.java)
             implementation(libs.androidx.datastore.preferences.core)
         }
+
         wasmJsMain.dependencies {
             implementation(libs.ktor.client.js)
             implementation(libs.kotlinx.serialization.json)
@@ -129,12 +133,14 @@ kotlin {
             implementation(npm("sqlite-wasm-worker", layout.projectDirectory.dir("worker").asFile))
             implementation(libs.kotlinx.browser)
         }
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.assertk)
             implementation(libs.ktor.client.mock)
         }
+
         desktopTest.dependencies {
             implementation(libs.mockk)
             implementation(libs.kotlinx.coroutines.test.v1110)
@@ -150,6 +156,7 @@ room3 {
 
 android {
     namespace = "com.sakethh.linkora"
+
     compileSdk =
         libs.versions.android.compileSdk
             .get()
@@ -166,22 +173,27 @@ android {
 
     defaultConfig {
         applicationId = "com.sakethh.linkora"
+
         minSdk =
             libs.versions.android.minSdk
                 .get()
                 .toInt()
+
         targetSdk =
             libs.versions.android.targetSdk
                 .get()
                 .toInt()
+
         versionCode = 53
         versionName = "0.19.0"
     }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -191,6 +203,7 @@ android {
                 "proguard-rules.pro",
             )
         }
+
         debug {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
@@ -208,6 +221,7 @@ android {
             matchingFallbacks += listOf("release", "debug")
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
@@ -230,6 +244,27 @@ dependencies {
     add("kspWasmJs", libs.androidx.room3.compiler)
 }
 
+val rustDesktopLibDir = project(":web-capture").layout.buildDirectory.dir("rustLibs/desktop")
+rustDesktopLibDir.get().asFile.mkdirs()
+
+listOf(
+    "createDistributable",
+    "packageMsi",
+    "packageExe",
+    "packageDeb",
+    "packageAppImage",
+    "packageRpm",
+    "packageDmg",
+    "packagePkg",
+    "packageUberJarForCurrentOS",
+    "packageDistributionForCurrentOS",
+    "runDistributable",
+).forEach { taskName ->
+    tasks.matching { it.name == taskName }.configureEach {
+        dependsOn(":web-capture:cargoBuildDesktop")
+    }
+}
+
 compose.desktop {
     application {
         mainClass = "com.sakethh.linkora.MainKt"
@@ -244,6 +279,7 @@ compose.desktop {
                 TargetFormat.Pkg,
                 TargetFormat.Exe,
             )
+
             packageName = "Linkora"
             this.vendor = "Saketh Pathike"
             this.packageVersion = "1.0.17"
@@ -255,31 +291,40 @@ compose.desktop {
             linux {
                 this.iconFile.set(project.file("src/desktopMain/resources/logo.png"))
             }
+
             modules("jdk.unsupported")
             modules("jdk.unsupported.desktop")
 
-            val rustTarget = "x86_64-unknown-linux-gnu"
-            val rustBuildDir =
-                project(":web-capture").projectDir.resolve("target/$rustTarget/release")
-            jvmArgs += "-Djava.library.path=${rustBuildDir.absolutePath}"
+            appResourcesRootDir.set(rustDesktopLibDir.get().asFile)
+
+            if (OperatingSystem.current().isWindows) {
+                jvmArgs +=
+                    "-Djava.library.path=%APPDIR%;%APPDIR%/resources;%APPDIR%/app;%APPDIR%/app/resources;%APPDIR%/lib;%APPDIR%/lib/app;%APPDIR%/lib/app/resources"
+            } else {
+                jvmArgs +=
+                    "-Djava.library.path=\$APPDIR:\$APPDIR/resources:\$APPDIR/app:\$APPDIR/app/resources:\$APPDIR/lib:\$APPDIR/lib/app:\$APPDIR/lib/app/resources"
+            }
         }
     }
 }
 
 tasks.withType<JavaExec>().configureEach {
-    val currentOs = OperatingSystem.current()
+    if (name != "run") return@configureEach
 
-    val rustTarget =
-        when {
-            currentOs.isLinux -> "x86_64-unknown-linux-gnu"
-            currentOs.isWindows -> "x86_64-pc-windows-msvc"
-            else -> "unknown"
-        }
-
-    val rustBuildDir = project(":web-capture").projectDir.resolve("target/$rustTarget/release")
-
-    systemProperty("java.library.path", rustBuildDir.absolutePath)
     dependsOn(":web-capture:cargoBuildDesktop")
+
+    doFirst {
+        val libPath = rustDesktopLibDir.get().asFile.absolutePath
+
+        val currentJvmArgs = jvmArgs ?: emptyList()
+        val cleanedJvmArgs =
+            currentJvmArgs.filterNot {
+                it.startsWith("-Djava.library.path=")
+            }
+
+        jvmArgs = cleanedJvmArgs + "-Djava.library.path=$libPath"
+        systemProperties = systemProperties.filterKeys { it != "java.library.path" }
+    }
 }
 
 val addNetlifyHeadersToDist =
@@ -287,17 +332,20 @@ val addNetlifyHeadersToDist =
         doLast {
             val prodDistDir =
                 File(layout.projectDirectory.asFile, "/build/dist/wasmJs/productionExecutable")
+
             val headersFile = File(prodDistDir, "_headers")
             if (!headersFile.exists()) {
                 headersFile.createNewFile()
             }
+
             headersFile.writeText(
                 """
                 /*
-                  Cross-Origin-Opener-Policy: same-origin
-                  Cross-Origin-Embedder-Policy: require-corp
+                Cross-Origin-Opener-Policy: same-origin
+                Cross-Origin-Embedder-Policy: require-corp
                 """.trimIndent(),
             )
+
             println("Wrote Netlify headers to: ${headersFile.absolutePath}")
         }
     }

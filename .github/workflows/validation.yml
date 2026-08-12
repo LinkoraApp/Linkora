@@ -3,11 +3,10 @@ name: CI & Validation
 on:
   push:
     branches: [ master ]
-
   workflow_dispatch:
     inputs:
       pr_number:
-        description: 'PR number to test (REQUIRED)'
+        description: 'PR number to test'
         required: false
         type: string
 
@@ -32,45 +31,45 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Setup Gradle & Enable Caching
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-linux-android,x86_64-linux-android,armv7-linux-androideabi,x86_64-unknown-linux-gnu
+          components: rustfmt
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: "web-capture -> target"
-          shared-key: "rust-cache-ubuntu-latest"
+          shared-key: "validation-ubuntu-latest"
 
-      - name: Rust Check & Lint
+      - name: Rust format check
         run: |
           cd web-capture
           cargo fmt -- --check
+
+      - name: Rust compile check
+        run: |
+          cd web-capture
           cargo check --all-targets
 
-      - name: Kotlin Format Check
+      - name: Kotlin format check
         run: ./gradlew spotlessCheck
-        shell: bash
 
       - name: Build Android Debug
-        run: ./gradlew assembleDebug
-        shell: bash
+        run: ./gradlew :composeApp:assembleDebug
 
       - name: Build Desktop
-        run: ./gradlew packageUberJarForCurrentOS
-        shell: bash
+        run: ./gradlew :composeApp:packageUberJarForCurrentOS
 
-      - name: Build Web (Wasm)
-        run: ./gradlew wasmJsBrowserDistribution
-        shell: bash
+      - name: Build Web
+        run: ./gradlew :composeApp:wasmJsBrowserDistribution
 
-      - name: Run All Tests
+      - name: Run all tests
         run: ./gradlew verifyAll
-        shell: bash
 
   build-windows:
     runs-on: windows-latest
@@ -88,7 +87,7 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Setup Gradle & Enable Caching
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
       - name: Setup Rust
@@ -100,8 +99,27 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: "web-capture -> target"
-          shared-key: "rust-cache-windows-latest"
+          shared-key: "validation-windows-latest"
+
+      - name: Install Strawberry Perl and NASM
+        shell: pwsh
+        run: |
+          choco install strawberryperl nasm -y
+          Add-Content -Path $env:GITHUB_PATH -Value "C:\Strawberry\perl\bin"
+          Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\NASM"
+          Add-Content -Path $env:GITHUB_ENV -Value "PERL=C:\Strawberry\perl\bin\perl.exe"
+
+      - name: Clean stale OpenSSL build cache
+        shell: bash
+        run: |
+          cd web-capture
+          cargo clean -p openssl-sys || true
+          rm -rf target/x86_64-pc-windows-msvc/release/build/openssl-sys-*
+
+      - name: Build Rust Windows lib
+        shell: cmd
+        run: .\gradlew.bat :web-capture:cargoBuildDesktop
 
       - name: Build Desktop
-        run: ./gradlew packageUberJarForCurrentOS
-        shell: bash
+        shell: cmd
+        run: .\gradlew.bat :composeApp:packageUberJarForCurrentOS

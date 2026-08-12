@@ -14,6 +14,7 @@ jobs:
   build-desktop:
     name: Build Desktop Platforms
     runs-on: ${{ matrix.os }}
+
     strategy:
       fail-fast: false
       matrix:
@@ -67,25 +68,55 @@ jobs:
           workspaces: "web-capture -> target"
           shared-key: "release-rust-${{ matrix.os }}"
 
+      - name: Install Strawberry Perl and NASM
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          choco install strawberryperl nasm -y
+          Add-Content -Path $env:GITHUB_PATH -Value "C:\Strawberry\perl\bin"
+          Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\NASM"
+          Add-Content -Path $env:GITHUB_ENV -Value "PERL=C:\Strawberry\perl\bin\perl.exe"
+
+      - name: Clean stale OpenSSL build cache
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: |
+          cd web-capture
+          cargo clean -p openssl-sys || true
+          rm -rf target/x86_64-pc-windows-msvc/release/build/openssl-sys-*
+
       - name: Build Windows
         if: matrix.os == 'windows-latest'
-        run: .\gradlew :composeApp:packageMsi :composeApp:packageExe
+        shell: pwsh
+        run: |
+          .\gradlew.bat :web-capture:cargoBuildDesktop
+
+          if (!(Test-Path "web-capture\build\rustLibs\desktop\web_capture.dll")) {
+            throw "web_capture.dll was not built"
+          }
+
+          .\gradlew.bat :composeApp:packageMsi :composeApp:packageExe
 
       - name: Build Ubuntu
         if: matrix.os == 'ubuntu-latest'
-        run: ./gradlew :composeApp:packageDeb :composeApp:packageUberJarForCurrentOS
+        run: |
+          ./gradlew :web-capture:cargoBuildDesktop
+          ./gradlew :composeApp:packageDeb :composeApp:packageUberJarForCurrentOS
 
       - name: Build AppImage
         if: matrix.os == 'ubuntu-latest'
         run: |
           mkdir -p AppDir/usr/bin
           cp composeApp/build/compose/jars/Linkora-linux-x64-*.jar AppDir/usr/bin/
+          cp web-capture/build/rustLibs/desktop/libweb_capture.so AppDir/usr/bin/
 
           cat << 'EOF' > AppDir/AppRun
           #!/bin/bash
           JAR_FILE=$(ls "$APPDIR/usr/bin/"*.jar | head -n 1)
-          exec java -jar "$JAR_FILE"
+          export LD_LIBRARY_PATH="$APPDIR/usr/bin:${LD_LIBRARY_PATH:-}"
+          exec java -Djava.library.path="$APPDIR/usr/bin" -jar "$JAR_FILE"
           EOF
+
           chmod +x AppDir/AppRun
 
           cat << 'EOF' > AppDir/linkora.desktop
@@ -104,8 +135,24 @@ jobs:
           chmod +x appimagetool
 
           UPDATE_INFO="gh-releases-zsync|${{ github.repository_owner }}|${{ github.event.repository.name }}|latest|Linkora.AppImage.zsync"
-
           ARCH=x86_64 ./appimagetool --appimage-extract-and-run -u "$UPDATE_INFO" AppDir Linkora.AppImage
+
+      - name: Bundle Linux portable jar
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          mkdir -p linkora-linux-portable
+
+          JAR_FILE=$(ls composeApp/build/compose/jars/Linkora-linux-x64-*.jar | head -n 1)
+          JAR_NAME=$(basename "$JAR_FILE")
+
+          cp "$JAR_FILE" linkora-linux-portable/
+          cp web-capture/build/rustLibs/desktop/libweb_capture.so linkora-linux-portable/
+
+          printf 'run from the extracted directory:\njava -Djava.library.path=. -jar %s\n' "$JAR_NAME" > linkora-linux-portable/README.txt
+
+          cd linkora-linux-portable
+          zip -r "$GITHUB_WORKSPACE/Linkora-linux-x64-portable.zip" .
+          cd ..
 
       - name: Upload Desktop Artifacts to Release
         uses: softprops/action-gh-release@v2
@@ -116,13 +163,14 @@ jobs:
             composeApp/build/compose/binaries/main/exe/*.exe
             composeApp/build/compose/binaries/main/msi/*.msi
             composeApp/build/compose/binaries/main/deb/*.deb
-            composeApp/build/compose/jars/*.jar
+            Linkora-linux-x64-portable.zip
             Linkora.AppImage
             Linkora.AppImage.zsync
 
   build-android:
     name: Build Android APKs
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -158,7 +206,7 @@ jobs:
           -Pandroid.injected.signing.store.password="$STORE_PASSWORD" \
           -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
           -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
-          
+
           mkdir -p preview-apks
           mv composeApp/build/outputs/apk/preview/*-arm64-v8a-preview.apk preview-apks/Linkora-arm64-v8a-preview.apk
           mv composeApp/build/outputs/apk/preview/*-armeabi-v7a-preview.apk preview-apks/Linkora-armeabi-v7a-preview.apk
@@ -176,7 +224,7 @@ jobs:
           -Pandroid.injected.signing.store.password="$STORE_PASSWORD" \
           -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
           -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
-          
+
           mkdir -p release-apks
           mv composeApp/build/outputs/apk/release/*-arm64-v8a-release.apk release-apks/Linkora-arm64-v8a-release.apk
           mv composeApp/build/outputs/apk/release/*-armeabi-v7a-release.apk release-apks/Linkora-armeabi-v7a-release.apk
@@ -195,6 +243,7 @@ jobs:
   build-wasm:
     name: Build WasmJs Distribution
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -207,6 +256,9 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
           cache: gradle
+
+      - name: Make Gradlew executable
+        run: chmod +x ./gradlew
 
       - name: Build WasmJs Extension Zip
         run: |
