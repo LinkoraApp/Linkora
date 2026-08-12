@@ -18,6 +18,7 @@ room3 {
 
 private val rustBasePath = layout.projectDirectory.asFile
 private val jniLibsDir = layout.buildDirectory.dir("jniLibs")
+private val desktopLibDir = layout.buildDirectory.dir("rustLibs/desktop")
 
 kotlin {
 
@@ -159,40 +160,91 @@ dependencies {
 
 tasks.register("cargoBuildDesktop") {
     group = "rust"
+    description = "Builds the Rust desktop library for the current desktop platform(s) and stages architecture-specific outputs"
+    outputs.dir(desktopLibDir)
+
     doLast {
         val currentOs = OperatingSystem.current()
-        val (desktopTarget, binaryName) =
+        val libRoot = desktopLibDir.get().asFile
+
+        libRoot.deleteRecursively()
+        libRoot.mkdirs()
+
+        val requestedTarget = providers.gradleProperty("desktopRustTarget").orNull
+        val targetsAndOutputDirs =
             when {
-                currentOs.isLinux -> "x86_64-unknown-linux-gnu" to "libweb_capture.so"
-                currentOs.isWindows -> "x86_64-pc-windows-msvc" to "web_capture.dll"
-                else -> throw GradleException("Unsupported host operating system for building monolith-binding")
+                currentOs.isWindows ->
+                    listOf(
+                        "x86_64-pc-windows-msvc" to "windows-x64",
+                        "aarch64-pc-windows-msvc" to "windows-arm64",
+                    ).let { supported ->
+                        if (requestedTarget == null) {
+                            supported
+                        } else {
+                            supported.filter { it.first == requestedTarget }.ifEmpty {
+                                throw GradleException("Unsupported desktopRustTarget on Windows: $requestedTarget")
+                            }
+                        }
+                    }
+                currentOs.isLinux ->
+                    listOf("x86_64-unknown-linux-gnu" to "linux-x64").let { supported ->
+                        if (requestedTarget == null || requestedTarget == supported.single().first) {
+                            supported
+                        } else {
+                            throw GradleException("Unsupported desktopRustTarget on Linux: $requestedTarget")
+                        }
+                    }
+                else ->
+                    throw GradleException("Unsupported host operating system for building web-capture")
             }
 
-        exec {
-            workingDir = rustBasePath
-            commandLine("cargo", "build", "--release", "--target", desktopTarget)
-        }
+        targetsAndOutputDirs.forEach { (desktopTarget, resourceDir) ->
+            val binaryName =
+                when {
+                    currentOs.isWindows -> "web_capture.dll"
+                    currentOs.isLinux -> "libweb_capture.so"
+                    else -> error("Unsupported host operating system")
+                }
 
-        val libDir =
-            layout.buildDirectory
-                .dir("rustLibs/desktop")
-                .get()
-                .asFile
-        libDir.mkdirs()
+            println("Building Rust desktop target: $desktopTarget")
 
-        val sourceFile = File("$rustBasePath/target/$desktopTarget/release/$binaryName")
+            exec {
+                workingDir = rustBasePath
+                commandLine("cargo", "build", "--release", "--target", desktopTarget)
+            }
 
-        if (sourceFile.exists()) {
+            val sourceFile = File("$rustBasePath/target/$desktopTarget/release/$binaryName")
+            if (!sourceFile.exists()) {
+                throw GradleException(
+                    "Rust build succeeded but output file was not found at: ${sourceFile.absolutePath}",
+                )
+            }
+
+            val outputDir = File(libRoot, resourceDir)
+            outputDir.mkdirs()
+
             println("Copying native lib from: ${sourceFile.absolutePath}")
-            println("To: ${libDir.absolutePath}")
+            println("To: ${outputDir.absolutePath}")
+
             copy {
                 from(sourceFile)
-                into(libDir)
+                into(outputDir)
             }
-        } else {
-            throw GradleException("Rust build failed or output file not found at: ${sourceFile.absolutePath}")
         }
+
+        println("Staged desktop native libraries:")
+        libRoot.walkTopDown()
+            .filter { it.isFile }
+            .forEach { println("  ${it.relativeTo(libRoot)}") }
     }
+}
+
+tasks.named<Test>("desktopTest") {
+    dependsOn("cargoBuildDesktop")
+
+    val rustLibDir = desktopLibDir.get().asFile
+    jvmArgs("-Djava.library.path=${rustLibDir.absolutePath}")
+    environment("LD_LIBRARY_PATH", rustLibDir.absolutePath)
 }
 
 tasks
@@ -200,16 +252,6 @@ tasks
     .configureEach {
         dependsOn("cargoBuildDesktop")
     }
-
-tasks.named<Test>("desktopTest") {
-    dependsOn("cargoBuildDesktop")
-
-    val rustBuildDir = projectDir.resolve("target/x86_64-unknown-linux-gnu/release")
-
-    jvmArgs("-Djava.library.path=${rustBuildDir.absolutePath}")
-
-    environment("LD_LIBRARY_PATH", rustBuildDir.absolutePath)
-}
 
 tasks
     .matching {

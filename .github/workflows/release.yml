@@ -11,83 +11,226 @@ permissions:
   contents: write
 
 jobs:
-  build-desktop:
-    name: Build Desktop Platforms
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            rust-target: x86_64-pc-windows-msvc
-          - os: ubuntu-latest
-            rust-target: x86_64-unknown-linux-gnu
-
+  build-windows-x64-native:
+    name: Build Windows x64 Native
+    runs-on: windows-2022
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.tag }}
-          autocrlf: false
-
-      - name: Setup Java 21
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '21'
           cache: gradle
-
-      - name: Read Rust Toolchain Version
-        id: rust-toolchain
+      - id: rust-toolchain
         uses: SebRollen/toml-action@v1.2.0
         with:
-          file: 'web-capture/rust-toolchain.toml'
-          field: 'toolchain.channel'
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@master
+          file: web-capture/rust-toolchain.toml
+          field: toolchain.channel
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ steps.rust-toolchain.outputs.value }}
-          targets: ${{ matrix.rust-target }}
-
-      - name: Set RUSTFLAGS
-        shell: bash
-        run: echo "RUSTFLAGS=--remap-path-prefix=${{ github.workspace }}=. --remap-path-prefix=$HOME/.cargo=.cargo" >> $GITHUB_ENV
-
-      - name: Verify Rust Version
-        run: |
-          rustc --version
-          cargo --version
-          echo "--- Content of rust-toolchain.toml ---"
-          cat web-capture/rust-toolchain.toml
-
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
+          targets: x86_64-pc-windows-msvc
+      - uses: Swatinem/rust-cache@v2
         with:
-          workspaces: "web-capture -> target"
-          shared-key: "release-rust-${{ matrix.os }}"
+          workspaces: web-capture -> target
+          shared-key: release-rust-windows-x64
+      - name: Install build prerequisites
+        shell: pwsh
+        run: |
+          choco install strawberryperl nasm -y
+          Add-Content -Path $env:GITHUB_PATH -Value "C:\Strawberry\perl\bin"
+          Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\NASM"
+          Add-Content -Path $env:GITHUB_ENV -Value "PERL=C:\Strawberry\perl\bin\perl.exe"
+      - name: Clean stale OpenSSL cache
+        shell: bash
+        run: |
+          cd web-capture
+          cargo clean -p openssl-sys || true
+          rm -rf target/x86_64-pc-windows-msvc/release/build/openssl-sys-*
+      - name: Build Windows x64 native library
+        shell: pwsh
+        run: |
+          .\gradlew.bat :web-capture:cargoBuildDesktop -PdesktopRustTarget=x86_64-pc-windows-msvc
+          if (!(Test-Path "web-capture\build\rustLibs\desktop\windows-x64\web_capture.dll")) { throw "Windows x64 DLL missing" }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-windows-x64-native
+          path: web-capture/build/rustLibs/desktop/windows-x64/web_capture.dll
+          if-no-files-found: error
 
-      - name: Build Windows
-        if: matrix.os == 'windows-latest'
-        run: .\gradlew :composeApp:packageMsi :composeApp:packageExe
+  build-windows-arm64-native:
+    name: Build Windows ARM64 Native
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - id: rust-toolchain
+        uses: SebRollen/toml-action@v1.2.0
+        with:
+          file: web-capture/rust-toolchain.toml
+          field: toolchain.channel
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ steps.rust-toolchain.outputs.value }}
+          targets: aarch64-pc-windows-msvc
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64_arm64
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: web-capture -> target
+          shared-key: release-rust-windows-arm64
+      - name: Install build prerequisites
+        shell: pwsh
+        run: |
+          choco install strawberryperl nasm -y
+          Add-Content -Path $env:GITHUB_PATH -Value "C:\Strawberry\perl\bin"
+          Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\NASM"
+          Add-Content -Path $env:GITHUB_ENV -Value "PERL=C:\Strawberry\perl\bin\perl.exe"
+      - name: Clean stale OpenSSL cache
+        shell: bash
+        run: |
+          cd web-capture
+          cargo clean -p openssl-sys || true
+          rm -rf target/aarch64-pc-windows-msvc/release/build/openssl-sys-*
+      - name: Build Windows ARM64 native library
+        shell: pwsh
+        run: |
+          .\gradlew.bat :web-capture:cargoBuildDesktop -PdesktopRustTarget=aarch64-pc-windows-msvc
+          if (!(Test-Path "web-capture\build\rustLibs\desktop\windows-arm64\web_capture.dll")) { throw "Windows ARM64 DLL missing" }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-windows-arm64-native
+          path: web-capture/build/rustLibs/desktop/windows-arm64/web_capture.dll
+          if-no-files-found: error
 
-      - name: Build Ubuntu
-        if: matrix.os == 'ubuntu-latest'
+  package-windows-x64:
+    name: Package Windows x64
+    needs: build-windows-x64-native
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-windows-x64-native
+          path: web-capture/build/rustLibs/desktop/windows-x64
+      - name: Package Windows x64
+        shell: pwsh
+        run: .\gradlew.bat :composeApp:packageMsi :composeApp:packageExe -x :web-capture:cargoBuildDesktop
+      - name: Verify Windows x64 MSI
+        shell: pwsh
+        run: |
+          $msi = Get-ChildItem composeApp/build/compose/binaries/main/msi/*.msi | Select-Object -First 1
+          if (!$msi) { throw "Windows x64 MSI missing" }
+          $extract = "$env:GITHUB_WORKSPACE\msi-x64"
+          New-Item -ItemType Directory -Force $extract | Out-Null
+          Start-Process msiexec.exe -ArgumentList "/a `"$($msi.FullName)`" /qn TARGETDIR=`"$extract`"" -Wait -NoNewWindow
+          $found = Get-ChildItem $extract -Recurse -Filter web_capture.dll -ErrorAction SilentlyContinue | Where-Object { $_.FullName -match '[\\/]app[\\/]resources[\\/]windows-x64[\\/]web_capture\.dll$' } | Select-Object -First 1
+          if (!$found) { Get-ChildItem -Recurse $extract | Select-Object -ExpandProperty FullName; throw "Windows x64 MSI missing app/resources/windows-x64/web_capture.dll" }
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag }}
+          draft: true
+          files: |
+            composeApp/build/compose/binaries/main/exe/*.exe
+            composeApp/build/compose/binaries/main/msi/*.msi
+
+  package-windows-arm64:
+    name: Package Windows ARM64
+    needs: build-windows-arm64-native
+    runs-on: windows-11-arm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-windows-arm64-native
+          path: web-capture/build/rustLibs/desktop/windows-arm64
+      - name: Package Windows ARM64
+        shell: pwsh
+        run: .\gradlew.bat :composeApp:packageMsi :composeApp:packageExe -x :web-capture:cargoBuildDesktop
+      - name: Verify Windows ARM64 MSI
+        shell: pwsh
+        run: |
+          $msi = Get-ChildItem composeApp/build/compose/binaries/main/msi/*.msi | Select-Object -First 1
+          if (!$msi) { throw "Windows ARM64 MSI missing" }
+          $extract = "$env:GITHUB_WORKSPACE\msi-arm64"
+          New-Item -ItemType Directory -Force $extract | Out-Null
+          Start-Process msiexec.exe -ArgumentList "/a `"$($msi.FullName)`" /qn TARGETDIR=`"$extract`"" -Wait -NoNewWindow
+          $found = Get-ChildItem $extract -Recurse -Filter web_capture.dll -ErrorAction SilentlyContinue | Where-Object { $_.FullName -match '[\\/]app[\\/]resources[\\/]windows-arm64[\\/]web_capture\.dll$' } | Select-Object -First 1
+          if (!$found) { Get-ChildItem -Recurse $extract | Select-Object -ExpandProperty FullName; throw "Windows ARM64 MSI missing app/resources/windows-arm64/web_capture.dll" }
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag }}
+          draft: true
+          files: |
+            composeApp/build/compose/binaries/main/exe/*.exe
+            composeApp/build/compose/binaries/main/msi/*.msi
+
+  build-linux:
+    name: Build Linux Desktop
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - id: rust-toolchain
+        uses: SebRollen/toml-action@v1.2.0
+        with:
+          file: web-capture/rust-toolchain.toml
+          field: toolchain.channel
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ steps.rust-toolchain.outputs.value }}
+          targets: x86_64-unknown-linux-gnu
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: web-capture -> target
+          shared-key: release-rust-linux-x64
+      - name: Build Linux native library
+        run: |
+          ./gradlew :web-capture:cargoBuildDesktop
+          test -f web-capture/build/rustLibs/desktop/linux-x64/libweb_capture.so
+      - name: Build Linux packages
         run: ./gradlew :composeApp:packageDeb :composeApp:packageUberJarForCurrentOS
-
       - name: Build AppImage
-        if: matrix.os == 'ubuntu-latest'
         run: |
           mkdir -p AppDir/usr/bin
           cp composeApp/build/compose/jars/Linkora-linux-x64-*.jar AppDir/usr/bin/
-
+          cp web-capture/build/rustLibs/desktop/linux-x64/libweb_capture.so AppDir/usr/bin/
           cat << 'EOF' > AppDir/AppRun
           #!/bin/bash
           JAR_FILE=$(ls "$APPDIR/usr/bin/"*.jar | head -n 1)
-          exec java -jar "$JAR_FILE"
+          export LD_LIBRARY_PATH="$APPDIR/usr/bin:${LD_LIBRARY_PATH:-}"
+          exec java -Djava.library.path="$APPDIR/usr/bin" -jar "$JAR_FILE"
           EOF
           chmod +x AppDir/AppRun
-
           cat << 'EOF' > AppDir/linkora.desktop
           [Desktop Entry]
           Categories=Utility;
@@ -97,32 +240,45 @@ jobs:
           Terminal=false
           Type=Application
           EOF
-
           cp fastlane/metadata/android/en-US/images/icon.png AppDir/linkora.png
-
           wget -qO appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool
-
           UPDATE_INFO="gh-releases-zsync|${{ github.repository_owner }}|${{ github.event.repository.name }}|latest|Linkora.AppImage.zsync"
-
           ARCH=x86_64 ./appimagetool --appimage-extract-and-run -u "$UPDATE_INFO" AppDir Linkora.AppImage
-
-      - name: Upload Desktop Artifacts to Release
-        uses: softprops/action-gh-release@v2
+      - name: Verify Linux DEB
+        run: |
+          deb=$(ls composeApp/build/compose/binaries/main/deb/*.deb | head -n 1)
+          mkdir -p deb-extract
+          dpkg-deb -x "$deb" deb-extract
+          found=$(find deb-extract -type f -name libweb_capture.so | grep '/app/resources/linux-x64/libweb_capture.so$' | head -n 1 || true)
+          if [ -z "$found" ]; then find deb-extract -type f | sort; exit 1; fi
+      - name: Verify AppImage
+        run: |
+          chmod +x Linkora.AppImage
+          ./Linkora.AppImage --appimage-extract >/dev/null 2>&1
+          test -f squashfs-root/usr/bin/libweb_capture.so
+      - name: Bundle Linux portable jar
+        run: |
+          mkdir -p linkora-linux-portable
+          jar=$(ls composeApp/build/compose/jars/Linkora-linux-x64-*.jar | head -n 1)
+          cp "$jar" linkora-linux-portable/
+          cp web-capture/build/rustLibs/desktop/linux-x64/libweb_capture.so linkora-linux-portable/
+          printf 'run from the extracted directory:\njava -Djava.library.path=. -jar %s\n' "$(basename "$jar")" > linkora-linux-portable/README.txt
+          (cd linkora-linux-portable && zip -r "$GITHUB_WORKSPACE/Linkora-linux-x64-portable.zip" .)
+      - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag }}
           draft: true
           files: |
-            composeApp/build/compose/binaries/main/exe/*.exe
-            composeApp/build/compose/binaries/main/msi/*.msi
             composeApp/build/compose/binaries/main/deb/*.deb
-            composeApp/build/compose/jars/*.jar
+            Linkora-linux-x64-portable.zip
             Linkora.AppImage
             Linkora.AppImage.zsync
 
   build-android:
     name: Build Android APKs
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -158,7 +314,7 @@ jobs:
           -Pandroid.injected.signing.store.password="$STORE_PASSWORD" \
           -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
           -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
-          
+
           mkdir -p preview-apks
           mv composeApp/build/outputs/apk/preview/*-arm64-v8a-preview.apk preview-apks/Linkora-arm64-v8a-preview.apk
           mv composeApp/build/outputs/apk/preview/*-armeabi-v7a-preview.apk preview-apks/Linkora-armeabi-v7a-preview.apk
@@ -176,12 +332,60 @@ jobs:
           -Pandroid.injected.signing.store.password="$STORE_PASSWORD" \
           -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
           -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
-          
+
           mkdir -p release-apks
           mv composeApp/build/outputs/apk/release/*-arm64-v8a-release.apk release-apks/Linkora-arm64-v8a-release.apk
           mv composeApp/build/outputs/apk/release/*-armeabi-v7a-release.apk release-apks/Linkora-armeabi-v7a-release.apk
           mv composeApp/build/outputs/apk/release/*-x86_64-release.apk release-apks/Linkora-x86_64-release.apk
           mv composeApp/build/outputs/apk/release/*-universal-release.apk release-apks/Linkora-universal-release.apk
+
+      - name: Verify Android APKs contain native lib at exact ABI paths
+        run: |
+          verify_apk() {
+            local apk_file=$1
+            local expected_abi=$2
+            local check_dir="apk-check-$(basename "$apk_file" .apk)"
+            mkdir -p "$check_dir"
+            unzip -q "$apk_file" -d "$check_dir"
+
+            expected="$check_dir/lib/$expected_abi/libweb_capture.so"
+            if [ ! -f "$expected" ]; then
+              echo "ERROR: libweb_capture.so not found at expected path in $apk_file"
+              echo "Expected: $expected"
+              echo "Actual lib/ contents:"
+              find "$check_dir/lib" -type f 2>/dev/null | sort || echo "(no lib/ directory)"
+              exit 1
+            fi
+            echo "Verified [$apk_file] -> $expected"
+          }
+
+          # Per-ABI APKs: must contain exactly their own ABI
+          verify_apk preview-apks/Linkora-arm64-v8a-preview.apk   arm64-v8a
+          verify_apk preview-apks/Linkora-armeabi-v7a-preview.apk armeabi-v7a
+          verify_apk preview-apks/Linkora-x86_64-preview.apk      x86_64
+
+          verify_apk release-apks/Linkora-arm64-v8a-release.apk   arm64-v8a
+          verify_apk release-apks/Linkora-armeabi-v7a-release.apk armeabi-v7a
+          verify_apk release-apks/Linkora-x86_64-release.apk      x86_64
+
+          # Universal APKs: must contain all three ABIs
+          for flavour in preview release; do
+            apk_file="${flavour}-apks/Linkora-universal-${flavour}.apk"
+            check_dir="apk-check-universal-${flavour}"
+            mkdir -p "$check_dir"
+            unzip -q "$apk_file" -d "$check_dir"
+
+            for abi in arm64-v8a armeabi-v7a x86_64; do
+              expected="$check_dir/lib/$abi/libweb_capture.so"
+              if [ ! -f "$expected" ]; then
+                echo "ERROR: libweb_capture.so not found at $expected in universal $flavour APK"
+                echo "Actual lib/ contents:"
+                find "$check_dir/lib" -type f 2>/dev/null | sort || echo "(no lib/ directory)"
+                exit 1
+              fi
+              echo "Verified [$apk_file] -> $expected"
+            done
+          done
 
       - name: Upload Android Artifacts to Release
         uses: softprops/action-gh-release@v2
@@ -195,6 +399,7 @@ jobs:
   build-wasm:
     name: Build WasmJs Distribution
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -207,6 +412,9 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
           cache: gradle
+
+      - name: Make Gradlew executable
+        run: chmod +x ./gradlew
 
       - name: Build WasmJs Extension Zip
         run: |
