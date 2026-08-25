@@ -72,7 +72,13 @@ class LocalDataUpdateService(
     fun Correlation?.isSameAsCurrentClient(): Boolean = this?.id == preferencesRepository.getPreferences().correlation.id
 
     suspend fun updateLocalDBAccordingToEvent(deserializedWebSocketEvent: WebSocketEvent) {
-        when (val currentRoute = SyncServerRoute.valueOf(deserializedWebSocketEvent.operation)) {
+        val currentRoute = try {
+            SyncServerRoute.valueOf(deserializedWebSocketEvent.operation)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return
+        }
+        when (currentRoute) {
             SyncServerRoute.UPDATE_FOLDER -> {
                 val folderDTO = json.decodeFromJsonElement<FolderDTO>(deserializedWebSocketEvent.payload)
                 if (folderDTO.correlation.isSameAsCurrentClient()) {
