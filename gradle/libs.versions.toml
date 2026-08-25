@@ -1,5 +1,5 @@
 [versions]
-agp = "8.10.0"
+agp = "8.13.2"
 android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "36"
@@ -35,8 +35,9 @@ material3Version = "1.11.0-alpha01"
 mockk = "1.14.9"
 navigationCompose = "2.9.0"
 ksp = "2.2.20-2.0.4"
-room = "3.0.0-alpha01"
-sqlite = "2.7.0-alpha01"
+room = "3.0.1"
+sqlite = "2.7.0"
+sqliteAsync = "2.7.0"
 statelyConcurrency = "2.1.0"
 uiToolingPreview = "1.10.3"
 workRuntime = "2.10.0"
@@ -51,6 +52,7 @@ jetbrainsKotlinJvm = "2.3.10"
 androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastorePreferencesCore" }
 androidx-room3-compiler = { module = "androidx.room3:room3-compiler", version.ref = "room" }
 androidx-room3-runtime = { module = "androidx.room3:room3-runtime", version.ref = "room" }
+androidx-sqlite-async = { module = "androidx.sqlite:sqlite-async", version.ref = "sqliteAsync" }
 androidx-work-runtime = { module = "androidx.work:work-runtime", version.ref = "workRuntime" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coilNetworkKtor3" }
