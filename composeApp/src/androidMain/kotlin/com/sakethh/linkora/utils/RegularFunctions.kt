@@ -20,9 +20,11 @@ import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.ui.theme.DarkColors
 import com.sakethh.linkora.ui.theme.LightColors
+import com.sakethh.linkora.ui.utils.linkoraLog
 import getFileNameWithTimestamp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
 
 suspend fun createNewFile(
     context: Context,
@@ -46,25 +48,55 @@ suspend fun createNewFile(
     }
 }
 
-fun getAbsolutePathFromSafUri(context: Context, uri: Uri): String? {
+suspend fun createPOSIXOwnedFile(
+    context: Context,
+    folderUriString: String,
+    exportFileType: ExportFileType,
+    exportLocationType: ExportLocationType
+): String? = try {
+    val fileName = getFileNameWithTimestamp(
+        exportFileType = exportFileType,
+        exportLocationType = exportLocationType,
+    )
+    val uri = folderUriString.toUri()
+    val posixPath = getPOSIXPathFromSafUri(context, uri)
+    if (posixPath != null) {
+        withContext(Dispatchers.IO) {
+            val file = File(posixPath, fileName)
+            file.createNewFile()
+            file.absolutePath
+        }
+    } else {
+        null
+    }
+} catch (e: Exception) {
+    e.printStackTrace()
+    null
+}
+
+fun getPOSIXPathFromSafUri(context: Context, uri: Uri): String? {
     if (uri.authority != "com.android.externalstorage.documents") {
         return null
     }
 
-    val rawDocId = DocumentsContract.getTreeDocumentId(uri)
-    val decodedDocId = Uri.decode(rawDocId)
+    val rawDocId = runCatching {
+        DocumentsContract.getDocumentId(uri)
+    }.getOrElse {
+        DocumentsContract.getTreeDocumentId(uri)
+    }
 
+    val decodedDocId = Uri.decode(rawDocId)
     val split = decodedDocId.split(":")
+
+    if (split.isEmpty()) return null
+
     val type = split[0]
-    val path = if (split.size > 1) split[1] else ""
+    val path = if (split.size > 1) split.drop(1).joinToString(":") else ""
 
     if ("primary".equals(type, ignoreCase = true)) {
         return "${Environment.getExternalStorageDirectory().absolutePath}/$path".removeSuffix("/")
     }
 
-    // resolve secondary storage (sd cards/usb) uuids to actual posix paths.
-    // sqlite needs a real absolute path, raw saf uris will just crash it.
-    // volume.directory for android 11+ and falls back to /storage/uuid for older apis.
     val storageManager = context.getSystemService(STORAGE_SERVICE) as StorageManager
     val storageVolumes = storageManager.storageVolumes
 

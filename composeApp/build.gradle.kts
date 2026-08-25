@@ -45,6 +45,12 @@ kotlin {
             commonWebpackConfig {
                 outputFileName = "composeApp.js"
             }
+
+            testTask {
+                useKarma {
+                    useFirefox()
+                }
+            }
         }
 
         binaries.executable()
@@ -65,7 +71,6 @@ kotlin {
             dependsOn(commonMain.get())
 
             dependencies {
-                implementation(project(":web-capture"))
                 implementation(libs.androidx.datastore.preferences.core)
             }
         }
@@ -99,6 +104,7 @@ kotlin {
             implementation(libs.navigation.compose)
             implementation(libs.lifecycle.viewmodel.compose)
             implementation(libs.androidx.room3.runtime)
+            implementation(libs.androidx.sqlite.async)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.cio)
             implementation(libs.ktor.client.content.negotiation)
@@ -240,51 +246,9 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
-    ksp(libs.androidx.room3.compiler)
     add("kspWasmJs", libs.androidx.room3.compiler)
-}
-
-val rustDesktopLibDir = project(":web-capture").layout.buildDirectory.dir("rustLibs/desktop")
-rustDesktopLibDir.get().asFile.mkdirs()
-
-val nativeLibDir = layout.buildDirectory.dir("native").get().asFile
-nativeLibDir.mkdirs()
-
-val copyNativeLib = tasks.register<Copy>("copyNativeLib") {
-    dependsOn(":web-capture:cargoBuildDesktop")
-    from(rustDesktopLibDir)
-    into(nativeLibDir)
-    outputs.dir(nativeLibDir)
-}
-
-// Compose creates this task lazily. The native-resource staging task must be
-// an explicit producer dependency so Gradle's task validation is satisfied.
-tasks.configureEach {
-    if (name == "prepareAppResources") {
-        dependsOn(copyNativeLib)
-    }
-}
-
-tasks.matching { it.name.startsWith("package") || it.name == "createDistributable" || it.name == "packageDistributionForCurrentOS" }.configureEach {
-    dependsOn(copyNativeLib)
-}
-
-listOf(
-    "createDistributable",
-    "packageMsi",
-    "packageExe",
-    "packageDeb",
-    "packageAppImage",
-    "packageRpm",
-    "packageDmg",
-    "packagePkg",
-    "packageUberJarForCurrentOS",
-    "packageDistributionForCurrentOS",
-    "runDistributable",
-).forEach { taskName ->
-    tasks.matching { it.name == taskName }.configureEach {
-        dependsOn(":web-capture:cargoBuildDesktop")
-    }
+    add("kspAndroid", libs.androidx.room3.compiler)
+    add("kspDesktop", libs.androidx.room3.compiler)
 }
 
 compose.desktop {
@@ -317,34 +281,12 @@ compose.desktop {
             modules("jdk.unsupported")
             modules("jdk.unsupported.desktop")
 
-            appResourcesRootDir.set(nativeLibDir)
-
             jvmArgs +=
                 if (OperatingSystem.current().isWindows) {
                     "-Djava.library.path=%APPDIR%;\$APPDIR/resources;\$APPDIR/resources/windows-x64;\$APPDIR/resources/windows-arm64"
                 } else {
                     "-Djava.library.path=\$APPDIR/resources:\$APPDIR/resources/linux-x64"
                 }
-        }
-    }
-}
-
-tasks.withType<JavaExec>().configureEach {
-    if (name == "run") {
-        dependsOn(copyNativeLib)
-        doFirst {
-            val libPath = nativeLibDir.absolutePath
-            val platformPaths =
-                if (OperatingSystem.current().isWindows) {
-                    listOf("windows-x64", "windows-arm64")
-                } else {
-                    listOf("linux-x64")
-                }
-            val libraryPath = (listOf(libPath) + platformPaths.map { File(libPath, it).absolutePath })
-                .joinToString(File.pathSeparator)
-            val currentJvmArgs = jvmArgs ?: emptyList()
-            val cleaned = currentJvmArgs.filterNot { it.startsWith("-Djava.library.path=") }
-            jvmArgs = cleaned + "-Djava.library.path=$libraryPath"
         }
     }
 }
@@ -376,6 +318,17 @@ tasks.named("wasmJsBrowserDistribution") {
     finalizedBy(addNetlifyHeadersToDist)
 }
 
-tasks.matching { it.name == "preBuild" }.configureEach {
-    dependsOn(":web-capture:cargoBuildAndroid")
+allprojects {
+    configurations.configureEach {
+        if (name.contains("wasm", ignoreCase = true)) {
+            resolutionStrategy {
+                force(
+                    "org.jetbrains.kotlin:kotlin-stdlib:2.3.10",
+                    "org.jetbrains.kotlin:kotlin-stdlib-wasm-js:2.3.10",
+                    "org.jetbrains.kotlin:kotlin-stdlib-js:2.3.10",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:2.3.10",
+                )
+            }
+        }
+    }
 }

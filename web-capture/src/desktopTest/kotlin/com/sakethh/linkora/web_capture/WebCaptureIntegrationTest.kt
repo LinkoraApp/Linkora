@@ -1,6 +1,8 @@
 package com.sakethh.linkora.web_capture
 
-import com.sakethh.linkora.JVMAndAndroidWebCapture
+import com.sakethh.linkora.KaptureOptions
+import com.sakethh.linkora.WebCapture
+import io.github.sakethpathike.kapture.Options
 import io.ktor.http.ContentType
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.ApplicationEngine
@@ -15,12 +17,13 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import java.io.File
+import java.net.ConnectException
 import java.net.ServerSocket
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.milliseconds
@@ -34,14 +37,17 @@ class WebCaptureIntegrationTest {
     @BeforeTest
     fun setup() {
         tempFiles.clear()
-
+        runTest {
+            WebCapture.init(KaptureOptions())
+        }
         if (masterServer == null) {
             masterPort = ServerSocket(0).use { it.localPort }
             masterServer =
                 embeddedServer(CIO, port = masterPort) {
                     routing {
                         get("/") {
-                            val requestedDelay = call.request.queryParameters["delay"]?.toLongOrNull() ?: 0L
+                            val requestedDelay =
+                                call.request.queryParameters["delay"]?.toLongOrNull() ?: 0L
                             val targetId = call.request.queryParameters["id"] ?: "Unknown"
 
                             if (requestedDelay > 0) {
@@ -80,65 +86,28 @@ class WebCaptureIntegrationTest {
     }
 
     @Test
-    fun loadsNativeLibrarySuccessfully() = runBlocking {
-        val result = JVMAndAndroidWebCapture.init()
-        assertTrue(result.isSuccess)
-        assertEquals(result.getOrNull(), true)
-    }
-
-    @Test
     fun nukeAndCallFailsSafely(): Unit = runBlocking {
-        JVMAndAndroidWebCapture.init()
-        JVMAndAndroidWebCapture.nuke()
+        WebCapture.init(KaptureOptions())
 
         val tempFile = createTempTestFile()
 
-        assertFailsWith<IllegalStateException> {
-            JVMAndAndroidWebCapture.saveHTMLPage(
-                fileDescriptor = -1,
+        assertFailsWith<ConnectException> {
+            WebCapture.saveHTMLPage(
                 filePath = tempFile.absolutePath,
                 url = "http://localhost",
-                userAgent = "LinkoraTest/1.0",
-                timeout = 10000L,
-                allowInsecureProtocol = true,
-                ignoreDocErrors = true,
-                useCss = false,
-                embedFonts = false,
-                embedImages = false,
-                restrictJs = false,
-                includeAudioElements = false,
-                includeVideoElements = false,
-                includeMetadata = false,
-                logStuff = true,
             )
         }
     }
 
     @Test
     fun writesValidHtmlToDisk() = runBlocking {
-        JVMAndAndroidWebCapture.init()
         val tempFile = createTempTestFile()
 
-        val result =
-            JVMAndAndroidWebCapture.saveHTMLPage(
-                fileDescriptor = -1,
-                filePath = tempFile.absolutePath,
-                url = "http://127.0.0.1:$masterPort/?id=FastResponse",
-                userAgent = "LinkoraTest/1.0",
-                timeout = 10000L,
-                allowInsecureProtocol = true,
-                ignoreDocErrors = true,
-                useCss = false,
-                embedFonts = false,
-                embedImages = false,
-                restrictJs = false,
-                includeAudioElements = false,
-                includeVideoElements = false,
-                includeMetadata = false,
-                logStuff = true,
-            )
+        WebCapture.saveHTMLPage(
+            filePath = tempFile.absolutePath,
+            url = "http://127.0.0.1:$masterPort/?id=FastResponse",
+        )
 
-        assertTrue(result)
         assertTrue(tempFile.exists())
 
         val fileContent = tempFile.readText()
@@ -147,27 +116,13 @@ class WebCaptureIntegrationTest {
 
     @Test
     fun cleanlyCancelsSlowRequest() = runBlocking {
-        JVMAndAndroidWebCapture.init()
         val tempFile = createTempTestFile()
 
         val captureJob = launch {
             try {
-                JVMAndAndroidWebCapture.saveHTMLPage(
-                    fileDescriptor = -1,
+                WebCapture.saveHTMLPage(
                     filePath = tempFile.absolutePath,
                     url = "http://127.0.0.1:$masterPort/?delay=3000&id=SlowRequest",
-                    userAgent = "LinkoraTest/1.0",
-                    timeout = 10000L,
-                    allowInsecureProtocol = true,
-                    ignoreDocErrors = true,
-                    useCss = false,
-                    embedFonts = false,
-                    embedImages = false,
-                    restrictJs = false,
-                    includeAudioElements = false,
-                    includeVideoElements = false,
-                    includeMetadata = false,
-                    logStuff = true,
                 )
             } catch (e: Exception) {
                 assertTrue(e is CancellationException)
@@ -183,27 +138,13 @@ class WebCaptureIntegrationTest {
 
     @Test
     fun cleanlyCancelsDuringDomProcessing() = runBlocking {
-        JVMAndAndroidWebCapture.init()
         val tempFile = createTempTestFile()
 
         val captureJob = launch {
             try {
-                JVMAndAndroidWebCapture.saveHTMLPage(
-                    fileDescriptor = -1,
+                WebCapture.saveHTMLPage(
                     filePath = tempFile.absolutePath,
                     url = "http://127.0.0.1:$masterPort/trap",
-                    userAgent = "LinkoraTest/1.0",
-                    timeout = 10000L,
-                    allowInsecureProtocol = true,
-                    ignoreDocErrors = true,
-                    useCss = false,
-                    embedFonts = false,
-                    embedImages = true,
-                    restrictJs = false,
-                    includeAudioElements = false,
-                    includeVideoElements = false,
-                    includeMetadata = false,
-                    logStuff = true,
                 )
             } catch (e: Exception) {
                 assertTrue(e is CancellationException)
@@ -219,8 +160,6 @@ class WebCaptureIntegrationTest {
 
     @Test
     fun chaoticConcurrentLoadTest(): Unit = runBlocking {
-        JVMAndAndroidWebCapture.init()
-
         val deferredResults =
             (0 until 20).map { i ->
                 async {
@@ -232,24 +171,11 @@ class WebCaptureIntegrationTest {
 
                     val captureJob = launch {
                         try {
-                            captureSucceeded =
-                                JVMAndAndroidWebCapture.saveHTMLPage(
-                                    fileDescriptor = -1,
-                                    filePath = tempFile.absolutePath,
-                                    url = "http://127.0.0.1:$masterPort/?delay=$serverDelayMs&id=$i",
-                                    userAgent = "LinkoraTest/1.0",
-                                    timeout = 10000L,
-                                    allowInsecureProtocol = true,
-                                    ignoreDocErrors = true,
-                                    useCss = false,
-                                    embedFonts = false,
-                                    embedImages = false,
-                                    restrictJs = false,
-                                    includeAudioElements = false,
-                                    includeVideoElements = false,
-                                    includeMetadata = false,
-                                    logStuff = true,
-                                )
+                            WebCapture.saveHTMLPage(
+                                filePath = tempFile.absolutePath,
+                                url = "http://127.0.0.1:$masterPort/?delay=$serverDelayMs&id=$i",
+                            )
+                            captureSucceeded = true
                         } catch (e: Exception) {
                             assertTrue(e is CancellationException)
                         }

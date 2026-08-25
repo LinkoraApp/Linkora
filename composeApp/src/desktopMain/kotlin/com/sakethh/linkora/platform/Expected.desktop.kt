@@ -5,6 +5,7 @@ import RefreshAllLinksService
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshotFlow
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import com.sakethh.linkora.KaptureOptions
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.WebCaptureService
 import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
@@ -116,46 +117,20 @@ actual class NativeUtils {
     actual class WebCapture {
         val androidDesktopWebCapture = AndroidDesktopWebCapture()
 
-        actual suspend fun init(): Result<Boolean> {
+        actual suspend fun init(options: KaptureOptions) {
             WebCaptureService.startService()
-            return androidDesktopWebCapture.init()
+            androidDesktopWebCapture.init(options)
         }
 
         actual suspend fun saveHTMLPage(
             nativeFolderPath: String,
             url: String,
-            userAgent: String,
-            timeout: Long,
-            allowInsecureProtocol: Boolean,
-            ignoreDocErrors: Boolean,
-            useCss: Boolean,
-            embedFonts: Boolean,
-            embedImages: Boolean,
-            restrictJs: Boolean,
-            logStuff: Boolean,
-            includeAudioElements: Boolean,
-            includeVideoElements: Boolean,
-            includeMetadata: Boolean,
         ): Result<Boolean> {
             val request = WebCaptureRequest(
                 nativeFolderPath = nativeFolderPath,
                 url = url,
-                userAgent = userAgent,
-                timeout = timeout,
-                allowInsecureProtocol = allowInsecureProtocol,
-                ignoreDocErrors = ignoreDocErrors,
-                useCss = useCss,
-                embedFonts = embedFonts,
-                embedImages = embedImages,
-                restrictJs = restrictJs,
-                logStuff = logStuff,
-                includeAudioElements = includeAudioElements,
-                includeVideoElements = includeVideoElements,
-                includeMetadata = includeMetadata,
             )
-
             WebCaptureService.queueCapture(request)
-
             return Result.Success(true)
         }
 

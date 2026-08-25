@@ -13,6 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.UriHandler
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sakethh.linkora.KaptureOptions
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.domain.AppPreferences
@@ -722,7 +723,7 @@ open class SettingsScreenViewModel(
             },
         )
 
-    fun initWebCapture(onCompletion: () -> Unit) {
+    fun initWebCapture(preferences: AppPreferences, onCompletion: () -> Unit) {
         viewModelScope.launch {
             // both handle exceptions internally
             awaitAll(
@@ -733,7 +734,18 @@ open class SettingsScreenViewModel(
                     )
                 },
                 async {
-                    webCapture.init()
+                    webCapture.init(
+                        options = KaptureOptions(
+                            userAgent = preferences.primaryJsoupUserAgent,
+                            includeCss = preferences.webCaptureSaveCss,
+                            includeImages = preferences.webCaptureSaveImages,
+                            includeJs = preferences.webCaptureExecuteJs,
+                            includeAudio = preferences.webCaptureSaveAudio,
+                            includeVideo = preferences.webCaptureSaveVideo,
+                            includeFonts = preferences.webCaptureSaveFonts,
+                            includeMetadata = preferences.webCaptureSaveMetadata,
+                        )
+                    )
                 },
             )
         }.invokeOnCompletion {

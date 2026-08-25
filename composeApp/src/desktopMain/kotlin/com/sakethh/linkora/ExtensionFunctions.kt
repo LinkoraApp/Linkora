@@ -1,13 +1,15 @@
 package com.sakethh.linkora
 
 import com.sakethh.linkora.domain.AppPreferences
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 
-fun File.prepareWebCaptureDir(
+suspend fun File.prepareWebCaptureDir(
     folderUuid: String,
     preferences: AppPreferences,
-): File {
-    val linkWebCaptureFolder = File(this, folderUuid)
+): File = withContext(Dispatchers.IO) {
+    val linkWebCaptureFolder = File(this@prepareWebCaptureDir, folderUuid)
 
     if (!preferences.webCaptureSaveAsVersions) {
         if (linkWebCaptureFolder.exists()) {
@@ -26,5 +28,5 @@ fun File.prepareWebCaptureDir(
             }
         }
     }
-    return linkWebCaptureFolder
+    return@withContext linkWebCaptureFolder
 }

@@ -1,0 +1,7 @@
+-keep class com.sakethh.linkora.WebCapture { *; }
+-keep class com.sakethh.linkora.WebCaptureMetadata { *; }
+-keep class com.sakethh.linkora.WebCaptureMetadataDao { *; }
+-keep class com.sakethh.linkora.KaptureOptions { *; }
+-keep class com.sakethh.linkora.WebCaptureDatabase { *; }
+-keep class * extends androidx.room3.RoomDatabase { *; }
+-keep @androidx.room3.Dao class * { *; }

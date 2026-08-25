@@ -19,10 +19,9 @@ import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.Network
 import com.sakethh.linkora.platform.PermissionManager
 import com.sakethh.linkora.platform.PlatformPreference
-import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.AndroidConstants
 import com.sakethh.linkora.utils.Constants
-import com.sakethh.linkora.utils.getAbsolutePathFromSafUri
+import com.sakethh.linkora.utils.getPOSIXPathFromSafUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import okio.Path.Companion.toPath
@@ -72,7 +71,7 @@ class LinkoraApp : Application() {
                 webCapture = NativeUtils.WebCapture(applicationContext),
                 webCaptureDatabaseManager = WebCaptureDatabaseManager(databaseBuilder = { webCaptureDirPath ->
                     val folderPath =
-                        getAbsolutePathFromSafUri(applicationContext, webCaptureDirPath.toUri())
+                        getPOSIXPathFromSafUri(applicationContext, webCaptureDirPath.toUri())
                     val dbFilePath = "$folderPath/${WebCaptureDatabase.NAME}.db"
                     Room.databaseBuilder<WebCaptureDatabase>(
                         name = dbFilePath,

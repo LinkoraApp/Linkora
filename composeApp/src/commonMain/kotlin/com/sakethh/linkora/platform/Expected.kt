@@ -2,6 +2,7 @@ package com.sakethh.linkora.platform
 
 import androidx.compose.runtime.Composable
 import androidx.room3.RoomDatabaseConstructor
+import com.sakethh.linkora.KaptureOptions
 import com.sakethh.linkora.data.local.LocalDatabase
 import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.domain.AppPreferences
@@ -26,7 +27,8 @@ expect val showDynamicThemingOption: Boolean
 
 expect val platform: Platform
 
-@Composable expect fun PlatformSpecificBackHandler(init: () -> Unit = {})
+@Composable
+expect fun PlatformSpecificBackHandler(init: () -> Unit = {})
 
 expect val PlatformIODispatcher: CoroutineDispatcher
 
@@ -95,25 +97,13 @@ expect class NativeUtils {
     fun onShare(url: String)
 
     class WebCapture {
-        suspend fun init(): Result<Boolean>
+        suspend fun init(options: KaptureOptions)
 
         suspend fun nuke()
 
         suspend fun saveHTMLPage(
             nativeFolderPath: String,
             url: String,
-            userAgent: String,
-            timeout: Long,
-            allowInsecureProtocol: Boolean,
-            ignoreDocErrors: Boolean,
-            useCss: Boolean,
-            embedFonts: Boolean,
-            embedImages: Boolean,
-            restrictJs: Boolean,
-            logStuff: Boolean,
-            includeAudioElements: Boolean,
-            includeVideoElements: Boolean,
-            includeMetadata: Boolean,
         ): Result<Boolean>
 
         suspend fun onCaptureAllWebPages(

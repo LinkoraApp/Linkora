@@ -10,6 +10,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
+import com.sakethh.linkora.KaptureOptions
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.data.local.repository.SnapshotRepoImpl
 import com.sakethh.linkora.di.LinkoraSDK
@@ -104,13 +105,13 @@ class AppVM(
         onCompletion: () -> Unit,
     ) {
         viewModelScope.launch {
-                preferencesRepository.changePreferenceValue(
-                    preferenceKey = key,
-                    newValue = newValue,
-                )
-            }.invokeOnCompletion {
-                onCompletion()
-            }
+            preferencesRepository.changePreferenceValue(
+                preferenceKey = key,
+                newValue = newValue,
+            )
+        }.invokeOnCompletion {
+            onCompletion()
+        }
     }
 
     val startDestination: Navigation.Root = nativeUtils.platformRunBlocking {
@@ -199,101 +200,113 @@ class AppVM(
             snapshotFlow {
                 CollectionsScreenVM.isSelectionEnabled.value
             }.collectLatest {
-                    if (!it) {
-                        transferActionType.value = TransferActionType.NONE
-                    }
+                if (!it) {
+                    transferActionType.value = TransferActionType.NONE
                 }
+            }
         }
 
         viewModelScope.launch {
-                val preferences = preferencesRepository.getPreferences()
-                readSocketEvents(remoteSyncRepo, preferences)
+            val preferences = preferencesRepository.getPreferences()
+            readSocketEvents(remoteSyncRepo, preferences)
 
-                if (preferences.isServerConfigured()) {
-                    try {
-                        LinkoraSDK.getInstance().network.configureSyncServerClient(bypassCertCheck = preferences.skipCertCheckForSync)
-                    } catch (e: Exception) {
-                        pushUIEvent(UIEvent.Type.ShowSnackbar(e.message.toString()))
-                    }
-                    isPerformingStartupSync = true
-                    // TODO: NESTED collectLatest
-                    networkRepo.testServerConnection(
-                            serverUrl = preferences.serverBaseUrl + SyncServerRoute.TEST_BEARER.name,
-                            token = preferences.serverSecurityToken,
-                        ).collectLatest {
-                            it.onSuccess {
-                                pushUIEvent(
-                                    UIEvent.Type.ShowSnackbar(
-                                        Localization.Key.SuccessfullyConnectedToTheServer.getLocalizedString(),
-                                    ),
-                                )
-                                dataSyncingNotificationService.showNotification()
-                                launch {
-                                    if (preferences.canPushToServer()) {
-                                        with(remoteSyncRepo) {
-                                            channelFlow {
-                                                pushPendingSyncQueueToServer<Unit>().collectLatest {
-                                                    it.pushSnackbarOnFailure()
-                                                }
-                                            }.collect()
+            if (preferences.isServerConfigured()) {
+                try {
+                    LinkoraSDK.getInstance().network.configureSyncServerClient(bypassCertCheck = preferences.skipCertCheckForSync)
+                } catch (e: Exception) {
+                    pushUIEvent(UIEvent.Type.ShowSnackbar(e.message.toString()))
+                }
+                isPerformingStartupSync = true
+                // TODO: NESTED collectLatest
+                networkRepo.testServerConnection(
+                    serverUrl = preferences.serverBaseUrl + SyncServerRoute.TEST_BEARER.name,
+                    token = preferences.serverSecurityToken,
+                ).collectLatest {
+                    it.onSuccess {
+                        pushUIEvent(
+                            UIEvent.Type.ShowSnackbar(
+                                Localization.Key.SuccessfullyConnectedToTheServer.getLocalizedString(),
+                            ),
+                        )
+                        dataSyncingNotificationService.showNotification()
+                        launch {
+                            if (preferences.canPushToServer()) {
+                                with(remoteSyncRepo) {
+                                    channelFlow {
+                                        pushPendingSyncQueueToServer<Unit>().collectLatest {
+                                            it.pushSnackbarOnFailure()
                                         }
+                                    }.collect()
+                                }
+                            }
+                        }
+
+                        listOf(
+                            launch {
+                                if (preferences.canReadFromServer()) {
+                                    remoteSyncRepo.applyUpdatesBasedOnRemoteTombstones(
+                                        preferences.lastSyncedLocally(
+                                            preferencesRepository,
+                                        ),
+                                    ).collectLatest {
+                                        it.pushSnackbarOnFailure()
                                     }
                                 }
-
-                                listOf(
-                                    launch {
-                                        if (preferences.canReadFromServer()) {
-                                            remoteSyncRepo.applyUpdatesBasedOnRemoteTombstones(
-                                                    preferences.lastSyncedLocally(
-                                                        preferencesRepository,
-                                                    ),
-                                                ).collectLatest {
-                                                    it.pushSnackbarOnFailure()
-                                                }
-                                        }
-                                    },
-                                    launch {
-                                        if (preferences.canReadFromServer()) {
-                                            remoteSyncRepo.applyUpdatesFromRemote(
-                                                    preferences.lastSyncedLocally(
-                                                        preferencesRepository,
-                                                    ),
-                                                ).collectLatest {
-                                                    it.pushSnackbarOnFailure()
-                                                }
-                                        }
-                                    },
-                                ).joinAll()
-                            }.onFailure {
-                                    pushUIEvent(
-                                        UIEvent.Type.ShowSnackbar(
-                                            Localization.Key.ConnectionToServerFailed.getLocalizedString() + "\n" + it,
+                            },
+                            launch {
+                                if (preferences.canReadFromServer()) {
+                                    remoteSyncRepo.applyUpdatesFromRemote(
+                                        preferences.lastSyncedLocally(
+                                            preferencesRepository,
                                         ),
-                                    )
+                                    ).collectLatest {
+                                        it.pushSnackbarOnFailure()
+                                    }
                                 }
-                        }
+                            },
+                        ).joinAll()
+                    }.onFailure {
+                        pushUIEvent(
+                            UIEvent.Type.ShowSnackbar(
+                                Localization.Key.ConnectionToServerFailed.getLocalizedString() + "\n" + it,
+                            ),
+                        )
+                    }
                 }
-            }.invokeOnCompletion {
-                isPerformingStartupSync = false
-                dataSyncingNotificationService.clearNotification()
             }
+        }.invokeOnCompletion {
+            isPerformingStartupSync = false
+            dataSyncingNotificationService.clearNotification()
+        }
 
         viewModelScope.launch(Dispatchers.Default) {
-            if (preferencesAsFlow.value.useWebCaptures) {
-                webCapture.init()
+            val preferences = preferencesAsFlow.value
+            if (preferences.useWebCaptures) {
+                webCapture.init(
+                    options = KaptureOptions(
+                        userAgent = preferences.primaryJsoupUserAgent,
+                        includeCss = preferences.webCaptureSaveCss,
+                        includeImages = preferences.webCaptureSaveImages,
+                        includeJs = preferences.webCaptureExecuteJs,
+                        includeAudio = preferences.webCaptureSaveAudio,
+                        includeVideo = preferences.webCaptureSaveVideo,
+                        includeFonts = preferences.webCaptureSaveFonts,
+                        includeMetadata = preferences.webCaptureSaveMetadata,
+                    )
+                )
             }
         }
     }
 
     fun markOnboardingComplete() {
         viewModelScope.launch {
-                preferencesRepository.changePreferenceValue(
-                    preferenceKey = AppPreferences.SHOULD_SHOW_ONBOARDING,
-                    newValue = false,
-                )
-            }.invokeOnCompletion {
-                onBoardingCompleted.value = true
-            }
+            preferencesRepository.changePreferenceValue(
+                preferenceKey = AppPreferences.SHOULD_SHOW_ONBOARDING,
+                newValue = false,
+            )
+        }.invokeOnCompletion {
+            onBoardingCompleted.value = true
+        }
     }
 
     fun openWebCaptureFolder(link: String) {
@@ -344,25 +357,25 @@ class AppVM(
         onCompletion: () -> Unit,
     ) {
         viewModelScope.launch {
-                localMultiActionRepo.moveMultipleItems(
-                        linkIds = selectedLinkTagPairsViaLongClick.map {
-                            it.link.localId
-                        },
-                        folderIds = selectedFoldersViaLongClick.map {
-                            it.localId
-                        },
-                        linkType = folderId.asLinkType(),
-                        newParentFolderId = folderId,
-                    ).collectLatest {
-                        it.onLoading {
-                            onStart()
-                        }
-                        it.pushSnackbarOnFailure()
-                    }
-            }.invokeOnCompletion {
-                onCompletion()
-                clearAllSelections()
+            localMultiActionRepo.moveMultipleItems(
+                linkIds = selectedLinkTagPairsViaLongClick.map {
+                    it.link.localId
+                },
+                folderIds = selectedFoldersViaLongClick.map {
+                    it.localId
+                },
+                linkType = folderId.asLinkType(),
+                newParentFolderId = folderId,
+            ).collectLatest {
+                it.onLoading {
+                    onStart()
+                }
+                it.pushSnackbarOnFailure()
             }
+        }.invokeOnCompletion {
+            onCompletion()
+            clearAllSelections()
+        }
     }
 
     fun copySelectedItems(
@@ -372,21 +385,21 @@ class AppVM(
     ) {
         onStart()
         viewModelScope.launch {
-                localMultiActionRepo.copyMultipleItems(
-                        linkTagsPairs = selectedLinkTagPairsViaLongClick.toList(),
-                        folders = selectedFoldersViaLongClick.toList(),
-                        linkType = folderId.asLinkType(),
-                        newParentFolderId = folderId,
-                    ).collectLatest {
-                        it.onLoading {
-                            onStart()
-                        }
-                        it.pushSnackbarOnFailure()
-                    }
-            }.invokeOnCompletion {
-                clearAllSelections()
-                onCompletion()
+            localMultiActionRepo.copyMultipleItems(
+                linkTagsPairs = selectedLinkTagPairsViaLongClick.toList(),
+                folders = selectedFoldersViaLongClick.toList(),
+                linkType = folderId.asLinkType(),
+                newParentFolderId = folderId,
+            ).collectLatest {
+                it.onLoading {
+                    onStart()
+                }
+                it.pushSnackbarOnFailure()
             }
+        }.invokeOnCompletion {
+            clearAllSelections()
+            onCompletion()
+        }
     }
 
     fun archiveSelectedItems(
@@ -395,25 +408,25 @@ class AppVM(
     ) {
         onStart()
         viewModelScope.launch {
-                localMultiActionRepo.archiveMultipleItems(
-                        linkIds = selectedLinkTagPairsViaLongClick.filter { it.link.linkType != LinkType.ARCHIVE_LINK }
-                            .map { it.link.localId },
-                        folderIds = selectedFoldersViaLongClick.filter { it.isArchived.not() }
-                            .map { it.localId },
-                    ).collectLatest {
-                        it.onSuccess {
-                            pushUIEvent(
-                                UIEvent.Type.ShowSnackbar(
-                                    Localization.getLocalizedString(Localization.Key.ArchivedSuccessfully) + it.getRemoteOnlyFailureMsg(),
-                                ),
-                            )
-                        }
-                        it.pushSnackbarOnFailure()
-                    }
-            }.invokeOnCompletion {
-                onCompletion()
-                clearAllSelections()
+            localMultiActionRepo.archiveMultipleItems(
+                linkIds = selectedLinkTagPairsViaLongClick.filter { it.link.linkType != LinkType.ARCHIVE_LINK }
+                    .map { it.link.localId },
+                folderIds = selectedFoldersViaLongClick.filter { it.isArchived.not() }
+                    .map { it.localId },
+            ).collectLatest {
+                it.onSuccess {
+                    pushUIEvent(
+                        UIEvent.Type.ShowSnackbar(
+                            Localization.getLocalizedString(Localization.Key.ArchivedSuccessfully) + it.getRemoteOnlyFailureMsg(),
+                        ),
+                    )
+                }
+                it.pushSnackbarOnFailure()
             }
+        }.invokeOnCompletion {
+            onCompletion()
+            clearAllSelections()
+        }
     }
 
     fun deleteSelectedItems(
@@ -422,23 +435,23 @@ class AppVM(
     ) {
         onStart()
         viewModelScope.launch {
-                localMultiActionRepo.deleteMultipleItems(
-                        linkIds = selectedLinkTagPairsViaLongClick.toList().map { it.link.localId },
-                        folderIds = selectedFoldersViaLongClick.toList().map { it.localId },
-                    ).collectLatest {
-                        it.onSuccess {
-                            pushUIEvent(
-                                UIEvent.Type.ShowSnackbar(
-                                    Localization.getLocalizedString(Localization.Key.DeletedSuccessfully) + it.getRemoteOnlyFailureMsg(),
-                                ),
-                            )
-                        }
-                        it.pushSnackbarOnFailure()
-                    }
-            }.invokeOnCompletion {
-                clearAllSelections()
-                onCompletion()
+            localMultiActionRepo.deleteMultipleItems(
+                linkIds = selectedLinkTagPairsViaLongClick.toList().map { it.link.localId },
+                folderIds = selectedFoldersViaLongClick.toList().map { it.localId },
+            ).collectLatest {
+                it.onSuccess {
+                    pushUIEvent(
+                        UIEvent.Type.ShowSnackbar(
+                            Localization.getLocalizedString(Localization.Key.DeletedSuccessfully) + it.getRemoteOnlyFailureMsg(),
+                        ),
+                    )
+                }
+                it.pushSnackbarOnFailure()
             }
+        }.invokeOnCompletion {
+            clearAllSelections()
+            onCompletion()
+        }
     }
 
     fun markSelectedFoldersAsRoot(
@@ -447,11 +460,12 @@ class AppVM(
     ) {
         onStart()
         viewModelScope.launch {
-                foldersRepo.markFoldersAsRoot(selectedFoldersViaLongClick.toList().map { it.localId }).collect()
-            }.invokeOnCompletion {
-                clearAllSelections()
-                onCompletion()
-            }
+            foldersRepo.markFoldersAsRoot(selectedFoldersViaLongClick.toList().map { it.localId })
+                .collect()
+        }.invokeOnCompletion {
+            clearAllSelections()
+            onCompletion()
+        }
     }
 
     fun markSelectedItemsAsRegular(
@@ -460,16 +474,16 @@ class AppVM(
     ) {
         onStart()
         viewModelScope.launch {
-                localMultiActionRepo.unArchiveMultipleItems(
-                        folderIds = selectedFoldersViaLongClick.filter { it.isArchived }
-                            .map { it.localId },
-                        linkIds = selectedLinkTagPairsViaLongClick.filter { it.link.linkType == LinkType.ARCHIVE_LINK }
-                            .map { it.link.localId },
-                    ).collect()
-            }.invokeOnCompletion {
-                clearAllSelections()
-                onCompletion()
-            }
+            localMultiActionRepo.unArchiveMultipleItems(
+                folderIds = selectedFoldersViaLongClick.filter { it.isArchived }
+                    .map { it.localId },
+                linkIds = selectedLinkTagPairsViaLongClick.filter { it.link.linkType == LinkType.ARCHIVE_LINK }
+                    .map { it.link.localId },
+            ).collect()
+        }.invokeOnCompletion {
+            clearAllSelections()
+            onCompletion()
+        }
     }
 
     val snackbarHostState = SnackbarHostState()

@@ -8,13 +8,17 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
+import com.sakethh.linkora.KaptureOptions
 import com.sakethh.linkora.R
 import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.di.LinkoraSDK
-import com.sakethh.linkora.domain.LinkoraResultFailure
+import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.model.CaptureTrack
-import com.sakethh.linkora.domain.onSuccess
+import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
+import com.sakethh.linkora.utils.createPOSIXOwnedFile
 import com.sakethh.linkora.utils.getOrCreateFolderUuid
+import com.sakethh.linkora.utils.isAllowedByWebCapturePolicies
+import com.sakethh.linkora.utils.prepareWebCaptureFolder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
@@ -46,11 +50,25 @@ class WebCaptureWorker(
             return@coroutineScope Result.success()
         }
 
-        val initResult = LinkoraSDK.getInstance().webCapture.init()
-        if (initResult is LinkoraResultFailure) {
+        try {
+            LinkoraSDK.getInstance().webCapture.init(
+                options = KaptureOptions(
+                    userAgent = preferences.primaryJsoupUserAgent,
+                    includeCss = preferences.webCaptureSaveCss,
+                    includeImages = preferences.webCaptureSaveImages,
+                    includeJs = preferences.webCaptureExecuteJs,
+                    includeAudio = preferences.webCaptureSaveAudio,
+                    includeVideo = preferences.webCaptureSaveVideo,
+                    includeFonts = preferences.webCaptureSaveFonts,
+                    includeMetadata = preferences.webCaptureSaveMetadata,
+                )
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
             return@coroutineScope Result.failure()
         }
-        val linkUrl = inputData.getString(LINK) ?: return@coroutineScope Result.failure()
+
+        val url = inputData.getString(LINK) ?: return@coroutineScope Result.failure()
         val captureWorkerId =
             inputData.getString(WORKER_ID) ?: return@coroutineScope Result.failure()
 
@@ -76,7 +94,7 @@ class WebCaptureWorker(
             val blacklist = preferences.webCaptureBlacklistDomains.split(",").map { it.trim() }
                 .filter { it.isNotBlank() }
 
-            if (!linkUrl.isAllowedByWebCapturePolicies(whitelist, blacklist)) {
+            if (!url.isAllowedByWebCapturePolicies(whitelist, blacklist)) {
                 return@coroutineScope Result.success()
             }
 
@@ -84,7 +102,8 @@ class WebCaptureWorker(
                 applicationContext,
                 preferences.webCapturesLocation.toUri(),
             ) ?: return@coroutineScope Result.failure()
-            val folderUuid = webCaptureRepo.getOrCreateFolderUuid(linkUrl)
+
+            val folderUuid = webCaptureRepo.getOrCreateFolderUuid(url)
             val linkWebCaptureFolder = baseCaptureDir.prepareWebCaptureFolder(
                 folderUuid = folderUuid,
                 saveAsVersions = preferences.webCaptureSaveAsVersions,
@@ -95,31 +114,25 @@ class WebCaptureWorker(
             val folderUri =
                 linkWebCaptureFolder?.uri?.toString() ?: return@coroutineScope Result.failure()
 
-            val webCaptureFd = applicationContext.createWebCaptureFileDescriptor(folderUri)
-                ?: return@coroutineScope Result.failure()
+            val captureFilePOSIXPath = createPOSIXOwnedFile(
+                context = applicationContext,
+                folderUriString = folderUri,
+                exportFileType = ExportFileType.HTML,
+                exportLocationType = ExportLocationType.WEB_CAPTURE
+            ) ?: return@coroutineScope Result.failure()
 
             var isSuccess = false
 
-            withContext(Dispatchers.IO) {
-                androidDesktopWebCapture.saveHTMLPage(
-                    url = linkUrl,
-                    userAgent = preferences.primaryJsoupUserAgent,
-                    timeout = 15000L,
-                    allowInsecureProtocol = false,
-                    ignoreDocErrors = true,
-                    useCss = preferences.webCaptureSaveCss,
-                    embedFonts = preferences.webCaptureSaveFonts,
-                    embedImages = preferences.webCaptureSaveImages,
-                    restrictJs = preferences.webCaptureExecuteJs,
-                    includeAudioElements = preferences.webCaptureSaveAudio,
-                    includeVideoElements = preferences.webCaptureSaveVideo,
-                    includeMetadata = preferences.webCaptureSaveMetadata,
-                    logStuff = false,
-                    fileDescriptor = webCaptureFd,
-                    filePath = "",
-                )
-            }.onSuccess { (captureSuccess) ->
-                isSuccess = captureSuccess
+            try {
+                withContext(Dispatchers.IO) {
+                    androidDesktopWebCapture.saveHTMLPage(
+                        url = url,
+                        filePath = captureFilePOSIXPath,
+                    )
+                }
+                isSuccess = true
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
 
             if (isSuccess) Result.success() else Result.failure()

@@ -248,18 +248,6 @@ class LocalLinksRepoImpl(
                 webCapture.saveHTMLPage(
                     nativeFolderPath = preferences.webCapturesLocation,
                     url = link.url,
-                    userAgent = preferences.primaryJsoupUserAgent,
-                    timeout = 15000L,
-                    allowInsecureProtocol = false,
-                    ignoreDocErrors = true,
-                    useCss = preferences.webCaptureSaveCss,
-                    embedFonts = preferences.webCaptureSaveFonts,
-                    embedImages = preferences.webCaptureSaveImages,
-                    restrictJs = preferences.webCaptureExecuteJs,
-                    includeAudioElements = preferences.webCaptureSaveAudio,
-                    includeVideoElements = preferences.webCaptureSaveVideo,
-                    includeMetadata = preferences.webCaptureSaveMetadata,
-                    logStuff = false,
                 )
             }
         }
@@ -897,18 +885,6 @@ class LocalLinksRepoImpl(
                 webCapture.saveHTMLPage(
                     nativeFolderPath = preferences.webCapturesLocation,
                     url = link.url,
-                    userAgent = preferences.primaryJsoupUserAgent,
-                    timeout = 15000L,
-                    allowInsecureProtocol = false,
-                    ignoreDocErrors = true,
-                    useCss = preferences.webCaptureSaveCss,
-                    embedFonts = preferences.webCaptureSaveFonts,
-                    embedImages = preferences.webCaptureSaveImages,
-                    restrictJs = preferences.webCaptureExecuteJs,
-                    includeAudioElements = preferences.webCaptureSaveAudio,
-                    includeVideoElements = preferences.webCaptureSaveVideo,
-                    includeMetadata = preferences.webCaptureSaveMetadata,
-                    logStuff = false,
                 )
             }
         }

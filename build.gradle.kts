@@ -12,6 +12,7 @@ plugins {
     id("androidx.room3") version "3.0.0-alpha01" apply false
     alias(libs.plugins.jetbrains.kotlin.jvm) apply false
     id("com.diffplug.spotless") version "8.8.0"
+    id("org.jetbrains.kotlinx.atomicfu") version "0.33.0"
 }
 
 tasks.register("installGitHooks") {

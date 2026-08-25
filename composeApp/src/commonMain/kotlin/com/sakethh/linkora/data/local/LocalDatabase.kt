@@ -1,12 +1,12 @@
 package com.sakethh.linkora.data.local
 
+import androidx.room3.ColumnTypeConverters
 import androidx.room3.ConstructedBy
 import androidx.room3.Database
 import androidx.room3.RoomDatabase
-import androidx.room3.TypeConverters
 import androidx.room3.migration.Migration
 import androidx.sqlite.SQLiteConnection
-import androidx.sqlite.executeSQL
+import androidx.sqlite.async.executeSQL
 import com.sakethh.linkora.data.local.dao.CaptureTrackDao
 import com.sakethh.linkora.data.local.dao.FoldersDao
 import com.sakethh.linkora.data.local.dao.LinksDao
@@ -53,7 +53,7 @@ import com.sakethh.linkora.utils.getSystemEpochSeconds
         ],
 )
 @ConstructedBy(LocalDatabaseConstructor::class)
-@TypeConverters(TypeConverter::class)
+@ColumnTypeConverters(TypeConverter::class)
 abstract class LocalDatabase : RoomDatabase() {
     companion object {
         const val NAME = "linkora_db"

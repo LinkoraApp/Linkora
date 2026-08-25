@@ -9,15 +9,20 @@ import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.sakethh.linkora.KaptureOptions
 import com.sakethh.linkora.R
 import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.di.LinkoraSDK
-import com.sakethh.linkora.domain.LinkoraResultFailure
+import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.model.CaptureTrack
 import com.sakethh.linkora.service.WebCaptureNotificationService
 import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
+import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.ui.screens.settings.section.data.OnGoingWebCaptureState
+import com.sakethh.linkora.utils.createPOSIXOwnedFile
 import com.sakethh.linkora.utils.getOrCreateFolderUuid
+import com.sakethh.linkora.utils.isAllowedByWebCapturePolicies
+import com.sakethh.linkora.utils.prepareWebCaptureFolder
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.asFlow
@@ -59,19 +64,34 @@ class AllLinksWebCaptureWorker(
         webCaptureNotificationService.clearNotifications()
 
         if (isStopped) {
-            cleanUp()
+            cleanup()
             return@coroutineScope Result.success()
         }
 
-        val initResult = LinkoraSDK.getInstance().webCapture.init()
-        if (initResult is LinkoraResultFailure) {
+        val preferences = DependencyContainer.preferencesRepo.getPreferences()
+
+        try {
+            LinkoraSDK.getInstance().webCapture.init(
+                options = KaptureOptions(
+                    userAgent = preferences.primaryJsoupUserAgent,
+                    includeCss = preferences.webCaptureSaveCss,
+                    includeImages = preferences.webCaptureSaveImages,
+                    includeJs = preferences.webCaptureExecuteJs,
+                    includeAudio = preferences.webCaptureSaveAudio,
+                    includeVideo = preferences.webCaptureSaveVideo,
+                    includeFonts = preferences.webCaptureSaveFonts,
+                    includeMetadata = preferences.webCaptureSaveMetadata,
+                )
+            )
+        } catch (_: Exception) {
             return@coroutineScope Result.failure()
         }
+
         return@coroutineScope try {
-            val preferences = DependencyContainer.preferencesRepo.getPreferences()
             val webCaptureRepo = DependencyContainer.webCaptureRepo
             val allLinks = DependencyContainer.localLinksRepo.getAllLinks()
-            val processedIds = DependencyContainer.webCaptureRepo.getAllLinksCaptureProcessedLinkIds().toSet()
+            val processedIds =
+                DependencyContainer.webCaptureRepo.getAllLinksCaptureProcessedLinkIds().toSet()
             val linksToCapture = allLinks.filter { "all_${it.localId}" !in processedIds }
 
             val whitelist = preferences.webCaptureWhitelistDomains.split(",").map { it.trim() }
@@ -120,28 +140,18 @@ class AllLinksWebCaptureWorker(
                         )
 
                         val folderUri = linkWebCaptureFolder?.uri?.toString() ?: return@flow
-                        val webCaptureFd =
-                            applicationContext.createWebCaptureFileDescriptor(folderUri)
 
-                        if (webCaptureFd != null) {
-                            androidDesktopWebCapture.saveHTMLPage(
-                                url = link.url,
-                                userAgent = preferences.primaryJsoupUserAgent,
-                                timeout = 15000L,
-                                allowInsecureProtocol = false,
-                                ignoreDocErrors = true,
-                                useCss = preferences.webCaptureSaveCss,
-                                embedFonts = preferences.webCaptureSaveFonts,
-                                embedImages = preferences.webCaptureSaveImages,
-                                restrictJs = preferences.webCaptureExecuteJs,
-                                includeAudioElements = preferences.webCaptureSaveAudio,
-                                includeVideoElements = preferences.webCaptureSaveVideo,
-                                includeMetadata = preferences.webCaptureSaveMetadata,
-                                logStuff = false,
-                                fileDescriptor = webCaptureFd,
-                                filePath = "",
-                            )
-                        }
+                        val captureFilePOSIXPath = createPOSIXOwnedFile(
+                            context = applicationContext,
+                            folderUriString = folderUri,
+                            exportFileType = ExportFileType.HTML,
+                            exportLocationType = ExportLocationType.WEB_CAPTURE
+                        ) ?: return@flow
+
+                        androidDesktopWebCapture.saveHTMLPage(
+                            url = link.url,
+                            filePath = captureFilePOSIXPath,
+                        )
 
                         DependencyContainer.webCaptureRepo.insertAProcessedId(
                             CaptureTrack(
@@ -155,7 +165,7 @@ class AllLinksWebCaptureWorker(
                     }
                 }.onEach {
                     if (isStopped) {
-                        cleanUp()
+                        cleanup()
                         cancel()
                     }
                 }.catch { it.printStackTrace() }.collect {
@@ -170,11 +180,11 @@ class AllLinksWebCaptureWorker(
             e.printStackTrace()
             Result.failure()
         } finally {
-            cleanUp()
+            cleanup()
         }
     }
 
-    private fun cleanUp() {
+    private fun cleanup() {
         DataSettingsScreenVM.onGoingWebCaptureState = OnGoingWebCaptureState(
             isInProgress = false,
             currentIteration = 0,

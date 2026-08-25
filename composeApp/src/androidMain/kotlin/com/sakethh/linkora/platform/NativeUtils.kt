@@ -17,6 +17,7 @@ import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.sakethh.linkora.KaptureOptions
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.R
 import com.sakethh.linkora.WebCaptureDatabase
@@ -28,8 +29,8 @@ import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.RefreshLinksRepo
 import com.sakethh.linkora.domain.repository.local.WebCaptureRepo
-import com.sakethh.linkora.utils.getAbsolutePathFromSafUri
 import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.getPOSIXPathFromSafUri
 import com.sakethh.linkora.worker.AllLinksWebCaptureWorker
 import com.sakethh.linkora.worker.RefreshAllLinksWorker
 import com.sakethh.linkora.worker.WebCaptureWorker
@@ -169,23 +170,11 @@ actual class NativeUtils(
     ) {
         private val androidDesktopWebCapture = AndroidDesktopWebCapture()
 
-        actual suspend fun init(): Result<Boolean> = androidDesktopWebCapture.init()
+        actual suspend fun init(options: KaptureOptions) = androidDesktopWebCapture.init(options)
 
         actual suspend fun saveHTMLPage(
             nativeFolderPath: String,
             url: String,
-            userAgent: String,
-            timeout: Long,
-            allowInsecureProtocol: Boolean,
-            ignoreDocErrors: Boolean,
-            useCss: Boolean,
-            embedFonts: Boolean,
-            embedImages: Boolean,
-            restrictJs: Boolean,
-            logStuff: Boolean,
-            includeAudioElements: Boolean,
-            includeVideoElements: Boolean,
-            includeMetadata: Boolean,
         ): Result<Boolean> = withContext(Dispatchers.IO) {
             val workerUUID = UUID.randomUUID()
 
@@ -268,7 +257,7 @@ actual class NativeUtils(
             captureLocation: String,
             webCaptureDatabaseManager: WebCaptureDatabaseManager,
         ): Unit = withContext(Dispatchers.IO) {
-            val rawDirPath = getAbsolutePathFromSafUri(
+            val rawDirPath = getPOSIXPathFromSafUri(
                 context.applicationContext,
                 captureLocation.toUri(),
             ).toString()

@@ -1,3 +1,4 @@
+import com.sakethh.linkora.KaptureOptions
 import com.sakethh.linkora.WebCapture
 import com.sakethh.linkora.domain.Result
 import kotlinx.coroutines.Dispatchers
@@ -5,64 +6,24 @@ import kotlinx.coroutines.withContext
 
 class AndroidDesktopWebCapture {
 
-    suspend fun nuke() = WebCapture.nuke()
+    suspend fun init(options: KaptureOptions) = WebCapture.init(options)
 
-    suspend fun init(): Result<Boolean> = WebCapture.init()
-        .fold(
-            onSuccess = {
-                Result.Success(true)
-            },
-            onFailure = { Result.Failure(it.message.toString()) },
-        )
+    /**
+     * Previously all rust operations used to be cancelled explicitly but since now
+     * web-capture is based on kapture cancelling the coroutine will do the job
+     */
+    fun nuke() = Unit
 
     suspend fun saveHTMLPage(
-        fileDescriptor: Int,
         filePath: String,
         url: String,
-        userAgent: String,
-        timeout: Long,
-        allowInsecureProtocol: Boolean,
-        ignoreDocErrors: Boolean,
-        useCss: Boolean,
-        embedFonts: Boolean,
-        embedImages: Boolean,
-        restrictJs: Boolean,
-        includeAudioElements: Boolean,
-        includeVideoElements: Boolean,
-        includeMetadata: Boolean,
-        logStuff: Boolean,
-    ): Result<Boolean> = when (val initResult = init()) {
-        is Result.Failure -> Result.Failure(initResult.message)
-
-        is Result.Loading -> Result.Loading(initResult.message)
-
-        is Result.Success -> {
-            try {
-                withContext(Dispatchers.IO) {
-                    WebCapture.saveHTMLPage(
-                        fileDescriptor = fileDescriptor,
-                        filePath = filePath,
-                        url = url,
-                        userAgent = userAgent,
-                        timeout = timeout,
-                        allowInsecureProtocol = allowInsecureProtocol,
-                        ignoreDocErrors = ignoreDocErrors,
-                        useCss = useCss,
-                        embedFonts = embedFonts,
-                        embedImages = embedImages,
-                        restrictJs = restrictJs,
-                        logStuff = logStuff,
-                        includeAudioElements = includeAudioElements,
-                        includeVideoElements = includeVideoElements,
-                        includeMetadata = includeMetadata,
-                    )
-                        .run {
-                            Result.Success(this)
-                        }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                Result.Failure(e.message.toString())
+    ) {
+        withContext(Dispatchers.IO) {
+            WebCapture.saveHTMLPage(
+                filePath = filePath,
+                url = url,
+            ).run {
+                Result.Success(true)
             }
         }
     }

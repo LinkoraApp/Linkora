@@ -1,10 +1,10 @@
 package com.sakethh.linkora.platform
 
 import AndroidDesktopWebCapture
+import com.sakethh.linkora.KaptureOptions
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ExportFileType
-import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.WebCaptureRepo
 import com.sakethh.linkora.prepareWebCaptureDir
@@ -14,12 +14,14 @@ import com.sakethh.linkora.ui.screens.settings.section.data.OnGoingWebCaptureSta
 import com.sakethh.linkora.utils.getOrCreateFolderUuid
 import getFileNameWithTimestamp
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.net.URI
 
@@ -42,8 +44,20 @@ object AllLinksWebCaptureService {
         webCaptureRepo: WebCaptureRepo,
     ) {
         captureJob = CoroutineScope(PlatformIODispatcher).launch {
-            val initResult = LinkoraSDK.getInstance().webCapture.init()
-            if (initResult is Result.Failure) {
+            try {
+                LinkoraSDK.getInstance().webCapture.init(
+                    options = KaptureOptions(
+                        userAgent = preferences.primaryJsoupUserAgent,
+                        includeCss = preferences.webCaptureSaveCss,
+                        includeImages = preferences.webCaptureSaveImages,
+                        includeJs = preferences.webCaptureExecuteJs,
+                        includeAudio = preferences.webCaptureSaveAudio,
+                        includeVideo = preferences.webCaptureSaveVideo,
+                        includeFonts = preferences.webCaptureSaveFonts,
+                        includeMetadata = preferences.webCaptureSaveMetadata,
+                    )
+                )
+            } catch (_: Exception) {
                 return@launch
             }
 
@@ -94,25 +108,13 @@ object AllLinksWebCaptureService {
                                 ExportLocationType.WEB_CAPTURE,
                             ),
                         )
-                        captureFile.createNewFile()
-
-                        androidDesktopWebCapture.saveHTMLPage(
-                            url = link.url,
-                            userAgent = preferences.primaryJsoupUserAgent,
-                            timeout = 15000L,
-                            allowInsecureProtocol = false,
-                            ignoreDocErrors = true,
-                            useCss = preferences.webCaptureSaveCss,
-                            embedFonts = preferences.webCaptureSaveFonts,
-                            embedImages = preferences.webCaptureSaveImages,
-                            restrictJs = preferences.webCaptureExecuteJs,
-                            includeAudioElements = preferences.webCaptureSaveAudio,
-                            includeVideoElements = preferences.webCaptureSaveVideo,
-                            includeMetadata = preferences.webCaptureSaveMetadata,
-                            logStuff = false,
-                            fileDescriptor = -1,
-                            filePath = captureFile.absolutePath,
-                        )
+                        withContext(Dispatchers.IO) {
+                            captureFile.createNewFile()
+                            androidDesktopWebCapture.saveHTMLPage(
+                                url = link.url,
+                                filePath = captureFile.absolutePath,
+                            )
+                        }
 
                         emit(link.localId)
                     }

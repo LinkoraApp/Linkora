@@ -1,10 +1,15 @@
-package com.sakethh.linkora.worker
+package com.sakethh.linkora.utils
 
 import android.content.Context
+import android.content.Context.STORAGE_SERVICE
+import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.os.storage.StorageManager
+import android.provider.DocumentsContract
 import androidx.documentfile.provider.DocumentFile
 import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
-import com.sakethh.linkora.utils.createNewFile
 import java.net.URI
 
 fun String.isAllowedByWebCapturePolicies(
@@ -56,22 +61,4 @@ fun DocumentFile.prepareWebCaptureFolder(
         }
     }
     return linkWebCaptureFolder
-}
-
-suspend fun Context.createWebCaptureFileDescriptor(folderUriString: String): Int? {
-    return try {
-        val (webCaptureFile, _) = createNewFile(
-            context = this,
-            exportLocation = folderUriString,
-            exportFileType = ExportFileType.HTML,
-            exportLocationType = ExportLocationType.WEB_CAPTURE,
-        )
-        this.contentResolver.openFileDescriptor(
-            webCaptureFile?.uri ?: return null,
-            "w",
-        )?.detachFd()
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
-    }
 }

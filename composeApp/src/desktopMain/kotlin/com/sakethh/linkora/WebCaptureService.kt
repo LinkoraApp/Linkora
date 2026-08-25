@@ -3,8 +3,6 @@ package com.sakethh.linkora
 import AndroidDesktopWebCapture
 import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.domain.ExportFileType
-import com.sakethh.linkora.domain.repository.local.PreferencesRepository
-import com.sakethh.linkora.domain.repository.local.WebCaptureRepo
 import com.sakethh.linkora.model.WebCaptureRequest
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.utils.getOrCreateFolderUuid
@@ -23,6 +21,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 object WebCaptureService {
@@ -31,13 +30,11 @@ object WebCaptureService {
     private var processingJob: Job? = null
     private var serviceScope = CoroutineScope(Dispatchers.IO)
 
-    val isProcessing = activeCapturesCount
-        .map { it > 0 }
-        .stateIn(
-            scope = serviceScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = false,
-        )
+    val isProcessing = activeCapturesCount.map { it > 0 }.stateIn(
+        scope = serviceScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = false,
+    )
 
     private val androidDesktopWebCapture = AndroidDesktopWebCapture()
     private val preferencesRepository = DependencyContainer.preferencesRepo
@@ -70,25 +67,13 @@ object WebCaptureService {
                                     ExportLocationType.WEB_CAPTURE,
                                 ),
                             )
-                            captureFile.createNewFile()
-
-                            androidDesktopWebCapture.saveHTMLPage(
-                                url = request.url,
-                                userAgent = request.userAgent,
-                                timeout = request.timeout,
-                                allowInsecureProtocol = request.allowInsecureProtocol,
-                                ignoreDocErrors = request.ignoreDocErrors,
-                                useCss = request.useCss,
-                                embedFonts = request.embedFonts,
-                                embedImages = request.embedImages,
-                                restrictJs = request.restrictJs,
-                                includeAudioElements = request.includeAudioElements,
-                                includeVideoElements = request.includeVideoElements,
-                                includeMetadata = request.includeMetadata,
-                                logStuff = request.logStuff,
-                                fileDescriptor = -1,
-                                filePath = captureFile.absolutePath,
-                            )
+                            withContext(Dispatchers.IO) {
+                                captureFile.createNewFile()
+                                androidDesktopWebCapture.saveHTMLPage(
+                                    url = request.url,
+                                    filePath = captureFile.absolutePath,
+                                )
+                            }
                             emit(Unit)
                         } catch (e: Exception) {
                             e.printStackTrace()

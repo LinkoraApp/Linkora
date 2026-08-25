@@ -2,6 +2,7 @@ package com.sakethh.linkora.platform
 
 import RefreshAllLinksService
 import androidx.compose.runtime.Composable
+import com.sakethh.linkora.KaptureOptions
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.domain.AppPreferences
@@ -157,23 +158,11 @@ actual class NativeUtils {
     }
 
     actual class WebCapture {
-        actual suspend fun init(): Result<Boolean> = Result.Failure("huh")
+        actual suspend fun init(options: KaptureOptions) = Unit
 
         actual suspend fun saveHTMLPage(
             nativeFolderPath: String,
             url: String,
-            userAgent: String,
-            timeout: Long,
-            allowInsecureProtocol: Boolean,
-            ignoreDocErrors: Boolean,
-            useCss: Boolean,
-            embedFonts: Boolean,
-            embedImages: Boolean,
-            restrictJs: Boolean,
-            logStuff: Boolean,
-            includeAudioElements: Boolean,
-            includeVideoElements: Boolean,
-            includeMetadata: Boolean,
         ): Result<Boolean> = Result.Failure("huh")
 
         actual suspend fun onCaptureAllWebPages(
