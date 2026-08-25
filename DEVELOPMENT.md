@@ -10,12 +10,8 @@ branch naming conventions, commit message styles, PR workflows, or rules on AI u
     * *Note on newer JDKs:* If your system default JDK is newer (e.g., JDK 25), use the JetBrains
       Runtime (JBR) 21 bundled with Android Studio. If you must use the terminal, prefix commands
       with your JBR path: `JAVA_HOME="/path/to/your/android-studio/jbr" ./gradlew <command>`.
-* **NDK (Required):** The Android NDK is **mandatory**. Linkora compiles Rust code for Android
-  targets (`aarch64-linux-android`, `x86_64-linux-android`, `armv7-linux-androideabi`). You **must**
-  install the NDK via Android Studio: `Tools` -> `SDK Manager` -> `SDK Tools` tab -> check
-  `NDK (Side by side)` -> Apply. The build scripts are preset to automatically detect it via the
-  `$ANDROID_HOME` environment variable. Do not hardcode paths.
-* **IDE:** Android Studio.
+* **IDE:** Android Studio (IntelliJ IDEA also works, or some random custom environment you have
+  should work as well)
 
 Your first build will take 5 to 20 minutes depending on your machine and internet speed. Subsequent
 builds will be significantly faster.
@@ -31,8 +27,10 @@ Linkora is a multi-module KMP project.
     * `src/desktopMain`: JVM/Desktop specific implementations.
     * `src/wasmJsMain`: Web target implementations.
     * `worker`: JavaScript Web Worker implementation required for the Wasm target functionality.
-* `web-capture/`: The core implementation of the web-capture feature. This module contains both Rust
-  and Kotlin files that work together to handle the underlying capture logic.
+* `web-capture/`: The _core implementation_ of the web-capture feature. This module originally had a
+  Rust implementation for handling a monolithic lib while dealing with asynchronous stuff and JNI
+  bindings. Now, it just acts as another abstraction that should not exist. This module will be
+  removed, and the project will remain as a single-module project.
 
 ## Build Commands
 
@@ -44,13 +42,13 @@ project:
 * **Desktop:** `./gradlew desktopRun`
 * **Desktop (Hot Reload):** `./gradlew hotRunDesktop --mainClass "com.sakethh.linkora.MainKt"`
 * **Web (Wasm):** `./gradlew wasmJsBrowserDevelopmentRun`
-* **Tests:** `./gradlew verifyAll`
+* **Tests:** `./gradlew desktopTest`
 
 ## Git Hooks (Pre-commit & Pre-push)
 
-* **Pre-commit:** Automatically runs formatting (`cargo fmt` for Rust, `spotlessApply` for Kotlin)
+* **Pre-commit:** Automatically runs formatting (`spotlessApply`)
   on tracked but uncommitted changed files.
-* **Pre-push:** Runs Kotlin and Rust test cases before allowing the push to proceed.
+* **Pre-push:** Runs Kotlin test cases before allowing the push to proceed.
 
 You can bypass these locally using `git commit --no-verify` or `git push --no-verify`. The exact
 same checks are enforced on GitHub Actions for every PR and commit. If you skip locally, the remote
@@ -118,9 +116,9 @@ some [faith](https://youtu.be/ZwOBYAkXMYY) and name things properly.
 
 ### Tests
 
-Run `./gradlew verifyAll`. This automatically runs `desktopTest` (Kotlin) and `cargo test` (Rust).
+Run `./gradlew desktopTest`.
 
-Although `verifyAll` executes tests against the desktop target irrespective of source sets, almost
+Although `desktopTest` executes tests against the desktop target irrespective of source sets, almost
 all your Kotlin test cases must be written directly in `desktopTest`. The core reason for this is
 the `mockk` library. `mockk` supports Android and Desktop, but since Linkora also targets the Web,
 writing mocks for the web target isn't possible from `commonMain`. Running tests via the desktop
@@ -139,10 +137,7 @@ some cases, use a custom `Saver` if needed.
 
 ### Coroutines and Cancellation
 
-When working with concurrent code, cancellation must be handled properly. Do not stick to
-theoretical boilerplate found on the internet, and do not attempt "fire-and-forget" operations just
-because you can. Linkora's core implementations, including the Rust integration, depend entirely on
-cancellation being handled correctly.
+When working with concurrent code, cancellation must be handled properly.
 
 ---
 

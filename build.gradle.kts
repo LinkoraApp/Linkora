@@ -84,17 +84,3 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
         ktlint("1.8.0")
     }
 }
-
-tasks.register<Exec>("cargoTest") {
-    group = "verification"
-    description = "Runs Rust tests in the web-capture module"
-    workingDir = file("web-capture")
-    commandLine("cargo", "test", "--", "--test-threads=1")
-}
-
-tasks.register("verifyAll") {
-    group = "verification"
-    description = "Runs all Rust and Kotlin Compose tests"
-
-    dependsOn("cargoTest", ":composeApp:desktopTest")
-}

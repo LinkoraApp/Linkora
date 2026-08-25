@@ -2,4 +2,4 @@
 
 cd "$(git rev-parse --show-toplevel)" || exit 1
 
-./gradlew verifyAll || exit 1
+./gradlew desktopTest || exit 1

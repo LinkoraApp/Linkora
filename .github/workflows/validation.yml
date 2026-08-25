@@ -1,8 +1,7 @@
 name: CI & Validation
-
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   workflow_dispatch:
     inputs:
       pr_number:
@@ -15,9 +14,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  validate-unix:
+  kotlin-format:
+    name: Kotlin format check
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,49 +30,118 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Make Gradlew executable
+        run: chmod +x ./gradlew
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-linux-android,x86_64-linux-android,armv7-linux-androideabi,x86_64-unknown-linux-gnu
-          components: rustfmt
-
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: "web-capture -> target"
-          shared-key: "validation-ubuntu-latest"
-
-      - name: Rust format check
-        run: |
-          cd web-capture
-          cargo fmt -- --check
-
-      - name: Rust compile check
-        run: |
-          cd web-capture
-          cargo check --all-targets
-
-      - name: Kotlin format check
+      - name: Run Spotless
         run: ./gradlew spotlessCheck
+
+  android-debug:
+    name: Build Android Debug
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.pr_number && format('refs/pull/{0}/head', github.event.inputs.pr_number) || github.sha }}
+          autocrlf: false
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Make Gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Build Android Debug
         run: ./gradlew :composeApp:assembleDebug
 
+  desktop-unix:
+    name: Build Desktop
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.pr_number && format('refs/pull/{0}/head', github.event.inputs.pr_number) || github.sha }}
+          autocrlf: false
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Make Gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Build Desktop
         run: ./gradlew :composeApp:packageUberJarForCurrentOS
+
+  web:
+    name: Build Web
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.pr_number && format('refs/pull/{0}/head', github.event.inputs.pr_number) || github.sha }}
+          autocrlf: false
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Make Gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Build Web
         run: ./gradlew :composeApp:wasmJsBrowserDistribution
 
+  tests:
+    name: Run all tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.pr_number && format('refs/pull/{0}/head', github.event.inputs.pr_number) || github.sha }}
+          autocrlf: false
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Make Gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Run all tests
-        run: ./gradlew verifyAll
+        run: ./gradlew desktopTest
 
-  build-windows:
+  windows-desktop:
+    name: Build Windows Desktop
     runs-on: windows-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -89,36 +157,6 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-pc-windows-msvc
-
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: "web-capture -> target"
-          shared-key: "validation-windows-latest"
-
-      - name: Install Strawberry Perl and NASM
-        shell: pwsh
-        run: |
-          choco install strawberryperl nasm -y
-          Add-Content -Path $env:GITHUB_PATH -Value "C:\Strawberry\perl\bin"
-          Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\NASM"
-          Add-Content -Path $env:GITHUB_ENV -Value "PERL=C:\Strawberry\perl\bin\perl.exe"
-
-      - name: Clean stale OpenSSL build cache
-        shell: bash
-        run: |
-          cd web-capture
-          cargo clean -p openssl-sys || true
-          rm -rf target/x86_64-pc-windows-msvc/release/build/openssl-sys-*
-
-      - name: Build Rust Windows lib
-        shell: cmd
-        run: .\gradlew.bat :web-capture:cargoBuildDesktop
 
       - name: Build Desktop
         shell: cmd

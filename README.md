@@ -43,6 +43,7 @@ Get it on Arch Linux:
 - **Share from other apps** (Android) and add folders to **_Panels_** for quick access
 - **Sort, search, import/export** data in JSON and HTML formats with **auto-backups**
 - **Save webpages as standalone HTML files** with all processing happening completely on your device
+  - If you only want to save pages on desktop, use [kapture GUI](https://github.com/sakethpathike/kapture/releases/). Linkora uses its core library.
 - **Keep your data in sync across devices** with
   optional [self-hostable sync-server](https://github.com/LinkoraApp/sync-server)
 
@@ -72,13 +73,11 @@ Get it on Arch Linux:
 - Coroutines and Flows for async operations
 - [Ksoup](https://github.com/fleeksoft/ksoup) for HTML parsing and metadata extraction
 - [Coil](https://github.com/coil-kt/coil) for image loading
-- [capture-core](https://github.com/LinkoraApp/capture-core) (
-  a [monolith](https://github.com/Y2Z/monolith) fork) for saving webpages as standalone HTML files
+- [kapture](https://github.com/sakethpathike/kapture) for saving webpages as standalone HTML files
 - Custom syncing mechanisms for handling syncing with remote server
-- [Android-specific] WorkManager for snapshots and bulk metadata refresh for links
+- [Android-specific] WorkManager for snapshots, web-page captures, and bulk metadata refresh of links
 
-Full dependency list
-in [libs.versions.toml](/gradle/libs.versions.toml).
+Full dependency list in [libs.versions.toml](/gradle/libs.versions.toml).
 
 Linkora's improved UI components are inspired and based on designs created
 by [LOLCATpl](https://discord.com/users/494115165927637007) across all platforms. The icon, painted
