@@ -190,8 +190,8 @@ android {
                 .get()
                 .toInt()
 
-        versionCode = 53
-        versionName = "0.19.0"
+        versionCode = 54
+        versionName = "0.20.0"
     }
 
     packaging {
@@ -268,7 +268,7 @@ compose.desktop {
 
             packageName = "Linkora"
             this.vendor = "Saketh Pathike"
-            this.packageVersion = "1.0.19"
+            this.packageVersion = "1.0.20"
 
             windows {
                 this.iconFile.set(project.file("src/desktopMain/resources/logo.ico"))
