@@ -48,7 +48,7 @@ import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.SnapshotFormat
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
-import com.sakethh.linkora.platform.platform
+import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
@@ -79,7 +79,7 @@ fun SnapshotsScreen() {
         rememberSaveable(preferences.backupAutoDeletionEnabled) {
             mutableStateOf(preferences.backupAutoDeletionEnabled)
         }
-    val platform = platform
+    val platform = LocalPlatform.current
     val coroutineScope = rememberCoroutineScope()
     SettingsSectionScaffold(
         topAppBarText = Navigation.Settings.Data.SnapshotsScreen.toString(),

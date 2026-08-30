@@ -13,9 +13,12 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.retain.retain
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
@@ -25,7 +28,6 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.compose.rememberNavController
 import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.di.linkoraViewModel
-import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.repository.local.LocalFoldersRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.LocalPanelsRepo
@@ -45,6 +47,7 @@ import com.sakethh.linkora.ui.theme.LightColors
 import com.sakethh.linkora.ui.theme.LinkoraTheme
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
+import com.sakethh.linkora.utils.currentAndroidPlatform
 import com.sakethh.linkora.utils.getLocalizedString
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collectLatest
@@ -99,35 +102,38 @@ class ShareToSaveActivity : ComponentActivity() {
             val intentActivityVM =
                 viewModel<IntentActivityVM>(
                     factory =
-                    viewModelFactory {
-                        initializer {
-                            IntentActivityVM(
-                                localLinksRepo = DependencyContainer.localLinksRepo,
-                                localFoldersRepo = DependencyContainer.localFoldersRepo,
-                                localPanelsRepo = DependencyContainer.localPanelsRepo,
-                                localTagsRepo = DependencyContainer.localTagsRepo,
-                                snapshotRepo = DependencyContainer.snapshotRepo,
-                                preferencesRepository = DependencyContainer.preferencesRepo,
-                                showToast = { message ->
-                                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                                },
-                            )
-                        }
-                    },
+                        viewModelFactory {
+                            initializer {
+                                IntentActivityVM(
+                                    localLinksRepo = DependencyContainer.localLinksRepo,
+                                    localFoldersRepo = DependencyContainer.localFoldersRepo,
+                                    localPanelsRepo = DependencyContainer.localPanelsRepo,
+                                    localTagsRepo = DependencyContainer.localTagsRepo,
+                                    snapshotRepo = DependencyContainer.snapshotRepo,
+                                    preferencesRepository = DependencyContainer.preferencesRepo,
+                                    showToast = { message ->
+                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                    },
+                                )
+                            }
+                        },
                 )
             val preferences by intentActivityVM.preferencesAsFlow.collectAsStateWithLifecycle()
             CompositionLocalProvider(
                 LocalNavController provides navController,
                 LocalFabController provides
-                    retain {
-                        FabStateController()
-                    },
-                LocalPlatform provides Platform.Android,
+                        retain {
+                            FabStateController()
+                        },
+                LocalPlatform provides remember(
+                    LocalWindowInfo.current.containerSize,
+                    LocalConfiguration.current.orientation
+                ) { currentAndroidPlatform() }
             ) {
                 val darkColors =
                     DarkColors.copy(
                         background =
-                        if (preferences.useAmoledTheme) Color(0xFF000000) else DarkColors.background,
+                            if (preferences.useAmoledTheme) Color(0xFF000000) else DarkColors.background,
                         surface = if (preferences.useAmoledTheme) Color(0xFF000000) else DarkColors.surface,
                     )
                 val colors =
@@ -138,24 +144,24 @@ class ShareToSaveActivity : ComponentActivity() {
                                     dynamicDarkColorScheme(context)
                                         .copy(
                                             background =
-                                            if (preferences.useAmoledTheme) {
-                                                Color(
-                                                    0xFF000000,
-                                                )
-                                            } else {
-                                                dynamicDarkColorScheme(context).background
-                                            },
+                                                if (preferences.useAmoledTheme) {
+                                                    Color(
+                                                        0xFF000000,
+                                                    )
+                                                } else {
+                                                    dynamicDarkColorScheme(context).background
+                                                },
                                             surface =
-                                            if (preferences.useAmoledTheme) {
-                                                Color(
-                                                    0xFF000000,
-                                                )
-                                            } else {
-                                                dynamicDarkColorScheme(
-                                                    context,
-                                                )
-                                                    .surface
-                                            },
+                                                if (preferences.useAmoledTheme) {
+                                                    Color(
+                                                        0xFF000000,
+                                                    )
+                                                } else {
+                                                    dynamicDarkColorScheme(
+                                                        context,
+                                                    )
+                                                        .surface
+                                                },
                                         )
                                 } else {
                                     dynamicLightColorScheme(
@@ -169,24 +175,24 @@ class ShareToSaveActivity : ComponentActivity() {
                                     )
                                         .copy(
                                             background =
-                                            if (preferences.useAmoledTheme) {
-                                                Color(
-                                                    0xFF000000,
-                                                )
-                                            } else {
-                                                dynamicDarkColorScheme(context).background
-                                            },
+                                                if (preferences.useAmoledTheme) {
+                                                    Color(
+                                                        0xFF000000,
+                                                    )
+                                                } else {
+                                                    dynamicDarkColorScheme(context).background
+                                                },
                                             surface =
-                                            if (preferences.useAmoledTheme) {
-                                                Color(
-                                                    0xFF000000,
-                                                )
-                                            } else {
-                                                dynamicDarkColorScheme(
-                                                    context,
-                                                )
-                                                    .surface
-                                            },
+                                                if (preferences.useAmoledTheme) {
+                                                    Color(
+                                                        0xFF000000,
+                                                    )
+                                                } else {
+                                                    dynamicDarkColorScheme(
+                                                        context,
+                                                    )
+                                                        .surface
+                                                },
                                         )
                                 } else {
                                     dynamicLightColorScheme(context)
@@ -209,37 +215,37 @@ class ShareToSaveActivity : ComponentActivity() {
                     AddANewLinkDialogBox(
                         preferences = preferences,
                         addNewLinkDialogParams =
-                        AddNewLinkDialogParams(
-                            onDismiss = {
-                                if (MainActivity.wasLaunched) {
-                                    this@ShareToSaveActivity.finishAndRemoveTask()
-                                    return@AddNewLinkDialogParams
-                                }
-                                if (preferences.areSnapshotsEnabled) {
-                                    intentActivityVM.createADataSnapshot(
-                                        onCompletion = {
-                                            this@ShareToSaveActivity.finishAndRemoveTask()
-                                        },
-                                    )
-                                } else {
-                                    this@ShareToSaveActivity.finishAndRemoveTask()
-                                }
-                            },
-                            currentFolder = null,
-                            allTags = collectionsScreenVM.allTags,
-                            selectedTags = collectionsScreenVM.selectedTags,
-                            foldersSearchQuery = collectionsScreenVM.foldersSearchQuery,
-                            foldersSearchQueryResult = collectionsScreenVM.foldersSearchQueryResult,
-                            rootRegularFolders = collectionsScreenVM.rootRegularFolders,
-                            performAction = collectionsScreenVM::performAction,
-                            url = this@ShareToSaveActivity.intent?.getStringExtra(
-                                Intent.EXTRA_TEXT,
-                            ).toString(),
-                            title = this@ShareToSaveActivity.intent?.getStringExtra(
-                                Intent.EXTRA_SUBJECT,
-                            ) ?: "",
-                            shouldAutofocus = false,
-                        ),
+                            AddNewLinkDialogParams(
+                                onDismiss = {
+                                    if (MainActivity.wasLaunched) {
+                                        this@ShareToSaveActivity.finishAndRemoveTask()
+                                        return@AddNewLinkDialogParams
+                                    }
+                                    if (preferences.areSnapshotsEnabled) {
+                                        intentActivityVM.createADataSnapshot(
+                                            onCompletion = {
+                                                this@ShareToSaveActivity.finishAndRemoveTask()
+                                            },
+                                        )
+                                    } else {
+                                        this@ShareToSaveActivity.finishAndRemoveTask()
+                                    }
+                                },
+                                currentFolder = null,
+                                allTags = collectionsScreenVM.allTags,
+                                selectedTags = collectionsScreenVM.selectedTags,
+                                foldersSearchQuery = collectionsScreenVM.foldersSearchQuery,
+                                foldersSearchQueryResult = collectionsScreenVM.foldersSearchQueryResult,
+                                rootRegularFolders = collectionsScreenVM.rootRegularFolders,
+                                performAction = collectionsScreenVM::performAction,
+                                url = this@ShareToSaveActivity.intent?.getStringExtra(
+                                    Intent.EXTRA_TEXT,
+                                ).toString(),
+                                title = this@ShareToSaveActivity.intent?.getStringExtra(
+                                    Intent.EXTRA_SUBJECT,
+                                ) ?: "",
+                                shouldAutofocus = false,
+                            ),
                     )
                 }
             }

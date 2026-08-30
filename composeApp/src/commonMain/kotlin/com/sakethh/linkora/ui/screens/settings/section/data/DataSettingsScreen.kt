@@ -93,8 +93,8 @@ import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.RefreshLinkType
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.platform.PlatformSpecificBackHandler
-import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.ui.LocalNavController
+import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.components.DeleteDialogBoxType
 import com.sakethh.linkora.ui.components.DeleteFolderOrLinkDialog
 import com.sakethh.linkora.ui.components.DeleteFolderOrLinkDialogParam
@@ -141,7 +141,7 @@ fun DataSettingsScreen() {
     }
     val serverInfoBtmSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val coroutineScope = rememberCoroutineScope()
-    val platform = platform
+    val platform = LocalPlatform.current
     val coilPlatformContext = LocalPlatformContext.current
     val importFileSelectionMethod = rememberSaveable {
         mutableStateOf(ImportFileSelectionMethod.FilePicker.name)

@@ -77,6 +77,7 @@ suspend fun main() {
     LinkoraSDK.set(
         linkoraSdk =
         LinkoraSDK(
+            platform = Platform.Desktop,
             nativeUtils = NativeUtils(),
             fileManager = FileManager(),
             permissionManager = PermissionManager(),

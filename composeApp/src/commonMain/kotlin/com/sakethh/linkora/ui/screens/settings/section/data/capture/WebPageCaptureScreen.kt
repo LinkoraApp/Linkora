@@ -54,7 +54,7 @@ import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
-import com.sakethh.linkora.platform.platform
+import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.components.VerticalInfoCard
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
@@ -80,6 +80,7 @@ fun WebPageCaptureScreen() {
     var webCaptureLocation by rememberSaveable(preferences.webCapturesLocation) {
         mutableStateOf(preferences.webCapturesLocation)
     }
+    val platform = LocalPlatform.current
     var maxConcurrentWebCaptureCount by rememberSaveable(preferences.webCaptureMaxConcurrency) {
         mutableIntStateOf(preferences.webCaptureMaxConcurrency)
     }

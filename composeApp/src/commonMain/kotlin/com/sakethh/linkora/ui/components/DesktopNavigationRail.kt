@@ -38,8 +38,8 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
-import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.ui.LocalNavController
+import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.domain.AppAction
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.utils.currentSavedServerConfig
@@ -56,6 +56,7 @@ fun DesktopNavigationRail(
     isWebCaptureInProgress: Boolean,
     performAction: (AppAction) -> Unit,
 ) {
+    val platform = LocalPlatform.current
     val localNavController = LocalNavController.current
     val currentBackStackEntryState by localNavController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntryState?.destination

@@ -7,8 +7,8 @@ import com.sakethh.linkora.data.local.LocalDatabase
 import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ExportFileType
+import com.sakethh.linkora.domain.HostOS
 import com.sakethh.linkora.domain.PermissionStatus
-import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.domain.RawExportString
 import com.sakethh.linkora.domain.Result
@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.Flow
 expect val showFollowSystemThemeOption: Boolean
 expect val showDynamicThemingOption: Boolean
 
-expect val platform: Platform
+expect val hostOS: HostOS
 
 @Composable
 expect fun PlatformSpecificBackHandler(init: () -> Unit = {})

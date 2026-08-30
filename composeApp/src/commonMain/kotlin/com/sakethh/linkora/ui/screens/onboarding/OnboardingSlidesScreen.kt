@@ -67,9 +67,9 @@ import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.model.tag.Tag
-import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
+import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.components.folder.FolderComponent
 import com.sakethh.linkora.ui.components.link.ListViewLinkComponent
 import com.sakethh.linkora.ui.domain.CurrentFABContext
@@ -104,6 +104,7 @@ fun OnboardingSlidesScreen(onOnboardingComplete: () -> Unit) {
     val navController = LocalNavController.current
     val settingsScreenViewModel: SettingsScreenViewModel = linkoraViewModel()
     val slides = settingsScreenViewModel.onboardingSlides
+    val platform = LocalPlatform.current
     Box(modifier = Modifier.fillMaxSize()) {
         HorizontalPager(
             state = pagerState,

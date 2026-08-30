@@ -18,9 +18,9 @@ import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
-import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.platform.showDynamicThemingOption
 import com.sakethh.linkora.platform.showFollowSystemThemeOption
+import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
@@ -32,7 +32,7 @@ import com.sakethh.linkora.utils.rememberLocalizedString
 fun ThemeSettingsScreen() {
     val settingsScreenViewModel: SettingsScreenViewModel = linkoraViewModel()
     val preferences by settingsScreenViewModel.preferencesAsFlow.collectAsStateWithLifecycle()
-    val platform = platform
+    val platform = LocalPlatform.current
     val isSystemInDarkTheme = isSystemInDarkTheme()
     SettingsSectionScaffold(
         topAppBarText = Localization.Key.Theme.rememberLocalizedString(),

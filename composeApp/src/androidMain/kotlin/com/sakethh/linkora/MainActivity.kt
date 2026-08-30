@@ -15,17 +15,19 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.compose.rememberNavController
-import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.ui.App
 import com.sakethh.linkora.ui.FabStateController
 import com.sakethh.linkora.ui.LocalFabController
@@ -35,6 +37,7 @@ import com.sakethh.linkora.ui.components.NotificationPermissionDialogBox
 import com.sakethh.linkora.ui.theme.LinkoraTheme
 import com.sakethh.linkora.utils.AndroidUIEvent
 import com.sakethh.linkora.utils.AndroidUIEvent.pushUIEvent
+import com.sakethh.linkora.utils.currentAndroidPlatform
 import com.sakethh.linkora.utils.getAppColorScheme
 
 class MainActivity : ComponentActivity() {
@@ -150,7 +153,10 @@ class MainActivity : ComponentActivity() {
                         retain {
                             FabStateController()
                         },
-                LocalPlatform provides Platform.Android,
+                LocalPlatform provides remember(
+                    LocalWindowInfo.current.containerSize,
+                    LocalConfiguration.current.orientation
+                ) { currentAndroidPlatform() },
             ) {
                 val context = LocalContext.current
                 val isSystemInDarkTheme = isSystemInDarkTheme()

@@ -77,6 +77,7 @@ fun main() {
     LinkoraSDK.set(
         linkoraSdk =
         LinkoraSDK(
+            platform = Platform.Web,
             nativeUtils = NativeUtils(),
             fileManager = FileManager(),
             permissionManager = PermissionManager(),
