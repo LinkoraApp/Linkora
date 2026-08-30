@@ -2,6 +2,7 @@ package com.sakethh.linkora.di
 
 import com.sakethh.linkora.data.local.LocalDatabase
 import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
+import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.Network
@@ -9,6 +10,7 @@ import com.sakethh.linkora.platform.PermissionManager
 import com.sakethh.linkora.platform.PlatformPreference
 
 class LinkoraSDK(
+    val platform: Platform,
     val nativeUtils: NativeUtils,
     val fileManager: FileManager,
     val permissionManager: PermissionManager,

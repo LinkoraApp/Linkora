@@ -89,6 +89,7 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
 
         DataSettingsScreenVM::class ->
             DataSettingsScreenVM(
+                platform = LinkoraSDK.getInstance().platform,
                 exportDataRepo = DependencyContainer.exportDataRepo,
                 importDataRepo = DependencyContainer.importDataRepo,
                 linksRepo = DependencyContainer.localLinksRepo,

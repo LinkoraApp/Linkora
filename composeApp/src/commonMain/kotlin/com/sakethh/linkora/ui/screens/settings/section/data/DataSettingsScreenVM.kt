@@ -28,7 +28,6 @@ import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
 import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.PermissionManager
-import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.ui.AppVM
 import com.sakethh.linkora.ui.domain.ImportFileSelectionMethod
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
@@ -58,6 +57,7 @@ class DataSettingsScreenVM(
     private val linksRepo: LocalLinksRepo,
     private val preferencesRepository: PreferencesRepository,
     private val remoteSyncRepo: RemoteSyncRepo,
+    private val platform: Platform,
     private val nativeUtils: NativeUtils,
     private val fileManager: FileManager,
     private val permissionManager: PermissionManager,

@@ -62,8 +62,8 @@ import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
-import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.ui.LocalNavController
+import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.components.HorizontalInfoCard
 import com.sakethh.linkora.ui.domain.AppIconCode
 import com.sakethh.linkora.ui.domain.Font
@@ -91,7 +91,7 @@ fun GeneralSettingsScreen() {
     var showFontFamilySwitcherDialogBox by rememberSaveable {
         mutableStateOf(false)
     }
-    val platform = platform
+    val platform = LocalPlatform.current
     val onAndroidMobile = Platform.Android.onMobile()
 
     // TODO: GET RID OF THIS

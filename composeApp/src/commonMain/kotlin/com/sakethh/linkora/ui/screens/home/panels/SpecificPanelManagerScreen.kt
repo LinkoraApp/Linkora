@@ -51,8 +51,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.panel.PanelFolder
-import com.sakethh.linkora.platform.platform
 import com.sakethh.linkora.ui.LocalNavController
+import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.rememberLocalizedString
@@ -60,6 +60,7 @@ import com.sakethh.linkora.utils.rememberLocalizedString
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun SpecificPanelManagerScreen(specificPanelManagerScreenParam: SpecificPanelManagerScreenParam) {
+    val platform = LocalPlatform.current
     val foldersOfTheSelectedPanel by
         specificPanelManagerScreenParam.foldersOfTheSelectedPanel.collectAsStateWithLifecycle()
     val foldersToIncludeInPanel by

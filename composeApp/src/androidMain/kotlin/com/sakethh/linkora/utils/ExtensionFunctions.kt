@@ -1,15 +1,14 @@
 package com.sakethh.linkora.utils
 
+import android.app.UiModeManager
 import android.content.Context
-import android.content.Context.STORAGE_SERVICE
-import android.net.Uri
-import android.os.Build
-import android.os.Environment
-import android.os.storage.StorageManager
-import android.provider.DocumentsContract
+import android.content.Context.UI_MODE_SERVICE
+import android.content.res.Configuration
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
-import com.sakethh.linkora.domain.ExportFileType
-import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
+import androidx.window.layout.WindowMetricsCalculator
+import com.sakethh.linkora.domain.Platform
 import java.net.URI
 
 fun String.isAllowedByWebCapturePolicies(
@@ -61,4 +60,25 @@ fun DocumentFile.prepareWebCaptureFolder(
         }
     }
     return linkWebCaptureFolder
+}
+
+context(context: Context)
+private fun onTV(): Boolean = (context.getSystemService(UI_MODE_SERVICE) as UiModeManager).currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
+
+context(context: Context)
+private fun onMobile(): Boolean {
+    val metrics = WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(context)
+    val widthInPixels = metrics.bounds.width()
+    return with(Density(context)) {
+        widthInPixels.toDp() > 840.dp
+    }
+}
+
+context(context: Context)
+fun currentAndroidPlatform(): Platform = if (onTV()) {
+    Platform.Android.TV
+} else if (onMobile()) {
+    Platform.Android.Mobile
+} else {
+    Platform.Android.Tablet
 }

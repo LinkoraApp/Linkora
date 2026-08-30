@@ -10,6 +10,7 @@ import com.sakethh.linkora.Localization
 import com.sakethh.linkora.WebCaptureService
 import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.domain.AppPreferences
+import com.sakethh.linkora.domain.HostOS
 import com.sakethh.linkora.domain.PermissionStatus
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.PreferenceKey
@@ -61,7 +62,6 @@ import kotlin.io.resolve
 import kotlin.use
 
 actual val showFollowSystemThemeOption: Boolean = false
-actual val platform: Platform = Platform.Desktop
 
 actual val showDynamicThemingOption: Boolean = false
 
@@ -332,3 +332,5 @@ actual fun defaultSnapshotLocation(): String? {
     val userHomeDir = System.getProperty("user.home")
     return File(userHomeDir, "/Documents/Linkora/Snapshots").absolutePath
 }
+
+actual val hostOS: HostOS = HostOS.Desktop

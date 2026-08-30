@@ -21,6 +21,7 @@ import com.sakethh.linkora.platform.PermissionManager
 import com.sakethh.linkora.platform.PlatformPreference
 import com.sakethh.linkora.utils.AndroidConstants
 import com.sakethh.linkora.utils.Constants
+import com.sakethh.linkora.utils.currentAndroidPlatform
 import com.sakethh.linkora.utils.getPOSIXPathFromSafUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -31,6 +32,7 @@ class LinkoraApp : Application() {
         super.onCreate()
         LinkoraSDK.set(
             linkoraSdk = LinkoraSDK(
+                platform = currentAndroidPlatform(),
                 nativeUtils = NativeUtils(applicationContext),
                 fileManager = FileManager(applicationContext),
                 permissionManager = PermissionManager(applicationContext),

@@ -25,7 +25,7 @@ import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
-import com.sakethh.linkora.platform.platform
+import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.screens.settings.common.composables.PreferenceTextField
@@ -68,6 +68,7 @@ fun AdvancedSettingsScreen() {
     val proxyUrlFocusRequester = remember { FocusRequester() }
     val primaryJsoupUserAgentFocusRequester = remember { FocusRequester() }
     val localizationServerTextFieldFocusRequester = remember { FocusRequester() }
+    val platform = LocalPlatform.current
     SettingsSectionScaffold(
         topAppBarText = Navigation.Settings.AdvancedSettingsScreen.toString(),
     ) { paddingValues, topAppBarScrollBehaviour ->

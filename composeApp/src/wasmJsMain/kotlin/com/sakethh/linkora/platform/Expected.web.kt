@@ -7,8 +7,8 @@ import com.sakethh.linkora.Localization
 import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ExportFileType
+import com.sakethh.linkora.domain.HostOS
 import com.sakethh.linkora.domain.PermissionStatus
-import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.domain.RawExportString
 import com.sakethh.linkora.domain.RefreshLinkType
@@ -54,8 +54,7 @@ import org.w3c.dom.set
 
 actual val showFollowSystemThemeOption: Boolean = true
 actual val showDynamicThemingOption: Boolean = false
-
-actual val platform: Platform = Platform.Web
+actual val hostOS: HostOS = HostOS.Web
 
 actual class PermissionManager {
     actual suspend fun permittedToShowNotification(): PermissionStatus = PermissionStatus.NeedsRequest

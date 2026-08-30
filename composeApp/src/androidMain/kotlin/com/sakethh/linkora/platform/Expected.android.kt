@@ -10,7 +10,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
-import com.sakethh.linkora.domain.Platform
+import com.sakethh.linkora.domain.HostOS
 import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.ui.AppVM
 import com.sakethh.linkora.ui.LocalNavController
@@ -46,7 +46,6 @@ import kotlin.io.resolve
 import kotlin.use
 
 actual val showFollowSystemThemeOption: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-actual val platform: Platform = Platform.Android
 
 actual val showDynamicThemingOption: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
@@ -215,3 +214,4 @@ actual class PlatformPreference(private val dataStore: DataStore<Preferences>) {
 actual fun defaultExportLocation(): String? = null
 
 actual fun defaultSnapshotLocation(): String? = null
+actual val hostOS: HostOS = HostOS.Android

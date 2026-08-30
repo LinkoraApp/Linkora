@@ -8,6 +8,7 @@ import com.fleeksoft.io.ByteArrayInputStream
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ExportFileType
+import com.sakethh.linkora.domain.HostOS
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.domain.RefreshLinkType
@@ -17,7 +18,7 @@ import com.sakethh.linkora.domain.dto.server.Correlation
 import com.sakethh.linkora.platform.PlatformPreference
 import com.sakethh.linkora.platform.defaultExportLocation
 import com.sakethh.linkora.platform.defaultSnapshotLocation
-import com.sakethh.linkora.platform.platform
+import com.sakethh.linkora.platform.hostOS
 import com.sakethh.linkora.ui.domain.AppIconCode
 import com.sakethh.linkora.ui.domain.Font
 import com.sakethh.linkora.ui.domain.Layout
@@ -91,10 +92,10 @@ suspend fun readAllPreferences(
         }
     },
     useDarkTheme =
-    prefs[dsBooleanKey(AppPreferences.DARK_THEME.key)] ?: (platform == Platform.Desktop),
+    prefs[dsBooleanKey(AppPreferences.DARK_THEME.key)] ?: (hostOS == HostOS.Desktop),
     useSystemTheme =
     prefs[dsBooleanKey(AppPreferences.FOLLOW_SYSTEM_THEME.key)]
-        ?: (platform == Platform.Android),
+        ?: (hostOS == HostOS.Android),
     useAmoledTheme = prefs[dsBooleanKey(AppPreferences.AMOLED_THEME_STATE.key)] ?: false,
     useDynamicTheming = prefs[dsBooleanKey(AppPreferences.DYNAMIC_THEMING.key)] ?: false,
     isAutoDetectTitleForLinksEnabled =
