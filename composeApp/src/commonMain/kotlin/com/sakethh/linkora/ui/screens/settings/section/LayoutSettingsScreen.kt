@@ -30,10 +30,14 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.retain.retain
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -52,6 +56,7 @@ import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.rememberLocalizedString
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,12 +75,12 @@ fun LayoutSettingsScreen() {
         when (preferences.selectedLinkLayout) {
             Layout.REGULAR_LIST_VIEW.name,
             Layout.TITLE_ONLY_LIST_VIEW.name,
-            -> {
+                -> {
                 LazyColumn(
                     modifier =
-                    Modifier.fillMaxSize()
-                        .addEdgeToEdgeScaffoldPadding(paddingValues)
-                        .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
+                        Modifier.fillMaxSize()
+                            .addEdgeToEdgeScaffoldPadding(paddingValues)
+                            .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
                 ) {
                     item {
                         Text(
@@ -106,7 +111,7 @@ fun LayoutSettingsScreen() {
                                 onClick = {
                                     settingsScreenViewModel.changeSettingPreferenceValue(
                                         preferenceKey =
-                                        AppPreferences.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS,
+                                            AppPreferences.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS,
                                         newValue = !preferences.showHostInLinkListView,
                                     )
                                 },
@@ -122,7 +127,7 @@ fun LayoutSettingsScreen() {
                                 onClick = {
                                     settingsScreenViewModel.changeSettingPreferenceValue(
                                         preferenceKey =
-                                        AppPreferences.NOTE_VISIBILITY_IN_LIST_VIEWS,
+                                            AppPreferences.NOTE_VISIBILITY_IN_LIST_VIEWS,
                                         newValue = !preferences.showNoteInLinkView,
                                     )
                                 },
@@ -137,7 +142,7 @@ fun LayoutSettingsScreen() {
                                 onClick = {
                                     settingsScreenViewModel.changeSettingPreferenceValue(
                                         preferenceKey =
-                                        AppPreferences.SHOW_TAGS_IN_LINK_VIEW,
+                                            AppPreferences.SHOW_TAGS_IN_LINK_VIEW,
                                         newValue = !preferences.showTagsInLinkView,
                                     )
                                 },
@@ -152,7 +157,7 @@ fun LayoutSettingsScreen() {
                                 onClick = {
                                     settingsScreenViewModel.changeSettingPreferenceValue(
                                         preferenceKey =
-                                        AppPreferences.SHOW_DATE_IN_LINK_VIEW,
+                                            AppPreferences.SHOW_DATE_IN_LINK_VIEW,
                                         newValue = !preferences.showDateInLinkView,
                                     )
                                 },
@@ -201,10 +206,10 @@ fun LayoutSettingsScreen() {
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(150.dp),
                     modifier =
-                    Modifier.padding(start = 10.dp, end = 10.dp)
-                        .addEdgeToEdgeScaffoldPadding(paddingValues)
-                        .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection)
-                        .navigationBarsPadding(),
+                        Modifier.padding(start = 10.dp, end = 10.dp)
+                            .addEdgeToEdgeScaffoldPadding(paddingValues)
+                            .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection)
+                            .navigationBarsPadding(),
                 ) {
                     item(
                         span = {
@@ -256,12 +261,12 @@ fun LayoutSettingsScreen() {
                     ) {
                         HorizontalDivider(
                             modifier =
-                            Modifier.padding(
-                                top = 15.dp,
-                                bottom = 5.dp,
-                                start = 5.dp,
-                                end = 5.dp,
-                            ),
+                                Modifier.padding(
+                                    top = 15.dp,
+                                    bottom = 5.dp,
+                                    start = 5.dp,
+                                    end = 5.dp,
+                                ),
                         )
                     }
 
@@ -298,9 +303,9 @@ fun LayoutSettingsScreen() {
                 LazyVerticalStaggeredGrid(
                     columns = StaggeredGridCells.Adaptive(150.dp),
                     modifier =
-                    Modifier.padding(start = 10.dp, end = 10.dp)
-                        .addEdgeToEdgeScaffoldPadding(paddingValues)
-                        .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
+                        Modifier.padding(start = 10.dp, end = 10.dp)
+                            .addEdgeToEdgeScaffoldPadding(paddingValues)
+                            .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
                 ) {
                     item(span = StaggeredGridItemSpan.FullLine) {
                         Text(
@@ -343,12 +348,12 @@ fun LayoutSettingsScreen() {
                     item(span = StaggeredGridItemSpan.FullLine) {
                         HorizontalDivider(
                             modifier =
-                            Modifier.padding(
-                                top = 15.dp,
-                                bottom = 5.dp,
-                                start = 5.dp,
-                                end = 5.dp,
-                            ),
+                                Modifier.padding(
+                                    top = 15.dp,
+                                    bottom = 5.dp,
+                                    start = 5.dp,
+                                    end = 5.dp,
+                                ),
                         )
                     }
 
@@ -384,19 +389,17 @@ private fun LinkViewPreferenceSwitch(
 ) {
     Row(
         modifier =
-        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-            .fillMaxWidth()
-            .clickable(
-                onClick = {
-                    onClick()
-                },
-                interactionSource =
-                remember {
-                    MutableInteractionSource()
-                },
-                indication = null,
-            )
-            .padding(start = 15.dp, end = 15.dp),
+            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                .highlightOnFocused()
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = {
+                        onClick()
+                    },
+                )
+                .fillMaxWidth()
+                .padding(start = 15.dp, end = 15.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -425,15 +428,20 @@ private fun LinkViewRadioButtonComponent(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier =
-        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-            .fillMaxWidth()
-            .clickable(interactionSource = null, indication = null) {
-                changePreferenceValue(
-                    AppPreferences.CURRENTLY_SELECTED_LINK_VIEW,
-                    linkLayout.name,
+            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                .highlightOnFocused()
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = {
+                        changePreferenceValue(
+                            AppPreferences.CURRENTLY_SELECTED_LINK_VIEW,
+                            linkLayout.name,
+                        )
+                    },
                 )
-            }
-            .padding(paddingValues),
+                .fillMaxWidth()
+                .padding(paddingValues),
     ) {
         RadioButton(
             selected = selectedLinkLayout == linkLayout,
@@ -446,16 +454,16 @@ private fun LinkViewRadioButtonComponent(
         )
         Text(
             text =
-            when (linkLayout) {
-                Layout.REGULAR_LIST_VIEW -> Localization.Key.RegularListView.rememberLocalizedString()
+                when (linkLayout) {
+                    Layout.REGULAR_LIST_VIEW -> Localization.Key.RegularListView.rememberLocalizedString()
 
-                Layout.TITLE_ONLY_LIST_VIEW ->
-                    Localization.Key.TitleOnlyListView.rememberLocalizedString()
+                    Layout.TITLE_ONLY_LIST_VIEW ->
+                        Localization.Key.TitleOnlyListView.rememberLocalizedString()
 
-                Layout.GRID_VIEW -> Localization.Key.GridView.rememberLocalizedString()
+                    Layout.GRID_VIEW -> Localization.Key.GridView.rememberLocalizedString()
 
-                Layout.STAGGERED_VIEW -> Localization.Key.StaggeredView.rememberLocalizedString()
-            },
+                    Layout.STAGGERED_VIEW -> Localization.Key.StaggeredView.rememberLocalizedString()
+                },
             style = MaterialTheme.typography.titleSmall,
         )
     }

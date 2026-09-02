@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.VideoLabel
 import androidx.compose.material.icons.outlined.PresentToAll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
@@ -51,6 +52,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -73,6 +75,7 @@ import com.sakethh.linkora.ui.screens.settings.common.composables.SettingCompone
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
+import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -103,9 +106,9 @@ fun GeneralSettingsScreen() {
             )
         }
     val isLinkoraTopAppBarEnabled by
-        rememberSaveable(preferences.useLinkoraTopDecoratorOnDesktop) {
-            mutableStateOf(preferences.useLinkoraTopDecoratorOnDesktop)
-        }
+    rememberSaveable(preferences.useLinkoraTopDecoratorOnDesktop) {
+        mutableStateOf(preferences.useLinkoraTopDecoratorOnDesktop)
+    }
     var tempSelectedAppIcon by rememberSaveable {
         mutableStateOf(preferences.selectedAppIcon)
     }
@@ -127,9 +130,9 @@ fun GeneralSettingsScreen() {
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
             modifier =
-            Modifier.fillMaxSize()
-                .addEdgeToEdgeScaffoldPadding(paddingValues)
-                .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
+                Modifier.fillMaxSize()
+                    .addEdgeToEdgeScaffoldPadding(paddingValues)
+                    .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
             verticalArrangement = Arrangement.spacedBy(30.dp),
         ) {
             item {
@@ -147,7 +150,7 @@ fun GeneralSettingsScreen() {
                             onSwitchStateChange = {
                                 settingsScreenViewModel.changeSettingPreferenceValue(
                                     preferenceKey =
-                                    AppPreferences.DESKTOP_TOP_DECORATOR,
+                                        AppPreferences.DESKTOP_TOP_DECORATOR,
                                     newValue = it,
                                 )
                             },
@@ -217,7 +220,9 @@ fun GeneralSettingsScreen() {
             }
             if (platform is Platform.Android) {
                 item {
-                    HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp))
+                    HorizontalDivider(
+                        modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp)
+                    )
                 }
                 item {
                     Text(
@@ -234,18 +239,16 @@ fun GeneralSettingsScreen() {
                             key(it.name) {
                                 Box(
                                     Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                        .pressScaleEffect()
+                                        .highlightOnFocused()
                                         .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null,
                                             onClick = {
                                                 showIconSwitchDialogBox = true
                                                 tempSelectedAppIcon = it.name
                                             },
-                                            indication = null,
-                                            interactionSource =
-                                            remember {
-                                                MutableInteractionSource()
-                                            },
                                         )
+                                        .pressScaleEffect()
                                         .size(65.dp),
                                     contentAlignment = Alignment.Center,
                                 ) {
@@ -257,12 +260,12 @@ fun GeneralSettingsScreen() {
                                         ) {
                                             Box(
                                                 modifier =
-                                                Modifier.fillMaxSize()
-                                                    .border(
-                                                        width = 5.dp,
-                                                        color = MaterialTheme.colorScheme.primary,
-                                                        shape = CircleShape,
-                                                    ),
+                                                    Modifier.fillMaxSize()
+                                                        .border(
+                                                            width = 5.dp,
+                                                            color = MaterialTheme.colorScheme.primary,
+                                                            shape = CircleShape,
+                                                        ),
                                             )
                                         }
                                     }
@@ -279,23 +282,23 @@ fun GeneralSettingsScreen() {
                         text = Localization.Key.AppIconCurrentlyInUse.rememberLocalizedString(),
                         style = MaterialTheme.typography.titleSmall,
                         modifier =
-                        Modifier.padding(
-                            start = 15.dp,
-                            end = 15.dp,
-                            top = 15.dp,
-                            bottom = 5.dp,
-                        ),
+                            Modifier.padding(
+                                start = 15.dp,
+                                end = 15.dp,
+                                top = 15.dp,
+                                bottom = 5.dp,
+                            ),
                         color = MaterialTheme.colorScheme.secondary,
                     )
                     Text(
                         text = preferences.selectedAppIcon,
                         style = MaterialTheme.typography.titleMedium,
                         modifier =
-                        Modifier.padding(
-                            start = 15.dp,
-                            end = 15.dp,
-                            bottom = 15.dp,
-                        ),
+                            Modifier.padding(
+                                start = 15.dp,
+                                end = 15.dp,
+                                bottom = 15.dp,
+                            ),
                         fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.secondary,
                     )
@@ -330,9 +333,9 @@ fun GeneralSettingsScreen() {
                             )
                         },
                         modifier =
-                        Modifier.pressScaleEffect()
-                            .pointerHoverIcon(icon = PointerIcon.Hand)
-                            .fillMaxWidth(),
+                            Modifier.pressScaleEffect()
+                                .pointerHoverIcon(icon = PointerIcon.Hand)
+                                .fillMaxWidth().highlightOnFocused(shape = ButtonDefaults.shape),
                     ) {
                         Text(
                             text = Localization.Key.Confirm.rememberLocalizedString(),
@@ -350,9 +353,9 @@ fun GeneralSettingsScreen() {
                             showIconSwitchDialogBox = false
                         },
                         modifier =
-                        Modifier.pressScaleEffect()
-                            .pointerHoverIcon(icon = PointerIcon.Hand)
-                            .fillMaxWidth(),
+                            Modifier.pressScaleEffect()
+                                .pointerHoverIcon(icon = PointerIcon.Hand)
+                                .fillMaxWidth().highlightOnFocused(shape = ButtonDefaults.shape),
                     ) {
                         Text(
                             text = Localization.Key.Cancel.rememberLocalizedString(),
@@ -371,13 +374,13 @@ fun GeneralSettingsScreen() {
                             Image(
                                 painter = painterResource(it.icon),
                                 modifier =
-                                Modifier.clip(RoundedCornerShape(15.dp))
-                                    .border(
-                                        width = 1.5.dp,
-                                        color = MaterialTheme.colorScheme.primary.copy(0.5f),
-                                        shape = RoundedCornerShape(15.dp),
-                                    )
-                                    .size(75.dp),
+                                    Modifier.clip(RoundedCornerShape(15.dp))
+                                        .border(
+                                            width = 1.5.dp,
+                                            color = MaterialTheme.colorScheme.primary.copy(0.5f),
+                                            shape = RoundedCornerShape(15.dp),
+                                        )
+                                        .size(75.dp),
                                 contentDescription = null,
                             )
                             Spacer(modifier = Modifier.height(5.dp))
@@ -478,7 +481,7 @@ private fun <T> SwitchDialogBox(
         confirmButton = {
             Button(
                 onClick = onConfirm,
-                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth(),
+                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth().highlightOnFocused(shape = ButtonDefaults.shape),
             ) {
                 Text(
                     text = Localization.Key.Confirm.rememberLocalizedString(),
@@ -489,7 +492,7 @@ private fun <T> SwitchDialogBox(
         dismissButton = {
             OutlinedButton(
                 onClick = onDismissRequest,
-                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth(),
+                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth().highlightOnFocused(shape = ButtonDefaults.shape),
             ) {
                 Text(
                     text = Localization.Key.Cancel.rememberLocalizedString(),
@@ -502,19 +505,17 @@ private fun <T> SwitchDialogBox(
                 entries.forEach {
                     Row(
                         modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .fillMaxWidth()
-                            .clickable(
-                                onClick = {
-                                    onEntryClick(it)
-                                },
-                                indication = null,
-                                interactionSource =
-                                remember {
-                                    MutableInteractionSource()
-                                },
-                            )
-                            .pressScaleEffect(),
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .highlightOnFocused()
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                    onClick = {
+                                        onEntryClick(it)
+                                    },
+                                )
+                                .fillMaxWidth()
+                                .pressScaleEffect(),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         RadioButton(
@@ -526,18 +527,18 @@ private fun <T> SwitchDialogBox(
                         )
                         Text(
                             style =
-                            if (selected(it)) {
-                                MaterialTheme.typography.titleLarge
-                            } else {
-                                MaterialTheme.typography.titleSmall
-                            },
+                                if (selected(it)) {
+                                    MaterialTheme.typography.titleLarge
+                                } else {
+                                    MaterialTheme.typography.titleSmall
+                                },
                             text = entryLabel(it),
                             color =
-                            if (selected(it)) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                LocalContentColor.current
-                            },
+                                if (selected(it)) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    LocalContentColor.current
+                                },
                             fontSize = 16.sp,
                         )
                     }

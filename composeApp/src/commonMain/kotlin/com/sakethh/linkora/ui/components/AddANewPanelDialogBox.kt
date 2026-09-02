@@ -3,8 +3,10 @@ package com.sakethh.linkora.ui.components
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +23,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.ui.utils.pressScaleEffect
+import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.rememberLocalizedString
 
 data class AddANewPanelParam(
@@ -81,7 +84,7 @@ fun AddANewPanelDialogBox(addANewPanelParam: AddANewPanelParam) {
                 if (isInProgress.value) return@AlertDialog
                 Button(
                     modifier =
-                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand).highlightOnFocused(shape = ButtonDefaults.shape)
                         .fillMaxWidth()
                         .pressScaleEffect(),
                     onClick = {
@@ -104,9 +107,9 @@ fun AddANewPanelDialogBox(addANewPanelParam: AddANewPanelParam) {
             },
             dismissButton = {
                 if (isInProgress.value.not()) {
-                    androidx.compose.material3.OutlinedButton(
+                    OutlinedButton(
                         modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand).highlightOnFocused(shape = ButtonDefaults.shape)
                             .fillMaxWidth()
                             .pressScaleEffect(),
                         onClick = {

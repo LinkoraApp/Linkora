@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Unarchive
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -58,6 +59,7 @@ import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.bottomNavPaddingAcrossPlatforms
 import com.sakethh.linkora.utils.defaultFolderIds
+import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.rememberLocalizedString
 import com.sakethh.linkora.utils.replaceFirstPlaceHolderWith
 
@@ -78,29 +80,29 @@ fun BottomNavOnSelection(
     val platform = LocalPlatform.current
     Column(
         modifier =
-        Modifier.fillMaxWidth()
-            .animateContentSize()
-            .background(NavigationBarDefaults.containerColor)
-            .navigationBarsPadding(),
+            Modifier.fillMaxWidth()
+                .animateContentSize()
+                .background(NavigationBarDefaults.containerColor)
+                .navigationBarsPadding(),
     ) {
         HorizontalDivider()
         Spacer(modifier = Modifier.height(5.dp))
         if (progressBarVisible) {
             Text(
                 text =
-                if (transferActionType == TransferActionType.COPY) {
-                    Localization.Key.Copying.rememberLocalizedString()
-                } else {
-                    Localization.Key.Moving.rememberLocalizedString()
-                },
+                    if (transferActionType == TransferActionType.COPY) {
+                        Localization.Key.Copying.rememberLocalizedString()
+                    } else {
+                        Localization.Key.Moving.rememberLocalizedString()
+                    },
                 style = MaterialTheme.typography.titleMedium,
                 fontSize = 14.sp,
                 modifier =
-                Modifier.padding(
-                    start = 15.dp,
-                    bottom = 10.dp,
-                    top = 5.dp,
-                ),
+                    Modifier.padding(
+                        start = 15.dp,
+                        bottom = 10.dp,
+                        top = 5.dp,
+                    ),
             )
             LinearProgressIndicator(Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp))
             Spacer(Modifier.bottomNavPaddingAcrossPlatforms())
@@ -121,18 +123,18 @@ fun BottomNavOnSelection(
             Column {
                 Text(
                     text =
-                    Localization.Key.SelectedLinksCount.rememberLocalizedString()
-                        .replaceFirstPlaceHolderWith(
-                            CollectionsScreenVM.selectedLinkTagPairsViaLongClick.size.toString(),
-                        ),
+                        Localization.Key.SelectedLinksCount.rememberLocalizedString()
+                            .replaceFirstPlaceHolderWith(
+                                CollectionsScreenVM.selectedLinkTagPairsViaLongClick.size.toString(),
+                            ),
                     style = MaterialTheme.typography.titleSmall,
                 )
                 Text(
                     text =
-                    Localization.Key.SelectedFoldersCount.rememberLocalizedString()
-                        .replaceFirstPlaceHolderWith(
-                            CollectionsScreenVM.selectedFoldersViaLongClick.size.toString(),
-                        ),
+                        Localization.Key.SelectedFoldersCount.rememberLocalizedString()
+                            .replaceFirstPlaceHolderWith(
+                                CollectionsScreenVM.selectedFoldersViaLongClick.size.toString(),
+                            ),
                     style = MaterialTheme.typography.titleSmall,
                 )
             }
@@ -141,16 +143,16 @@ fun BottomNavOnSelection(
             LocalFabController.current.fabState.collectAsStateWithLifecycle().value.currentFolder
         val showPasteButton =
             transferActionType != TransferActionType.NONE &&
-                currentFolder != null &&
-                currentFolder.localId > 0
+                    currentFolder != null &&
+                    currentFolder.localId > 0
         if (
             !(
-                CollectionsScreenVM.selectedFoldersViaLongClick.isNotEmpty() &&
-                    currentFolder?.localId in
-                    defaultFolderIds().dropWhile {
-                        it == Constants.ARCHIVE_ID
-                    }
-                )
+                    CollectionsScreenVM.selectedFoldersViaLongClick.isNotEmpty() &&
+                            currentFolder?.localId in
+                            defaultFolderIds().dropWhile {
+                                it == Constants.ARCHIVE_ID
+                            }
+                    )
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -173,8 +175,6 @@ fun BottomNavOnSelection(
                     if (showPasteButton) {
                         IconButton(
                             onClick = {
-                                require(currentFolder != null)
-
                                 if (transferActionType == TransferActionType.COPY) {
                                     performAction(
                                         AppAction.CopySelectedItems(
@@ -193,7 +193,8 @@ fun BottomNavOnSelection(
                                     )
                                 }
                             },
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(end = 6.5.dp),
+                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .padding(end = 6.5.dp),
                         ) {
                             Icon(
                                 imageVector = Icons.Default.ContentPaste,
@@ -291,7 +292,8 @@ fun BottomNavOnSelection(
                     if (platform is Platform.Android) {
                         Spacer(
                             modifier =
-                            Modifier.height(20.dp).width(2.dp).background(MaterialTheme.colorScheme.outline),
+                                Modifier.height(20.dp).width(2.dp)
+                                    .background(MaterialTheme.colorScheme.outline),
                         )
                         IconButton(
                             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
@@ -299,7 +301,9 @@ fun BottomNavOnSelection(
                                 LinkoraSDK.getInstance()
                                     .nativeUtils
                                     .onShare(
-                                        CollectionsScreenVM.selectedLinkTagPairsViaLongClick.joinToString("\n") {
+                                        CollectionsScreenVM.selectedLinkTagPairsViaLongClick.joinToString(
+                                            "\n"
+                                        ) {
                                             it.link.url
                                         },
                                     )
@@ -317,18 +321,18 @@ fun BottomNavOnSelection(
         if (transferActionType != TransferActionType.NONE) {
             Text(
                 text =
-                if (transferActionType == TransferActionType.COPY) {
-                    Localization.Key.NavigateAndCopyDesc.rememberLocalizedString()
-                } else {
-                    Localization.Key.NavigateAndMoveDesc.rememberLocalizedString()
-                },
+                    if (transferActionType == TransferActionType.COPY) {
+                        Localization.Key.NavigateAndCopyDesc.rememberLocalizedString()
+                    } else {
+                        Localization.Key.NavigateAndMoveDesc.rememberLocalizedString()
+                    },
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.padding(start = 15.dp, end = 15.dp),
             )
         }
         val showNavigateToCollectionScreen =
             selectedAndInRoot.value &&
-                currentRoute?.hasRoute(Navigation.Root.CollectionsScreen::class) != true
+                    currentRoute?.hasRoute(Navigation.Root.CollectionsScreen::class) != true
         if (
             CollectionsScreenVM.selectedFoldersViaLongClick.isNotEmpty() &&
             CollectionsScreenVM.selectedFoldersViaLongClick.any {
@@ -345,14 +349,14 @@ fun BottomNavOnSelection(
                     )
                 },
                 modifier =
-                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                    .fillMaxWidth()
-                    .padding(
-                        start = 15.dp,
-                        end = 15.dp,
-                        top = 5.dp,
-                        bottom = if (!showNavigateToCollectionScreen) 5.dp else 0.dp,
-                    ),
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        .fillMaxWidth()
+                        .padding(
+                            start = 15.dp,
+                            end = 15.dp,
+                            top = 5.dp,
+                            bottom = if (!showNavigateToCollectionScreen) 5.dp else 0.dp,
+                        ).highlightOnFocused(shape = ButtonDefaults.shape),
             ) {
                 Text(
                     text = Localization.Key.MarkSelectedFoldersAsRoot.rememberLocalizedString(),
@@ -364,15 +368,15 @@ fun BottomNavOnSelection(
             Button(
                 onClick = {
                     localNavController.navigate(Navigation.Root.CollectionsScreen) {
-              /*
-              we need to pop all the stuff, otherwise, the collections screen would
-              appear on top of the search screen. This happens because saving and
-              restoring is taking place in the
-              [com.sakethh.linkora.ui.components.MobileBottomNavBarKt] navigation
-              component, leading us back to the collections screen instead of
-              navigating to the search screen when we press the search item in the
-              bottom nav bar
-               */
+                        /*
+                        we need to pop all the stuff, otherwise, the collections screen would
+                        appear on top of the search screen. This happens because saving and
+                        restoring is taking place in the
+                        [com.sakethh.linkora.ui.components.MobileBottomNavBarKt] navigation
+                        component, leading us back to the collections screen instead of
+                        navigating to the search screen when we press the search item in the
+                        bottom nav bar
+                         */
                         popUpTo(localNavController.graph.findStartDestination().id) {
                             saveState = true
                         }
@@ -381,14 +385,14 @@ fun BottomNavOnSelection(
                     }
                 },
                 modifier =
-                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                    .fillMaxWidth()
-                    .padding(
-                        start = 15.dp,
-                        end = 15.dp,
-                        top = 5.dp,
-                        bottom = 5.dp,
-                    ),
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        .fillMaxWidth()
+                        .padding(
+                            start = 15.dp,
+                            end = 15.dp,
+                            top = 5.dp,
+                            bottom = 5.dp,
+                        ).highlightOnFocused(shape = ButtonDefaults.shape),
             ) {
                 Text(
                     text = Localization.Key.NavigateToCollectionsScreen.rememberLocalizedString(),

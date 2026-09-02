@@ -19,36 +19,47 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import com.sakethh.linkora.ui.utils.pressScaleEffect
+import com.sakethh.linkora.utils.highlightOnFocused
 
 @Composable
 fun SettingSectionComponent(settingSectionComponentParam: SettingSectionComponentParam) {
-    Column {
+    Column(
+        modifier =
+            Modifier
+                .highlightOnFocused()
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = {
+                        settingSectionComponentParam.onClick()
+                    },
+                ),
+    ) {
         Spacer(modifier = Modifier.height(10.dp))
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier =
-            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                .fillMaxWidth()
-                .pressScaleEffect()
-                .clickable(
-                    interactionSource =
-                    remember {
-                        MutableInteractionSource()
-                    },
-                    onClick = {
-                        settingSectionComponentParam.onClick()
-                    },
-                    indication = null,
-                ),
+                Modifier
+                    .pointerHoverIcon(icon = PointerIcon.Hand)
+                    .fillMaxWidth()
+                    .pressScaleEffect(),
         ) {
             Spacer(modifier = Modifier.width(10.dp))
             FilledTonalIconButton(
-                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-                onClick = { settingSectionComponentParam.onClick() },
+                modifier =
+                    Modifier
+                        .pointerHoverIcon(icon = PointerIcon.Hand)
+                        .focusProperties {
+                            canFocus = false
+                        },
+                onClick = {
+                    settingSectionComponentParam.onClick()
+                },
             ) {
                 Icon(
                     imageVector = settingSectionComponentParam.sectionIcon,
@@ -68,8 +79,15 @@ fun SettingSectionComponent(settingSectionComponentParam: SettingSectionComponen
                 ) {
                     Row {
                         IconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-                            onClick = { settingSectionComponentParam.onClick() },
+                            modifier =
+                                Modifier
+                                    .pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .focusProperties {
+                                        canFocus = false
+                                    },
+                            onClick = {
+                                settingSectionComponentParam.onClick()
+                            },
                         ) {
                             Icon(
                                 imageVector = Icons.Default.ChevronRight,

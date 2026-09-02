@@ -3,6 +3,7 @@ package com.sakethh.linkora.utils
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -15,10 +16,19 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.retain.retain
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.LayoutDirection
@@ -155,11 +165,11 @@ suspend fun <T> Result<T>.pushSnackbarOnFailure() {
 }
 
 fun <T> Result.Success<T>.getRemoteOnlyFailureMsg(): String = if (this.isRemoteExecutionSuccessful.not()) {
-    "\n\n${Localization.Key.RemoteExecutionFailed.getLocalizedString()}\n" +
-        this.remoteFailureMessage
-} else {
-    ""
-}
+        "\n\n${Localization.Key.RemoteExecutionFailed.getLocalizedString()}\n" +
+                this.remoteFailureMessage
+    } else {
+        ""
+    }
 
 fun Exception?.pushSnackbar(coroutineScope: CoroutineScope) {
     if (this != null) {
@@ -202,9 +212,9 @@ fun <T> Flow<Result<T>>.catchAsExceptionAndEmitFailure(): Flow<Result<T>> = this
 fun String.replaceFirstPlaceHolderWith(string: String): String = this.replace(LinkoraPlaceHolder.First.value, string.inDoubleQuotes())
 
 fun String.isATwitterUrl(): Boolean = this.trim().startsWith("http://twitter.com/") ||
-    this.trim().startsWith("https://twitter.com/") ||
-    this.trim().startsWith("http://x.com/") ||
-    this.trim().startsWith("https://x.com/")
+        this.trim().startsWith("https://twitter.com/") ||
+        this.trim().startsWith("http://x.com/") ||
+        this.trim().startsWith("https://x.com/")
 
 suspend fun <T : Any> T.then(init: suspend () -> Unit): T {
     init()
@@ -235,10 +245,10 @@ fun NavHostController.inRootScreen(includeSettingsScreen: Boolean): Boolean? {
 fun String.inDoubleQuotes(): String = "\"$this\""
 
 suspend inline fun <reified IncomingBody> HttpResponse.handleResponseBody(): Result<IncomingBody> = if (this.status.isSuccess().not()) {
-    Result.Failure(this.status.value.toString() + " " + this.status.description)
-} else {
-    Result.Success(this.body<IncomingBody>())
-}
+        Result.Failure(this.status.value.toString() + " " + this.status.description)
+    } else {
+        Result.Success(this.body<IncomingBody>())
+    }
 
 fun AppPreferences.toServerConnection(): ServerConnection = ServerConnection(
     serverUrl = serverBaseUrl,
@@ -263,16 +273,16 @@ fun AppPreferences.currentSavedServerConfig(): ServerConnection = ServerConnecti
 fun AppPreferences.isServerConfigured(): Boolean = serverBaseUrl.isNotBlank()
 
 fun AppPreferences.canPushToServer(): Boolean = listOf(SyncType.TwoWay, SyncType.ClientToServer).any {
-    isServerConfigured() && serverSyncType == it
-}
+        isServerConfigured() && serverSyncType == it
+    }
 
 fun AppPreferences.canReadFromServer(): Boolean = listOf(SyncType.TwoWay, SyncType.ServerToClient).any {
-    isServerConfigured() && serverSyncType == it
-}
+        isServerConfigured() && serverSyncType == it
+    }
 
 suspend fun AppPreferences.lastSyncedLocally(preferencesRepository: PreferencesRepository): Long = preferencesRepository.readPreferenceValue(
-    preferenceKey = AppPreferences.LAST_TIME_SYNCED_WITH_SERVER,
-) ?: 0
+        preferenceKey = AppPreferences.LAST_TIME_SYNCED_WITH_SERVER,
+    ) ?: 0
 
 suspend fun PreferencesRepository.updateLastSyncedWithServerTimeStamp(newValue: Long) {
     val preferenceKey = AppPreferences.LAST_TIME_SYNCED_WITH_SERVER
@@ -358,25 +368,25 @@ fun <T> Flow<T>.asStateInWhileSubscribed(
 
 @JvmName("shuffleLinksFlatChildFolderData")
 fun Flow<Result<List<FlatChildFolderData>>>.shuffleLinks(): Flow<Result<List<FlatChildFolderData>>> = transform {
-    when (it) {
-        is Result.Success ->
-            emit(
-                it.copy(
-                    data =
-                    it.data.filter {
-                        it.itemType != Constants.LINK
-                    } +
-                        it.data
-                            .filter {
-                                it.itemType == Constants.LINK
-                            }
-                            .shuffled(),
-                ),
-            )
+        when (it) {
+            is Result.Success ->
+                emit(
+                    it.copy(
+                        data =
+                            it.data.filter {
+                                it.itemType != Constants.LINK
+                            } +
+                                    it.data
+                                        .filter {
+                                            it.itemType == Constants.LINK
+                                        }
+                                        .shuffled(),
+                    ),
+                )
 
-        else -> emit(it)
+            else -> emit(it)
+        }
     }
-}
 
 fun Flow<Result<List<Link>>>.shuffleLinks(): Flow<Result<List<Link>>> = transform {
     when (it) {
@@ -387,25 +397,25 @@ fun Flow<Result<List<Link>>>.shuffleLinks(): Flow<Result<List<Link>>> = transfor
 
 @JvmName("shuffleLinksFlatSearchResult")
 fun Flow<Result<List<FlatSearchResult>>>.shuffleLinks(): Flow<Result<List<FlatSearchResult>>> = transform {
-    when (it) {
-        is Result.Success ->
-            emit(
-                it.copy(
-                    data =
-                    it.data.filter {
-                        it.itemType != Constants.LINK
-                    } +
-                        it.data
-                            .filter {
-                                it.itemType == Constants.LINK
-                            }
-                            .shuffled(),
-                ),
-            )
+        when (it) {
+            is Result.Success ->
+                emit(
+                    it.copy(
+                        data =
+                            it.data.filter {
+                                it.itemType != Constants.LINK
+                            } +
+                                    it.data
+                                        .filter {
+                                            it.itemType == Constants.LINK
+                                        }
+                                        .shuffled(),
+                    ),
+                )
 
-        else -> emit(it)
+            else -> emit(it)
+        }
     }
-}
 
 @Composable
 fun RefreshLinkType.asLocalizedString() = when (this) {
@@ -415,33 +425,55 @@ fun RefreshLinkType.asLocalizedString() = when (this) {
 }
 
 @Composable
+fun Modifier.highlightOnFocused(shape: Shape = RectangleShape): Modifier {
+    var hasFocus by remember {
+        mutableStateOf(false)
+    }
+    return onFocusChanged { focusState ->
+        hasFocus = focusState.hasFocus
+    }.border(
+        width = if (hasFocus) 2.5.dp else 0.dp,
+        color = if (hasFocus) MaterialTheme.colorScheme.primary else Color.Transparent,
+        shape
+    )
+        .background(
+            color = if (hasFocus) {
+                MaterialTheme.colorScheme.primaryContainer.copy(0.15f)
+            } else {
+                Color.Transparent
+            },
+            shape
+        )
+}
+
+@Composable
 fun ScrollAreaScope.VerticalScrollbar() {
     VerticalScrollbar(
         modifier =
-        Modifier.align(Alignment.TopEnd)
-            .pointerHoverIcon(PointerIcon.Hand)
-            .fillMaxHeight()
-            .padding(end = 2.5.dp, start = 2.5.dp)
-            .width(8.dp),
+            Modifier.align(Alignment.TopEnd)
+                .pointerHoverIcon(PointerIcon.Hand)
+                .fillMaxHeight()
+                .padding(end = 2.5.dp, start = 2.5.dp)
+                .width(8.dp),
     ) {
         Thumb(
             thumbVisibility =
-            ThumbVisibility.HideWhileIdle(
-                enter = fadeIn(),
-                exit = fadeOut(),
-                hideDelay = Duration.parse("2s"),
-            ),
+                ThumbVisibility.HideWhileIdle(
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                    hideDelay = Duration.parse("2s"),
+                ),
             modifier =
-            Modifier.pointerHoverIcon(PointerIcon.Hand)
-                .clip(RoundedCornerShape(25.dp))
-                .background(MaterialTheme.colorScheme.secondary.copy(0.65f)),
+                Modifier.pointerHoverIcon(PointerIcon.Hand)
+                    .clip(RoundedCornerShape(25.dp))
+                    .background(MaterialTheme.colorScheme.secondary.copy(0.65f)),
         )
     }
 }
 
 @OptIn(ExperimentalUuidApi::class)
 suspend fun WebCaptureRepo.getOrCreateFolderUuid(url: String): String = this.getFolderNameByLink(url) ?: run {
-    val newUuid = Uuid.random().toString()
-    this.insertMetadata(WebCaptureMetadata(link = url, uuid = newUuid))
-    newUuid
-}
+        val newUuid = Uuid.random().toString()
+        this.insertMetadata(WebCaptureMetadata(link = url, uuid = newUuid))
+        newUuid
+    }

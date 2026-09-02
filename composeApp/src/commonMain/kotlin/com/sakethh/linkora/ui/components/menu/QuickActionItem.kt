@@ -1,5 +1,6 @@
 package com.sakethh.linkora.ui.components.menu
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -13,8 +14,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -29,12 +35,29 @@ fun QuickActionItem(
     text: String,
     icon: ImageVector,
 ) {
+    var hasFocus by rememberSaveable {
+        mutableStateOf(false)
+    }
     Card(
         shape = shape,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
         onClick = onClick,
         modifier =
-        modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(start = 2.5.dp, end = 2.5.dp),
+            modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(start = 2.5.dp, end = 2.5.dp)
+                .onFocusChanged { focusState ->
+                    hasFocus = focusState.hasFocus
+                }
+                .then(
+                    if (hasFocus) {
+                        Modifier.border(
+                        width = 4.5.dp,
+                        color = MaterialTheme.colorScheme.inversePrimary,
+                        shape
+                    )
+                    } else {
+                        Modifier
+                    }
+                ),
     ) {
         Column(
             verticalArrangement = Arrangement.Center,

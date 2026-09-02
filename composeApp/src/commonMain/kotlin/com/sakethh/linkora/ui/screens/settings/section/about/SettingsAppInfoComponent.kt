@@ -1,7 +1,7 @@
 package com.sakethh.linkora.ui.screens.settings.section.about
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -16,9 +16,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -27,6 +32,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.ui.utils.pressScaleEffect
+import com.sakethh.linkora.utils.highlightOnFocused
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -48,30 +54,26 @@ fun SettingsAppInfoComponent(
             modifier = Modifier.padding(start = 15.dp, end = 15.dp),
         )
     }
-
     Card(
         shape = RoundedCornerShape(10.dp),
         modifier =
-        Modifier.padding(
-            top = paddingValues?.calculateTopPadding() ?: 20.dp,
-            end = paddingValues?.calculateEndPadding(LayoutDirection.Ltr) ?: 20.dp,
-            start = paddingValues?.calculateStartPadding(LayoutDirection.Ltr) ?: 20.dp,
-        )
-            .wrapContentHeight()
-            .fillMaxWidth()
-            .pointerHoverIcon(icon = PointerIcon.Hand)
-            .combinedClickable(
-                interactionSource =
-                remember {
-                    MutableInteractionSource()
-                },
-                indication = null,
-                onClick = {
-                    onClick()
-                },
-                onLongClick = {},
+            Modifier.padding(
+                top = paddingValues?.calculateTopPadding() ?: 20.dp,
+                end = paddingValues?.calculateEndPadding(LayoutDirection.Ltr) ?: 20.dp,
+                start = paddingValues?.calculateStartPadding(LayoutDirection.Ltr) ?: 20.dp,
             )
-            .pressScaleEffect(),
+                .wrapContentHeight()
+                .fillMaxWidth()
+                .highlightOnFocused()
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = {
+                        onClick()
+                    },
+                )
+                .pointerHoverIcon(icon = PointerIcon.Hand)
+                .pressScaleEffect(),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (icon != null) {

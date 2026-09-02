@@ -11,9 +11,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Restore
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProvideTextStyle
@@ -27,6 +29,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sakethh.linkora.utils.highlightOnFocused
 
 @Composable
 fun PreferenceTextField(
@@ -74,7 +77,7 @@ fun PreferenceTextField(
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             FilledTonalIconToggleButton(
-                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).highlightOnFocused(shape = IconButtonDefaults.filledShape),
                 checked = !readonly,
                 onCheckedChange = {
                     onConfirmButtonClick()
@@ -87,7 +90,7 @@ fun PreferenceTextField(
             }
             Spacer(modifier = Modifier.height(15.dp))
             FilledTonalIconButton(
-                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).highlightOnFocused(shape = IconButtonDefaults.filledShape),
                 onClick = onResetButtonClick,
             ) {
                 Icon(

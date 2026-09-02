@@ -4,16 +4,17 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddLink
@@ -24,23 +25,24 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.ui.utils.pressScaleEffect
+import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.rememberLocalizedString
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 
 @Stable
 data class AddItemFABParam(
@@ -59,21 +61,48 @@ data class AddItemFABParam(
 
 @Composable
 fun AddItemFab(addItemFABParam: AddItemFABParam) {
-    val currentIconForMainFAB by
-        remember(addItemFABParam.isMainFabRotated) {
-            mutableStateOf(
-                if (addItemFABParam.isMainFabRotated) {
-                    Icons.Default.AddLink
-                } else {
-                    Icons.Default.Add
-                },
-            )
+    val currentIconForMainFAB =
+        if (addItemFABParam.isMainFabRotated) {
+            Icons.Default.AddLink
+        } else {
+            Icons.Default.Add
         }
-    val coroutineScope = rememberCoroutineScope()
+
+    var hasInitializedRotation by remember { mutableStateOf(false) }
+
+    LaunchedEffect(addItemFABParam.isMainFabRotated) {
+        val targetRotation =
+            if (addItemFABParam.isMainFabRotated) {
+                180f
+            } else {
+                0f
+            }
+
+        if (!hasInitializedRotation) {
+            hasInitializedRotation = true
+            addItemFABParam.rotationAnimatable.snapTo(targetRotation)
+            return@LaunchedEffect
+        }
+
+        addItemFABParam.rotationAnimatable.animateTo(
+            targetValue = targetRotation,
+            animationSpec =
+                tween(
+                    durationMillis = 450,
+                    easing = FastOutSlowInEasing,
+                ),
+        )
+    }
+
     Column {
         Row(
             horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.align(Alignment.End),
+            modifier =
+                Modifier
+                    .align(Alignment.End)
+                    .focusGroup()
+                    .highlightOnFocused(shape = RoundedCornerShape(15.dp))
+                    .padding(top = 7.5.dp, bottom = 7.5.dp, start = 7.5.dp, end = 7.5.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             AnimatedVisibility(
@@ -95,14 +124,14 @@ fun AddItemFab(addItemFABParam: AddItemFABParam) {
                 exit = androidx.compose.animation.scaleOut(tween(300)),
             ) {
                 FloatingActionButton(
-                    modifier = Modifier.pressScaleEffect().pointerHoverIcon(icon = PointerIcon.Hand),
+                    modifier =
+                        Modifier
+                            .pressScaleEffect()
+                            .pointerHoverIcon(icon = PointerIcon.Hand),
                     onClick = {
                         addItemFABParam.hideReducedTransparencyBox()
                         addItemFABParam.onCreateATagClick()
                         addItemFABParam.undoMainFabRotation()
-                        coroutineScope.launch {
-                            addItemFABParam.rotationAnimatable.snapTo(-180f)
-                        }
                     },
                 ) {
                     Icon(
@@ -112,11 +141,15 @@ fun AddItemFab(addItemFABParam: AddItemFABParam) {
                 }
             }
         }
-        Spacer(modifier = Modifier.height(15.dp))
 
         Row(
             horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.align(Alignment.End),
+            modifier =
+                Modifier
+                    .align(Alignment.End)
+                    .focusGroup()
+                    .highlightOnFocused(shape = RoundedCornerShape(15.dp))
+                    .padding(top = 7.5.dp, bottom = 7.5.dp, start = 7.5.dp, end = 7.5.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             AnimatedVisibility(
@@ -132,20 +165,21 @@ fun AddItemFab(addItemFABParam: AddItemFABParam) {
                     modifier = Modifier.padding(end = 15.dp),
                 )
             }
+
             AnimatedVisibility(
                 visible = addItemFABParam.isMainFabRotated,
                 enter = androidx.compose.animation.scaleIn(animationSpec = tween(300)),
                 exit = androidx.compose.animation.scaleOut(tween(300)),
             ) {
                 FloatingActionButton(
-                    modifier = Modifier.pressScaleEffect().pointerHoverIcon(icon = PointerIcon.Hand),
+                    modifier =
+                        Modifier
+                            .pressScaleEffect()
+                            .pointerHoverIcon(icon = PointerIcon.Hand),
                     onClick = {
                         addItemFABParam.hideReducedTransparencyBox()
                         addItemFABParam.onShowDialogForNewFolder()
                         addItemFABParam.undoMainFabRotation()
-                        coroutineScope.launch {
-                            addItemFABParam.rotationAnimatable.snapTo(-180f)
-                        }
                     },
                 ) {
                     Icon(
@@ -155,10 +189,15 @@ fun AddItemFab(addItemFABParam: AddItemFABParam) {
                 }
             }
         }
-        Spacer(modifier = Modifier.height(15.dp))
+
         Row(
             horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.align(Alignment.End),
+            modifier =
+                Modifier
+                    .align(Alignment.End)
+                    .focusGroup()
+                    .highlightOnFocused(shape = RoundedCornerShape(15.dp))
+                    .padding(top = 7.5.dp, bottom = 7.5.dp, start = 7.5.dp, end = 7.5.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             AnimatedVisibility(
@@ -174,35 +213,23 @@ fun AddItemFab(addItemFABParam: AddItemFABParam) {
                     modifier = Modifier.padding(end = 15.dp),
                 )
             }
+
             FloatingActionButton(
                 modifier =
-                Modifier.rotate(addItemFABParam.rotationAnimatable.value)
-                    .pressScaleEffect()
-                    .pointerHoverIcon(icon = PointerIcon.Hand),
+                    Modifier
+                        .graphicsLayer {
+                            rotationZ = addItemFABParam.rotationAnimatable.value
+                        }
+                        .pressScaleEffect()
+                        .pointerHoverIcon(icon = PointerIcon.Hand),
                 onClick = {
                     if (addItemFABParam.isMainFabRotated) {
                         addItemFABParam.hideReducedTransparencyBox()
                         addItemFABParam.onShowAddLinkDialog()
                         addItemFABParam.undoMainFabRotation()
-                        coroutineScope.launch {
-                            addItemFABParam.rotationAnimatable.snapTo(-180f)
-                        }
                     } else {
-                        coroutineScope.launch {
-                            kotlinx.coroutines.awaitAll(
-                                async {
-                                    addItemFABParam.rotationAnimatable.animateTo(
-                                        180f,
-                                        animationSpec = tween(500),
-                                    )
-                                },
-                                async {
-                                    addItemFABParam.showReducedTransparencyBox()
-                                    kotlinx.coroutines.delay(10L)
-                                    addItemFABParam.rotateMainFab()
-                                },
-                            )
-                        }
+                        addItemFABParam.showReducedTransparencyBox()
+                        addItemFABParam.rotateMainFab()
                     }
                 },
             ) {

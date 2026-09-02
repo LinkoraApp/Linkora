@@ -1,6 +1,7 @@
 package com.sakethh.linkora.ui.screens.settings.section.data.snapshots
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoDelete
@@ -37,6 +39,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -57,6 +60,7 @@ import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.ui.screens.settings.section.data.components.ToggleButton
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
+import com.sakethh.linkora.utils.highlightOnFocused
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,20 +69,20 @@ fun SnapshotsScreen() {
     val dataSettingsScreenVM: DataSettingsScreenVM = linkoraViewModel()
     val preferences by dataSettingsScreenVM.preferencesAsFlow.collectAsStateWithLifecycle()
     var backupLocation by
-        rememberSaveable(preferences.currentBackupLocation) {
-            mutableStateOf(preferences.currentBackupLocation)
-        }
+    rememberSaveable(preferences.currentBackupLocation) {
+        mutableStateOf(preferences.currentBackupLocation)
+    }
 
     var backupAutoDeleteThreshold by
-        rememberSaveable(preferences.backupAutoDeleteThreshold) {
-            mutableIntStateOf(preferences.backupAutoDeleteThreshold)
-        }
+    rememberSaveable(preferences.backupAutoDeleteThreshold) {
+        mutableIntStateOf(preferences.backupAutoDeleteThreshold)
+    }
     val localFocusManager = LocalFocusManager.current
 
     val isBackupAutoDeletionEnabled by
-        rememberSaveable(preferences.backupAutoDeletionEnabled) {
-            mutableStateOf(preferences.backupAutoDeletionEnabled)
-        }
+    rememberSaveable(preferences.backupAutoDeletionEnabled) {
+        mutableStateOf(preferences.backupAutoDeletionEnabled)
+    }
     val platform = LocalPlatform.current
     val coroutineScope = rememberCoroutineScope()
     SettingsSectionScaffold(
@@ -86,10 +90,10 @@ fun SnapshotsScreen() {
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
             modifier =
-            Modifier.animateContentSize()
-                .fillMaxSize()
-                .addEdgeToEdgeScaffoldPadding(paddingValues)
-                .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
+                Modifier.animateContentSize()
+                    .fillMaxSize()
+                    .addEdgeToEdgeScaffoldPadding(paddingValues)
+                    .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
             verticalArrangement = Arrangement.spacedBy(30.dp),
         ) {
             item {
@@ -102,14 +106,15 @@ fun SnapshotsScreen() {
                         title = Localization.rememberLocalizedString(Localization.Key.UseSnapshots),
                         doesDescriptionExists = true,
                         description =
-                        Localization.rememberLocalizedString(Localization.Key.UseSnapshotsDescription),
+                            Localization.rememberLocalizedString(Localization.Key.UseSnapshotsDescription),
                         isSwitchNeeded = true,
                         isSwitchEnabled = preferences.areSnapshotsEnabled,
                         onSwitchStateChange = {
                             var isStorageAccessPermitted = false
                             coroutineScope
                                 .launch {
-                                    isStorageAccessPermitted = dataSettingsScreenVM.isStoragePermissionGranted()
+                                    isStorageAccessPermitted =
+                                        dataSettingsScreenVM.isStoragePermissionGranted()
                                 }
                                 .invokeOnCompletion { _ ->
                                     if (isStorageAccessPermitted.not() && platform is Platform.Android) {
@@ -133,46 +138,48 @@ fun SnapshotsScreen() {
                             if (platform is Platform.Android) {
                                 Text(
                                     text =
-                                    Localization.rememberLocalizedString(
-                                        Localization.Key.SnapshotsBackupLocationWarning,
-                                    ),
+                                        Localization.rememberLocalizedString(
+                                            Localization.Key.SnapshotsBackupLocationWarning,
+                                        ),
                                     style = MaterialTheme.typography.titleSmall,
                                 )
                             }
                         },
                         textStyle = MaterialTheme.typography.titleSmall,
                         trailingIcon = {
-                            FilledTonalIconButton(
-                                modifier =
-                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                    .pressScaleEffect()
-                                    .padding(end = 5.dp),
-                                onClick = {
-                                    dataSettingsScreenVM.changeExportLocation(
-                                        exportLocation = backupLocation,
-                                        platform = platform,
-                                        exportLocationType = ExportLocationType.SNAPSHOT,
-                                    )
-                                },
-                            ) {
-                                Icon(
-                                    imageVector =
-                                    if (platform is Platform.Android) {
-                                        Icons.Default.FolderOpen
-                                    } else {
-                                        Icons.Default.Save
+                            if (platform !is Platform.Android.TV) {
+                                FilledTonalIconButton(
+                                    modifier =
+                                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                            .pressScaleEffect()
+                                            .padding(end = 5.dp),
+                                    onClick = {
+                                        dataSettingsScreenVM.changeExportLocation(
+                                            exportLocation = backupLocation,
+                                            platform = platform,
+                                            exportLocationType = ExportLocationType.SNAPSHOT,
+                                        )
                                     },
-                                    contentDescription = null,
-                                )
+                                ) {
+                                    Icon(
+                                        imageVector =
+                                            if (platform is Platform.Android) {
+                                                Icons.Default.FolderOpen
+                                            } else {
+                                                Icons.Default.Save
+                                            },
+                                        contentDescription = null,
+                                    )
+                                }
                             }
                         },
                         readOnly = platform is Platform.Android,
                         label = {
                             Text(
                                 text =
-                                Localization.rememberLocalizedString(
-                                    Localization.Key.SnapshotsBackupLocation,
-                                ),
+                                    Localization.rememberLocalizedString(
+                                        Localization.Key.SnapshotsBackupLocation,
+                                    ),
                                 style = MaterialTheme.typography.titleMedium,
                                 textAlign = TextAlign.Start,
                             )
@@ -182,11 +189,19 @@ fun SnapshotsScreen() {
                             backupLocation = it
                         },
                         modifier =
-                        Modifier.padding(
-                            start = 15.dp,
-                            end = 15.dp,
-                        )
-                            .fillMaxWidth(),
+                            Modifier.padding(
+                                start = 15.dp,
+                                end = 15.dp,
+                            )
+                                .fillMaxWidth().highlightOnFocused().clickable(onClick = {
+                                    if (platform is Platform.Android.TV) {
+                                        dataSettingsScreenVM.changeExportLocation(
+                                            exportLocation = backupLocation,
+                                            platform = platform,
+                                            exportLocationType = ExportLocationType.SNAPSHOT,
+                                        )
+                                    }
+                                }, indication = null, interactionSource = null),
                     )
                 }
                 item {
@@ -194,14 +209,14 @@ fun SnapshotsScreen() {
                         SettingComponentParam(
                             isIconNeeded = true,
                             title =
-                            Localization.rememberLocalizedString(
-                                Localization.Key.EnableAutoDeleteSnapshots,
-                            ),
+                                Localization.rememberLocalizedString(
+                                    Localization.Key.EnableAutoDeleteSnapshots,
+                                ),
                             doesDescriptionExists = true,
                             description =
-                            Localization.rememberLocalizedString(
-                                Localization.Key.EnableAutoDeleteSnapshotsDescription,
-                            ),
+                                Localization.rememberLocalizedString(
+                                    Localization.Key.EnableAutoDeleteSnapshotsDescription,
+                                ),
                             isSwitchNeeded = true,
                             isSwitchEnabled = isBackupAutoDeletionEnabled,
                             onSwitchStateChange = {
@@ -216,40 +231,51 @@ fun SnapshotsScreen() {
                 if (isBackupAutoDeletionEnabled) {
                     item {
                         TextField(
+                            keyboardActions = KeyboardActions(onDone = {
+                                dataSettingsScreenVM.updateAutoDeletionBackupsThreshold(
+                                    backupAutoDeleteThreshold,
+                                )
+                                localFocusManager.clearFocus(force = true)
+                            }),
                             supportingText = {
                                 Text(
                                     text =
-                                    Localization.rememberLocalizedString(
-                                        Localization.Key.SnapshotsFileLimitWarning,
-                                    ),
+                                        Localization.rememberLocalizedString(
+                                            Localization.Key.SnapshotsFileLimitWarning,
+                                        ),
                                     style = MaterialTheme.typography.titleSmall,
                                 )
                             },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Done
+                            ),
                             textStyle = MaterialTheme.typography.titleSmall,
                             trailingIcon = {
-                                FilledTonalIconButton(
-                                    modifier =
-                                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                        .pressScaleEffect()
-                                        .padding(end = 5.dp),
-                                    onClick = {
-                                        dataSettingsScreenVM.updateAutoDeletionBackupsThreshold(
-                                            backupAutoDeleteThreshold,
+                                if (!Platform.Android.onTV()) {
+                                    FilledTonalIconButton(
+                                        modifier =
+                                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                                .pressScaleEffect()
+                                                .padding(end = 5.dp),
+                                        onClick = {
+                                            dataSettingsScreenVM.updateAutoDeletionBackupsThreshold(
+                                                backupAutoDeleteThreshold,
+                                            )
+                                            localFocusManager.clearFocus(force = true)
+                                        },
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Save,
+                                            contentDescription = null,
                                         )
-                                        localFocusManager.clearFocus(force = true)
-                                    },
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Save,
-                                        contentDescription = null,
-                                    )
+                                    }
                                 }
                             },
                             label = {
                                 Text(
                                     text =
-                                    Localization.rememberLocalizedString(Localization.Key.SnapshotsFileLimit),
+                                        Localization.rememberLocalizedString(Localization.Key.SnapshotsFileLimit),
                                     style = MaterialTheme.typography.titleMedium,
                                     textAlign = TextAlign.Start,
                                 )
@@ -288,25 +314,25 @@ fun SnapshotsScreen() {
                                             snapshotFormat.id.toString() == preferences.snapshotExportFormatID
                                         ToggleButton(
                                             shape =
-                                            when (index) {
-                                                0 ->
-                                                    RoundedCornerShape(
-                                                        topStart = 15.dp,
-                                                        bottomStart = 15.dp,
-                                                        topEnd = 5.dp,
-                                                        bottomEnd = 5.dp,
-                                                    )
+                                                when (index) {
+                                                    0 ->
+                                                        RoundedCornerShape(
+                                                            topStart = 15.dp,
+                                                            bottomStart = 15.dp,
+                                                            topEnd = 5.dp,
+                                                            bottomEnd = 5.dp,
+                                                        )
 
-                                                it.lastIndex ->
-                                                    RoundedCornerShape(
-                                                        topStart = 5.dp,
-                                                        bottomStart = 5.dp,
-                                                        topEnd = 15.dp,
-                                                        bottomEnd = 15.dp,
-                                                    )
+                                                    it.lastIndex ->
+                                                        RoundedCornerShape(
+                                                            topStart = 5.dp,
+                                                            bottomStart = 5.dp,
+                                                            topEnd = 15.dp,
+                                                            bottomEnd = 15.dp,
+                                                        )
 
-                                                else -> RoundedCornerShape(5.dp)
-                                            },
+                                                    else -> RoundedCornerShape(5.dp)
+                                                },
                                             checked = checked,
                                             onCheckedChange = {
                                                 dataSettingsScreenVM.changeSettingPreferenceValue(
@@ -318,17 +344,17 @@ fun SnapshotsScreen() {
                                             Text(
                                                 text = snapshotFormat.localizedValue,
                                                 style =
-                                                if (checked) {
-                                                    MaterialTheme.typography.titleMedium
-                                                } else {
-                                                    MaterialTheme.typography.titleSmall
-                                                },
+                                                    if (checked) {
+                                                        MaterialTheme.typography.titleMedium
+                                                    } else {
+                                                        MaterialTheme.typography.titleSmall
+                                                    },
                                                 color =
-                                                if (checked) {
-                                                    MaterialTheme.colorScheme.onPrimary
-                                                } else {
-                                                    LocalContentColor.current
-                                                },
+                                                    if (checked) {
+                                                        MaterialTheme.colorScheme.onPrimary
+                                                    } else {
+                                                        LocalContentColor.current
+                                                    },
                                             )
                                         }
                                     }
@@ -340,15 +366,15 @@ fun SnapshotsScreen() {
             item {
                 Text(
                     text =
-                    if (platform !is Platform.Android) {
-                        Localization.rememberLocalizedString(
-                            Localization.Key.SnapshotsExportDescriptionDesktop,
-                        )
-                    } else {
-                        Localization.rememberLocalizedString(
-                            Localization.Key.SnapshotsExportDescriptionAndroid,
-                        )
-                    },
+                        if (platform !is Platform.Android) {
+                            Localization.rememberLocalizedString(
+                                Localization.Key.SnapshotsExportDescriptionDesktop,
+                            )
+                        } else {
+                            Localization.rememberLocalizedString(
+                                Localization.Key.SnapshotsExportDescriptionAndroid,
+                            )
+                        },
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 14.sp,
                     lineHeight = 20.sp,

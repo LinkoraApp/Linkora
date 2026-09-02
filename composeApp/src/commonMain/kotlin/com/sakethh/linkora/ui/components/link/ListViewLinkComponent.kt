@@ -6,7 +6,11 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,14 +44,19 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.retain.retain
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -78,126 +87,167 @@ fun ListViewLinkComponent(
 ) {
     val localClipBoardManager = LocalClipboardManager.current
     val platform = LocalPlatform.current
+
+    var hasFocus by remember { mutableStateOf(false) }
+
     Column(
         modifier =
-        Modifier.background(
-            if (linkComponentParam.isItemSelected.value) {
-                MaterialTheme.colorScheme.primary.copy(0.25f)
-            } else {
-                Color.Transparent
-            },
-        )
-            .pointerHoverIcon(icon = PointerIcon.Hand)
-            .combinedClickable(
-                interactionSource =
-                remember {
-                    MutableInteractionSource()
-                },
-                indication = null,
-                onClick = {
-                    linkComponentParam.onLinkClick()
-                },
-                onLongClick = {
-                    linkComponentParam.onLongClick()
-                },
-            )
-            .padding(start = 15.dp, top = 15.dp)
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .pressScaleEffect()
-            .animateContentSize()
-            .then(modifier),
-        verticalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(end = 15.dp).wrapContentHeight(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = linkComponentParam.link.title,
-                style = MaterialTheme.typography.titleSmall,
-                fontSize = 16.sp,
-                modifier =
-                Modifier.fillMaxWidth(
-                    if (!linkComponentParam.isSelectionModeEnabled.value && titleOnlyView) {
-                        1f
+            Modifier
+                .focusGroup()
+                .onFocusChanged { focusState ->
+                    hasFocus = focusState.hasFocus
+                }.pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = {
+                            linkComponentParam.onLinkClick()
+                        },
+                        onLongPress = {
+                            linkComponentParam.onLongClick()
+                        },
+                    )
+                }
+                .border(
+                    width = if (hasFocus) 2.5.dp else 0.dp,
+                    color = if (hasFocus) MaterialTheme.colorScheme.primary else Color.Transparent,
+                )
+                .background(
+                    if (hasFocus) {
+                        MaterialTheme.colorScheme.primaryContainer.copy(0.15f)
                     } else {
-                        0.65f
+                        Color.Transparent
                     },
                 )
-                    .padding(end = 15.dp),
-                maxLines = 4,
-                lineHeight = 20.sp,
-                textAlign = TextAlign.Start,
-                overflow = TextOverflow.Ellipsis,
-            )
-            if (!linkComponentParam.isItemSelected.value && !titleOnlyView) {
-                if (linkComponentParam.link.imgURL.isNotEmpty()) {
-                    CoilImage(
-                        modifier = Modifier.width(95.dp).height(60.dp).clip(RoundedCornerShape(15.dp)),
-                        imgURL = linkComponentParam.link.imgURL,
-                        userAgent = linkComponentParam.link.userAgent ?: preferences.primaryJsoupUserAgent,
-                        alignment = imageAlignment,
-                        preferences = preferences,
+                .background(
+                    if (linkComponentParam.isItemSelected.value) {
+                        MaterialTheme.colorScheme.primary.copy(0.25f)
+                    } else {
+                        Color.Transparent
+                    },
+                )
+                .pointerHoverIcon(icon = PointerIcon.Hand)
+                .padding(start = 15.dp, top = 15.dp)
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .pressScaleEffect()
+                .animateContentSize()
+                .then(modifier),
+        verticalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .combinedClickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = {
+                            linkComponentParam.onLinkClick()
+                        },
+                        onLongClick = {
+                            linkComponentParam.onLongClick()
+                        },
                     )
-                } else {
+                    .focusable()
+                    .padding(end = 15.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    text = linkComponentParam.link.title,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontSize = 16.sp,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth(
+                                if (!linkComponentParam.isSelectionModeEnabled.value && titleOnlyView) {
+                                    1f
+                                } else {
+                                    0.65f
+                                },
+                            )
+                            .padding(end = 15.dp),
+                    maxLines = 4,
+                    lineHeight = 20.sp,
+                    textAlign = TextAlign.Start,
+                    overflow = TextOverflow.Ellipsis,
+                )
+
+                if (!linkComponentParam.isItemSelected.value && !titleOnlyView) {
+                    if (linkComponentParam.link.imgURL.isNotEmpty()) {
+                        CoilImage(
+                            modifier =
+                                Modifier
+                                    .width(95.dp)
+                                    .height(60.dp)
+                                    .clip(RoundedCornerShape(15.dp)),
+                            imgURL = linkComponentParam.link.imgURL,
+                            userAgent =
+                                linkComponentParam.link.userAgent
+                                    ?: preferences.primaryJsoupUserAgent,
+                            alignment = imageAlignment,
+                            preferences = preferences,
+                        )
+                    } else {
+                        Box(
+                            modifier =
+                                Modifier
+                                    .width(95.dp)
+                                    .height(60.dp)
+                                    .clip(RoundedCornerShape(15.dp))
+                                    .background(MaterialTheme.colorScheme.primary),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                imageVector = Icons.Rounded.ImageNotSupported,
+                                contentDescription = null,
+                                modifier = Modifier.size(32.dp),
+                            )
+                        }
+                    }
+                } else if (linkComponentParam.isItemSelected.value) {
                     Box(
                         modifier =
-                        Modifier.width(95.dp)
-                            .height(60.dp)
-                            .clip(RoundedCornerShape(15.dp))
-                            .background(MaterialTheme.colorScheme.primary),
+                            Modifier
+                                .width(95.dp)
+                                .height(60.dp)
+                                .clip(RoundedCornerShape(15.dp))
+                                .background(MaterialTheme.colorScheme.primary),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             tint = MaterialTheme.colorScheme.onPrimary,
-                            imageVector = Icons.Rounded.ImageNotSupported,
+                            imageVector = Icons.Rounded.CheckCircle,
                             contentDescription = null,
                             modifier = Modifier.size(32.dp),
                         )
                     }
                 }
-            } else if (linkComponentParam.isItemSelected.value) {
-                Box(
-                    modifier =
-                    Modifier.width(95.dp)
-                        .height(60.dp)
-                        .clip(RoundedCornerShape(15.dp))
-                        .background(MaterialTheme.colorScheme.primary),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        imageVector = Icons.Rounded.CheckCircle,
-                        contentDescription = null,
-                        modifier = Modifier.size(32.dp),
-                    )
-                }
+            }
+
+            if (linkComponentParam.link.note.isNotBlank() && preferences.showNoteInLinkView) {
+                Text(
+                    modifier = Modifier.padding(top = 10.dp),
+                    text = linkComponentParam.link.note,
+                    style = MaterialTheme.typography.titleSmall,
+                    maxLines = 3,
+                    textAlign = TextAlign.Start,
+                    overflow = TextOverflow.Ellipsis,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(0.75f),
+                )
             }
         }
-        if (linkComponentParam.link.note.isNotBlank() && preferences.showNoteInLinkView) {
-            Text(
-                modifier =
-                Modifier.padding(
-                    end = 15.dp,
-                    top = 10.dp,
-                ),
-                text = linkComponentParam.link.note,
-                style = MaterialTheme.typography.titleSmall,
-                maxLines = 3,
-                textAlign = TextAlign.Start,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(0.75f),
-            )
-        }
+
         if (preferences.showDateInLinkView && linkComponentParam.link.date != null) {
             Text(
                 modifier =
-                Modifier.padding(
-                    end = 15.dp,
-                    top = 10.dp,
-                ),
+                    Modifier.padding(
+                        end = 15.dp,
+                        top = 10.dp,
+                    ),
                 text = linkComponentParam.link.date,
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
@@ -220,21 +270,22 @@ fun ListViewLinkComponent(
         if (preferences.showHostInLinkListView) {
             Text(
                 modifier =
-                Modifier.padding(
-                    top = if (linkComponentParam.tags != null) 5.dp else 15.dp,
-                    end = 15.dp,
-                    bottom = if (linkComponentParam.isSelectionModeEnabled.value) 15.dp else 0.dp,
-                )
-                    .background(
-                        color = MaterialTheme.colorScheme.primary.copy(0.1f),
-                        shape = RoundedCornerShape(5.dp),
-                    )
-                    .padding(5.dp),
+                    Modifier
+                        .padding(
+                            top = if (linkComponentParam.tags != null) 5.dp else 15.dp,
+                            end = 15.dp,
+                            bottom = if (linkComponentParam.isSelectionModeEnabled.value) 15.dp else 0.dp,
+                        )
+                        .background(
+                            color = MaterialTheme.colorScheme.primary.copy(0.1f),
+                            shape = RoundedCornerShape(5.dp),
+                        )
+                        .padding(5.dp),
                 text =
-                linkComponentParam.link.host
-                    .replace("www.", "")
-                    .replace("http://", "")
-                    .replace("https://", ""),
+                    linkComponentParam.link.host
+                        .replace("www.", "")
+                        .replace("http://", "")
+                        .replace("https://", ""),
                 style = MaterialTheme.typography.titleLarge,
                 maxLines = 1,
                 textAlign = TextAlign.Start,
@@ -256,12 +307,19 @@ fun ListViewLinkComponent(
                 color = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.padding(top = 15.dp),
             )
+
             FoldersRow(
                 modifier =
-                Modifier.fillMaxWidth()
-                    .padding(
-                        bottom = if (linkComponentParam.isSelectionModeEnabled.value) 15.dp else 0.dp,
-                    ),
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            bottom =
+                                if (linkComponentParam.isSelectionModeEnabled.value) {
+                                    15.dp
+                                } else {
+                                    0.dp
+                                },
+                        ),
                 folders = foldersPath,
                 onFolderClick = { linkComponentParam.onFolderClick(it) },
             )
@@ -271,13 +329,18 @@ fun ListViewLinkComponent(
             modifier = Modifier.fillMaxWidth().wrapContentHeight(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.CenterEnd,
+            ) {
                 if (!linkComponentParam.isSelectionModeEnabled.value) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         IconButton(
                             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
                             onClick = {
-                                localClipBoardManager.setText(AnnotatedString(linkComponentParam.link.url))
+                                localClipBoardManager.setText(
+                                    AnnotatedString(linkComponentParam.link.url),
+                                )
                             },
                         ) {
                             Icon(
@@ -285,6 +348,7 @@ fun ListViewLinkComponent(
                                 contentDescription = null,
                             )
                         }
+
                         if (platform is Platform.Android) {
                             IconButton(
                                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
@@ -292,9 +356,13 @@ fun ListViewLinkComponent(
                                     onShare(linkComponentParam.link.url)
                                 },
                             ) {
-                                Icon(imageVector = Icons.Outlined.Share, contentDescription = null)
+                                Icon(
+                                    imageVector = Icons.Outlined.Share,
+                                    contentDescription = null,
+                                )
                             }
                         }
+
                         IconButton(
                             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
                             onClick = {
@@ -310,8 +378,9 @@ fun ListViewLinkComponent(
                 }
             }
         }
+
         AnimatedVisibility(
-            visible = linkComponentParam.isSelectionModeEnabled.value.not(),
+            visible = !linkComponentParam.isSelectionModeEnabled.value,
             enter = fadeIn(),
             exit = fadeOut(),
         ) {
@@ -338,15 +407,17 @@ fun TagsRow(
         items(tags) { tag ->
             AssistChip(
                 colors =
-                AssistChipDefaults.assistChipColors(
-                    containerColor =
-                    MaterialTheme.colorScheme.secondaryContainer.copy(chipColorOpacity),
-                ),
+                    AssistChipDefaults.assistChipColors(
+                        containerColor =
+                            MaterialTheme.colorScheme.secondaryContainer.copy(chipColorOpacity),
+                    ),
                 border =
-                AssistChipDefaults.assistChipBorder(
-                    enabled = true,
-                    borderColor = MaterialTheme.colorScheme.secondaryContainer.copy(chipColorOpacity),
-                ),
+                    AssistChipDefaults.assistChipBorder(
+                        enabled = true,
+                        borderColor = MaterialTheme.colorScheme.secondaryContainer.copy(
+                            chipColorOpacity
+                        ),
+                    ),
                 onClick = {
                     onTagClick(tag)
                 },
@@ -374,8 +445,8 @@ fun TagsRow(
 fun FoldersRow(
     modifier: Modifier,
     folders: List<
-        Folder,
-        >, // this can be changed to a persistent list since we guarantee that the path doesn't
+            Folder,
+            >, // this can be changed to a persistent list since we guarantee that the path doesn't
     // change once the list is built.
     onFolderClick: (Folder) -> Unit,
     chipColorOpacity: Float = 0.5f,
@@ -387,15 +458,17 @@ fun FoldersRow(
         itemsIndexed(folders) { index, folder ->
             AssistChip(
                 colors =
-                AssistChipDefaults.assistChipColors(
-                    containerColor =
-                    MaterialTheme.colorScheme.secondaryContainer.copy(chipColorOpacity),
-                ),
+                    AssistChipDefaults.assistChipColors(
+                        containerColor =
+                            MaterialTheme.colorScheme.secondaryContainer.copy(chipColorOpacity),
+                    ),
                 border =
-                AssistChipDefaults.assistChipBorder(
-                    enabled = true,
-                    borderColor = MaterialTheme.colorScheme.secondaryContainer.copy(chipColorOpacity),
-                ),
+                    AssistChipDefaults.assistChipBorder(
+                        enabled = true,
+                        borderColor = MaterialTheme.colorScheme.secondaryContainer.copy(
+                            chipColorOpacity
+                        ),
+                    ),
                 onClick = {
                     onFolderClick(folder)
                 },

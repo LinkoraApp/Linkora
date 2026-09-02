@@ -63,6 +63,7 @@ import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
+import com.sakethh.linkora.utils.highlightOnFocused
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -117,8 +118,8 @@ fun WebPageCaptureScreen() {
                             )
                             if (it) {
                                 dataSettingsScreenVM.initWebCapture(
-                                preferences = preferences,
-                                onCompletion = {}
+                                    preferences = preferences,
+                                    onCompletion = {}
                                 )
                             } else {
                                 dataSettingsScreenVM.nukeWebCapture()
@@ -146,25 +147,27 @@ fun WebPageCaptureScreen() {
                     TextField(
                         textStyle = MaterialTheme.typography.titleSmall,
                         trailingIcon = {
-                            FilledTonalIconButton(
-                                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                    .pressScaleEffect().padding(end = 5.dp),
-                                onClick = {
-                                    dataSettingsScreenVM.changeExportLocation(
-                                        exportLocation = webCaptureLocation,
-                                        platform = platform,
-                                        exportLocationType = ExportLocationType.WEB_CAPTURE,
-                                    )
-                                },
-                            ) {
-                                Icon(
-                                    imageVector = if (platform is Platform.Android) {
-                                        Icons.Default.FolderOpen
-                                    } else {
-                                        Icons.Default.Save
+                            if (platform !is Platform.Android.TV) {
+                                FilledTonalIconButton(
+                                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                        .pressScaleEffect().padding(end = 5.dp),
+                                    onClick = {
+                                        dataSettingsScreenVM.changeExportLocation(
+                                            exportLocation = webCaptureLocation,
+                                            platform = platform,
+                                            exportLocationType = ExportLocationType.WEB_CAPTURE,
+                                        )
                                     },
-                                    contentDescription = null,
-                                )
+                                ) {
+                                    Icon(
+                                        imageVector = if (platform is Platform.Android) {
+                                            Icons.Default.FolderOpen
+                                        } else {
+                                            Icons.Default.Save
+                                        },
+                                        contentDescription = null,
+                                    )
+                                }
                             }
                         },
                         readOnly = platform is Platform.Android,
@@ -179,7 +182,16 @@ fun WebPageCaptureScreen() {
                         onValueChange = {
                             webCaptureLocation = it
                         },
-                        modifier = Modifier.padding(horizontal = 15.dp).fillMaxWidth(),
+                        modifier = Modifier.padding(horizontal = 15.dp).fillMaxWidth()
+                            .highlightOnFocused().clickable(onClick = {
+                            if (platform is Platform.Android.TV) {
+                                dataSettingsScreenVM.changeExportLocation(
+                                    exportLocation = webCaptureLocation,
+                                    platform = platform,
+                                    exportLocationType = ExportLocationType.WEB_CAPTURE,
+                                )
+                            }
+                        }, indication = null, interactionSource = null),
                     )
                     Spacer(modifier = Modifier.height(150.dp))
                 }

@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -61,6 +62,7 @@ import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.ui.utils.rememberDeserializableMutableObject
+import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.rememberLocalizedString
 import com.sakethh.linkora.utils.replaceFirstPlaceHolderWith
 
@@ -327,7 +329,7 @@ fun RenameFolderOrLinkDialog(renameFolderOrLinkDialogParam: RenameFolderOrLinkDi
                     )
                         .pointerHoverIcon(icon = PointerIcon.Hand)
                         .fillMaxWidth()
-                        .pressScaleEffect(),
+                        .pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
                     onClick = {
                         showProgressBar = true
                         renameFolderOrLinkDialogParam.onSave(
@@ -357,7 +359,7 @@ fun RenameFolderOrLinkDialog(renameFolderOrLinkDialogParam: RenameFolderOrLinkDi
                     )
                         .pointerHoverIcon(icon = PointerIcon.Hand)
                         .fillMaxWidth()
-                        .pressScaleEffect(),
+                        .pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
                     onClick = renameFolderOrLinkDialogParam.onHide,
                 ) {
                     Text(

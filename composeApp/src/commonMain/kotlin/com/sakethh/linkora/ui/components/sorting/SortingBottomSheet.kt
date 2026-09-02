@@ -2,8 +2,7 @@ package com.sakethh.linkora.ui.components.sorting
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -23,11 +22,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
@@ -43,6 +43,7 @@ import com.sakethh.linkora.ui.domain.SortingType
 import com.sakethh.linkora.ui.screens.collections.components.ItemDivider
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
 import com.sakethh.linkora.ui.utils.pressScaleEffect
+import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
 
@@ -72,40 +73,27 @@ fun SortingBottomSheet(sortingBottomSheetParam: SortingBottomSheetParam) {
     }
     val sortByContent: ComposableContent = {
         sortingBtmSheetVM.sortingBtmSheetData().forEach {
-            Column(
-                modifier =
-                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                    .combinedClickable(
-                        interactionSource =
-                        remember {
-                            MutableInteractionSource()
-                        },
-                        indication = null,
-                        onClick = {
-                            sortingBottomSheetParam.onSelected(
-                                it.sortingType,
-                                linksSortingSelectedState.value,
-                                foldersSortingSelectedState.value,
-                            )
-                            it.onClick()
-                            hideBtmSheet()
-                        },
-                        onLongClick = {},
-                    )
+            Row(
+                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                    .highlightOnFocused().clickable(onClick = {
+                        sortingBottomSheetParam.onSelected(
+                            it.sortingType,
+                            linksSortingSelectedState.value,
+                            foldersSortingSelectedState.value,
+                        )
+                        it.onClick()
+                        hideBtmSheet()
+                    })
                     .pressScaleEffect()
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
+                    .padding(start = 15.dp).fillMaxWidth().wrapContentHeight(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Row(
-                    modifier = Modifier.padding(start = 15.dp).fillMaxWidth().wrapContentHeight(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = it.sortingName,
-                        fontSize = 16.sp,
-                        style = MaterialTheme.typography.titleSmall,
-                        color =
+                Text(
+                    text = it.sortingName,
+                    fontSize = 16.sp,
+                    style = MaterialTheme.typography.titleSmall,
+                    color =
                         if (
                             it.sortingType == SortingType.valueOf(preferences.selectedSortingType) &&
                             !didAnyCheckBoxStateChanged.value
@@ -114,24 +102,23 @@ fun SortingBottomSheet(sortingBottomSheetParam: SortingBottomSheetParam) {
                         } else {
                             LocalTextStyle.current.color
                         },
-                    )
-                    RadioButton(
-                        selected =
+                )
+                RadioButton(
+                    selected =
                         it.sortingType.name == preferences.selectedSortingType &&
-                            !didAnyCheckBoxStateChanged.value,
-                        onClick = {
-                            sortingBottomSheetParam.onSelected(
-                                it.sortingType,
-                                linksSortingSelectedState.value,
-                                foldersSortingSelectedState.value,
-                            )
-                            it.onClick()
-                            hideBtmSheet()
-                        },
-                        modifier = Modifier.padding(end = 5.dp)
-                            .pointerHoverIcon(icon = PointerIcon.Hand),
-                    )
-                }
+                                !didAnyCheckBoxStateChanged.value,
+                    onClick = {
+                        sortingBottomSheetParam.onSelected(
+                            it.sortingType,
+                            linksSortingSelectedState.value,
+                            foldersSortingSelectedState.value,
+                        )
+                        it.onClick()
+                        hideBtmSheet()
+                    },
+                    modifier = Modifier.padding(end = 5.dp)
+                        .pointerHoverIcon(icon = PointerIcon.Hand),
+                )
             }
         }
     }
@@ -149,7 +136,7 @@ fun SortingBottomSheet(sortingBottomSheetParam: SortingBottomSheetParam) {
             )
             val isFolderScreen =
                 sortingBottomSheetParam.sortingBtmSheetType == SortingBtmSheetType.REGULAR_FOLDER_SCREEN ||
-                    sortingBottomSheetParam.sortingBtmSheetType == SortingBtmSheetType.ARCHIVE_FOLDER_SCREEN
+                        sortingBottomSheetParam.sortingBtmSheetType == SortingBtmSheetType.ARCHIVE_FOLDER_SCREEN
             if (isFolderScreen) {
                 Spacer(modifier = Modifier.height(10.dp))
             }
@@ -173,12 +160,12 @@ fun SortingBottomSheet(sortingBottomSheetParam: SortingBottomSheetParam) {
             }
             ItemDivider(
                 paddingValues =
-                PaddingValues(
-                    top = 10.dp,
-                    start = 15.dp,
-                    end = 15.dp,
-                    bottom = 18.dp,
-                ),
+                    PaddingValues(
+                        top = 10.dp,
+                        start = 15.dp,
+                        end = 15.dp,
+                        bottom = 18.dp,
+                    ),
             )
             SettingComponent(
                 SettingComponentParam(

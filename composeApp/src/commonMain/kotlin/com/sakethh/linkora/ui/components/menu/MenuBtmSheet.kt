@@ -3,6 +3,7 @@ package com.sakethh.linkora.ui.components.menu
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -44,10 +45,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -67,6 +70,7 @@ import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.bottomNavPaddingAcrossPlatforms
 import com.sakethh.linkora.utils.fillMaxWidthWithPadding
 import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
 
@@ -124,12 +128,14 @@ fun MenuBtmSheet(
                 text = Localization.Key.Open.rememberLocalizedString(),
                 icon = Icons.Default.OpenInNew,
             )
-            val lastItemShape = RoundedCornerShape(
-                topStart = 8.dp,
-                topEnd = 20.dp,
-                bottomStart = 8.dp,
-                bottomEnd = 20.dp,
-            )
+            val lastItemShape = retain {
+                RoundedCornerShape(
+                    topStart = 8.dp,
+                    topEnd = 20.dp,
+                    bottomStart = 8.dp,
+                    bottomEnd = 20.dp,
+                )
+            }
             QuickActionItem(
                 shape = if (onAndroidMobile) RoundedCornerShape(8.dp) else lastItemShape,
                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).weight(1f)
@@ -172,7 +178,7 @@ fun MenuBtmSheet(
                 Modifier.verticalScroll(
                     rememberScrollState(),
                 )
-            },
+            }.focusGroup(),
         ) {
             if (onAndroidMobile) {
                 IndividualMenuComponent(
@@ -214,7 +220,8 @@ fun MenuBtmSheet(
             }
             if (menuBtmSheetLinkEntries().contains(menuBtmSheetParam.menuBtmSheetFor)) {
                 Row(
-                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).combinedClickable(
+                    modifier = Modifier.highlightOnFocused()
+                        .pointerHoverIcon(icon = PointerIcon.Hand).combinedClickable(
                         interactionSource = null,
                         indication = null,
                         onClick = {
@@ -367,8 +374,9 @@ fun MenuBtmSheet(
         }
     }
     ModalBottomSheet(
+        sheetGesturesEnabled = !Platform.Android.onTV(),
         properties = ModalBottomSheetProperties(
-            shouldDismissOnBackPress = menuBtmSheetParam.showProgressBarDuringRemoteSave.value.not(),
+            shouldDismissOnBackPress = !menuBtmSheetParam.showProgressBarDuringRemoteSave.value,
         ),
         onDismissRequest = {
             if (menuBtmSheetParam.showProgressBarDuringRemoteSave.value) return@ModalBottomSheet

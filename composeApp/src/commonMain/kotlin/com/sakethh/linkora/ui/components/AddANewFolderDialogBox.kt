@@ -10,8 +10,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +32,7 @@ import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.ui.domain.model.AddNewFolderDialogBoxParam
 import com.sakethh.linkora.ui.utils.pressScaleEffect
+import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.inDoubleQuotes
 
 @Composable
@@ -50,11 +53,12 @@ fun AddANewFolderDialogBox(addNewFolderDialogBoxParam: AddNewFolderDialogBoxPara
     AlertDialog(
         dismissButton = {
             if (!isFolderCreationInProgress.value) {
-                androidx.compose.material3.OutlinedButton(
+                OutlinedButton(
                     modifier =
-                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .fillMaxWidth()
-                        .pressScaleEffect(),
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .highlightOnFocused(shape = ButtonDefaults.shape)
+                            .fillMaxWidth()
+                            .pressScaleEffect(),
                     onClick = addNewFolderDialogBoxParam.onDismiss,
                 ) {
                     Text(
@@ -69,9 +73,10 @@ fun AddANewFolderDialogBox(addNewFolderDialogBoxParam: AddNewFolderDialogBoxPara
             if (!isFolderCreationInProgress.value) {
                 Button(
                     modifier =
-                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .fillMaxWidth()
-                        .pressScaleEffect(),
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .highlightOnFocused(shape = ButtonDefaults.shape)
+                            .fillMaxWidth()
+                            .pressScaleEffect(),
                     onClick = {
                         isFolderCreationInProgress.value = true
                         addNewFolderDialogBoxParam.onFolderCreateClick(
@@ -128,9 +133,9 @@ fun AddANewFolderDialogBox(addNewFolderDialogBoxParam: AddNewFolderDialogBoxPara
                     label = {
                         Text(
                             text =
-                            Localization.rememberLocalizedString(
-                                Localization.Key.NoteForCreatingTheFolder,
-                            ),
+                                Localization.rememberLocalizedString(
+                                    Localization.Key.NoteForCreatingTheFolder,
+                                ),
                             style = MaterialTheme.typography.titleSmall,
                             fontSize = 12.sp,
                         )
@@ -150,18 +155,18 @@ fun AddANewFolderDialogBox(addNewFolderDialogBoxParam: AddNewFolderDialogBoxPara
         title = {
             Text(
                 text =
-                if (
-                    addNewFolderDialogBoxParam.inCollectionDetailPane &&
-                    addNewFolderDialogBoxParam.currentFolder != null
-                ) {
-                    Localization.rememberLocalizedString(Localization.Key.CreateANewFolderIn)
-                        .replace(
-                            LinkoraPlaceHolder.First.value,
-                            addNewFolderDialogBoxParam.currentFolder.name.inDoubleQuotes(),
-                        )
-                } else {
-                    Localization.rememberLocalizedString(Localization.Key.CreateANewFolder)
-                },
+                    if (
+                        addNewFolderDialogBoxParam.inCollectionDetailPane &&
+                        addNewFolderDialogBoxParam.currentFolder != null
+                    ) {
+                        Localization.rememberLocalizedString(Localization.Key.CreateANewFolderIn)
+                            .replace(
+                                LinkoraPlaceHolder.First.value,
+                                addNewFolderDialogBoxParam.currentFolder.name.inDoubleQuotes(),
+                            )
+                    } else {
+                        Localization.rememberLocalizedString(Localization.Key.CreateANewFolder)
+                    },
                 style = MaterialTheme.typography.titleMedium,
                 fontSize = 22.sp,
                 lineHeight = 28.sp,

@@ -45,8 +45,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalUriHandler
@@ -74,6 +76,7 @@ import com.sakethh.linkora.ui.screens.LoadingScreen
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.pressScaleEffect
+import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.openUriOrNotify
 import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
@@ -98,7 +101,7 @@ fun HomeScreen() {
     val panels = homeScreenVM.existingPanels.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
     val activePanelAssociatedPanelFolders by
-        homeScreenVM.activePanelAssociatedPanelFolders.collectAsStateWithLifecycle()
+    homeScreenVM.activePanelAssociatedPanelFolders.collectAsStateWithLifecycle()
     val pagerState =
         rememberPagerState(
             pageCount = {
@@ -111,9 +114,9 @@ fun HomeScreen() {
         topBar = {
             Column(
                 modifier =
-                Modifier.windowInsetsPadding(WindowInsets.statusBars)
-                    .animateContentSize()
-                    .fillMaxWidth(),
+                    Modifier.windowInsetsPadding(WindowInsets.statusBars)
+                        .animateContentSize()
+                        .fillMaxWidth(),
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -144,32 +147,32 @@ fun HomeScreen() {
                         text = Localization.Key.SelectedPanel.rememberLocalizedString(),
                         color = MaterialTheme.colorScheme.primary.copy(0.9f),
                         style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier.padding(start = 10.dp, bottom = 5.dp),
+                        modifier = Modifier.padding(start = 10.dp),
                     )
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .clickable(
-                                onClick = {
-                                    shouldPanelsBtmSheetBeVisible.value = true
-                                    coroutineScope.launch {
-                                        panelsBtmSheetState.show()
-                                    }
-                                },
-                                indication = null,
-                                interactionSource =
-                                remember {
-                                    MutableInteractionSource()
-                                },
-                            )
-                            .pressScaleEffect()
-                            .pointerHoverIcon(icon = PointerIcon.Hand)
-                            .fillMaxWidth()
-                            .padding(start = 5.dp, end = 5.dp),
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .highlightOnFocused()
+                                .padding(5.dp)
+                                .clickable(
+                                    onClick = {
+                                        shouldPanelsBtmSheetBeVisible.value = true
+                                        coroutineScope.launch {
+                                            panelsBtmSheetState.show()
+                                        }
+                                    },
+                                    indication = null,
+                                    interactionSource =
+                                        remember {
+                                            MutableInteractionSource()
+                                        },
+                                )
+                                .pressScaleEffect()
+                                .pointerHoverIcon(icon = PointerIcon.Hand)
+                                .padding(start = 2.5.dp, end = 2.5.dp),
                     ) {
-                        Spacer(Modifier.width(5.dp))
                         FilledTonalIconButton(
                             onClick = {
                                 shouldPanelsBtmSheetBeVisible.value = true
@@ -177,9 +180,13 @@ fun HomeScreen() {
                                     panelsBtmSheetState.show()
                                 }
                             },
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).size(22.dp),
+                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .size(22.dp),
                         ) {
-                            Icon(imageVector = Icons.Default.ArrowDownward, contentDescription = null)
+                            Icon(
+                                imageVector = Icons.Default.ArrowDownward,
+                                contentDescription = null
+                            )
                         }
                         Spacer(Modifier.width(10.dp))
                         Text(
@@ -187,7 +194,6 @@ fun HomeScreen() {
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.titleLarge,
                             fontSize = 20.sp,
-                            modifier = Modifier.fillMaxWidth(0.8f),
                         )
                     }
                 }
@@ -226,11 +232,11 @@ fun HomeScreen() {
                             fontSize = 18.sp,
                             modifier = Modifier.padding(15.dp),
                             color =
-                            if (pagerState.currentPage == index) {
-                                primaryContentColor
-                            } else {
-                                MaterialTheme.colorScheme.onSurface.copy(0.70f)
-                            },
+                                if (pagerState.currentPage == index) {
+                                    primaryContentColor
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface.copy(0.70f)
+                                },
                         )
                     }
                 }
@@ -343,20 +349,20 @@ fun HomeScreen() {
                 items(panels.value) { panel ->
                     Row(
                         modifier =
-                        Modifier.fillMaxWidth()
-                            .clickable {
-                                homeScreenVM.selectedPanelData = panel
-                                homeScreenVM.updatePanelFolders(homeScreenVM.selectedPanelData!!)
-                                coroutineScope
-                                    .launch {
-                                        panelsBtmSheetState.hide()
-                                    }
-                                    .invokeOnCompletion {
-                                        shouldPanelsBtmSheetBeVisible.value = false
-                                    }
-                            }
-                            .pointerHoverIcon(icon = PointerIcon.Hand)
-                            .padding(5.dp),
+                            Modifier.fillMaxWidth()
+                                .clickable {
+                                    homeScreenVM.selectedPanelData = panel
+                                    homeScreenVM.updatePanelFolders(homeScreenVM.selectedPanelData!!)
+                                    coroutineScope
+                                        .launch {
+                                            panelsBtmSheetState.hide()
+                                        }
+                                        .invokeOnCompletion {
+                                            shouldPanelsBtmSheetBeVisible.value = false
+                                        }
+                                }
+                                .pointerHoverIcon(icon = PointerIcon.Hand)
+                                .padding(5.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         RadioButton(
@@ -378,17 +384,17 @@ fun HomeScreen() {
                         Text(
                             text = panel.panelName,
                             style =
-                            if (homeScreenVM.selectedPanelData!!.localId == panel.localId) {
-                                MaterialTheme.typography.titleLarge
-                            } else {
-                                MaterialTheme.typography.titleSmall
-                            },
+                                if (homeScreenVM.selectedPanelData!!.localId == panel.localId) {
+                                    MaterialTheme.typography.titleLarge
+                                } else {
+                                    MaterialTheme.typography.titleSmall
+                                },
                             color =
-                            if (homeScreenVM.selectedPanelData!!.localId == panel.localId) {
-                                LocalContentColor.current
-                            } else {
-                                LocalContentColor.current.copy(0.85f)
-                            },
+                                if (homeScreenVM.selectedPanelData!!.localId == panel.localId) {
+                                    LocalContentColor.current
+                                } else {
+                                    LocalContentColor.current.copy(0.85f)
+                                },
                         )
                     }
                 }

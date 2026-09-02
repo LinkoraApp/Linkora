@@ -2,7 +2,7 @@ package com.sakethh.linkora.ui.screens.settings.common.composables
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,11 +20,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalUriHandler
@@ -35,6 +39,7 @@ import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.highlightOnFocused
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -42,23 +47,21 @@ fun SettingComponent(settingComponentParam: SettingComponentParam) {
     val uriHandler = LocalUriHandler.current
     Row(
         modifier =
-        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-            .combinedClickable(
-                interactionSource =
-                remember {
-                    MutableInteractionSource()
-                },
-                indication = null,
-                onClick = {
-                    settingComponentParam.onSwitchStateChange(
-                        !settingComponentParam.isSwitchEnabled,
-                    )
-                    settingComponentParam.onAcknowledgmentClick(uriHandler)
-                },
-            )
-            .pressScaleEffect()
-            .fillMaxWidth()
-            .animateContentSize(),
+            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                .highlightOnFocused()
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = {
+                        settingComponentParam.onSwitchStateChange(
+                            !settingComponentParam.isSwitchEnabled,
+                        )
+                        settingComponentParam.onAcknowledgmentClick(uriHandler)
+                    },
+                )
+                .pressScaleEffect()
+                .fillMaxWidth()
+                .animateContentSize(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (settingComponentParam.isIconNeeded && settingComponentParam.icon != null) {
@@ -66,11 +69,11 @@ fun SettingComponent(settingComponentParam: SettingComponentParam) {
             IconButton(
                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
                 colors =
-                if (settingComponentParam.shouldFilledIconBeUsed) {
-                    IconButtonDefaults.filledTonalIconButtonColors()
-                } else {
-                    IconButtonDefaults.iconButtonColors()
-                },
+                    if (settingComponentParam.shouldFilledIconBeUsed) {
+                        IconButtonDefaults.filledTonalIconButtonColors()
+                    } else {
+                        IconButtonDefaults.iconButtonColors()
+                    },
                 onClick = {
                     settingComponentParam.onSwitchStateChange(!settingComponentParam.isSwitchEnabled)
                 },
@@ -79,14 +82,14 @@ fun SettingComponent(settingComponentParam: SettingComponentParam) {
                     imageVector = settingComponentParam.icon,
                     contentDescription = null,
                     modifier =
-                    if (
-                        settingComponentParam.title ==
-                        Localization.Key.TopDecoratorSetting.getLocalizedString()
-                    ) {
-                        Modifier.rotate(180f)
-                    } else {
-                        Modifier
-                    },
+                        if (
+                            settingComponentParam.title ==
+                            Localization.Key.TopDecoratorSetting.getLocalizedString()
+                        ) {
+                            Modifier.rotate(180f)
+                        } else {
+                            Modifier
+                        },
                 )
             }
             Spacer(modifier = Modifier.width(10.dp))
@@ -94,39 +97,12 @@ fun SettingComponent(settingComponentParam: SettingComponentParam) {
         Column {
             Text(
                 text =
-                rememberSaveable(settingComponentParam.title) {
-                    settingComponentParam.title
-                },
+                    rememberSaveable(settingComponentParam.title) {
+                        settingComponentParam.title
+                    },
                 style = MaterialTheme.typography.titleMedium,
                 fontSize = 16.sp,
                 modifier =
-                Modifier.fillMaxWidth(
-                    if (
-                        settingComponentParam.shouldArrowIconBeAppear ||
-                        settingComponentParam.isSwitchNeeded
-                    ) {
-                        0.75f
-                    } else {
-                        1f
-                    },
-                )
-                    .padding(
-                        start = if (settingComponentParam.isIconNeeded) 0.dp else 15.dp,
-                        end = if (!settingComponentParam.isSwitchNeeded) 25.dp else 0.dp,
-                    ),
-                lineHeight = 20.sp,
-            )
-            if (settingComponentParam.doesDescriptionExists) {
-                Text(
-                    text =
-                    rememberSaveable(settingComponentParam.description) {
-                        settingComponentParam.description ?: ""
-                    },
-                    style = MaterialTheme.typography.titleSmall,
-                    fontSize = 14.sp,
-                    lineHeight = 18.sp,
-                    textAlign = TextAlign.Start,
-                    modifier =
                     Modifier.fillMaxWidth(
                         if (
                             settingComponentParam.shouldArrowIconBeAppear ||
@@ -139,9 +115,36 @@ fun SettingComponent(settingComponentParam: SettingComponentParam) {
                     )
                         .padding(
                             start = if (settingComponentParam.isIconNeeded) 0.dp else 15.dp,
-                            top = 10.dp,
-                            end = if (!settingComponentParam.isSwitchNeeded) 25.dp else 15.dp,
+                            end = if (!settingComponentParam.isSwitchNeeded) 25.dp else 0.dp,
                         ),
+                lineHeight = 20.sp,
+            )
+            if (settingComponentParam.doesDescriptionExists) {
+                Text(
+                    text =
+                        rememberSaveable(settingComponentParam.description) {
+                            settingComponentParam.description ?: ""
+                        },
+                    style = MaterialTheme.typography.titleSmall,
+                    fontSize = 14.sp,
+                    lineHeight = 18.sp,
+                    textAlign = TextAlign.Start,
+                    modifier =
+                        Modifier.fillMaxWidth(
+                            if (
+                                settingComponentParam.shouldArrowIconBeAppear ||
+                                settingComponentParam.isSwitchNeeded
+                            ) {
+                                0.75f
+                            } else {
+                                1f
+                            },
+                        )
+                            .padding(
+                                start = if (settingComponentParam.isIconNeeded) 0.dp else 15.dp,
+                                top = 10.dp,
+                                end = if (!settingComponentParam.isSwitchNeeded) 25.dp else 15.dp,
+                            ),
                 )
             }
         }

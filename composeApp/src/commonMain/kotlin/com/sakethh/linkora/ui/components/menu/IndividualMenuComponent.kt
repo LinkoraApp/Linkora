@@ -1,13 +1,14 @@
 package com.sakethh.linkora.ui.components.menu
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DriveFileRenameOutline
@@ -17,19 +18,26 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.ui.utils.pressScaleEffect
+import com.sakethh.linkora.utils.highlightOnFocused
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun IndividualMenuComponent(
     onClick: () -> Unit,
@@ -40,27 +48,32 @@ fun IndividualMenuComponent(
     onRenameClick: () -> Unit = {},
     onDeleteClick: () -> Unit = {},
 ) {
+    val currentOnClick by rememberUpdatedState(onClick)
+
     Row(
         modifier =
-        Modifier.background(
-            if (isSelected && !Platform.Android.onMobile()) {
-                MaterialTheme.colorScheme.primary.copy(0.1f)
-            } else {
-                Color.Transparent
-            },
-        )
-            .pointerHoverIcon(icon = PointerIcon.Hand)
-            .combinedClickable(
-                interactionSource = null,
-                indication = null,
-                onClick = {
-                    onClick()
-                },
-            )
-            .pressScaleEffect()
-            .padding(end = 10.dp)
-            .wrapContentHeight()
-            .fillMaxWidth(),
+            Modifier
+                .focusGroup()
+                .highlightOnFocused()
+                .background(
+                    if (isSelected && !Platform.Android.onMobile()) {
+                        MaterialTheme.colorScheme.primary.copy(0.1f)
+                    } else {
+                        Color.Transparent
+                    },
+                )
+                .pointerHoverIcon(icon = PointerIcon.Hand)
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = {
+                            currentOnClick()
+                        },
+                    )
+                }
+                .pressScaleEffect()
+                .padding(end = 10.dp)
+                .wrapContentHeight()
+                .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {

@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -68,6 +69,7 @@ import com.sakethh.linkora.ui.screens.settings.section.data.LogsScreen
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.fillMaxWidthWithPadding
+import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.rememberLocalizedString
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -355,7 +357,7 @@ fun ServerSetupScreen() {
                         modifier =
                         Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxWidthWithPadding()
-                            .pressScaleEffect(),
+                            .pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
                     ) {
                         Text(
                             text =
@@ -366,7 +368,7 @@ fun ServerSetupScreen() {
                     Spacer(Modifier.height(50.dp))
                 }
             }
-            if (serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully.not()) {
+            if (!serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully) {
                 return@LazyColumn
             }
             item {
@@ -390,7 +392,7 @@ fun ServerSetupScreen() {
                     }
                     Column(
                         modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand).highlightOnFocused()
                             .clickable(
                                 onClick = {
                                     selectedSyncType.value = syncType
@@ -449,7 +451,7 @@ fun ServerSetupScreen() {
                     modifier =
                     Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                         .fillMaxWidthWithPadding()
-                        .pressScaleEffect(),
+                        .pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
                 ) {
                     Text(
                         text = Localization.rememberLocalizedString(Localization.Key.UseThisConnection),
