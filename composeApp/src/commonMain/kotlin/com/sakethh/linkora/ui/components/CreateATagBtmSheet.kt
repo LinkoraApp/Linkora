@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +33,7 @@ import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.bottomNavPaddingAcrossPlatforms
+import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.rememberLocalizedString
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,32 +86,32 @@ fun CreateATagBtmSheet(
                         newTag = it
                     },
                     modifier =
-                    Modifier.fillMaxWidth()
-                        .padding(15.dp)
-                        .focusRequester(focusRequester = focusRequester),
+                        Modifier.fillMaxWidth()
+                            .padding(15.dp)
+                            .focusRequester(focusRequester = focusRequester),
                 )
                 if (showLinearProgressBar) {
                     LinearProgressIndicator(
                         modifier =
-                        Modifier.fillMaxWidth()
-                            .padding(
-                                start = 15.dp,
-                                end = 15.dp,
-                                bottom = if (!Platform.Android.onMobile()) 15.dp else 0.dp,
-                            ),
+                            Modifier.fillMaxWidth()
+                                .padding(
+                                    start = 15.dp,
+                                    end = 15.dp,
+                                    bottom = if (!Platform.Android.onMobile()) 15.dp else 0.dp,
+                                ),
                     )
                     return@Column
                 }
                 OutlinedButton(
                     onClick = onCancel,
                     modifier =
-                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .pressScaleEffect()
-                        .fillMaxWidth()
-                        .padding(
-                            start = 15.dp,
-                            end = 15.dp,
-                        ),
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect()
+                            .fillMaxWidth()
+                            .padding(
+                                start = 15.dp,
+                                end = 15.dp,
+                            )
+                            .highlightOnFocused(shape = ButtonDefaults.shape),
                 ) {
                     Text(
                         text = Localization.Key.Cancel.rememberLocalizedString(),
@@ -118,11 +120,12 @@ fun CreateATagBtmSheet(
                 }
                 Button(
                     modifier =
-                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .fillMaxWidth()
-                        .pressScaleEffect()
-                        .padding(start = 15.dp, end = 15.dp, bottom = 5.dp)
-                        .bottomNavPaddingAcrossPlatforms(),
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .fillMaxWidth()
+                            .pressScaleEffect()
+                            .padding(start = 15.dp, end = 15.dp, bottom = 5.dp)
+                            .bottomNavPaddingAcrossPlatforms()
+                            .highlightOnFocused(shape = ButtonDefaults.shape),
                     onClick = {
                         showLinearProgressBar = true
                         onCreateClick(newTag)

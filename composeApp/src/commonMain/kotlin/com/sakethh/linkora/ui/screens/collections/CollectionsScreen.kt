@@ -73,6 +73,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -99,6 +100,7 @@ import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.platform.PlatformSpecificBackHandler
 import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
+import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.components.SortingIconButton
 import com.sakethh.linkora.ui.components.folder.FolderComponent
 import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
@@ -117,6 +119,7 @@ import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.Utils
 import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.rememberLocalizedString
 import com.sakethh.linkora.utils.supportsWideDisplay
 import kotlinx.coroutines.flow.collectLatest
@@ -420,13 +423,18 @@ fun CollectionsScreen(
                                     val indicatorWidth by animateDpAsState(txtWidth)
                                     Column(
                                         modifier = Modifier.padding(start = 7.5.dp, end = 7.5.dp)
-                                            .clickable(onClick = {
-                                                coroutineScope.launch {
-                                                    collectionPagerState.animateScrollToPage(
-                                                        collectionRef
-                                                    )
-                                                }
-                                            }, interactionSource = null, indication = null)
+                                            .highlightOnFocused()
+                                            .clickable(
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                indication = null,
+                                                onClick = {
+                                                    coroutineScope.launch {
+                                                        collectionPagerState.animateScrollToPage(
+                                                            collectionRef
+                                                        )
+                                                    }
+                                                },
+                                            )
                                             .pointerHoverIcon(PointerIcon.Hand)
                                     ) {
                                         Text(
@@ -852,6 +860,7 @@ private fun DefaultFolderComponent(
     onClick: () -> Unit,
     isSelected: Boolean,
 ) {
+    val localPlatform = LocalPlatform.current
     Card(
         modifier =
             Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
@@ -862,19 +871,17 @@ private fun DefaultFolderComponent(
                 )
                 .wrapContentHeight()
                 .fillMaxWidth()
+                .pressScaleEffect()
+                .highlightOnFocused()
                 .clickable(
-                    interactionSource =
-                        remember {
-                            MutableInteractionSource()
-                        },
+                    interactionSource = remember { MutableInteractionSource() },
                     indication = null,
                     onClick = {
                         onClick()
                     },
                 )
-                .pressScaleEffect()
                 .then(
-                    if (isSelected && supportsWideDisplay()) {
+                    if (isSelected && supportsWideDisplay() && localPlatform !is Platform.Android.TV) {
                         Modifier.border(
                             width = 2.5.dp,
                             color = MaterialTheme.colorScheme.primary,

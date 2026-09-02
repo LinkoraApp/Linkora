@@ -39,9 +39,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -55,6 +59,7 @@ import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
+import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.rememberLocalizedString
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -201,6 +206,7 @@ fun SpecificPanelManagerScreen(specificPanelManagerScreenParam: SpecificPanelMan
                         Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxWidth()
                             .pressScaleEffect()
+                            .highlightOnFocused()
                             .clickable(
                                 onClick = {
                                     specificPanelManagerScreenParam.performAction(
@@ -245,6 +251,7 @@ fun SpecificPanelManagerScreen(specificPanelManagerScreenParam: SpecificPanelMan
                         verticalAlignment = Alignment.CenterVertically,
                         modifier =
                         Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .highlightOnFocused()
                             .fillMaxWidth()
                             .pressScaleEffect()
                             .clickable(

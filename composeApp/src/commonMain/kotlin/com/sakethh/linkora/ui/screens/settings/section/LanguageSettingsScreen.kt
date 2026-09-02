@@ -24,13 +24,16 @@ import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.DownloadForOffline
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -40,8 +43,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -60,6 +65,7 @@ import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.ui.utils.rememberDeserializableMutableObject
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
+import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.inDoubleQuotes
 import com.sakethh.linkora.utils.rememberLocalizedString
 
@@ -68,7 +74,8 @@ import com.sakethh.linkora.utils.rememberLocalizedString
 fun LanguageSettingsScreen() {
     val languageSettingsScreenVM: LanguageSettingsScreenVM = linkoraViewModel()
     val preferences by languageSettingsScreenVM.preferencesAsFlow.collectAsStateWithLifecycle()
-    val availableLanguages = languageSettingsScreenVM.availableLanguages.collectAsStateWithLifecycle()
+    val availableLanguages =
+        languageSettingsScreenVM.availableLanguages.collectAsStateWithLifecycle()
     val isLanguageSelectionBtmSheetVisible = rememberSaveable {
         mutableStateOf(false)
     }
@@ -91,8 +98,8 @@ fun LanguageSettingsScreen() {
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 modifier =
-                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                    .padding(start = 15.dp, end = 15.dp),
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        .padding(start = 15.dp, end = 15.dp).highlightOnFocused(shape = FloatingActionButtonDefaults.shape),
                 onClick = {
                     languageSettingsScreenVM.fetchRemoteLanguages()
                 },
@@ -109,10 +116,10 @@ fun LanguageSettingsScreen() {
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
             modifier =
-            Modifier.fillMaxSize()
-                .addEdgeToEdgeScaffoldPadding(paddingValues)
-                .padding(start = 15.dp, end = 15.dp)
-                .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
+                Modifier.fillMaxSize()
+                    .addEdgeToEdgeScaffoldPadding(paddingValues)
+                    .padding(start = 15.dp, end = 15.dp)
+                    .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
             verticalArrangement = Arrangement.spacedBy(15.dp),
         ) {
             item {
@@ -140,10 +147,10 @@ fun LanguageSettingsScreen() {
                     if (preferences.preferredAppLanguageCode != Constants.DEFAULT_APP_LANGUAGE_CODE) {
                         FilledTonalButton(
                             modifier =
-                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                .fillMaxWidth()
-                                .padding(top = 15.dp, bottom = 15.dp)
-                                .pressScaleEffect(),
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .fillMaxWidth()
+                                    .padding(top = 15.dp, bottom = 15.dp)
+                                    .pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
                             onClick = {
                                 isLanguageSelectionBtmSheetVisible.value = false
                                 Localization.loadDefaultValues(preferences)
@@ -177,7 +184,7 @@ fun LanguageSettingsScreen() {
             }
 
             items(availableLanguages.value) {
-                LanguageUIComponent(
+                LanguageComponent(
                     onClick = {
                         languageSettingsScreenVM.doesLanguagePackExists(
                             doesRemoteLanguagePackExistsLocallyForTheSelectedLanguage,
@@ -190,22 +197,23 @@ fun LanguageSettingsScreen() {
                                 localizedStringsCount = it.localizedStringsCount,
                                 contributionLink = it.contributionLink,
                             )
-                        isLanguageSelectionBtmSheetVisible.value = !isLanguageSelectionBtmSheetVisible.value
+                        isLanguageSelectionBtmSheetVisible.value =
+                            !isLanguageSelectionBtmSheetVisible.value
                     },
                     text = it.languageName,
                     isRemoteLanguage = true,
                     localizationStatus =
-                    Localization.Key.StringsLocalizedStatus.rememberLocalizedString()
-                        .replace(
-                            LinkoraPlaceHolder.First.value,
-                            it.localizedStringsCount.toString(),
-                        )
-                        .replace(
-                            LinkoraPlaceHolder.Second.value,
-                            Localization.Key.entries.size.toString(),
-                        ),
+                        Localization.Key.StringsLocalizedStatus.rememberLocalizedString()
+                            .replace(
+                                LinkoraPlaceHolder.First.value,
+                                it.localizedStringsCount.toString(),
+                            )
+                            .replace(
+                                LinkoraPlaceHolder.Second.value,
+                                Localization.Key.entries.size.toString(),
+                            ),
                     localizationStatusFraction =
-                    it.localizedStringsCount.toFloat() / Localization.Key.entries.size.toFloat(),
+                        it.localizedStringsCount.toFloat() / Localization.Key.entries.size.toFloat(),
                 )
                 Spacer(modifier = Modifier.height(15.dp))
             }
@@ -232,28 +240,27 @@ fun LanguageSettingsScreen() {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .clickable(
-                                onClick = {
-                                    isLanguageSelectionBtmSheetVisible.value = false
-                                    Localization.loadLocalizedStrings(
-                                        languageCode = selectedLanguage.value.languageCode,
-                                        languageName = selectedLanguage.value.languageName,
-                                        preferences = preferences,
-                                    )
-                                },
-                                indication = null,
-                                interactionSource =
-                                remember {
-                                    MutableInteractionSource()
-                                },
-                            )
-                            .pressScaleEffect()
-                            .fillMaxWidth()
-                            .padding(top = 7.5.dp, bottom = 7.5.dp, start = 10.dp, end = 15.dp),
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .highlightOnFocused()
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                    onClick = {
+                                        isLanguageSelectionBtmSheetVisible.value = false
+                                        Localization.loadLocalizedStrings(
+                                            languageCode = selectedLanguage.value.languageCode,
+                                            languageName = selectedLanguage.value.languageName,
+                                            preferences = preferences,
+                                        )
+                                    },
+                                )
+                                .pressScaleEffect()
+                                .fillMaxWidth()
+                                .padding(top = 7.5.dp, bottom = 7.5.dp, start = 10.dp, end = 15.dp),
                     ) {
                         FilledTonalIconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(),
+                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .pressScaleEffect(),
                             onClick = {
                                 isLanguageSelectionBtmSheetVisible.value = false
                                 Localization.loadLocalizedStrings(
@@ -273,30 +280,28 @@ fun LanguageSettingsScreen() {
                         )
                     }
                 }
-
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier =
-                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .clickable(
-                            onClick = {
-                                languageSettingsScreenVM.downloadALanguageStringsPack(
-                                    selectedLanguage.value,
-                                )
-                                isLanguageSelectionBtmSheetVisible.value = false
-                            },
-                            indication = null,
-                            interactionSource =
-                            remember {
-                                MutableInteractionSource()
-                            },
-                        )
-                        .pressScaleEffect()
-                        .fillMaxWidth()
-                        .padding(top = 7.5.dp, bottom = 7.5.dp, start = 10.dp, end = 15.dp),
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .highlightOnFocused()
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = {
+                                    languageSettingsScreenVM.downloadALanguageStringsPack(
+                                        selectedLanguage.value,
+                                    )
+                                    isLanguageSelectionBtmSheetVisible.value = false
+                                },
+                            )
+                            .pressScaleEffect()
+                            .fillMaxWidth()
+                            .padding(top = 7.5.dp, bottom = 7.5.dp, start = 10.dp, end = 15.dp),
                 ) {
                     FilledTonalIconButton(
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(),
+                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .pressScaleEffect(),
                         onClick = {
                             languageSettingsScreenVM.downloadALanguageStringsPack(selectedLanguage.value)
                             isLanguageSelectionBtmSheetVisible.value = false
@@ -310,12 +315,12 @@ fun LanguageSettingsScreen() {
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
                         text =
-                        if (doesRemoteLanguagePackExistsLocallyForTheSelectedLanguage.value) {
-                            Localization.Key.UpdateLanguageStrings
-                        } else {
-                            Localization.Key.DownloadLanguageStrings
-                        }
-                            .rememberLocalizedString(),
+                            if (doesRemoteLanguagePackExistsLocallyForTheSelectedLanguage.value) {
+                                Localization.Key.UpdateLanguageStrings
+                            } else {
+                                Localization.Key.DownloadLanguageStrings
+                            }
+                                .rememberLocalizedString(),
                         style = MaterialTheme.typography.titleSmall,
                         fontSize = 16.sp,
                     )
@@ -324,24 +329,26 @@ fun LanguageSettingsScreen() {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .clickable(
-                                onClick = {
-                                    languageSettingsScreenVM.deleteALanguagePack(selectedLanguage.value)
-                                    isLanguageSelectionBtmSheetVisible.value = false
-                                },
-                                indication = null,
-                                interactionSource =
-                                remember {
-                                    MutableInteractionSource()
-                                },
-                            )
-                            .pressScaleEffect()
-                            .fillMaxWidth()
-                            .padding(top = 7.5.dp, bottom = 7.5.dp, start = 10.dp, end = 15.dp),
+                            Modifier
+                                .highlightOnFocused()
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                    onClick = {
+                                        languageSettingsScreenVM.deleteALanguagePack(
+                                            selectedLanguage.value
+                                        )
+                                        isLanguageSelectionBtmSheetVisible.value = false
+                                    },
+                                )
+                                .pointerHoverIcon(icon = PointerIcon.Hand)
+                                .pressScaleEffect()
+                                .fillMaxWidth()
+                                .padding(top = 7.5.dp, bottom = 7.5.dp, start = 10.dp, end = 15.dp),
                     ) {
                         FilledTonalIconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(),
+                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .pressScaleEffect(),
                             onClick = {
                                 languageSettingsScreenVM.deleteALanguagePack(selectedLanguage.value)
                                 isLanguageSelectionBtmSheetVisible.value = false
@@ -365,23 +372,23 @@ fun LanguageSettingsScreen() {
     }
     LoadingDialog(
         shouldDialogBoxAppear =
-        languageSettingsScreenVM.languageSettingsState.value.fetchingLanguageInfo ||
-            languageSettingsScreenVM.languageSettingsState.value.fetchingStrings,
+            languageSettingsScreenVM.languageSettingsState.value.fetchingLanguageInfo ||
+                    languageSettingsScreenVM.languageSettingsState.value.fetchingStrings,
         text =
-        if (languageSettingsScreenVM.languageSettingsState.value.fetchingLanguageInfo) {
-            Localization.Key.FetchingAvailableLanguages.rememberLocalizedString()
-        } else {
-            Localization.Key.DownloadingStrings.rememberLocalizedString()
-                .replace(
-                    LinkoraPlaceHolder.First.value,
-                    selectedLanguage.value.languageName.inDoubleQuotes(),
-                )
-        },
+            if (languageSettingsScreenVM.languageSettingsState.value.fetchingLanguageInfo) {
+                Localization.Key.FetchingAvailableLanguages.rememberLocalizedString()
+            } else {
+                Localization.Key.DownloadingStrings.rememberLocalizedString()
+                    .replace(
+                        LinkoraPlaceHolder.First.value,
+                        selectedLanguage.value.languageName.inDoubleQuotes(),
+                    )
+            },
     )
 }
 
 @Composable
-private fun LanguageUIComponent(
+private fun LanguageComponent(
     onClick: () -> Unit,
     text: String,
     isRemoteLanguage: Boolean,
@@ -391,11 +398,9 @@ private fun LanguageUIComponent(
     Row(
         Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
             .fillMaxWidth()
+            .highlightOnFocused()
             .clickable(
-                interactionSource =
-                remember {
-                    MutableInteractionSource()
-                },
+                interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = {
                     onClick()

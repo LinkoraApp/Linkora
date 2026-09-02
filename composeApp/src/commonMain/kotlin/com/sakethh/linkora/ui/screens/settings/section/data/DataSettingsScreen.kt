@@ -6,6 +6,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoFixHigh
@@ -51,6 +53,7 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -65,6 +68,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -76,6 +80,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -113,6 +118,7 @@ import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.asLocalizedString
 import com.sakethh.linkora.utils.currentSavedServerConfig
 import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.isServerConfigured
 import com.sakethh.linkora.utils.lastSyncedLocally
 import com.sakethh.linkora.utils.rememberLocalizedString
@@ -169,7 +175,7 @@ fun DataSettingsScreen() {
     }
 
     val refreshAllLinksState by dataSettingsScreenVM.refreshAllLinksState.collectAsStateWithLifecycle()
-
+    val isOnTV = Platform.Android.onTV()
     SettingsSectionScaffold(
         topAppBarText = Navigation.Settings.DataSettingsScreen.toString(),
     ) { paddingValues, topAppBarScrollBehaviour ->
@@ -351,25 +357,27 @@ fun DataSettingsScreen() {
                         },
                         textStyle = MaterialTheme.typography.titleSmall,
                         trailingIcon = {
-                            FilledTonalIconButton(
-                                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                    .pressScaleEffect().padding(end = 5.dp),
-                                onClick = {
-                                    dataSettingsScreenVM.changeExportLocation(
-                                        exportLocation = exportLocation.value,
-                                        platform = platform,
-                                        exportLocationType = ExportLocationType.EXPORT,
-                                    )
-                                },
-                            ) {
-                                Icon(
-                                    imageVector = if (platform is Platform.Android) {
-                                        Icons.Default.FolderOpen
-                                    } else {
-                                        Icons.Default.Save
+                            if (!isOnTV) {
+                                FilledTonalIconButton(
+                                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                        .pressScaleEffect().padding(end = 5.dp),
+                                    onClick = {
+                                        dataSettingsScreenVM.changeExportLocation(
+                                            exportLocation = exportLocation.value,
+                                            platform = platform,
+                                            exportLocationType = ExportLocationType.EXPORT,
+                                        )
                                     },
-                                    contentDescription = null,
-                                )
+                                ) {
+                                    Icon(
+                                        imageVector = if (platform is Platform.Android) {
+                                            Icons.Default.FolderOpen
+                                        } else {
+                                            Icons.Default.Save
+                                        },
+                                        contentDescription = null,
+                                    )
+                                }
                             }
                         },
                         readOnly = platform is Platform.Android,
@@ -384,7 +392,17 @@ fun DataSettingsScreen() {
                         onValueChange = {
                             exportLocation.value = it
                         },
-                        modifier = Modifier.padding(start = 15.dp, end = 15.dp).fillMaxWidth(),
+                        modifier = Modifier.padding(start = 15.dp, end = 15.dp).fillMaxWidth()
+                            .highlightOnFocused()
+                            .clickable(indication = null, interactionSource = null, onClick = {
+                                if (isOnTV) {
+                                    dataSettingsScreenVM.changeExportLocation(
+                                        exportLocation = exportLocation.value,
+                                        platform = platform,
+                                        exportLocationType = ExportLocationType.EXPORT,
+                                    )
+                                }
+                            }),
                     )
                 }
 
@@ -836,16 +854,18 @@ fun DataSettingsScreen() {
                                             refreshLinkType.name == preferences.selectedLinkRefreshType.name
                                         Row(
                                             modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
-                                                .fillMaxWidth().clickable(
+                                                .highlightOnFocused()
+                                                .clickable(
+                                                    interactionSource = remember { MutableInteractionSource() },
+                                                    indication = null,
                                                     onClick = {
                                                         dataSettingsScreenVM.changeSettingPreferenceValue(
                                                             preferenceKey = AppPreferences.REFRESH_LINK_TYPE,
                                                             newValue = refreshLinkType.name,
                                                         )
                                                     },
-                                                    indication = null,
-                                                    interactionSource = null,
-                                                ).pressScaleEffect(),
+                                                )
+                                                .fillMaxWidth().pressScaleEffect(),
                                             verticalAlignment = Alignment.CenterVertically,
                                         ) {
                                             RadioButton(
@@ -894,24 +914,37 @@ fun DataSettingsScreen() {
                                         Spacer(modifier = Modifier.height(8.dp))
                                     }
                                     TextField(
-                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                        keyboardActions = KeyboardActions(onDone = {
+                                            dataSettingsScreenVM.changeSettingPreferenceValue(
+                                                preferenceKey = AppPreferences.MAX_CONCURRENT_REFRESH_COUNT,
+                                                newValue = maxConcurrentRefreshCount,
+                                            )
+                                            localFocusManager.clearFocus(force = true)
+                                        }),
+                                        keyboardOptions = KeyboardOptions(
+                                            keyboardType = KeyboardType.Number,
+                                            imeAction = ImeAction.Done
+                                        ),
                                         textStyle = MaterialTheme.typography.titleSmall,
                                         trailingIcon = {
-                                            FilledTonalIconButton(
-                                                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                                    .pressScaleEffect().padding(end = 5.dp),
-                                                onClick = {
-                                                    dataSettingsScreenVM.changeSettingPreferenceValue(
-                                                        preferenceKey = AppPreferences.MAX_CONCURRENT_REFRESH_COUNT,
-                                                        newValue = maxConcurrentRefreshCount,
+                                            if (!Platform.Android.onTV()) {
+                                                FilledTonalIconButton(
+                                                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                                        .pressScaleEffect().padding(end = 5.dp)
+                                                        .highlightOnFocused(shape = IconButtonDefaults.filledShape),
+                                                    onClick = {
+                                                        dataSettingsScreenVM.changeSettingPreferenceValue(
+                                                            preferenceKey = AppPreferences.MAX_CONCURRENT_REFRESH_COUNT,
+                                                            newValue = maxConcurrentRefreshCount,
+                                                        )
+                                                        localFocusManager.clearFocus(force = true)
+                                                    },
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Save,
+                                                        contentDescription = null,
                                                     )
-                                                    localFocusManager.clearFocus(force = true)
-                                                },
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Save,
-                                                    contentDescription = null,
-                                                )
+                                                }
                                             }
                                         },
                                         label = {

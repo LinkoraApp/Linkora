@@ -3,6 +3,7 @@ package com.sakethh.linkora.ui.components
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -16,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.Localization
 import com.sakethh.linkora.ui.utils.pressScaleEffect
+import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.rememberLocalizedString
 import com.sakethh.linkora.utils.replaceFirstPlaceHolderWith
 
@@ -35,7 +37,7 @@ fun DeleteAPanelDialogBox(deleteAPanelDialogBoxParam: DeleteAPanelDialogBoxParam
             confirmButton = {
                 if (isInProgress.value) return@AlertDialog
                 Button(
-                    modifier = Modifier.fillMaxWidth().pressScaleEffect(),
+                    modifier = Modifier.fillMaxWidth().pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
                     onClick = {
                         isInProgress.value = true
                         deleteAPanelDialogBoxParam.onDeleteClick({
@@ -52,9 +54,9 @@ fun DeleteAPanelDialogBox(deleteAPanelDialogBoxParam: DeleteAPanelDialogBoxParam
                 }
             },
             dismissButton = {
-                if (isInProgress.value.not()) {
+                if (!isInProgress.value) {
                     OutlinedButton(
-                        modifier = Modifier.fillMaxWidth().pressScaleEffect(),
+                        modifier = Modifier.fillMaxWidth().pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
                         onClick = {
                             deleteAPanelDialogBoxParam.isDialogBoxVisible.value = false
                         },
@@ -91,7 +93,7 @@ fun DeleteAPanelDialogBox(deleteAPanelDialogBoxParam: DeleteAPanelDialogBoxParam
                 )
             },
             onDismissRequest = {
-                if (isInProgress.value.not()) {
+                if (!isInProgress.value) {
                     deleteAPanelDialogBoxParam.isDialogBoxVisible.value = false
                 }
             },

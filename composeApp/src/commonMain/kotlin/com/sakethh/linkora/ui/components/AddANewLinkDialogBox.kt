@@ -7,6 +7,10 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -96,6 +100,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -134,6 +139,7 @@ import com.sakethh.linkora.utils.defaultFolderIds
 import com.sakethh.linkora.utils.defaultImpLinksFolder
 import com.sakethh.linkora.utils.defaultSavedLinksFolder
 import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.pushSnackbarOnFailure
 import com.sakethh.linkora.utils.rememberLocalizedString
 import com.sakethh.linkora.utils.replaceFirstPlaceHolderWith
@@ -200,11 +206,11 @@ fun AddANewLinkDialogBox(
         Surface(
             modifier = Modifier.fillMaxSize(),
             color =
-            if (Platform.Android.onMobile()) {
-                BottomSheetDefaults.ContainerColor
-            } else {
-                MaterialTheme.colorScheme.surface
-            },
+                if (Platform.Android.onMobile()) {
+                    BottomSheetDefaults.ContainerColor
+                } else {
+                    MaterialTheme.colorScheme.surface
+                },
         ) {
             if (Platform.Android.onMobile()) {
                 Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
@@ -258,7 +264,7 @@ fun AddANewLinkDialogBox(
                             noteTextFieldValue = noteTextFieldValue,
                             isAutoDetectTitleEnabled = isAutoDetectTitleEnabled,
                             isForceSaveWithoutFetchingMetaDataEnabled =
-                            isForceSaveWithoutFetchingMetaDataEnabled,
+                                isForceSaveWithoutFetchingMetaDataEnabled,
                             currentFolder = addNewLinkDialogParams.currentFolder,
                             imgUrlTextFieldValue = imgUrlTextFieldValue,
                             preferences = preferences,
@@ -266,10 +272,10 @@ fun AddANewLinkDialogBox(
                         )
                         VerticalDivider(
                             modifier =
-                            Modifier.padding(
-                                start = 20.dp,
-                                end = 20.dp,
-                            ),
+                                Modifier.padding(
+                                    start = 20.dp,
+                                    end = 20.dp,
+                                ),
                             color = LocalContentColor.current.copy(0.01f),
                             thickness = 1.dp,
                         )
@@ -281,7 +287,7 @@ fun AddANewLinkDialogBox(
                             noteTextFieldValue = noteTextFieldValue,
                             isAutoDetectTitleEnabled = isAutoDetectTitleEnabled,
                             isForceSaveWithoutFetchingMetaDataEnabled =
-                            isForceSaveWithoutFetchingMetaDataEnabled,
+                                isForceSaveWithoutFetchingMetaDataEnabled,
                             isDropDownMenuIconClicked = isDropDownMenuIconClicked,
                             showChildFoldersBtmSheet = isChildFoldersBottomSheetExpanded,
                             childFoldersBtmSheetState = btmSheetState,
@@ -301,9 +307,9 @@ fun AddANewLinkDialogBox(
                     if (!isDataExtractingForTheLink.value) {
                         IconButton(
                             modifier =
-                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                .align(Alignment.TopEnd)
-                                .padding(15.dp),
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .align(Alignment.TopEnd)
+                                    .padding(15.dp),
                             onClick = addNewLinkDialogParams.onDismiss,
                         ) {
                             Icon(
@@ -380,41 +386,41 @@ private fun TopPartOfAddANewLinkDialogBox(
     }
     Column(
         modifier =
-        Modifier.fillMaxWidth(if (Platform.Android.onMobile()) 1f else 0.5f)
-            .then(if (Platform.Android.onMobile()) Modifier else Modifier.fillMaxHeight()),
+            Modifier.fillMaxWidth(if (Platform.Android.onMobile()) 1f else 0.5f)
+                .then(if (Platform.Android.onMobile()) Modifier else Modifier.fillMaxHeight()),
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
             color = AlertDialogDefaults.titleContentColor,
             text =
-            when (currentFolder) {
-                null -> Localization.rememberLocalizedString(Localization.Key.AddANewLink)
+                when (currentFolder) {
+                    null -> Localization.rememberLocalizedString(Localization.Key.AddANewLink)
 
-                else ->
-                    Localization.rememberLocalizedString(Localization.Key.AddANewLinkIn)
-                        .replaceFirstPlaceHolderWith(currentFolder.name)
-            },
+                    else ->
+                        Localization.rememberLocalizedString(Localization.Key.AddANewLinkIn)
+                            .replaceFirstPlaceHolderWith(currentFolder.name)
+                },
             style = MaterialTheme.typography.titleMedium,
             fontSize = 22.sp,
             modifier =
-            Modifier.padding(
-                start = 20.dp,
-                top = 30.dp,
-                end = 20.dp,
-            ),
+                Modifier.padding(
+                    start = 20.dp,
+                    top = 30.dp,
+                    end = 20.dp,
+                ),
             lineHeight = 28.sp,
         )
 
         OutlinedTextField(
             readOnly = isDataExtractingForTheLink,
             modifier =
-            Modifier.padding(
-                start = 20.dp,
-                end = 20.dp,
-                top = 20.dp,
-            )
-                .fillMaxWidth()
-                .focusRequester(focusRequester),
+                Modifier.padding(
+                    start = 20.dp,
+                    end = 20.dp,
+                    top = 20.dp,
+                )
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester),
             label = {
                 Text(
                     text = Localization.rememberLocalizedString(Localization.Key.LinkAddress),
@@ -437,12 +443,12 @@ private fun TopPartOfAddANewLinkDialogBox(
                 OutlinedTextField(
                     readOnly = isDataExtractingForTheLink,
                     modifier =
-                    Modifier.padding(
-                        start = 20.dp,
-                        end = 20.dp,
-                        top = 15.dp,
-                    )
-                        .fillMaxWidth(),
+                        Modifier.padding(
+                            start = 20.dp,
+                            end = 20.dp,
+                            top = 15.dp,
+                        )
+                            .fillMaxWidth(),
                     label = {
                         Text(
                             text = Localization.rememberLocalizedString(Localization.Key.TitleForTheLink),
@@ -463,12 +469,12 @@ private fun TopPartOfAddANewLinkDialogBox(
         OutlinedTextField(
             readOnly = isDataExtractingForTheLink,
             modifier =
-            Modifier.padding(
-                start = 20.dp,
-                end = 20.dp,
-                top = 15.dp,
-            )
-                .fillMaxWidth(),
+                Modifier.padding(
+                    start = 20.dp,
+                    end = 20.dp,
+                    top = 15.dp,
+                )
+                    .fillMaxWidth(),
             label = {
                 Text(
                     text = Localization.rememberLocalizedString(Localization.Key.NoteForSavingTheLink),
@@ -487,12 +493,12 @@ private fun TopPartOfAddANewLinkDialogBox(
         OutlinedTextField(
             readOnly = isDataExtractingForTheLink,
             modifier =
-            Modifier.padding(
-                start = 20.dp,
-                end = 20.dp,
-                top = 15.dp,
-            )
-                .fillMaxWidth(),
+                Modifier.padding(
+                    start = 20.dp,
+                    end = 20.dp,
+                    top = 15.dp,
+                )
+                    .fillMaxWidth(),
             label = {
                 Text(
                     text = Localization.Key.ImageURLForLinkLabel.rememberLocalizedString(),
@@ -541,20 +547,20 @@ private fun TopPartOfAddANewLinkDialogBox(
             ) {
                 Row(
                     modifier =
-                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .padding(
-                            top = if (preferences.isAutoDetectTitleForLinksEnabled) 0.dp else 10.dp,
-                        )
-                        .fillMaxWidth()
-                        .clickable {
-                            if (!isDataExtractingForTheLink) {
-                                isAutoDetectTitleEnabled.value = !isAutoDetectTitleEnabled.value
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .padding(
+                                top = if (preferences.isAutoDetectTitleForLinksEnabled) 0.dp else 10.dp,
+                            )
+                            .fillMaxWidth()
+                            .clickable {
+                                if (!isDataExtractingForTheLink) {
+                                    isAutoDetectTitleEnabled.value = !isAutoDetectTitleEnabled.value
+                                }
                             }
-                        }
-                        .padding(
-                            start = 10.dp,
-                            end = 20.dp,
-                        ),
+                            .padding(
+                                start = 10.dp,
+                                end = 20.dp,
+                            ),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Checkbox(
@@ -583,19 +589,19 @@ private fun TopPartOfAddANewLinkDialogBox(
         ) {
             Row(
                 modifier =
-                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                    .padding(top = 10.dp)
-                    .fillMaxWidth()
-                    .clickable {
-                        if (!isDataExtractingForTheLink) {
-                            isForceSaveWithoutFetchingMetaDataEnabled.value =
-                                !isForceSaveWithoutFetchingMetaDataEnabled.value
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        .padding(top = 10.dp)
+                        .fillMaxWidth()
+                        .clickable {
+                            if (!isDataExtractingForTheLink) {
+                                isForceSaveWithoutFetchingMetaDataEnabled.value =
+                                    !isForceSaveWithoutFetchingMetaDataEnabled.value
+                            }
                         }
-                    }
-                    .padding(
-                        start = 10.dp,
-                        end = 20.dp,
-                    ),
+                        .padding(
+                            start = 10.dp,
+                            end = 20.dp,
+                        ),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Checkbox(
@@ -610,9 +616,9 @@ private fun TopPartOfAddANewLinkDialogBox(
                 )
                 Text(
                     text =
-                    Localization.rememberLocalizedString(
-                        Localization.Key.ForceSaveWithoutRetrievingMetadata,
-                    ),
+                        Localization.rememberLocalizedString(
+                            Localization.Key.ForceSaveWithoutRetrievingMetadata,
+                        ),
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 16.sp,
                 )
@@ -727,31 +733,31 @@ private fun BottomPartOfAddANewLinkDialogBox(
     }
     Column(
         modifier =
-        Modifier.fillMaxSize()
-            .then(
-                if (Platform.Android.onMobile()) {
-                    Modifier
-                } else {
-                    Modifier.verticalScroll(rememberScrollState())
-                },
-            ),
+            Modifier.fillMaxSize()
+                .then(
+                    if (Platform.Android.onMobile()) {
+                        Modifier
+                    } else {
+                        Modifier.verticalScroll(rememberScrollState())
+                    },
+                ),
         verticalArrangement =
-        if (Platform.Android.onMobile()) Arrangement.Top else Arrangement.Center,
+            if (Platform.Android.onMobile()) Arrangement.Top else Arrangement.Center,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier =
-            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                .fillMaxWidth()
-                .clickable(
-                    onClick = {
-                        AddANewLinkDialogBox.updateTagSectionVisibility(
-                            show = !preferences.showTagsInAddNewLinkDialogBox,
-                        )
-                    },
-                    indication = null,
-                    interactionSource = null,
-                ),
+                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                    .fillMaxWidth().highlightOnFocused()
+                    .clickable(
+                        onClick = {
+                            AddANewLinkDialogBox.updateTagSectionVisibility(
+                                show = !preferences.showTagsInAddNewLinkDialogBox,
+                            )
+                        },
+                        indication = null,
+                        interactionSource = null,
+                    ),
         ) {
             IconButton(
                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(start = 5.dp),
@@ -763,11 +769,11 @@ private fun BottomPartOfAddANewLinkDialogBox(
             ) {
                 Icon(
                     imageVector =
-                    if (preferences.showTagsInAddNewLinkDialogBox) {
-                        Icons.Default.KeyboardArrowUp
-                    } else {
-                        Icons.Default.KeyboardArrowDown
-                    },
+                        if (preferences.showTagsInAddNewLinkDialogBox) {
+                            Icons.Default.KeyboardArrowUp
+                        } else {
+                            Icons.Default.KeyboardArrowDown
+                        },
                     contentDescription = null,
                 )
             }
@@ -827,13 +833,14 @@ private fun BottomPartOfAddANewLinkDialogBox(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp),
+                modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp)
+                    .highlightOnFocused(shape = ButtonDefaults.shape),
             ) {
                 FilledTonalButton(
                     modifier =
-                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .pressScaleEffect()
-                        .fillMaxWidth(0.8f),
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .pressScaleEffect()
+                            .fillMaxWidth(0.8f),
                     onClick = {
                         if (!isDataExtractingForTheLink.value) {
                             isDropDownMenuIconClicked.value = !isDropDownMenuIconClicked.value
@@ -864,11 +871,11 @@ private fun BottomPartOfAddANewLinkDialogBox(
                 ) {
                     Icon(
                         imageVector =
-                        if (isDropDownMenuIconClicked.value) {
-                            Icons.Default.KeyboardArrowUp
-                        } else {
-                            Icons.Default.KeyboardArrowDown
-                        },
+                            if (isDropDownMenuIconClicked.value) {
+                                Icons.Default.KeyboardArrowUp
+                            } else {
+                                Icons.Default.KeyboardArrowDown
+                            },
                         contentDescription = null,
                     )
                 }
@@ -880,17 +887,17 @@ private fun BottomPartOfAddANewLinkDialogBox(
                 LazyColumn(
                     state = lazyColumnState,
                     modifier =
-                    Modifier.padding(top = 15.dp, start = 15.dp, end = 15.dp)
-                        .heightIn(max = 350.dp)
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(25.dp))
-                        .background(MaterialTheme.colorScheme.surface)
-                        .border(
-                            width = 1.5.dp,
-                            color = MaterialTheme.colorScheme.outline.copy(0.15f),
-                            shape = RoundedCornerShape(25.dp),
-                        )
-                        .padding(start = 15.dp, end = 15.dp),
+                        Modifier.padding(top = 15.dp, start = 15.dp, end = 15.dp)
+                            .heightIn(max = 350.dp)
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(25.dp))
+                            .background(MaterialTheme.colorScheme.surface)
+                            .border(
+                                width = 1.5.dp,
+                                color = MaterialTheme.colorScheme.outline.copy(0.15f),
+                                shape = RoundedCornerShape(25.dp),
+                            )
+                            .padding(start = 15.dp, end = 15.dp),
                 ) {
                     item {
                         SelectableFolderUIComponent(
@@ -901,7 +908,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                             folderName = Localization.rememberLocalizedString(Localization.Key.SavedLinks),
                             imageVector = Icons.Outlined.Link,
                             isComponentSelected =
-                            selectedFolderForSavingTheLink.value.localId == Constants.SAVED_LINKS_ID,
+                                selectedFolderForSavingTheLink.value.localId == Constants.SAVED_LINKS_ID,
                         )
                     }
                     item {
@@ -913,7 +920,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                             folderName = Localization.rememberLocalizedString(Localization.Key.ImportantLinks),
                             imageVector = Icons.Outlined.StarOutline,
                             isComponentSelected =
-                            selectedFolderForSavingTheLink.value.localId == Constants.IMPORTANT_LINKS_ID,
+                                selectedFolderForSavingTheLink.value.localId == Constants.IMPORTANT_LINKS_ID,
                         )
                     }
                     rootFolders.data.forEach { (_, folders) ->
@@ -926,9 +933,9 @@ private fun BottomPartOfAddANewLinkDialogBox(
                                     selectedFolderForSavingTheLink.value = it
                                 },
                                 isCurrentFolderSelected =
-                                rememberSaveable(it.localId == selectedFolderForSavingTheLink.value.localId) {
-                                    mutableStateOf(it.localId == selectedFolderForSavingTheLink.value.localId)
-                                },
+                                    rememberSaveable(it.localId == selectedFolderForSavingTheLink.value.localId) {
+                                        mutableStateOf(it.localId == selectedFolderForSavingTheLink.value.localId)
+                                    },
                                 folderName = it.name,
                                 onSubDirectoryIconClick = {
                                     AddANewLinkDialogBox.changeParentFolderId(it.localId)
@@ -954,8 +961,8 @@ private fun BottomPartOfAddANewLinkDialogBox(
                         item {
                             Box(
                                 modifier =
-                                Modifier.padding(top = 15.dp, bottom = 15.dp).fillMaxWidth()
-                                    .height(50.dp),
+                                    Modifier.padding(top = 15.dp, bottom = 15.dp).fillMaxWidth()
+                                        .height(50.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 ContainedLoadingIndicator()
@@ -975,14 +982,14 @@ private fun BottomPartOfAddANewLinkDialogBox(
         if (currentFolder == null) {
             Button(
                 modifier =
-                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                    .padding(
-                        end = 20.dp,
-                        start = 20.dp,
-                        top = if (isDropDownMenuIconClicked.value) 0.dp else 5.dp,
-                    )
-                    .fillMaxWidth()
-                    .pressScaleEffect(),
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        .padding(
+                            end = 20.dp,
+                            start = 20.dp,
+                            top = if (isDropDownMenuIconClicked.value) 0.dp else 5.dp,
+                        )
+                        .fillMaxWidth()
+                        .pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
                 onClick = {
                     addTheFolderInRoot.value = false
                     showNewFolderDialog.value = true
@@ -1002,25 +1009,25 @@ private fun BottomPartOfAddANewLinkDialogBox(
         }
         HorizontalDivider(
             modifier =
-            Modifier.fillMaxWidth()
-                .padding(start = 25.dp, end = 25.dp, top = 10.dp, bottom = 10.dp),
+                Modifier.fillMaxWidth()
+                    .padding(start = 25.dp, end = 25.dp, top = 10.dp, bottom = 10.dp),
             color = DividerDefaults.color.copy(0.25f),
         )
         OutlinedButton(
             colors = ButtonDefaults.outlinedButtonColors(),
             border =
-            BorderStroke(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.secondary,
-            ),
+                BorderStroke(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.secondary,
+                ),
             modifier =
-            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                .padding(
-                    end = 20.dp,
-                    start = 20.dp,
-                )
-                .fillMaxWidth()
-                .pressScaleEffect(),
+                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                    .padding(
+                        end = 20.dp,
+                        start = 20.dp,
+                    )
+                    .fillMaxWidth()
+                    .pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
             onClick = {
                 performAction(AddANewLinkDialogBoxAction.ClearSelectedTags)
                 onDismiss()
@@ -1036,14 +1043,14 @@ private fun BottomPartOfAddANewLinkDialogBox(
         Button(
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             modifier =
-            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                .padding(
-                    end = 20.dp,
-                    top = 10.dp,
-                    start = 20.dp,
-                )
-                .fillMaxWidth()
-                .pressScaleEffect(),
+                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                    .padding(
+                        end = 20.dp,
+                        top = 10.dp,
+                        start = 20.dp,
+                    )
+                    .fillMaxWidth()
+                    .pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
             onClick = {
                 isDataExtractingForTheLink.value = true
                 val linkType =
@@ -1055,29 +1062,29 @@ private fun BottomPartOfAddANewLinkDialogBox(
                 performAction(
                     AddANewLinkDialogBoxAction.AddANewLink(
                         link =
-                        Link(
-                            linkType = linkType,
-                            title = titleTextFieldValue.value.trim(),
-                            url = linkTextFieldValue.value.trim(),
-                            imgURL = imgUrlTextFieldValue.value.trim(),
-                            note = noteTextFieldValue.value,
-                            idOfLinkedFolder =
-                            currentFolder?.localId
-                                ?: selectedFolderForSavingTheLink.value.localId,
-                            userAgent = preferences.primaryJsoupUserAgent,
-                        ),
+                            Link(
+                                linkType = linkType,
+                                title = titleTextFieldValue.value.trim(),
+                                url = linkTextFieldValue.value.trim(),
+                                imgURL = imgUrlTextFieldValue.value.trim(),
+                                note = noteTextFieldValue.value,
+                                idOfLinkedFolder =
+                                    currentFolder?.localId
+                                        ?: selectedFolderForSavingTheLink.value.localId,
+                                userAgent = preferences.primaryJsoupUserAgent,
+                            ),
                         linkSaveConfig =
-                        LinkSaveConfig(
-                            forceAutoDetectTitle =
-                            isAutoDetectTitleEnabled.value ||
-                                preferences.isAutoDetectTitleForLinksEnabled,
-                            forceSaveWithoutRetrievingData =
-                            isForceSaveWithoutFetchingMetaDataEnabled.value ||
-                                preferences.forceSaveWithoutFetchingAnyMetaData,
-                            useProxy = preferences.useProxy,
-                            skipSavingIfExists = preferences.skipSavingExistingLink,
-                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
-                        ),
+                            LinkSaveConfig(
+                                forceAutoDetectTitle =
+                                    isAutoDetectTitleEnabled.value ||
+                                            preferences.isAutoDetectTitleForLinksEnabled,
+                                forceSaveWithoutRetrievingData =
+                                    isForceSaveWithoutFetchingMetaDataEnabled.value ||
+                                            preferences.forceSaveWithoutFetchingAnyMetaData,
+                                useProxy = preferences.useProxy,
+                                skipSavingIfExists = preferences.skipSavingExistingLink,
+                                forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
+                            ),
                         onCompletion = onDismiss,
                         selectedTags = selectedTags,
                         pushSnackbarOnSuccess = true,
@@ -1105,6 +1112,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
         ModalBottomSheet(
             sheetState = folderSearchBtmSheetState,
             onDismissRequest = hideSearchBtmSheet,
+            sheetGesturesEnabled = !Platform.Android.onTV()
         ) {
             Scaffold(
                 topBar = {
@@ -1143,10 +1151,10 @@ private fun BottomPartOfAddANewLinkDialogBox(
                             )
                         },
                         modifier =
-                        Modifier.focusRequester(searchFocusRequester)
-                            .background(BottomSheetDefaults.ContainerColor)
-                            .fillMaxWidth()
-                            .padding(15.dp),
+                            Modifier.focusRequester(searchFocusRequester)
+                                .background(BottomSheetDefaults.ContainerColor)
+                                .fillMaxWidth()
+                                .padding(15.dp),
                     )
                     LaunchedEffect(Unit) {
                         searchFocusRequester.requestFocus()
@@ -1175,9 +1183,9 @@ private fun BottomPartOfAddANewLinkDialogBox(
                                     selectedFolderForSavingTheLink.value = it
                                 },
                                 isCurrentFolderSelected =
-                                rememberSaveable(it.localId == selectedFolderForSavingTheLink.value.localId) {
-                                    mutableStateOf(it.localId == selectedFolderForSavingTheLink.value.localId)
-                                },
+                                    rememberSaveable(it.localId == selectedFolderForSavingTheLink.value.localId) {
+                                        mutableStateOf(it.localId == selectedFolderForSavingTheLink.value.localId)
+                                    },
                                 folderName = it.name,
                                 onSubDirectoryIconClick = null,
                             )
@@ -1216,6 +1224,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
     if (showChildFoldersBtmSheet.value) {
         val childFolders = AddANewLinkDialogBox.childFolders.collectAsStateWithLifecycle()
         ModalBottomSheet(
+            sheetGesturesEnabled = !Platform.Android.onTV(),
             sheetState = childFoldersBtmSheetState,
             onDismissRequest = {
                 AddANewLinkDialogBox.subFoldersList.clear()
@@ -1227,12 +1236,12 @@ private fun BottomPartOfAddANewLinkDialogBox(
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             text =
-                            try {
-                                AddANewLinkDialogBox.subFoldersList.last().name
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                                ""
-                            },
+                                try {
+                                    AddANewLinkDialogBox.subFoldersList.last().name
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                    ""
+                                },
                             style = MaterialTheme.typography.titleMedium,
                             fontSize = 24.sp,
                             modifier = Modifier.padding(start = 15.dp, bottom = 5.dp),
@@ -1240,11 +1249,11 @@ private fun BottomPartOfAddANewLinkDialogBox(
                         LazyRow(
                             state = lazyRowState,
                             modifier =
-                            Modifier.padding(
-                                start = 15.dp,
-                                end = 15.dp,
-                                bottom = 15.dp,
-                            ),
+                                Modifier.padding(
+                                    start = 15.dp,
+                                    end = 15.dp,
+                                    bottom = 15.dp,
+                                ),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             item {
@@ -1267,35 +1276,35 @@ private fun BottomPartOfAddANewLinkDialogBox(
                                     style = MaterialTheme.typography.titleMedium,
                                     fontSize = 16.sp,
                                     modifier =
-                                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                        .clickable {
-                                            AddANewLinkDialogBox.changeParentFolderId(subFolder.localId)
-                                            selectedFolderForSavingTheLink.value = subFolder
-                                            if (
-                                                AddANewLinkDialogBox.subFoldersList.indexOf(
-                                                    subFolder,
-                                                ) !=
-                                                AddANewLinkDialogBox.subFoldersList.indexOf(
-                                                    AddANewLinkDialogBox.subFoldersList.last(),
-                                                )
-                                            ) {
-                                                AddANewLinkDialogBox.subFoldersList.removeAll(
-                                                    AddANewLinkDialogBox.subFoldersList
-                                                        .toList()
-                                                        .subList(
-                                                            fromIndex =
-                                                            AddANewLinkDialogBox.subFoldersList.indexOf(
-                                                                AddANewLinkDialogBox.subFoldersList.find {
-                                                                    it.localId ==
-                                                                        selectedFolderForSavingTheLink.value.localId
-                                                                },
-                                                            ) + 1,
-                                                            toIndex = AddANewLinkDialogBox.subFoldersList.size,
-                                                        )
-                                                        .toSet(),
-                                                )
-                                            }
-                                        },
+                                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                            .clickable {
+                                                AddANewLinkDialogBox.changeParentFolderId(subFolder.localId)
+                                                selectedFolderForSavingTheLink.value = subFolder
+                                                if (
+                                                    AddANewLinkDialogBox.subFoldersList.indexOf(
+                                                        subFolder,
+                                                    ) !=
+                                                    AddANewLinkDialogBox.subFoldersList.indexOf(
+                                                        AddANewLinkDialogBox.subFoldersList.last(),
+                                                    )
+                                                ) {
+                                                    AddANewLinkDialogBox.subFoldersList.removeAll(
+                                                        AddANewLinkDialogBox.subFoldersList
+                                                            .toList()
+                                                            .subList(
+                                                                fromIndex =
+                                                                    AddANewLinkDialogBox.subFoldersList.indexOf(
+                                                                        AddANewLinkDialogBox.subFoldersList.find {
+                                                                            it.localId ==
+                                                                                    selectedFolderForSavingTheLink.value.localId
+                                                                        },
+                                                                    ) + 1,
+                                                                toIndex = AddANewLinkDialogBox.subFoldersList.size,
+                                                            )
+                                                            .toSet(),
+                                                    )
+                                                }
+                                            },
                                 )
                             }
                         }
@@ -1316,9 +1325,9 @@ private fun BottomPartOfAddANewLinkDialogBox(
                                 showChildFoldersBtmSheet.value = false
                             },
                             isCurrentFolderSelected =
-                            rememberSaveable(it.localId == selectedFolderForSavingTheLink.value.localId) {
-                                mutableStateOf(it.localId == selectedFolderForSavingTheLink.value.localId)
-                            },
+                                rememberSaveable(it.localId == selectedFolderForSavingTheLink.value.localId) {
+                                    mutableStateOf(it.localId == selectedFolderForSavingTheLink.value.localId)
+                                },
                             folderName = it.name,
                             onSubDirectoryIconClick = {
                                 selectedFolderForSavingTheLink.value = it
@@ -1352,14 +1361,14 @@ private fun BottomPartOfAddANewLinkDialogBox(
                     item {
                         FilledTonalButton(
                             modifier =
-                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                .padding(
-                                    top = 5.dp,
-                                    end = 15.dp,
-                                    start = 15.dp,
-                                )
-                                .fillMaxWidth()
-                                .pressScaleEffect(),
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .padding(
+                                        top = 5.dp,
+                                        end = 15.dp,
+                                        start = 15.dp,
+                                    )
+                                    .fillMaxWidth()
+                                    .pressScaleEffect(),
                             onClick = {
                                 addTheFolderInRoot.value = false
                                 showNewFolderDialog.value = true
@@ -1377,9 +1386,9 @@ private fun BottomPartOfAddANewLinkDialogBox(
                         }
                         Button(
                             modifier =
-                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                .fillMaxWidth()
-                                .padding(start = 15.dp, end = 15.dp),
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .fillMaxWidth()
+                                    .padding(start = 15.dp, end = 15.dp),
                             onClick = {
                                 isDropDownMenuIconClicked.value = false
                                 AddANewLinkDialogBox.subFoldersList.clear()
@@ -1403,15 +1412,15 @@ private fun BottomPartOfAddANewLinkDialogBox(
                     item {
                         FilledTonalButton(
                             modifier =
-                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                .padding(
-                                    end = 20.dp,
-                                    top = 15.dp,
-                                    start = 20.dp,
-                                    bottom = 15.dp,
-                                )
-                                .fillMaxWidth()
-                                .pressScaleEffect(),
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .padding(
+                                        end = 20.dp,
+                                        top = 15.dp,
+                                        start = 20.dp,
+                                        bottom = 15.dp,
+                                    )
+                                    .fillMaxWidth()
+                                    .pressScaleEffect(),
                             onClick = {
                                 addTheFolderInRoot.value = false
                                 showNewFolderDialog.value = true
@@ -1443,30 +1452,30 @@ private fun BottomPartOfAddANewLinkDialogBox(
                     performAction(
                         AddANewLinkDialogBoxAction.InsertANewFolder(
                             folder =
-                            Folder(
-                                name = folderName,
-                                note = folderNote,
-                                parentFolderId =
-                                if (
-                                    addTheFolderInRoot.value ||
-                                    selectedFolderForSavingTheLink.value.localId in
-                                    defaultFolderIds()
-                                ) {
-                                    null
-                                } else {
-                                    selectedFolderForSavingTheLink.value.localId
-                                },
-                            ),
+                                Folder(
+                                    name = folderName,
+                                    note = folderNote,
+                                    parentFolderId =
+                                        if (
+                                            addTheFolderInRoot.value ||
+                                            selectedFolderForSavingTheLink.value.localId in
+                                            defaultFolderIds()
+                                        ) {
+                                            null
+                                        } else {
+                                            selectedFolderForSavingTheLink.value.localId
+                                        },
+                                ),
                             onCompletion = onCompletion,
                         ),
                     )
                 },
                 currentFolder =
-                if (selectedFolderForSavingTheLink.value.localId in defaultFolderIds()) {
-                    null
-                } else {
-                    selectedFolderForSavingTheLink.value
-                },
+                    if (selectedFolderForSavingTheLink.value.localId in defaultFolderIds()) {
+                        null
+                    } else {
+                        selectedFolderForSavingTheLink.value
+                    },
             ),
         )
     }
@@ -1483,80 +1492,99 @@ private fun FolderSelectorComponent(
 ) {
     Column(
         modifier =
-        Modifier.pressScaleEffect()
-            .pointerHoverIcon(icon = PointerIcon.Hand)
-            .fillMaxWidth()
-            .clickable(indication = null, interactionSource = null, onClick = onItemClick),
+            Modifier
+                .pressScaleEffect()
+                .pointerHoverIcon(icon = PointerIcon.Hand)
+                .fillMaxWidth()
+                .focusGroup()
+                .highlightOnFocused()
+                .pointerInput(onItemClick) {
+                    detectTapGestures(
+                        onTap = {
+                            onItemClick()
+                        },
+                    )
+                },
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().wrapContentHeight(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(
-                tint =
-                if (isCurrentFolderSelected.value) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    LocalContentColor.current
-                },
-                imageVector = Icons.Outlined.Folder,
-                contentDescription = null,
-                modifier = Modifier.padding(paddingValues).size(28.dp),
-            )
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.CenterEnd,
+            Column(
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .clickable(
+                            interactionSource = null,
+                            indication = null,
+                            onClick = onItemClick,
+                        )
+                        .focusable(),
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    tint =
+                        if (isCurrentFolderSelected.value) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            LocalContentColor.current
+                        },
+                    imageVector = Icons.Outlined.Folder,
+                    contentDescription = null,
+                    modifier = Modifier.padding(paddingValues).size(28.dp),
+                )
+
+                Text(
+                    text = folderName,
+                    color =
+                        if (isCurrentFolderSelected.value) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            LocalContentColor.current
+                        },
+                    style = MaterialTheme.typography.titleSmall,
+                    fontSize = 16.sp,
+                    lineHeight = 20.sp,
+                    maxLines = 1,
+                    modifier =
+                        Modifier.padding(
+                            start = paddingValues.calculateStartPadding(LocalLayoutDirection.current),
+                            end = paddingValues.calculateEndPadding(LocalLayoutDirection.current),
+                        ),
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (isCurrentFolderSelected.value) {
+                    Icon(
+                        imageVector = Icons.Filled.CheckCircle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+
+                if (onSubDirectoryIconClick != null) {
                     if (isCurrentFolderSelected.value) {
+                        Spacer(modifier = Modifier.width(20.dp))
+                    }
+
+                    IconButton(
+                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                        onClick = {
+                            onSubDirectoryIconClick()
+                        },
+                    ) {
                         Icon(
-                            imageVector = Icons.Filled.CheckCircle,
+                            imageVector = Icons.Filled.SubdirectoryArrowRight,
                             contentDescription = null,
-                            tint =
-                            if (isCurrentFolderSelected.value) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                LocalContentColor.current
-                            },
                         )
                     }
-                    if (onSubDirectoryIconClick != null) {
-                        Spacer(modifier = Modifier.width(20.dp))
-                        IconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-                            onClick = {
-                                onSubDirectoryIconClick()
-                            },
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.SubdirectoryArrowRight,
-                                contentDescription = null,
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(endSpacing))
                 }
+
+                Spacer(modifier = Modifier.width(endSpacing))
             }
         }
-        Text(
-            text = folderName,
-            color =
-            if (isCurrentFolderSelected.value) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                LocalContentColor.current
-            },
-            style = MaterialTheme.typography.titleSmall,
-            fontSize = 16.sp,
-            lineHeight = 20.sp,
-            maxLines = 1,
-            modifier =
-            Modifier.padding(
-                start = paddingValues.calculateStartPadding(LocalLayoutDirection.current),
-                end = paddingValues.calculateEndPadding(LocalLayoutDirection.current),
-            ),
-            overflow = TextOverflow.Ellipsis,
-        )
+
         HorizontalDivider(
             modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 10.dp),
             thickness = 1.dp,
@@ -1584,7 +1612,7 @@ object AddANewLinkDialogBox {
         updateTagSectionVisibilityJob = addANewLinkDialogBoxScope.launch {
             DependencyContainer.preferencesRepo.changePreferenceValue(
                 preferenceKey =
-                AppPreferences.SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK,
+                    AppPreferences.SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK,
                 newValue = show,
             )
         }

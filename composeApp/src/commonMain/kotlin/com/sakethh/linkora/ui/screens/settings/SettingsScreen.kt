@@ -27,9 +27,11 @@ import androidx.compose.material.icons.filled.SettingsInputSvideo
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -58,6 +60,7 @@ import com.sakethh.linkora.ui.screens.collections.components.ItemDivider
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
+import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.openUriOrNotify
 import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
@@ -98,23 +101,23 @@ fun SettingsScreen() {
     ) { it ->
         LazyColumn(
             modifier =
-            Modifier.fillMaxSize()
-                .addEdgeToEdgeScaffoldPadding(it)
-                .nestedScroll(topAppBarScrollState.nestedScrollConnection),
+                Modifier.fillMaxSize()
+                    .addEdgeToEdgeScaffoldPadding(it)
+                    .nestedScroll(topAppBarScrollState.nestedScrollConnection),
         ) {
             item {
                 Column(
                     modifier =
-                    Modifier.padding(
-                        start = 15.dp,
-                        end = 15.dp,
-                        top = 7.5.dp,
-                        bottom = 7.5.dp,
-                    )
-                        .clip(RoundedCornerShape(15.dp))
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.primaryContainer)
-                        .padding(top = 7.5.dp),
+                        Modifier.padding(
+                            start = 15.dp,
+                            end = 15.dp,
+                            top = 7.5.dp,
+                            bottom = 7.5.dp,
+                        )
+                            .clip(RoundedCornerShape(15.dp))
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.primaryContainer)
+                            .padding(top = 7.5.dp),
                 ) {
                     AppVersionLabel()
                     Row(
@@ -122,7 +125,9 @@ fun SettingsScreen() {
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         FilledIconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(),
+                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .pressScaleEffect()
+                                .highlightOnFocused(shape = IconButtonDefaults.filledShape),
                             onClick = {
                                 coroutineScope.launch {
                                     uriHandler.openUriOrNotify("https://www.github.com/LinkoraApp")
@@ -136,7 +141,9 @@ fun SettingsScreen() {
                             )
                         }
                         FilledIconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(),
+                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .pressScaleEffect()
+                                .highlightOnFocused(shape = IconButtonDefaults.filledShape),
                             onClick = {
                                 coroutineScope.launch {
                                     uriHandler.openUriOrNotify("https://discord.gg/ZDBXNtv8MD")
@@ -150,7 +157,9 @@ fun SettingsScreen() {
                             )
                         }
                         FilledIconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(),
+                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .pressScaleEffect()
+                                .highlightOnFocused(shape = IconButtonDefaults.filledShape),
                             onClick = {
                                 coroutineScope.launch {
                                     uriHandler.openUriOrNotify("https://www.twitter.com/LinkoraApp")
@@ -166,12 +175,12 @@ fun SettingsScreen() {
                     }
                     ItemDivider(
                         paddingValues =
-                        PaddingValues(
-                            start = 15.dp,
-                            end = 15.dp,
-                            top = 7.5.dp,
-                            bottom = 7.5.dp,
-                        ),
+                            PaddingValues(
+                                start = 15.dp,
+                                end = 15.dp,
+                                top = 7.5.dp,
+                                bottom = 7.5.dp,
+                            ),
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         colorOpacity = 0.25f,
                         thickness = 0.25.dp,
@@ -183,9 +192,10 @@ fun SettingsScreen() {
                             }
                         },
                         modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .padding(start = 15.dp)
-                            .pressScaleEffect(),
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .padding(start = 15.dp)
+                                .pressScaleEffect()
+                                .highlightOnFocused(shape = ButtonDefaults.shape),
                     ) {
                         Icon(imageVector = Icons.Default.Translate, contentDescription = null)
                         Spacer(modifier = Modifier.width(6.5.dp))
@@ -202,9 +212,10 @@ fun SettingsScreen() {
                             }
                         },
                         modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .padding(start = 15.dp)
-                            .pressScaleEffect(),
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .padding(start = 15.dp)
+                                .pressScaleEffect()
+                                .highlightOnFocused(shape = ButtonDefaults.shape),
                     ) {
                         Icon(imageVector = Icons.Default.Coffee, contentDescription = null)
                         Spacer(modifier = Modifier.width(6.5.dp))
@@ -223,9 +234,10 @@ fun SettingsScreen() {
                             }
                         },
                         modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .padding(start = 15.dp, bottom = 15.dp)
-                            .pressScaleEffect(),
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .padding(start = 15.dp, bottom = 15.dp)
+                                .pressScaleEffect()
+                                .highlightOnFocused(shape = ButtonDefaults.shape),
                     ) {
                         Icon(imageVector = Icons.Default.RateReview, contentDescription = null)
                         Spacer(modifier = Modifier.width(6.5.dp))
@@ -319,13 +331,13 @@ private fun settingsScreenOptions(
         sectionTitle = Localization.getLocalizedString(Localization.Key.Data),
         sectionIcon = Icons.Default.Storage,
     ),
-      /*SettingSectionComponentParam(
-          onClick = {
+    /*SettingSectionComponentParam(
+        onClick = {
 
-          },
-          sectionTitle = Localization.getLocalizedString(Localization.Key.Privacy),
-          sectionIcon = Icons.Default.PrivacyTip
-      ),*/
+        },
+        sectionTitle = Localization.getLocalizedString(Localization.Key.Privacy),
+        sectionIcon = Icons.Default.PrivacyTip
+    ),*/
     SettingSectionComponentParam(
         onClick = {
             navController.navigate(Navigation.Settings.AboutScreen)

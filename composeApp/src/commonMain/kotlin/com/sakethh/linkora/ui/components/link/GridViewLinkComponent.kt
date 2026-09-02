@@ -3,10 +3,16 @@ package com.sakethh.linkora.ui.components.link
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,12 +34,17 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -59,275 +70,377 @@ fun GridViewLinkComponent(
     modifier: Modifier = Modifier,
 ) {
     val colorScheme = MaterialTheme.colorScheme
+
+    var hasFocus by remember { mutableStateOf(false) }
+    val moreButtonInteractionSource = remember { MutableInteractionSource() }
+    val isMoreButtonFocused by moreButtonInteractionSource.collectIsFocusedAsState()
+    val currentOnLinkClick by rememberUpdatedState(linkComponentParam.onLinkClick)
+    val currentOnMoreIconClick by rememberUpdatedState(linkComponentParam.onMoreIconClick)
+    val currentOnLongClick by rememberUpdatedState(linkComponentParam.onLongClick)
+    val currentShowMenuOnGridLinkClick by rememberUpdatedState(preferences.showMenuOnGridLinkClick)
+    val currentIsSelectionModeEnabled by rememberUpdatedState(linkComponentParam.isSelectionModeEnabled.value)
+
+    val handleCardClick: () -> Unit = {
+        if (currentShowMenuOnGridLinkClick && !currentIsSelectionModeEnabled) {
+            currentOnMoreIconClick()
+        } else {
+            currentOnLinkClick()
+        }
+    }
+
+    val showTitle by
+    rememberSaveable(
+        preferences.showTitleInLinkGridView,
+        linkComponentParam.link.title.isNotBlank(),
+    ) {
+        mutableStateOf(
+            preferences.showTitleInLinkGridView && linkComponentParam.link.title.isNotBlank(),
+        )
+    }
+
+    val showNote by
+    rememberSaveable(
+        preferences.showNoteInLinkView,
+        linkComponentParam.link.note.isNotBlank(),
+    ) {
+        mutableStateOf(
+            preferences.showNoteInLinkView && linkComponentParam.link.note.isNotBlank(),
+        )
+    }
+
+    val showDate by
+    rememberSaveable(
+        preferences.showDateInLinkView,
+        linkComponentParam.link.date != null,
+    ) {
+        mutableStateOf(preferences.showDateInLinkView && linkComponentParam.link.date != null)
+    }
+
+    val showTags by
+    rememberSaveable(preferences.showTagsInLinkView, linkComponentParam.tags != null) {
+        mutableStateOf(preferences.showTagsInLinkView && linkComponentParam.tags != null)
+    }
+
+    val showHost by
+    rememberSaveable(
+        !linkComponentParam.isSelectionModeEnabled.value,
+        preferences.showHostInLinkListView,
+    ) {
+        mutableStateOf(
+            !linkComponentParam.isSelectionModeEnabled.value && preferences.showHostInLinkListView,
+        )
+    }
+
+    val foldersPath = retain {
+        linkComponentParam.link.path
+    }
+
+    val addTopSpacing by retain {
+        derivedStateOf {
+            showTitle || showNote || showDate || showHost
+        }
+    }
+
     Card(
         colors =
-        CardDefaults.cardColors(
-            containerColor =
-            if (linkComponentParam.isSelectionModeEnabled.value) {
-                colorScheme.primaryContainer
-            } else {
-                CardDefaults.cardColors().containerColor
-            },
-        ),
-        modifier =
-        Modifier.fillMaxWidth()
-            .then(if (!forStaggeredView) Modifier.wrapContentHeight() else Modifier)
-            .pointerHoverIcon(icon = PointerIcon.Hand)
-            .combinedClickable(
-                onClick = {
-                    if (
-                        preferences.showMenuOnGridLinkClick &&
-                        !linkComponentParam.isSelectionModeEnabled.value
-                    ) {
-                        linkComponentParam.onMoreIconClick()
-                        return@combinedClickable
-                    }
-                    linkComponentParam.onLinkClick()
-                },
-                interactionSource =
-                remember {
-                    MutableInteractionSource()
-                },
-                indication = null,
-                onLongClick = {
-                    linkComponentParam.onLongClick()
-                },
-            )
-            .pressScaleEffect()
-            .padding(start = 4.dp, end = 4.dp, top = 4.dp)
-            .then(modifier)
-            .animateContentSize(),
-    ) {
-        if (linkComponentParam.isItemSelected.value) {
-            Box(
-                Modifier.fillMaxWidth().height(150.dp).background(MaterialTheme.colorScheme.primary),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(Icons.Default.CheckCircle, null, tint = colorScheme.onPrimary)
-            }
-        } else if (linkComponentParam.link.imgURL.trim().isNotBlank()) {
-            Box(modifier = if (forStaggeredView) Modifier.fillMaxSize() else Modifier.height(150.dp)) {
-                CoilImage(
-                    modifier =
-                    Modifier.fillMaxSize()
-                        .then(
-                            if (preferences.enableFadedEdgeForNonListViews) {
-                                Modifier.fadedEdges(colorScheme)
-                            } else {
-                                Modifier
-                            },
-                        ),
-                    imgURL = linkComponentParam.link.imgURL,
-                    contentScale =
-                    if (
-                        linkComponentParam.link.imgURL.startsWith(
-                            "https://pbs.twimg.com/profile_images/",
-                        ) ||
-                        !forStaggeredView
-                    ) {
-                        ContentScale.Crop
+            CardDefaults.cardColors(
+                containerColor =
+                    if (linkComponentParam.isSelectionModeEnabled.value) {
+                        colorScheme.primaryContainer
                     } else {
-                        ContentScale.Fit
+                        CardDefaults.cardColors().containerColor
                     },
-                    userAgent = linkComponentParam.link.userAgent ?: preferences.primaryJsoupUserAgent,
-                    preferences = preferences,
+            ),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .then(if (!forStaggeredView) Modifier.wrapContentHeight() else Modifier)
+                .focusGroup()
+                .onFocusChanged { focusState ->
+                    hasFocus = focusState.hasFocus
+                }
+                .pointerHoverIcon(icon = PointerIcon.Hand)
+                .border(
+                    width = 2.5.dp,
+                    color =
+                        if (hasFocus && !isMoreButtonFocused) {
+                            colorScheme.primary
+                        } else {
+                            Color.Transparent
+                        },
+                    shape = RoundedCornerShape(12.dp),
                 )
-                if (
-                    preferences.showVideoTagOnUIIfApplicable &&
-                    (
-                        linkComponentParam.link.mediaType == MediaType.VIDEO ||
-                            linkComponentParam.link.url.host(throwOnException = false) in
-                            getVideoPlatformBaseUrls()
-                        )
-                ) {
-                    Text(
-                        text = MediaType.VIDEO.name,
-                        modifier =
-                        Modifier.padding(
-                            start = 10.dp,
-                        )
-                            .background(
-                                color = MaterialTheme.colorScheme.secondary.copy(0.25f),
-                                shape = RoundedCornerShape(5.dp),
+                .pressScaleEffect()
+                .padding(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 4.dp)
+                .then(modifier)
+                .animateContentSize(),
+    ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Spacer(
+                modifier =
+                    Modifier
+                        .matchParentSize()
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onTap = {
+                                    handleCardClick()
+                                },
+                                onLongPress = {
+                                    currentOnLongClick()
+                                },
                             )
-                            .padding(5.dp)
-                            .align(Alignment.BottomStart),
+                        },
+            )
+
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .combinedClickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = {
+                                    handleCardClick()
+                                },
+                                onLongClick = {
+                                    currentOnLongClick()
+                                },
+                            )
+                            .focusable(),
+                ) {
+                    if (linkComponentParam.isItemSelected.value) {
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .height(150.dp)
+                                .background(MaterialTheme.colorScheme.primary),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(Icons.Default.CheckCircle, null, tint = colorScheme.onPrimary)
+                        }
+                    } else if (linkComponentParam.link.imgURL.trim().isNotBlank()) {
+                        Box(
+                            modifier =
+                                if (forStaggeredView) {
+                                    Modifier.fillMaxSize()
+                                } else {
+                                    Modifier.height(150.dp)
+                                },
+                        ) {
+                            CoilImage(
+                                modifier =
+                                    Modifier
+                                        .fillMaxSize()
+                                        .then(
+                                            if (preferences.enableFadedEdgeForNonListViews) {
+                                                Modifier.fadedEdges(colorScheme)
+                                            } else {
+                                                Modifier
+                                            },
+                                        ),
+                                imgURL = linkComponentParam.link.imgURL,
+                                contentScale =
+                                    if (
+                                        linkComponentParam.link.imgURL.startsWith(
+                                            "https://pbs.twimg.com/profile_images/",
+                                        ) ||
+                                        !forStaggeredView
+                                    ) {
+                                        ContentScale.Crop
+                                    } else {
+                                        ContentScale.Fit
+                                    },
+                                userAgent =
+                                    linkComponentParam.link.userAgent
+                                        ?: preferences.primaryJsoupUserAgent,
+                                preferences = preferences,
+                            )
+
+                            if (
+                                preferences.showVideoTagOnUIIfApplicable &&
+                                (
+                                        linkComponentParam.link.mediaType == MediaType.VIDEO ||
+                                                linkComponentParam.link.url.host(throwOnException = false) in
+                                                getVideoPlatformBaseUrls()
+                                        )
+                            ) {
+                                Text(
+                                    text = MediaType.VIDEO.name,
+                                    modifier =
+                                        Modifier
+                                            .padding(start = 10.dp)
+                                            .background(
+                                                color = MaterialTheme.colorScheme.secondary.copy(
+                                                    0.25f
+                                                ),
+                                                shape = RoundedCornerShape(5.dp),
+                                            )
+                                            .padding(5.dp)
+                                            .align(Alignment.BottomStart),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontSize = 8.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                        }
+                    }
+
+                    if (showTitle) {
+                        Text(
+                            text = linkComponentParam.link.title,
+                            modifier =
+                                Modifier.padding(
+                                    start = 10.dp,
+                                    top = 10.dp,
+                                    end = 10.dp,
+                                ),
+                            style = MaterialTheme.typography.titleSmall,
+                            overflow = TextOverflow.Ellipsis,
+                            fontSize = 15.sp,
+                            maxLines = 3,
+                        )
+                    }
+
+                    if (showNote) {
+                        Text(
+                            text = linkComponentParam.link.note,
+                            modifier =
+                                Modifier.padding(
+                                    start = 10.dp,
+                                    top = 10.dp,
+                                    end = 10.dp,
+                                ),
+                            style = MaterialTheme.typography.titleSmall,
+                            overflow = TextOverflow.Ellipsis,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(0.75f),
+                            maxLines = 3,
+                        )
+                    }
+
+                    if (showDate) {
+                        Text(
+                            modifier =
+                                Modifier.padding(
+                                    end = 15.dp,
+                                    top = 10.dp,
+                                    start = 10.dp,
+                                ),
+                            text = linkComponentParam.link.date ?: "",
+                            style = MaterialTheme.typography.titleMedium,
+                            maxLines = 1,
+                            textAlign = TextAlign.Start,
+                            overflow = TextOverflow.Ellipsis,
+                            fontSize = 12.45.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(0.65f),
+                        )
+                    }
+                }
+
+                if (showTags) {
+                    Box(modifier = Modifier.padding(start = 10.dp, end = 10.dp).fillMaxWidth()) {
+                        TagsRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            tags = linkComponentParam.tags ?: emptyList(),
+                            onTagClick = {
+                                linkComponentParam.onTagClick(it)
+                            },
+                        )
+                    }
+                }
+
+                if (linkComponentParam.showPath && !foldersPath.isNullOrEmpty()) {
+                    Text(
+                        text = Localization.Key.FolderPathLabel.rememberLocalizedString(),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.padding(top = 5.dp, start = 10.dp),
+                    )
+
+                    FoldersRow(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(start = 10.dp),
+                        folders = foldersPath,
+                        onFolderClick = { linkComponentParam.onFolderClick(it) },
+                    )
+                }
+
+                if (showHost) {
+                    Text(
+                        text = linkComponentParam.link.url.host(throwOnException = false),
+                        modifier =
+                            Modifier
+                                .padding(
+                                    start = 10.dp,
+                                    top = if (!preferences.showTagsInLinkView) 10.dp else 5.dp,
+                                    end = 10.dp,
+                                )
+                                .background(
+                                    color = MaterialTheme.colorScheme.primary.copy(0.25f),
+                                    shape = RoundedCornerShape(5.dp),
+                                )
+                                .padding(5.dp),
                         style = MaterialTheme.typography.titleLarge,
-                        fontSize = 8.sp,
+                        fontSize = 10.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-            }
-        }
 
-        val showTitle by
-            rememberSaveable(
-                preferences.showTitleInLinkGridView,
-                linkComponentParam.link.title.isNotBlank(),
-            ) {
-                mutableStateOf(
-                    preferences.showTitleInLinkGridView && linkComponentParam.link.title.isNotBlank(),
-                )
+                if (!preferences.showMenuOnGridLinkClick) {
+                    Box(
+                        modifier =
+                            Modifier
+                                .padding(top = if (addTopSpacing) 10.dp else 0.dp)
+                                .fillMaxWidth()
+                                .height(36.dp)
+                                .clickable(
+                                    interactionSource = moreButtonInteractionSource,
+                                    indication = null,
+                                    onClick = linkComponentParam.onMoreIconClick,
+                                )
+                                .focusable(interactionSource = moreButtonInteractionSource)
+                                .background(
+                                    color =
+                                        if (isMoreButtonFocused) {
+                                            colorScheme.primaryContainer.copy(0.15f)
+                                        } else {
+                                            ButtonDefaults.filledTonalButtonColors().containerColor
+                                        },
+                                    shape = RoundedCornerShape(12.dp),
+                                )
+                                .border(
+                                    width = 2.5.dp,
+                                    color =
+                                        if (isMoreButtonFocused) {
+                                            colorScheme.primary
+                                        } else {
+                                            Color.Transparent
+                                        },
+                                    shape = RoundedCornerShape(12.dp),
+                                )
+                                .pointerHoverIcon(PointerIcon.Hand),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MoreHoriz,
+                            contentDescription = null,
+                            tint =
+                                if (isMoreButtonFocused) {
+                                    colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
+                                },
+                        )
+                    }
+                } else if (addTopSpacing) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
             }
-        val showNote by
-            rememberSaveable(
-                preferences.showNoteInLinkView,
-                linkComponentParam.link.note.isNotBlank(),
-            ) {
-                mutableStateOf(
-                    preferences.showNoteInLinkView && linkComponentParam.link.note.isNotBlank(),
-                )
-            }
-        val showDate by
-            rememberSaveable(
-                preferences.showDateInLinkView,
-                linkComponentParam.link.date != null,
-            ) {
-                mutableStateOf(preferences.showDateInLinkView && linkComponentParam.link.date != null)
-            }
-        val showTags by
-            rememberSaveable(preferences.showTagsInLinkView, linkComponentParam.tags != null) {
-                mutableStateOf(preferences.showTagsInLinkView && linkComponentParam.tags != null)
-            }
-        val showHost by
-            rememberSaveable(
-                !linkComponentParam.isSelectionModeEnabled.value,
-                preferences.showHostInLinkListView,
-            ) {
-                mutableStateOf(
-                    !linkComponentParam.isSelectionModeEnabled.value && preferences.showHostInLinkListView,
-                )
-            }
-        if (showTitle) {
-            Text(
-                text = linkComponentParam.link.title,
-                modifier =
-                Modifier.padding(
-                    start = 10.dp,
-                    top = 10.dp,
-                    end = 10.dp,
-                ),
-                style = MaterialTheme.typography.titleSmall,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 15.sp,
-                maxLines = 3,
-            )
-        }
-
-        if (showNote) {
-            Text(
-                text = linkComponentParam.link.note,
-                modifier =
-                Modifier.padding(
-                    start = 10.dp,
-                    top = 10.dp,
-                    end = 10.dp,
-                ),
-                style = MaterialTheme.typography.titleSmall,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(0.75f),
-                maxLines = 3,
-            )
-        }
-
-        if (showDate) {
-            Text(
-                modifier =
-                Modifier.padding(
-                    end = 15.dp,
-                    top = 10.dp,
-                    start = 10.dp,
-                ),
-                text = linkComponentParam.link.date ?: "",
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                textAlign = TextAlign.Start,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 12.45.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(0.65f),
-            )
-        }
-
-        if (showTags) {
-            Box(modifier = Modifier.padding(start = 10.dp, end = 10.dp).fillMaxWidth()) {
-                TagsRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    tags = linkComponentParam.tags ?: emptyList(),
-                    onTagClick = {
-                        linkComponentParam.onTagClick(it)
-                    },
-                )
-            }
-        }
-
-        val foldersPath = retain {
-            linkComponentParam.link.path
-        }
-
-        if (linkComponentParam.showPath && !foldersPath.isNullOrEmpty()) {
-            Text(
-                text = Localization.Key.FolderPathLabel.rememberLocalizedString(),
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.padding(top = 5.dp, start = 10.dp),
-            )
-            FoldersRow(
-                modifier =
-                Modifier.fillMaxWidth()
-                    .padding(
-                        start = 10.dp,
-                    ),
-                folders = foldersPath,
-                onFolderClick = { linkComponentParam.onFolderClick(it) },
-            )
-        }
-
-        if (showHost) {
-            Text(
-                text = linkComponentParam.link.url.host(throwOnException = false),
-                modifier =
-                Modifier.padding(
-                    start = 10.dp,
-                    top = if (!preferences.showTagsInLinkView) 10.dp else 5.dp,
-                    end = 10.dp,
-                )
-                    .background(
-                        color = MaterialTheme.colorScheme.primary.copy(0.25f),
-                        shape = RoundedCornerShape(5.dp),
-                    )
-                    .padding(5.dp),
-                style = MaterialTheme.typography.titleLarge,
-                fontSize = 10.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-        val addTopSpacing by retain {
-            derivedStateOf {
-                showTitle || showNote || showDate || showHost
-            }
-        }
-        if (!preferences.showMenuOnGridLinkClick) {
-            Box(
-                modifier =
-                Modifier.padding(top = if (addTopSpacing) 10.dp else 0.dp)
-                    .fillMaxWidth()
-                    .background(ButtonDefaults.filledTonalButtonColors().containerColor)
-                    .height(36.dp)
-                    .clickable(
-                        interactionSource = null,
-                        indication = null,
-                        onClick = linkComponentParam.onMoreIconClick,
-                    )
-                    .pointerHoverIcon(PointerIcon.Hand),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(imageVector = Icons.Default.MoreHoriz, contentDescription = null)
-            }
-        } else if (addTopSpacing) {
-            Spacer(modifier = Modifier.height(10.dp))
         }
     }
 }

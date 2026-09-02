@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +32,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.Localization
+import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.rememberLocalizedString
 
 @Composable
@@ -91,7 +93,7 @@ fun LogsScreen(
                 modifier =
                 Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                     .padding(it)
-                    .clickable(
+                    .highlightOnFocused(shape = ButtonDefaults.shape).clickable(
                         onClick = {},
                         indication = null,
                         interactionSource =
