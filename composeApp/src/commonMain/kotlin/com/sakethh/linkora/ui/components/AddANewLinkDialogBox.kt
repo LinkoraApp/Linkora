@@ -257,19 +257,21 @@ fun AddANewLinkDialogBox(
                         modifier = Modifier.animateContentSize().fillMaxSize()
                             .navigationBarsPadding(),
                     ) {
-                        TopPartOfAddANewLinkDialogBox(
-                            isDataExtractingForTheLink = isDataExtractingForTheLink.value,
-                            linkTextFieldValue = linkTextFieldValue,
-                            titleTextFieldValue = titleTextFieldValue,
-                            noteTextFieldValue = noteTextFieldValue,
-                            isAutoDetectTitleEnabled = isAutoDetectTitleEnabled,
-                            isForceSaveWithoutFetchingMetaDataEnabled =
-                                isForceSaveWithoutFetchingMetaDataEnabled,
-                            currentFolder = addNewLinkDialogParams.currentFolder,
-                            imgUrlTextFieldValue = imgUrlTextFieldValue,
-                            preferences = preferences,
-                            shouldAutofocus = addNewLinkDialogParams.shouldAutofocus,
-                        )
+                        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                            TopPartOfAddANewLinkDialogBox(
+                                isDataExtractingForTheLink = isDataExtractingForTheLink.value,
+                                linkTextFieldValue = linkTextFieldValue,
+                                titleTextFieldValue = titleTextFieldValue,
+                                noteTextFieldValue = noteTextFieldValue,
+                                isAutoDetectTitleEnabled = isAutoDetectTitleEnabled,
+                                isForceSaveWithoutFetchingMetaDataEnabled =
+                                    isForceSaveWithoutFetchingMetaDataEnabled,
+                                currentFolder = addNewLinkDialogParams.currentFolder,
+                                imgUrlTextFieldValue = imgUrlTextFieldValue,
+                                preferences = preferences,
+                                shouldAutofocus = addNewLinkDialogParams.shouldAutofocus,
+                            )
+                        }
                         VerticalDivider(
                             modifier =
                                 Modifier.padding(

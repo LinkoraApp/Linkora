@@ -110,7 +110,7 @@ fun WebPageCaptureScreen() {
                         isSwitchNeeded = true,
                         isSwitchEnabled = preferences.useWebCaptures,
                         onSwitchStateChange = {
-                            if (preferences.webCapturesLocation.isBlank()) return@SettingComponentParam
+                            if (preferences.webCapturesLocation.isBlank() && platform !is Platform.Android.TV) return@SettingComponentParam
 
                             dataSettingsScreenVM.changeSettingPreferenceValue(
                                 preferenceKey = AppPreferences.USE_WEB_CAPTURES,
@@ -129,15 +129,15 @@ fun WebPageCaptureScreen() {
                         shouldFilledIconBeUsed = false,
                     ),
                 )
-                if (preferences.webCapturesLocation.isNotBlank()) {
+                if (preferences.webCapturesLocation.isNotBlank() || platform is Platform.Android.TV) {
                     VerticalInfoCard(
-                        info = "Open any link's menu and select 'Open Capture Folder' to view its saved webpage files.\n\nWeb-page Captures directory: ${preferences.webCapturesLocation}",
+                        info = "Open any link's menu and select 'Open Capture Folder' to view its saved webpage files.\n\nWeb-page Captures directory: ${if (platform is Platform.Android.TV) "Documents/Linkora/${ExportLocationType.WEB_CAPTURE.dirRef}" else preferences.webCapturesLocation}",
                         paddingValues = PaddingValues(start = 15.dp, end = 15.dp, top = 15.dp),
                     )
                 }
             }
 
-            if (preferences.webCapturesLocation.isBlank()) {
+            if (preferences.webCapturesLocation.isBlank() && platform !is Platform.Android.TV) {
                 item {
                     VerticalInfoCard(
                         info =
@@ -184,14 +184,14 @@ fun WebPageCaptureScreen() {
                         },
                         modifier = Modifier.padding(horizontal = 15.dp).fillMaxWidth()
                             .highlightOnFocused().clickable(onClick = {
-                            if (platform is Platform.Android.TV) {
-                                dataSettingsScreenVM.changeExportLocation(
-                                    exportLocation = webCaptureLocation,
-                                    platform = platform,
-                                    exportLocationType = ExportLocationType.WEB_CAPTURE,
-                                )
-                            }
-                        }, indication = null, interactionSource = null),
+                                if (platform is Platform.Android.TV) {
+                                    dataSettingsScreenVM.changeExportLocation(
+                                        exportLocation = webCaptureLocation,
+                                        platform = platform,
+                                        exportLocationType = ExportLocationType.WEB_CAPTURE,
+                                    )
+                                }
+                            }, indication = null, interactionSource = null),
                     )
                     Spacer(modifier = Modifier.height(150.dp))
                 }

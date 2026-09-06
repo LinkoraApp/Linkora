@@ -35,6 +35,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -84,6 +85,7 @@ class SnapshotRepoImpl(
                     it.areSnapshotsEnabled
                 }
                 .debounce(1000)
+                .distinctUntilChanged()
                 .collectLatest {
                     if (it) {
                         snapshotsJob =

@@ -221,7 +221,7 @@ fun booleanPreferencesKey(key: String) = PreferenceKey.BooleanPreferencesKey(key
 
 @Composable
 fun supportsWideDisplay(): Boolean = with(LocalDensity.current) {
-    LocalWindowInfo.current.containerSize.width.toDp() > 840.dp
+    LocalWindowInfo.current.containerSize.width.toDp() >= 840.dp
 }
 
 suspend fun UriHandler.openUriOrNotify(uri: String) {

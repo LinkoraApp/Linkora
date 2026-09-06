@@ -198,7 +198,7 @@ class DataSettingsScreenVM(
                 }.onSuccess { (rawExportString) ->
                     try {
                         fileManager.writeRawExportStringToFile(
-                            exportLocation = preferencesRepository.getPreferences().currentExportLocation,
+                            exportLocation = preferencesAsFlow.value.currentExportLocation,
                             exportFileType = exportFileType,
                             rawExportString = rawExportString,
                             onCompletion = {
@@ -304,7 +304,8 @@ class DataSettingsScreenVM(
 
     fun captureAllWebPages() {
         viewModelScope.launch {
-            if (preferencesAsFlow.value.webCapturesLocation.isBlank()) return@launch
+            if (preferencesAsFlow.value.webCapturesLocation.isBlank() && platform !is Platform.Android.TV) return@launch
+
             webCapture.onCaptureAllWebPages(
                 preferences = preferencesAsFlow.value,
                 localLinksRepo = linksRepo,

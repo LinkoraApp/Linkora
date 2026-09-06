@@ -4,6 +4,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -52,6 +53,7 @@ import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.SnapshotFormat
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.ui.LocalPlatform
+import com.sakethh.linkora.ui.components.HorizontalInfoCard
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
@@ -133,76 +135,83 @@ fun SnapshotsScreen() {
             }
             if (preferences.areSnapshotsEnabled) {
                 item {
-                    TextField(
-                        supportingText = {
-                            if (platform is Platform.Android) {
+                    if (platform is Platform.Android.TV) {
+                        HorizontalInfoCard(
+                            info = "Snapshots are saved in Documents/Linkora/${ExportLocationType.SNAPSHOT.dirRef}",
+                            paddingValues = PaddingValues(start = 15.dp, end = 15.dp)
+                        )
+                    } else {
+                        TextField(
+                            supportingText = {
+                                if (platform is Platform.Android) {
+                                    Text(
+                                        text =
+                                            Localization.rememberLocalizedString(
+                                                Localization.Key.SnapshotsBackupLocationWarning,
+                                            ),
+                                        style = MaterialTheme.typography.titleSmall,
+                                    )
+                                }
+                            },
+                            textStyle = MaterialTheme.typography.titleSmall,
+                            trailingIcon = {
+                                if (platform !is Platform.Android.TV) {
+                                    FilledTonalIconButton(
+                                        modifier =
+                                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                                .pressScaleEffect()
+                                                .padding(end = 5.dp),
+                                        onClick = {
+                                            dataSettingsScreenVM.changeExportLocation(
+                                                exportLocation = backupLocation,
+                                                platform = platform,
+                                                exportLocationType = ExportLocationType.SNAPSHOT,
+                                            )
+                                        },
+                                    ) {
+                                        Icon(
+                                            imageVector =
+                                                if (platform is Platform.Android) {
+                                                    Icons.Default.FolderOpen
+                                                } else {
+                                                    Icons.Default.Save
+                                                },
+                                            contentDescription = null,
+                                        )
+                                    }
+                                }
+                            },
+                            readOnly = platform is Platform.Android,
+                            label = {
                                 Text(
                                     text =
                                         Localization.rememberLocalizedString(
-                                            Localization.Key.SnapshotsBackupLocationWarning,
+                                            Localization.Key.SnapshotsBackupLocation,
                                         ),
-                                    style = MaterialTheme.typography.titleSmall,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    textAlign = TextAlign.Start,
                                 )
-                            }
-                        },
-                        textStyle = MaterialTheme.typography.titleSmall,
-                        trailingIcon = {
-                            if (platform !is Platform.Android.TV) {
-                                FilledTonalIconButton(
-                                    modifier =
-                                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                            .pressScaleEffect()
-                                            .padding(end = 5.dp),
-                                    onClick = {
-                                        dataSettingsScreenVM.changeExportLocation(
-                                            exportLocation = backupLocation,
-                                            platform = platform,
-                                            exportLocationType = ExportLocationType.SNAPSHOT,
-                                        )
-                                    },
-                                ) {
-                                    Icon(
-                                        imageVector =
-                                            if (platform is Platform.Android) {
-                                                Icons.Default.FolderOpen
-                                            } else {
-                                                Icons.Default.Save
-                                            },
-                                        contentDescription = null,
-                                    )
-                                }
-                            }
-                        },
-                        readOnly = platform is Platform.Android,
-                        label = {
-                            Text(
-                                text =
-                                    Localization.rememberLocalizedString(
-                                        Localization.Key.SnapshotsBackupLocation,
-                                    ),
-                                style = MaterialTheme.typography.titleMedium,
-                                textAlign = TextAlign.Start,
-                            )
-                        },
-                        value = backupLocation,
-                        onValueChange = {
-                            backupLocation = it
-                        },
-                        modifier =
-                            Modifier.padding(
-                                start = 15.dp,
-                                end = 15.dp,
-                            )
-                                .fillMaxWidth().highlightOnFocused().clickable(onClick = {
-                                    if (platform is Platform.Android.TV) {
-                                        dataSettingsScreenVM.changeExportLocation(
-                                            exportLocation = backupLocation,
-                                            platform = platform,
-                                            exportLocationType = ExportLocationType.SNAPSHOT,
-                                        )
-                                    }
-                                }, indication = null, interactionSource = null),
-                    )
+                            },
+                            value = backupLocation,
+                            onValueChange = {
+                                backupLocation = it
+                            },
+                            modifier =
+                                Modifier.padding(
+                                    start = 15.dp,
+                                    end = 15.dp,
+                                )
+                                    .fillMaxWidth().highlightOnFocused().clickable(onClick = {
+                                        if (platform is Platform.Android.TV) {
+                                            dataSettingsScreenVM.changeExportLocation(
+                                                exportLocation = backupLocation,
+                                                platform = platform,
+                                                exportLocationType = ExportLocationType.SNAPSHOT,
+                                            )
+                                        }
+                                    }, indication = null, interactionSource = null),
+                        )
+                    }
                 }
                 item {
                     SettingComponent(

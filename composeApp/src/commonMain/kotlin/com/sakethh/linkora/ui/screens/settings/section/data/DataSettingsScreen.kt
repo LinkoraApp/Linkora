@@ -348,62 +348,69 @@ fun DataSettingsScreen() {
                 }
 
                 item {
-                    TextField(
-                        supportingText = {
-                            Text(
-                                text = Localization.Key.CurrentExportLocationSupportingText.rememberLocalizedString(),
-                                style = MaterialTheme.typography.titleSmall,
-                            )
-                        },
-                        textStyle = MaterialTheme.typography.titleSmall,
-                        trailingIcon = {
-                            if (!isOnTV) {
-                                FilledTonalIconButton(
-                                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                        .pressScaleEffect().padding(end = 5.dp),
-                                    onClick = {
+                    if (platform is Platform.Android.TV) {
+                        HorizontalInfoCard(
+                            info = "Exports are saved in Documents/Linkora/${ExportLocationType.EXPORT.dirRef}",
+                            paddingValues = PaddingValues(start = 15.dp, end = 15.dp)
+                        )
+                    } else {
+                        TextField(
+                            supportingText = {
+                                Text(
+                                    text = Localization.Key.CurrentExportLocationSupportingText.rememberLocalizedString(),
+                                    style = MaterialTheme.typography.titleSmall,
+                                )
+                            },
+                            textStyle = MaterialTheme.typography.titleSmall,
+                            trailingIcon = {
+                                if (!isOnTV) {
+                                    FilledTonalIconButton(
+                                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                            .pressScaleEffect().padding(end = 5.dp),
+                                        onClick = {
+                                            dataSettingsScreenVM.changeExportLocation(
+                                                exportLocation = exportLocation.value,
+                                                platform = platform,
+                                                exportLocationType = ExportLocationType.EXPORT,
+                                            )
+                                        },
+                                    ) {
+                                        Icon(
+                                            imageVector = if (platform is Platform.Android) {
+                                                Icons.Default.FolderOpen
+                                            } else {
+                                                Icons.Default.Save
+                                            },
+                                            contentDescription = null,
+                                        )
+                                    }
+                                }
+                            },
+                            readOnly = platform is Platform.Android,
+                            label = {
+                                Text(
+                                    text = Localization.Key.CurrentExportLocation.rememberLocalizedString(),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    textAlign = TextAlign.Start,
+                                )
+                            },
+                            value = exportLocation.value,
+                            onValueChange = {
+                                exportLocation.value = it
+                            },
+                            modifier = Modifier.padding(start = 15.dp, end = 15.dp).fillMaxWidth()
+                                .highlightOnFocused()
+                                .clickable(indication = null, interactionSource = null, onClick = {
+                                    if (isOnTV) {
                                         dataSettingsScreenVM.changeExportLocation(
                                             exportLocation = exportLocation.value,
                                             platform = platform,
                                             exportLocationType = ExportLocationType.EXPORT,
                                         )
-                                    },
-                                ) {
-                                    Icon(
-                                        imageVector = if (platform is Platform.Android) {
-                                            Icons.Default.FolderOpen
-                                        } else {
-                                            Icons.Default.Save
-                                        },
-                                        contentDescription = null,
-                                    )
-                                }
-                            }
-                        },
-                        readOnly = platform is Platform.Android,
-                        label = {
-                            Text(
-                                text = Localization.Key.CurrentExportLocation.rememberLocalizedString(),
-                                style = MaterialTheme.typography.titleMedium,
-                                textAlign = TextAlign.Start,
-                            )
-                        },
-                        value = exportLocation.value,
-                        onValueChange = {
-                            exportLocation.value = it
-                        },
-                        modifier = Modifier.padding(start = 15.dp, end = 15.dp).fillMaxWidth()
-                            .highlightOnFocused()
-                            .clickable(indication = null, interactionSource = null, onClick = {
-                                if (isOnTV) {
-                                    dataSettingsScreenVM.changeExportLocation(
-                                        exportLocation = exportLocation.value,
-                                        platform = platform,
-                                        exportLocationType = ExportLocationType.EXPORT,
-                                    )
-                                }
-                            }),
-                    )
+                                    }
+                                }),
+                        )
+                    }
                 }
 
                 item {

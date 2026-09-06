@@ -29,8 +29,11 @@ import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.RefreshLinksRepo
 import com.sakethh.linkora.domain.repository.local.WebCaptureRepo
+import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
+import com.sakethh.linkora.utils.getDefaultFolder
 import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.getPOSIXPathFromSafUri
+import com.sakethh.linkora.utils.onTV
 import com.sakethh.linkora.worker.AllLinksWebCaptureWorker
 import com.sakethh.linkora.worker.RefreshAllLinksWorker
 import com.sakethh.linkora.worker.WebCaptureWorker
@@ -42,7 +45,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileNotFoundException
-import java.io.FileOutputStream
 import java.io.RandomAccessFile
 import java.util.UUID
 
@@ -253,66 +255,125 @@ actual class NativeUtils(
             androidDesktopWebCapture.nuke()
         }
 
+        private val captureDBFiles = listOf(
+            "${WebCaptureDatabase.NAME}.db",
+            "${WebCaptureDatabase.NAME}.db-wal",
+            "${WebCaptureDatabase.NAME}.db-shm",
+            "${WebCaptureDatabase.NAME}.db.lck",
+        )
+
+        private suspend fun checkAndFixDBPermissions(
+            dbFilePath: String,
+            webCaptureDatabaseManager: WebCaptureDatabaseManager,
+            initPath: String,
+            onAccessError: suspend () -> Unit
+        ) = withContext(Dispatchers.IO) {
+            try {
+                RandomAccessFile(dbFilePath, "r").use { it.close() }
+            } catch (e: FileNotFoundException) {
+                if (e.message?.contains("EACCES") == true) {
+                    onAccessError()
+                }
+            } finally {
+                webCaptureDatabaseManager.initAndGetDatabase(initPath)
+            }
+        }
+
+        private fun recreateDB(
+            dbFilePath: String,
+            readExistingDb: (File) -> Unit,
+            deleteExistingFiles: () -> Unit
+        ) {
+            val tempDbFile = File(context.cacheDir, "temp_db_restore.db")
+
+            readExistingDb(tempDbFile)
+            deleteExistingFiles()
+
+            val newDbFile = File(dbFilePath)
+            newDbFile.parentFile?.mkdirs()
+
+            if (!newDbFile.exists()) {
+                newDbFile.createNewFile()
+            }
+
+            if (tempDbFile.exists()) {
+                tempDbFile.copyTo(newDbFile, overwrite = true)
+                tempDbFile.delete()
+            }
+        }
+
+        private suspend fun prepareExternalDatabaseViaSAF(
+            captureLocation: String,
+            webCaptureDatabaseManager: WebCaptureDatabaseManager
+        ) {
+            val rawDirPath = getPOSIXPathFromSafUri(
+                context.applicationContext,
+                captureLocation.toUri()
+            ).toString()
+            val dbFilePath = "$rawDirPath/${WebCaptureDatabase.NAME}.db"
+
+            checkAndFixDBPermissions(dbFilePath, webCaptureDatabaseManager, captureLocation, onAccessError = {
+                val webCaptureFolder = DocumentFile.fromTreeUri(context, captureLocation.toUri())
+                    ?: return@checkAndFixDBPermissions
+
+                recreateDB(
+                    dbFilePath = dbFilePath,
+                    readExistingDb = { tempFile ->
+                        val existingDbDoc = webCaptureFolder.findFile("${WebCaptureDatabase.NAME}.db")
+                        if (existingDbDoc != null && existingDbDoc.exists()) {
+                            context.contentResolver.openInputStream(existingDbDoc.uri)?.use { input ->
+                                tempFile.outputStream().use { output -> input.copyTo(output) }
+                            }
+                        }
+                    },
+                    deleteExistingFiles = {
+                        captureDBFiles.forEach { fileName ->
+                            webCaptureFolder.findFile(fileName)?.delete()
+                        }
+                    }
+                )
+            })
+        }
+
+        private suspend fun prepareExternalDatabaseViaPOSIX(
+            webCaptureFolder: File,
+            webCaptureDatabaseManager: WebCaptureDatabaseManager
+        ) {
+            val dbFilePath = "${webCaptureFolder.absolutePath}/${WebCaptureDatabase.NAME}.db"
+            val defaultPath = getDefaultFolder(ExportLocationType.WEB_CAPTURE).absolutePath
+
+            checkAndFixDBPermissions(dbFilePath, webCaptureDatabaseManager, defaultPath, onAccessError = {
+                recreateDB(
+                    dbFilePath = dbFilePath,
+                    readExistingDb = { tempFile ->
+                        val existingDbFile = File(webCaptureFolder, "${WebCaptureDatabase.NAME}.db")
+                        if (existingDbFile.exists()) {
+                            existingDbFile.copyTo(tempFile, overwrite = true)
+                        }
+                    },
+                    deleteExistingFiles = {
+                        captureDBFiles.forEach { fileName ->
+                            File(webCaptureFolder, fileName).delete()
+                        }
+                    }
+                )
+            })
+        }
+
         actual suspend fun prepareExternalDatabase(
             captureLocation: String,
             webCaptureDatabaseManager: WebCaptureDatabaseManager,
         ): Unit = withContext(Dispatchers.IO) {
-            val rawDirPath = getPOSIXPathFromSafUri(
-                context.applicationContext,
-                captureLocation.toUri(),
-            ).toString()
-            val dbFilePath = "$rawDirPath/${WebCaptureDatabase.NAME}.db"
-            try {
-                RandomAccessFile(
-                    dbFilePath,
-                    "r",
-                ).use { it.close() }
-            } catch (e: FileNotFoundException) {
-                // we get the same exception when file literally doesn't exist
-                // or even if we are blocked from accessing the file
-
-                if (e.message?.contains("EACCES") == true) {
-                    val webCaptureLocation =
-                        DocumentFile.fromTreeUri(context, captureLocation.toUri())
-                            ?: return@withContext
-                    val existingDbFile =
-                        webCaptureLocation.findFile("${WebCaptureDatabase.NAME}.db")
-                    val tempDbFile = File(context.cacheDir, "temp.db")
-
-                    if (existingDbFile != null && existingDbFile.exists()) {
-                        context.contentResolver.openInputStream(existingDbFile.uri)?.use { input ->
-                            tempDbFile.outputStream().use { output ->
-                                input.copyTo(output)
-                            }
-                        }
-                    }
-
-                    listOf(
-                        "${WebCaptureDatabase.NAME}.db",
-                        "${WebCaptureDatabase.NAME}.db-wal",
-                        "${WebCaptureDatabase.NAME}.db-shm",
-                        "${WebCaptureDatabase.NAME}.db.lck",
-                    ).forEach { fileName ->
-                        webCaptureLocation.findFile(fileName)?.delete()
-                    }
-
-                    // ownership of the database is now set to app UID and not the underlying system handling it;
-                    // SAF WILL NOT WORK IN OUR CASE
-                    val newDbFile = File(dbFilePath)
-                    newDbFile.parentFile?.mkdirs()
-                    newDbFile.createNewFile()
-
-                    if (tempDbFile.exists()) {
-                        tempDbFile.inputStream().use { input ->
-                            FileOutputStream(newDbFile).use { output ->
-                                input.copyTo(output)
-                            }
-                        }
-                        tempDbFile.delete()
-                    }
-                }
-            } finally {
-                webCaptureDatabaseManager.initAndGetDatabase(captureLocation)
+            val isOnTV = with(context) {
+                onTV()
+            }
+            if (isOnTV) {
+                prepareExternalDatabaseViaPOSIX(
+                    getDefaultFolder(ExportLocationType.WEB_CAPTURE),
+                    webCaptureDatabaseManager
+                )
+            } else {
+                prepareExternalDatabaseViaSAF(captureLocation, webCaptureDatabaseManager)
             }
         }
     }

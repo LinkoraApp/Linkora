@@ -19,10 +19,13 @@ import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.Network
 import com.sakethh.linkora.platform.PermissionManager
 import com.sakethh.linkora.platform.PlatformPreference
+import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.utils.AndroidConstants
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.currentAndroidPlatform
+import com.sakethh.linkora.utils.getDefaultFolder
 import com.sakethh.linkora.utils.getPOSIXPathFromSafUri
+import com.sakethh.linkora.utils.onTV
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import okio.Path.Companion.toPath
@@ -71,9 +74,12 @@ class LinkoraApp : Application() {
                     ),
                 ),
                 webCapture = NativeUtils.WebCapture(applicationContext),
-                webCaptureDatabaseManager = WebCaptureDatabaseManager(databaseBuilder = { webCaptureDirPath ->
-                    val folderPath =
-                        getPOSIXPathFromSafUri(applicationContext, webCaptureDirPath.toUri())
+                webCaptureDatabaseManager = WebCaptureDatabaseManager(databaseBuilder = { webCaptureDirUri ->
+                    val folderPath = if (with(applicationContext) { onTV() }) {
+                        getDefaultFolder(ExportLocationType.WEB_CAPTURE).absolutePath
+                    } else {
+                        getPOSIXPathFromSafUri(applicationContext, webCaptureDirUri.toUri())
+                    }
                     val dbFilePath = "$folderPath/${WebCaptureDatabase.NAME}.db"
                     Room.databaseBuilder<WebCaptureDatabase>(
                         name = dbFilePath,

@@ -16,8 +16,10 @@ import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.model.CaptureTrack
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.utils.createPOSIXOwnedFile
+import com.sakethh.linkora.utils.getDefaultFolder
 import com.sakethh.linkora.utils.getOrCreateFolderUuid
 import com.sakethh.linkora.utils.isAllowedByWebCapturePolicies
+import com.sakethh.linkora.utils.onTV
 import com.sakethh.linkora.utils.prepareWebCaptureFolder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -98,28 +100,47 @@ class WebCaptureWorker(
                 return@coroutineScope Result.success()
             }
 
-            val baseCaptureDir = DocumentFile.fromTreeUri(
-                applicationContext,
-                preferences.webCapturesLocation.toUri(),
-            ) ?: return@coroutineScope Result.failure()
-
             val folderUuid = webCaptureRepo.getOrCreateFolderUuid(url)
-            val linkWebCaptureFolder = baseCaptureDir.prepareWebCaptureFolder(
-                folderUuid = folderUuid,
-                saveAsVersions = preferences.webCaptureSaveAsVersions,
-                retainAllVersions = preferences.webCaptureRetainAllVersions,
-                maxVersions = preferences.webCaptureMaxVersions,
-            )
 
-            val folderUri =
-                linkWebCaptureFolder?.uri?.toString() ?: return@coroutineScope Result.failure()
+            val isOnTV = with(applicationContext) {
+                onTV()
+            }
 
-            val captureFilePOSIXPath = createPOSIXOwnedFile(
-                context = applicationContext,
-                folderUriString = folderUri,
-                exportFileType = ExportFileType.HTML,
-                exportLocationType = ExportLocationType.WEB_CAPTURE
-            ) ?: return@coroutineScope Result.failure()
+            val captureFilePOSIXPath = if (isOnTV) {
+                val linkWebCaptureFolder =
+                    getDefaultFolder(ExportLocationType.WEB_CAPTURE).prepareWebCaptureFolder(
+                        folderUuid,
+                        saveAsVersions = preferences.webCaptureSaveAsVersions,
+                        retainAllVersions = preferences.webCaptureRetainAllVersions,
+                        maxVersions = preferences.webCaptureMaxVersions,
+                    )
+                createPOSIXOwnedFile(
+                    folder = linkWebCaptureFolder,
+                    exportFileType = ExportFileType.HTML,
+                    exportLocationType = ExportLocationType.WEB_CAPTURE
+                ) ?: return@coroutineScope Result.failure()
+            } else {
+                val baseCaptureDir = DocumentFile.fromTreeUri(
+                    applicationContext,
+                    preferences.webCapturesLocation.toUri(),
+                ) ?: return@coroutineScope Result.failure()
+
+                val linkWebCaptureFolder = baseCaptureDir.prepareWebCaptureFolder(
+                    folderUuid = folderUuid,
+                    saveAsVersions = preferences.webCaptureSaveAsVersions,
+                    retainAllVersions = preferences.webCaptureRetainAllVersions,
+                    maxVersions = preferences.webCaptureMaxVersions,
+                )
+
+                val folderUri =
+                    linkWebCaptureFolder?.uri?.toString() ?: return@coroutineScope Result.failure()
+                createPOSIXOwnedFile(
+                    context = applicationContext,
+                    folderUriString = folderUri,
+                    exportFileType = ExportFileType.HTML,
+                    exportLocationType = ExportLocationType.WEB_CAPTURE
+                ) ?: return@coroutineScope Result.failure()
+            }
 
             var isSuccess = false
 

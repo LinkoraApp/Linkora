@@ -5,6 +5,8 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.os.Environment
 import android.provider.DocumentsContract
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
@@ -29,10 +31,13 @@ import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.AndroidUIEvent
 import com.sakethh.linkora.utils.Utils
 import com.sakethh.linkora.utils.createNewFile
+import com.sakethh.linkora.utils.getDefaultFolder
 import com.sakethh.linkora.utils.getSystemEpochSeconds
+import com.sakethh.linkora.utils.onTV
 import com.sakethh.linkora.utils.pushSnackbar
 import com.sakethh.linkora.worker.SnapshotWorker
 import getCertificateInfo
+import getFileNameWithTimestamp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -41,13 +46,14 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.io.ByteArrayInputStream
+import java.io.File
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 
 actual class FileManager(
     private val context: Context,
 ) {
-    private suspend fun writeToFile(
+    private suspend fun writeFileToSelectedDir(
         exportLocation: String,
         exportFileType: ExportFileType,
         exportLocationType: ExportLocationType,
@@ -87,13 +93,38 @@ actual class FileManager(
         rawExportString: RawExportString,
         onCompletion: suspend (String) -> Unit,
     ) {
-        writeToFile(
-            exportLocation = exportLocation,
-            exportFileType = exportFileType,
-            exportLocationType = exportLocationType,
-            byteArray = rawExportString.toByteArray(),
-            onCompletion = onCompletion,
-        )
+        val isOnTV = with(context) {
+            onTV()
+        }
+        if (isOnTV) {
+            writeFileToPublicDir(
+                exportFileType = exportFileType,
+                exportLocationType = exportLocationType,
+                rawExportString = rawExportString,
+                onCompletion = onCompletion
+            )
+        } else {
+            writeFileToSelectedDir(
+                exportLocation = exportLocation,
+                exportFileType = exportFileType,
+                exportLocationType = exportLocationType,
+                byteArray = rawExportString.toByteArray(),
+                onCompletion = onCompletion,
+            )
+        }
+    }
+
+    private suspend fun writeFileToPublicDir(
+        exportFileType: ExportFileType,
+        exportLocationType: ExportLocationType,
+        rawExportString: RawExportString,
+        onCompletion: suspend (String) -> Unit,
+    ) = withContext(Dispatchers.IO) {
+        val defaultFolder = getDefaultFolder(exportLocationType)
+        val exportFileName = getFileNameWithTimestamp(exportFileType, exportLocationType)
+        val file = File(defaultFolder, exportFileName)
+        file.writeText(rawExportString)
+        onCompletion(exportFileName)
     }
 
     actual suspend fun saveSyncServerCertificateInternally(
@@ -133,30 +164,79 @@ actual class FileManager(
         }
     }
 
+    private suspend fun deleteAutoBackupsViaSAF(
+        backupLocation: String,
+        threshold: Int,
+        onCompletion: (Int) -> Unit
+    ) {
+        withContext(Dispatchers.IO) {
+            DocumentFile.fromTreeUri(context, backupLocation.toUri())?.listFiles()?.filter {
+                it.name?.startsWith("LinkoraSnapshot-") == true
+            }?.let { snapshots ->
+                val snapshotsCount = snapshots.count()
+                if (snapshotsCount > threshold) {
+                    snapshots.sortedBy {
+                        it.lastModified()
+                    }.take(snapshotsCount - threshold).apply {
+                        forEach {
+                            it.delete()
+                        }
+                        onCompletion(count())
+                    }
+                } else {
+                    onCompletion(0)
+                }
+            }
+        }
+    }
+
+    private suspend fun deleteAutoBackupsViaPOSIX(
+        backupFolder: File,
+        threshold: Int,
+        onCompletion: (Int) -> Unit
+    ) {
+        withContext(Dispatchers.IO) {
+            backupFolder.listFiles()?.filter {
+                it.name.startsWith("LinkoraSnapshot-")
+            }?.let { snapshots ->
+                val snapshotsCount = snapshots.count()
+                if (snapshotsCount > threshold) {
+                    snapshots.sortedBy {
+                        it.lastModified()
+                    }.take(snapshotsCount - threshold).apply {
+                        forEach {
+                            it.delete()
+                        }
+                        onCompletion(count())
+                    }
+                } else {
+                    onCompletion(0)
+                }
+            }
+        }
+    }
+
     actual suspend fun deleteAutoBackups(
         backupLocation: String,
         threshold: Int,
         onCompletion: (Int) -> Unit,
     ) {
         try {
-            withContext(Dispatchers.IO) {
-                DocumentFile.fromTreeUri(context, backupLocation.toUri())?.listFiles()?.filter {
-                        it.name?.startsWith("LinkoraSnapshot-") == true
-                }?.let { snapshots ->
-                        val snapshotsCount = snapshots.count()
-                        if (snapshotsCount > threshold) {
-                            snapshots.sortedBy {
-                                    it.lastModified()
-                            }.take(snapshotsCount - threshold).apply {
-                                    forEach {
-                                        it.delete()
-                                    }
-                                    onCompletion(count())
-                                }
-                        } else {
-                            onCompletion(0)
-                        }
-                    }
+            val isOnTV = with(context) {
+                onTV()
+            }
+            if (isOnTV) {
+                deleteAutoBackupsViaPOSIX(
+                    backupFolder = getDefaultFolder(ExportLocationType.SNAPSHOT),
+                    threshold = threshold,
+                    onCompletion = onCompletion
+                )
+            } else {
+                deleteAutoBackupsViaSAF(
+                    backupLocation = backupLocation,
+                    threshold = threshold,
+                    onCompletion = onCompletion
+                )
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -315,15 +395,39 @@ actual class FileManager(
                 UIEvent.Type.ShowSnackbar("No saved webpage found for this link.")
             )
 
-        val rootFolderUri = DependencyContainer.preferencesRepo.getPreferences().webCapturesLocation
-        val captureFolderUri = DocumentFile.fromTreeUri(context, rootFolderUri.toUri())
-            ?.findFile(captureFolderUUID)?.uri ?: return pushUIEvent(
-            UIEvent.Type.ShowSnackbar("No saved webpage found for this link.")
-        )
-
+        val isOnTV = with(context) {
+            onTV()
+        }
         val intent = Intent(Intent.ACTION_VIEW)
-        intent.setDataAndType(captureFolderUri, DocumentsContract.Document.MIME_TYPE_DIR)
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        if (isOnTV) {
+            val captureFolder =
+                File(getDefaultFolder(ExportLocationType.WEB_CAPTURE), captureFolderUUID)
+
+            if (!captureFolder.exists()) {
+                pushUIEvent(
+                    UIEvent.Type.ShowSnackbar("No saved webpage found for this link.")
+                )
+                return
+            }
+
+            intent.setDataAndType(
+                captureFolder.absolutePath.toUri(),
+                DocumentsContract.Document.MIME_TYPE_DIR
+            )
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+        } else {
+            val rootFolderUri =
+                DependencyContainer.preferencesRepo.getPreferences().webCapturesLocation
+
+            val captureFolderUri = DocumentFile.fromTreeUri(context, rootFolderUri.toUri())
+                ?.findFile(captureFolderUUID)?.uri ?: return pushUIEvent(
+                UIEvent.Type.ShowSnackbar("No saved webpage found for this link.")
+            )
+
+            intent.setDataAndType(captureFolderUri, DocumentsContract.Document.MIME_TYPE_DIR)
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
 
         try {
             context.startActivity(intent)

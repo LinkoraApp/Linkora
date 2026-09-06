@@ -20,7 +20,6 @@ import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.ui.theme.DarkColors
 import com.sakethh.linkora.ui.theme.LightColors
-import com.sakethh.linkora.ui.utils.linkoraLog
 import getFileNameWithTimestamp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -68,6 +67,25 @@ suspend fun createPOSIXOwnedFile(
         }
     } else {
         null
+    }
+} catch (e: Exception) {
+    e.printStackTrace()
+    null
+}
+
+suspend fun createPOSIXOwnedFile(
+    folder: File,
+    exportFileType: ExportFileType,
+    exportLocationType: ExportLocationType
+): String? = try {
+    val fileName = getFileNameWithTimestamp(
+        exportFileType = exportFileType,
+        exportLocationType = exportLocationType,
+    )
+    withContext(Dispatchers.IO) {
+        val file = File(folder, fileName)
+        file.createNewFile()
+        file.absolutePath
     }
 } catch (e: Exception) {
     e.printStackTrace()
@@ -198,3 +216,19 @@ fun getAppColorScheme(
             }
     }
 }
+
+fun getDefaultFolder(exportLocationType: ExportLocationType): File = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+        File(
+            Environment.getExternalStorageDirectory(),
+            "Linkora/${exportLocationType.dirRef}"
+        ).apply {
+            mkdirs()
+        }
+    } else {
+        File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS),
+            "Linkora/${exportLocationType.dirRef}"
+        ).apply {
+            mkdirs()
+        }
+    }

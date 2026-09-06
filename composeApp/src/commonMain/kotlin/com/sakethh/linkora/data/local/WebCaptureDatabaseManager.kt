@@ -12,7 +12,7 @@ import kotlinx.coroutines.sync.withLock
 // if this app used koin, this could be dynamically registered on the fly (i guess), but the current
 // DI handles it just fine.
 class WebCaptureDatabaseManager(
-    private val databaseBuilder: (path: String) -> WebCaptureDatabase,
+    private val databaseBuilder: (webCaptureDirUri: String) -> WebCaptureDatabase,
 ) {
     private var database: WebCaptureDatabase? = null
     private val mutex = Mutex()

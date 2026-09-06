@@ -20,8 +20,10 @@ import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.ui.screens.settings.section.data.OnGoingWebCaptureState
 import com.sakethh.linkora.utils.createPOSIXOwnedFile
+import com.sakethh.linkora.utils.getDefaultFolder
 import com.sakethh.linkora.utils.getOrCreateFolderUuid
 import com.sakethh.linkora.utils.isAllowedByWebCapturePolicies
+import com.sakethh.linkora.utils.onTV
 import com.sakethh.linkora.utils.prepareWebCaptureFolder
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
@@ -30,6 +32,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
+import java.io.File
 import java.util.UUID
 
 class AllLinksWebCaptureWorker(
@@ -62,7 +65,6 @@ class AllLinksWebCaptureWorker(
 
     override suspend fun doWork(): Result = coroutineScope {
         webCaptureNotificationService.clearNotifications()
-
         if (isStopped) {
             cleanup()
             return@coroutineScope Result.success()
@@ -107,11 +109,6 @@ class AllLinksWebCaptureWorker(
 
             if (linksToCapture.isEmpty()) return@coroutineScope Result.success()
 
-            val baseCaptureDir = DocumentFile.fromTreeUri(
-                applicationContext,
-                preferences.webCapturesLocation.toUri(),
-            ) ?: return@coroutineScope Result.failure()
-
             var processedCount = 0
 
             linksToCapture.asFlow()
@@ -132,21 +129,47 @@ class AllLinksWebCaptureWorker(
 
                         val folderUuid = webCaptureRepo.getOrCreateFolderUuid(link.url)
 
-                        val linkWebCaptureFolder = baseCaptureDir.prepareWebCaptureFolder(
-                            folderUuid = folderUuid,
-                            saveAsVersions = preferences.webCaptureSaveAsVersions,
-                            retainAllVersions = preferences.webCaptureRetainAllVersions,
-                            maxVersions = preferences.webCaptureMaxVersions,
-                        )
+                        val isOnTV = with(applicationContext) {
+                            onTV()
+                        }
 
-                        val folderUri = linkWebCaptureFolder?.uri?.toString() ?: return@flow
+                        val captureFilePOSIXPath = if (isOnTV) {
+                            val baseCaptureDir = getDefaultFolder(ExportLocationType.WEB_CAPTURE)
 
-                        val captureFilePOSIXPath = createPOSIXOwnedFile(
-                            context = applicationContext,
-                            folderUriString = folderUri,
-                            exportFileType = ExportFileType.HTML,
-                            exportLocationType = ExportLocationType.WEB_CAPTURE
-                        ) ?: return@flow
+                            val linkWebCaptureFolder = baseCaptureDir.prepareWebCaptureFolder(
+                                folderUuid = folderUuid,
+                                saveAsVersions = preferences.webCaptureSaveAsVersions,
+                                retainAllVersions = preferences.webCaptureRetainAllVersions,
+                                maxVersions = preferences.webCaptureMaxVersions,
+                            )
+
+                            createPOSIXOwnedFile(
+                                folder = linkWebCaptureFolder,
+                                exportFileType = ExportFileType.HTML,
+                                exportLocationType = ExportLocationType.WEB_CAPTURE
+                            ) ?: return@flow
+                        } else {
+                            val baseCaptureDir = DocumentFile.fromTreeUri(
+                                applicationContext,
+                                preferences.webCapturesLocation.toUri(),
+                            ) ?: return@flow
+
+                            val linkWebCaptureFolder = baseCaptureDir.prepareWebCaptureFolder(
+                                folderUuid = folderUuid,
+                                saveAsVersions = preferences.webCaptureSaveAsVersions,
+                                retainAllVersions = preferences.webCaptureRetainAllVersions,
+                                maxVersions = preferences.webCaptureMaxVersions,
+                            )
+
+                            val folderUri = linkWebCaptureFolder?.uri?.toString() ?: return@flow
+
+                            createPOSIXOwnedFile(
+                                context = applicationContext,
+                                folderUriString = folderUri,
+                                exportFileType = ExportFileType.HTML,
+                                exportLocationType = ExportLocationType.WEB_CAPTURE
+                            ) ?: return@flow
+                        }
 
                         androidDesktopWebCapture.saveHTMLPage(
                             url = link.url,
