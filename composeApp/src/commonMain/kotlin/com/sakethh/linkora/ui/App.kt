@@ -471,20 +471,18 @@ fun App(modifier: Modifier = Modifier) {
                         },
                         inCollectionDetailPane = currentFABContext.currentFolder != null,
                         onFolderCreateClick = { folderName, folderNote, onCompletion ->
-                            if (menuBtmSheetFolderEntries().contains(appVM.menuBtmSheetFor)) {
-                                collectionsScreenVM.insertANewFolder(
-                                    folder =
-                                        Folder(
-                                            name = folderName,
-                                            note = folderNote,
-                                            parentFolderId =
-                                                currentFABContext.currentFolder?.run {
-                                                    if (this.localId > 0) this.localId else null
-                                                },
-                                        ),
-                                    onCompletion = onCompletion,
-                                )
-                            }
+                            collectionsScreenVM.insertANewFolder(
+                                folder =
+                                    Folder(
+                                        name = folderName,
+                                        note = folderNote,
+                                        parentFolderId =
+                                            currentFABContext.currentFolder?.run {
+                                                if (this.localId > 0) this.localId else null
+                                            },
+                                    ),
+                                onCompletion = onCompletion,
+                            )
                         },
                         currentFolder =
                             currentFABContext.currentFolder?.run {
