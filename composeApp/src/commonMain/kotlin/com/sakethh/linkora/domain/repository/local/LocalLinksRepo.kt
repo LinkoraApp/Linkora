@@ -38,12 +38,6 @@ interface LocalLinksRepo {
         lastSeenId: Long?,
     ): Flow<Result<List<Link>>>
 
-    fun getLinksAsNonResultFlow(
-        linkType: LinkType,
-        parentFolderId: Long,
-        sortOption: String,
-    ): Flow<List<Link>>
-
     suspend fun getLinks(
         linkType: LinkType,
         sortOption: String,

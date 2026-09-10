@@ -34,6 +34,35 @@ object Constants {
     const val MAX_INSERTION_IN_DB_SINGLE_SHOT = 999
 
     const val EMPTY_LAST_SEEN_ID: Long = -1
+
+    /*
+     * this is a hack for something that shouldn't have been in the codebase earlier.
+     * i did allow two possibilities to determine the type of link, one is the linkType and the other is its parent id.
+     * now this in itself isn't an issue if insertions and updates were happening strictly on one of them,
+     * but i think that wasn't the case.
+     *
+     * so we now need this just to make sure we are retrieving data that somehow isn't properly mapped
+     * due to the stupid decision i took earlier in the project.
+     */
+    const val LINK_TYPE_PARAM_TO_FOLDER_ID_CASE =
+    """
+    idOfLinkedFolder = CASE
+        WHEN :linkType = '${LinkType.SAVED_LINK}' THEN $SAVED_LINKS_ID
+        WHEN :linkType = '${LinkType.IMPORTANT_LINK}' THEN $IMPORTANT_LINKS_ID
+        WHEN :linkType = '${LinkType.HISTORY_LINK}' THEN $HISTORY_ID
+        WHEN :linkType = '${LinkType.ARCHIVE_LINK}' THEN $ARCHIVE_ID
+    END
+    """
+
+    const val LINK_TYPE_COLUMN_TO_FOLDER_ID_CASE =
+    """
+    idOfLinkedFolder = CASE
+        WHEN linkType = '${LinkType.SAVED_LINK}' THEN $SAVED_LINKS_ID
+        WHEN linkType = '${LinkType.IMPORTANT_LINK}' THEN $IMPORTANT_LINKS_ID
+        WHEN linkType = '${LinkType.HISTORY_LINK}' THEN $HISTORY_ID
+        WHEN linkType = '${LinkType.ARCHIVE_LINK}' THEN $ARCHIVE_ID
+    END
+    """
 }
 
 object LinkType {

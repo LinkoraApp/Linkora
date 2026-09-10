@@ -58,7 +58,7 @@ interface LinksDao {
         newTitle: String,
     )
 
-    @Query("SELECT CASE WHEN linkType = 'ARCHIVE_LINK' THEN 1 ELSE 0 END FROM links WHERE url=:url")
+    @Query("SELECT (linkType = '${LinkType.ARCHIVE_LINK}' OR idOfLinkedFolder = ${Constants.ARCHIVE_ID}) FROM links WHERE url = :url")
     suspend fun isInArchive(url: String): Boolean
 
     @Query(
@@ -83,12 +83,12 @@ interface LinksDao {
         """
     SELECT * FROM links
     WHERE
-        linkType = :linkType
+        (linkType = :linkType OR ${Constants.LINK_TYPE_PARAM_TO_FOLDER_ID_CASE})
     ORDER BY
-        CASE WHEN :sortOption = 'A_TO_Z' THEN title COLLATE NOCASE END ASC,
-        CASE WHEN :sortOption = 'Z_TO_A' THEN title COLLATE NOCASE END DESC,
-        CASE WHEN :sortOption = 'NEW_TO_OLD' THEN localId END DESC,
-        CASE WHEN :sortOption = 'OLD_TO_NEW' THEN localId END ASC
+        CASE WHEN :sortOption = '${Sorting.A_TO_Z}' THEN title COLLATE NOCASE END ASC,
+        CASE WHEN :sortOption = '${Sorting.Z_TO_A}' THEN title COLLATE NOCASE END DESC,
+        CASE WHEN :sortOption = '${Sorting.NEW_TO_OLD}' THEN localId END DESC,
+        CASE WHEN :sortOption = '${Sorting.OLD_TO_NEW}' THEN localId END ASC
 """,
     )
     fun getSortedLinks(
@@ -99,7 +99,7 @@ interface LinksDao {
     @Query(
         """
     SELECT * FROM links
-    WHERE linkType = :linkType
+    WHERE (linkType = :linkType OR ${Constants.LINK_TYPE_PARAM_TO_FOLDER_ID_CASE})
     AND (
         (:isAscending = 1 AND (localId > :lastSeenId OR :lastSeenId IS NULL))
         OR
@@ -121,7 +121,7 @@ interface LinksDao {
     @Query(
         """
     SELECT * FROM links
-    WHERE linkType = :linkType
+    WHERE (linkType = :linkType OR ${Constants.LINK_TYPE_PARAM_TO_FOLDER_ID_CASE})
     AND (
         :lastSeenTitle IS NULL OR :lastSeenTitle = '' OR
         (:isAscending = 1 AND (title > :lastSeenTitle OR (title = :lastSeenTitle AND localId > :lastSeenId))) OR
@@ -153,23 +153,6 @@ interface LinksDao {
     """,
     )
     fun getAllLinks(sortOption: String): Flow<List<Link>>
-
-    @Query(
-        """
-    SELECT * FROM links
-    WHERE linkType = :linkType AND idOfLinkedFolder = :parentFolderId
-    ORDER BY
-        CASE WHEN :sortOption = '${Sorting.A_TO_Z}' THEN title COLLATE NOCASE END ASC,
-        CASE WHEN :sortOption = '${Sorting.Z_TO_A}' THEN title COLLATE NOCASE END DESC,
-        CASE WHEN :sortOption = '${Sorting.NEW_TO_OLD}' THEN localId END DESC,
-        CASE WHEN :sortOption = '${Sorting.OLD_TO_NEW}' THEN localId END ASC
-    """,
-    )
-    fun getSortedLinks(
-        linkType: com.sakethh.linkora.domain.LinkType,
-        parentFolderId: Long,
-        sortOption: String,
-    ): Flow<List<Link>>
 
     @Query(
         """
@@ -291,7 +274,7 @@ interface LinksDao {
         newId: Long,
     )
 
-    @Query("DELETE FROM links WHERE url=:url AND linkType = 'HISTORY_LINK'")
+    @Query("DELETE FROM links WHERE url=:url AND (linkType = '${LinkType.HISTORY_LINK}' OR idOfLinkedFolder = ${Constants.HISTORY_ID})")
     suspend fun deleteLinksFromHistory(url: String)
 
     @Transaction
@@ -402,12 +385,7 @@ interface LinksDao {
     @Query(
         """
         UPDATE links
-        SET lastModified = :eventTimestamp, idOfLinkedFolder = CASE
-            WHEN linkType = '${LinkType.SAVED_LINK}' THEN ${Constants.SAVED_LINKS_ID}
-            WHEN linkType = '${LinkType.IMPORTANT_LINK}' THEN ${Constants.IMPORTANT_LINKS_ID}
-            WHEN linkType = '${LinkType.HISTORY_LINK}' THEN ${Constants.HISTORY_ID}
-            WHEN linkType = '${LinkType.ARCHIVE_LINK}' THEN ${Constants.ARCHIVE_ID}
-        END
+        SET lastModified = :eventTimestamp, ${Constants.LINK_TYPE_COLUMN_TO_FOLDER_ID_CASE}
         WHERE linkType IN ('${LinkType.SAVED_LINK}','${LinkType.IMPORTANT_LINK}','${LinkType.HISTORY_LINK}','${LinkType.ARCHIVE_LINK}')
     """,
     )

@@ -306,12 +306,6 @@ class LocalLinksRepoImpl(
         )
     }.mapToResultFlow()
 
-    override fun getLinksAsNonResultFlow(
-        linkType: LinkType,
-        parentFolderId: Long,
-        sortOption: String,
-    ): Flow<List<Link>> = linksDao.getSortedLinks(linkType, parentFolderId, sortOption)
-
     override suspend fun getLinks(
         linkType: LinkType,
         sortOption: String,
