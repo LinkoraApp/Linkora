@@ -190,8 +190,8 @@ android {
                 .get()
                 .toInt()
 
-        versionCode = 54
-        versionName = "0.20.0"
+        versionCode = 55
+        versionName = "0.21.0"
     }
 
     packaging {

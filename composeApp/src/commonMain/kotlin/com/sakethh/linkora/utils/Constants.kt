@@ -1,7 +1,7 @@
 package com.sakethh.linkora.utils
 
 object Constants {
-    const val APP_VERSION_NAME = "v0.20.0"
+    const val APP_VERSION_NAME = "v0.21.0"
     const val LOCALIZATION_SERVER_URL = "https://linkoralocalizationserver.onrender.com/"
     const val PROXY_SERVER_URL = "https://linkora-proxy.onrender.com"
 
