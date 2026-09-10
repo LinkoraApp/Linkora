@@ -50,7 +50,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -206,7 +205,7 @@ fun MenuBtmSheet(
                 elementName = Localization.Key.Edit.rememberLocalizedString(),
                 elementImageVector = Icons.Outlined.Edit,
             )
-            if (menuBtmSheetParam.linkTagsPair?.link != null && (preferences.alwaysShowOpenWebCaptureFolderInMenu || preferences.useWebCaptures)) {
+            if (menuBtmSheetParam.menuBtmSheetFor is MenuBtmSheetType.Link && menuBtmSheetParam.linkTagsPair?.link != null && (preferences.alwaysShowOpenWebCaptureFolderInMenu || preferences.useWebCaptures)) {
                 IndividualMenuComponent(
                     onClick = {
                         hideContent()
@@ -222,12 +221,12 @@ fun MenuBtmSheet(
                 Row(
                     modifier = Modifier.highlightOnFocused()
                         .pointerHoverIcon(icon = PointerIcon.Hand).combinedClickable(
-                        interactionSource = null,
-                        indication = null,
-                        onClick = {
-                            showRefreshOptions = !showRefreshOptions
-                        },
-                    ).pressScaleEffect().padding(end = 10.dp).wrapContentHeight()
+                            interactionSource = null,
+                            indication = null,
+                            onClick = {
+                                showRefreshOptions = !showRefreshOptions
+                            },
+                        ).pressScaleEffect().padding(end = 10.dp).wrapContentHeight()
                         .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
