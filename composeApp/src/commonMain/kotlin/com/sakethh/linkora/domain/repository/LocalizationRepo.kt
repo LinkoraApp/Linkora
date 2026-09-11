@@ -1,10 +1,13 @@
 package com.sakethh.linkora.domain.repository
 
+import LocalizedStrings
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.dto.localization.LocalizationInfoDTO
 import com.sakethh.linkora.domain.model.localization.LocalizedLanguage
 import com.sakethh.linkora.domain.model.localization.LocalizedString
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 interface LocalizationRepo {
     interface Remote {
@@ -20,25 +23,12 @@ interface LocalizationRepo {
 
         suspend fun deleteAllLocalizedStringsForThisLanguage(languageCode: String): Flow<Result<Unit>>
 
-        suspend fun getLocalizedStringValueFor(
-            stringName: String,
-            languageCode: String,
-        ): String?
-
-        suspend fun addANewLanguage(localizedLanguage: LocalizedLanguage): Flow<Result<Unit>>
-
         suspend fun addNewLanguages(languages: List<LocalizedLanguage>): Flow<Result<Unit>>
 
-        suspend fun deleteALanguage(localizedLanguage: LocalizedLanguage): Flow<Result<Unit>>
-
-        suspend fun deleteALanguage(languageName: String): Flow<Result<Unit>>
-
-        suspend fun deleteALanguageBasedOnLanguageCode(languageCode: String): Flow<Result<Unit>>
-
-        suspend fun getLanguageNameForTheCode(languageCode: String): String
-
-        suspend fun getLanguageCodeForTheLanguageNamed(languageName: String): String
-
         fun getAllLanguages(): Flow<Result<List<LocalizedLanguage>>>
+
+        val localizedStrings: StateFlow<LocalizedStrings>
+
+        suspend fun loadLanguage(languageCode: String)
     }
 }

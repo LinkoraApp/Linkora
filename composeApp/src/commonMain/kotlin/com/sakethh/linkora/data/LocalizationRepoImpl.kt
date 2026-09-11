@@ -1,5 +1,6 @@
 package com.sakethh.linkora.data
 
+import LocalizedStrings
 import com.sakethh.linkora.data.local.dao.LocalizationDao
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.dto.localization.LocalizationInfoDTO
@@ -12,6 +13,9 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -68,36 +72,9 @@ class LocalizationRepoImpl(
         localizationDao.deleteAllLocalizedStringsForThisLanguage(languageCode)
     }
 
-    override suspend fun getLocalizedStringValueFor(
-        stringName: String,
-        languageCode: String,
-    ): String? = localizationDao.getLocalizedStringValueFor(stringName, languageCode)
-
-    override suspend fun addANewLanguage(localizedLanguage: LocalizedLanguage): Flow<Result<Unit>> = wrappedResultFlow {
-        localizationDao.addANewLanguage(localizedLanguage)
-    }
-
     override suspend fun addNewLanguages(languages: List<LocalizedLanguage>): Flow<Result<Unit>> = wrappedResultFlow {
-        localizationDao.addNewLanguages(languages)
-    }
-
-    override suspend fun deleteALanguage(localizedLanguage: LocalizedLanguage): Flow<Result<Unit>> = wrappedResultFlow {
-        localizationDao.deleteALanguage(localizedLanguage)
-    }
-
-    override suspend fun deleteALanguage(languageName: String): Flow<Result<Unit>> = wrappedResultFlow {
-        localizationDao.deleteALanguage(languageName)
-    }
-
-    override suspend fun deleteALanguageBasedOnLanguageCode(
-        languageCode: String,
-    ): Flow<Result<Unit>> = wrappedResultFlow {
-        localizationDao.deleteALanguageBasedOnLanguageCode(languageCode)
-    }
-
-    override suspend fun getLanguageNameForTheCode(languageCode: String): String = localizationDao.getLanguageNameForTheCode(languageCode)
-
-    override suspend fun getLanguageCodeForTheLanguageNamed(languageName: String): String = localizationDao.getLanguageCodeForTheLanguageNamed(languageName)
+            localizationDao.addNewLanguages(languages)
+        }
 
     override fun getAllLanguages(): Flow<Result<List<LocalizedLanguage>>> = localizationDao
         .getAllLanguages()
@@ -108,4 +85,26 @@ class LocalizationRepoImpl(
             Result.Loading<List<LocalizedLanguage>>()
         }
         .catchAsExceptionAndEmitFailure()
+
+    private val _localizedStrings: MutableStateFlow<LocalizedStrings> =
+        MutableStateFlow(
+            LocalizedStrings(
+                values = mapOf()
+            )
+        )
+
+    override val localizedStrings: StateFlow<LocalizedStrings> = _localizedStrings.asStateFlow()
+
+    override suspend fun loadLanguage(languageCode: String) {
+        // if strings are missing, LocalizedStrings falls back to default values, so this shouldn't be an issue
+        val localizedPairs = localizationDao.getLocalizedPairs(
+            languageCode = languageCode
+        )
+
+        _localizedStrings.emit(
+            LocalizedStrings(
+                values = localizedPairs
+            )
+        )
+    }
 }
