@@ -241,7 +241,7 @@ class LocalLinksRepoImpl(
                     },
                 )
             }
-            if (preferences.useWebCaptures) {
+            if (preferences.useWebCaptures && link.linkType != LinkType.HISTORY_LINK) {
                 webCapture.saveHTMLPage(
                     nativeFolderPath = preferences.webCapturesLocation,
                     url = link.url,
