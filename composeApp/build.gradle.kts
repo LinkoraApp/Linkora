@@ -1,10 +1,12 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
+import groovy.json.JsonSlurper
 import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 plugins {
     kotlin("multiplatform") version "2.3.10"
@@ -331,4 +333,81 @@ allprojects {
             }
         }
     }
+}
+val localizationDir = "generated/com/sakethh/linkora/localization"
+
+data class LocalizationItem(
+    val key: String,
+    val defaultValue: String,
+)
+
+val localizationGeneration =
+    tasks.register("localizationGeneration") {
+        doLast {
+            val localizationJsonFile = rootProject.layout.projectDirectory.file("locales/default.json")
+            val localizationBuildDir = layout.buildDirectory.dir(localizationDir)
+
+            if (!localizationBuildDir.get().asFile.exists()) {
+                localizationBuildDir.get().asFile.mkdirs()
+            }
+
+            val localizationItems =
+                (JsonSlurper().parse(localizationJsonFile.asFile) as List<*>)
+                    .map {
+                        (it as Map<*, *>).run {
+                            LocalizationItem(
+                                key = get("key").toString(),
+                                defaultValue = get("defaultValue").toString(),
+                            )
+                        }
+                    }
+            val generatedKeysFile = File(localizationBuildDir.get().asFile, "LocalizationKey.kt")
+            if (!generatedKeysFile.exists()) {
+                generatedKeysFile.createNewFile()
+            }
+            val generatedStringsFile = File(localizationBuildDir.get().asFile, "LocalizedStrings.kt")
+            if (!generatedStringsFile.exists()) {
+                generatedStringsFile.createNewFile()
+            }
+
+            val enumBuilder = StringBuilder()
+            val classBuilder = StringBuilder()
+
+            enumBuilder.append("enum class LocalizationKey {")
+            classBuilder.append(
+                """
+                import LocalizationKey
+
+                class LocalizedStrings(private val values: Map<String, String>) {
+
+                     private fun raw(key: LocalizationKey, defaultValue: String): String {
+                         return values[key.name] ?: defaultValue
+                     }
+
+                     companion object {
+                         val Default = LocalizedStrings(mapOf())
+                     }
+                """.trimIndent(),
+            )
+
+            localizationItems.forEach { (enumName, defaultValue) ->
+                enumBuilder.append("\n\t$enumName,")
+                val escapedDefaultValue = defaultValue.replace("\n", "\\n").replace("\"", "\\\"")
+                classBuilder.append("\n\n\tval $enumName = raw(LocalizationKey.$enumName, \"$escapedDefaultValue\")")
+            }
+
+            enumBuilder.append("\n}")
+            generatedKeysFile.writeText(enumBuilder.toString())
+
+            classBuilder.append("\n}")
+            generatedStringsFile.writeText(classBuilder.toString())
+        }
+    }
+
+kotlin.sourceSets.named("commonMain") {
+    kotlin.srcDir(layout.buildDirectory.dir(localizationDir))
+}
+
+tasks.withType<KotlinCompilationTask<*>>().configureEach {
+    dependsOn(localizationGeneration)
 }

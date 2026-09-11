@@ -1,0 +1,1918 @@
+[
+    {
+        "key": "UpdatingInternalIDsLabel",
+        "defaultValue": "Updating Internal IDs"
+    },
+    {
+        "key": "EnforceStrictDefaultIDsLabel",
+        "defaultValue": "Enforce strict folder IDs on default folders"
+    },
+    {
+        "key": "EnforceStrictDefaultIDsDesc",
+        "defaultValue": "Force writes the IDs of Saved Links, Important Links, Archived Links, History Links to its internal IDs respectively.\n\nThis operation is usually not required, since linkora handles it by default."
+    },
+    {
+        "key": "SkipSavingExistingLinksLabel",
+        "defaultValue": "Skip saving existing links"
+    },
+    {
+        "key": "SkipSavingExistingLinksDesc",
+        "defaultValue": "If enabled, a link won't be saved if it already exists in the destination. An error will be thrown instead."
+    },
+    {
+        "key": "Copy",
+        "defaultValue": "Copy"
+    },
+    {
+        "key": "Open",
+        "defaultValue": "Open"
+    },
+    {
+        "key": "AttachTags",
+        "defaultValue": "Attach Tags"
+    },
+    {
+        "key": "CreateANewTag",
+        "defaultValue": "Create A New Tag"
+    },
+    {
+        "key": "TagDeletionConfirmation",
+        "defaultValue": "Are you sure you want to delete this tag?"
+    },
+    {
+        "key": "SearchFoldersToAdd",
+        "defaultValue": "Search folders to add"
+    },
+    {
+        "key": "CouldNotImportCert",
+        "defaultValue": "Could not import the certificate file."
+    },
+    {
+        "key": "TagName",
+        "defaultValue": "Tag Name"
+    },
+    {
+        "key": "SelectAnAppIcon",
+        "defaultValue": "Select an App Icon"
+    },
+    {
+        "key": "ChangeAppIcon",
+        "defaultValue": "Change App Icon"
+    },
+    {
+        "key": "ChangeAppIconDesc",
+        "defaultValue": "After confirming changes, the app will close automatically to apply them. Notifications will continue to display the default Linkora icon and name."
+    },
+    {
+        "key": "ChangeInAppNameDesc",
+        "defaultValue": "The app name will be displayed as \"Weather\" instead of \"Linkora\" in your app drawer."
+    },
+    {
+        "key": "AppIconCurrentlyInUse",
+        "defaultValue": "App Icon Currently in Use"
+    },
+    {
+        "key": "NoTagsFound",
+        "defaultValue": "No tags found"
+    },
+    {
+        "key": "Tags",
+        "defaultValue": "Tags"
+    },
+    {
+        "key": "AddedCopyToImpLinks",
+        "defaultValue": "Added Copy to Important Links"
+    },
+    {
+        "key": "NoAttachmentsToTags",
+        "defaultValue": "No links were attached to this tag."
+    },
+    {
+        "key": "AboutLibraries",
+        "defaultValue": "About Libraries"
+    },
+    {
+        "key": "Libraries",
+        "defaultValue": "Libraries"
+    },
+    {
+        "key": "Settings",
+        "defaultValue": "Settings"
+    },
+    {
+        "key": "Theme",
+        "defaultValue": "Theme"
+    },
+    {
+        "key": "General",
+        "defaultValue": "General"
+    },
+    {
+        "key": "Advanced",
+        "defaultValue": "Advanced"
+    },
+    {
+        "key": "Layout",
+        "defaultValue": "Layout"
+    },
+    {
+        "key": "Language",
+        "defaultValue": "Language"
+    },
+    {
+        "key": "Data",
+        "defaultValue": "Data"
+    },
+    {
+        "key": "Privacy",
+        "defaultValue": "Privacy"
+    },
+    {
+        "key": "About",
+        "defaultValue": "About"
+    },
+    {
+        "key": "Acknowledgments",
+        "defaultValue": "Acknowledgments"
+    },
+    {
+        "key": "UseDarkMode",
+        "defaultValue": "Use Dark Theme"
+    },
+    {
+        "key": "AppLanguage",
+        "defaultValue": "App Language"
+    },
+    {
+        "key": "DisplayingRemoteStrings",
+        "defaultValue": "Displaying Remote Strings"
+    },
+    {
+        "key": "ResetAppLanguage",
+        "defaultValue": "Reset App Language"
+    },
+    {
+        "key": "AvailableLanguages",
+        "defaultValue": "Available Languages"
+    },
+    {
+        "key": "LoadServerStrings",
+        "defaultValue": "Load Server Strings"
+    },
+    {
+        "key": "LoadCompiledStrings",
+        "defaultValue": "Load Compiled Strings"
+    },
+    {
+        "key": "UpdateLanguageStrings",
+        "defaultValue": "Update Language Strings"
+    },
+    {
+        "key": "DownloadLanguageStrings",
+        "defaultValue": "Download Language Strings"
+    },
+    {
+        "key": "RemoveLanguageStrings",
+        "defaultValue": "Remove Language Strings"
+    },
+    {
+        "key": "DisplayingCompiledStrings",
+        "defaultValue": "Displaying Compiled Strings"
+    },
+    {
+        "key": "Home",
+        "defaultValue": "Home"
+    },
+    {
+        "key": "Search",
+        "defaultValue": "Search"
+    },
+    {
+        "key": "History",
+        "defaultValue": "History"
+    },
+    {
+        "key": "HistoryLinks",
+        "defaultValue": "History Links"
+    },
+    {
+        "key": "FolderLinks",
+        "defaultValue": "Folder Links"
+    },
+    {
+        "key": "Collections",
+        "defaultValue": "Collections"
+    },
+    {
+        "key": "LinkoraServerSetup",
+        "defaultValue": "Linkora Server Setup"
+    },
+    {
+        "key": "ShowOnboardingSlides",
+        "defaultValue": "Show Onboarding Slides"
+    },
+    {
+        "key": "MobileCollectionDetailScreen",
+        "defaultValue": "MobileCollectionDetailScreen"
+    },
+    {
+        "key": "CreateANewFolder",
+        "defaultValue": "Create A New Folder"
+    },
+    {
+        "key": "AppIntroSlide3PanelName",
+        "defaultValue": "Brainstorm Panel"
+    },
+    {
+        "key": "AppIntroSlide3Folder2Name",
+        "defaultValue": "Reference Materials"
+    },
+    {
+        "key": "AppIntroSlide3Folder2_1Name",
+        "defaultValue": "Cool Animations"
+    },
+    {
+        "key": "AppIntroSlide3Folder2_1Note",
+        "defaultValue": "snappy transitions and smooth stuff"
+    },
+    {
+        "key": "AppIntroSlide3Folder3_1Name",
+        "defaultValue": "Code Snippets"
+    },
+    {
+        "key": "AppIntroSlide3Folder3_1Note",
+        "defaultValue": "reusable bits and tricks"
+    },
+    {
+        "key": "AppIntroSlide3MainLabel",
+        "defaultValue": "Introducing Panels."
+    },
+    {
+        "key": "AppIntroSlide3MainLabelDesc",
+        "defaultValue": "Add any folder to a Panel for quick access from the Home screen. Panels work like tags but for folders. You can group different folders under each one and access them instantly.\nOh, and yep — Linkora supports subfolders too."
+    },
+    {
+        "key": "AppIntroSlide4Label1",
+        "defaultValue": "Wait,\nThere's More."
+    },
+    {
+        "key": "AppIntroSlide4Label1Desc1",
+        "defaultValue": "Search, sort, auto title and image detection (when available)."
+    },
+    {
+        "key": "AppIntroSlide4Label1Desc2",
+        "defaultValue": "Export or import as JSON or HTML, with auto-backup support."
+    },
+    {
+        "key": "AppIntroSlide4Label1Desc2_1",
+        "defaultValue": "Save webpages as standalone HTML files, with all processing happening completely on your device."
+    },
+    {
+        "key": "AppIntroSlide4Label1Desc3",
+        "defaultValue": "Sync with your own server if you want."
+    },
+    {
+        "key": "AppIntroSlide4Label1Desc4",
+        "defaultValue": "Opened links are saved in history — even if the original link is deleted."
+    },
+    {
+        "key": "AppIntroSlide4Label1Desc5",
+        "defaultValue": "Supports different layout settings."
+    },
+    {
+        "key": "AppIntroSlide4Label1Desc6",
+        "defaultValue": "Dynamic Material theming (if supported by your device)."
+    },
+    {
+        "key": "AppIntroSlide4Label1Desc7",
+        "defaultValue": "OLED theme included for Android devices."
+    },
+    {
+        "key": "AppIntroSlide4Label1Desc8",
+        "defaultValue": "Localization with a central server — language updates without app updates."
+    },
+    {
+        "key": "AppIntroSlide4Label1Desc9",
+        "defaultValue": "No ads, no paywalls, free as in freedom."
+    },
+    {
+        "key": "AppIntroSlide4Label1Desc10",
+        "defaultValue": "Just simple, solid bookmarking."
+    },
+    {
+        "key": "DeletingDuplicatesLabel",
+        "defaultValue": "Deleting Duplicates..."
+    },
+    {
+        "key": "SelectedLinksCount",
+        "defaultValue": "Selected >{} links"
+    },
+    {
+        "key": "SelectedFoldersCount",
+        "defaultValue": "Selected >{} folders"
+    },
+    {
+        "key": "MultiActionsLabel",
+        "defaultValue": "Actions"
+    },
+    {
+        "key": "MarkSelectedFoldersAsRoot",
+        "defaultValue": "Mark selected folders as root"
+    },
+    {
+        "key": "NavigateToCollectionsScreen",
+        "defaultValue": "Navigate to Collections Screen"
+    },
+    {
+        "key": "AppIntroSlide4Label2",
+        "defaultValue": "Open. Local First. Yours."
+    },
+    {
+        "key": "AppIntroSlide4Label2Desc",
+        "defaultValue": "Linkora and its related projects, including the sync-server, are released as free and open-source software under their respective licenses."
+    },
+    {
+        "key": "PreviousPage",
+        "defaultValue": "Previous page"
+    },
+    {
+        "key": "NextPage",
+        "defaultValue": "Next page"
+    },
+    {
+        "key": "Done",
+        "defaultValue": "Done"
+    },
+    {
+        "key": "AppIntroSlide2Folder1Name",
+        "defaultValue": "Inspiration & Ideas"
+    },
+    {
+        "key": "AppIntroSlide2Folder2Name",
+        "defaultValue": "Explainers"
+    },
+    {
+        "key": "AppIntroSlide2Folder2Note",
+        "defaultValue": "in-depth articles or breakdowns"
+    },
+    {
+        "key": "AppIntroSlide2MainLabelDesc",
+        "defaultValue": "Store links in folders, tag them, mark as Important or Archived, or keep them in \"Saved Links\" to make it your own."
+    },
+    {
+        "key": "AppIntroSlide2MainLabel",
+        "defaultValue": "Folders, Links &\nTags."
+    },
+    {
+        "key": "AppIntroSlide2Folder1Note",
+        "defaultValue": "cool stuff i might use later"
+    },
+    {
+        "key": "AppIntroSlide1SwipeLabel",
+        "defaultValue": "Swipe through or hit Next to discover Linkora's features."
+    },
+    {
+        "key": "AppIntroSlide1Label",
+        "defaultValue": "Linkora keeps your links and web captures private.\nSync, organize, and save pages offline: nothing leaves your device unless you set up your own data sync server."
+    },
+    {
+        "key": "CreateANewFolderIn",
+        "defaultValue": "Create A New Folder In >{}"
+    },
+    {
+        "key": "Create",
+        "defaultValue": "Create"
+    },
+    {
+        "key": "AddANewLink",
+        "defaultValue": "Add A New Link"
+    },
+    {
+        "key": "SavedLinks",
+        "defaultValue": "Saved Links"
+    },
+    {
+        "key": "AddANewLinkInImportantLinks",
+        "defaultValue": "Add a new link in Important Links"
+    },
+    {
+        "key": "AddANewLinkInSavedLinks",
+        "defaultValue": "Add a new link in Saved Links"
+    },
+    {
+        "key": "AddANewLinkIn",
+        "defaultValue": "Add a new link in >{}"
+    },
+    {
+        "key": "LinkAddress",
+        "defaultValue": "Link Address"
+    },
+    {
+        "key": "TitleForTheLink",
+        "defaultValue": "Title for the link"
+    },
+    {
+        "key": "NoteForSavingTheLink",
+        "defaultValue": "Note for saving the link"
+    },
+    {
+        "key": "AutoDetectTitleIsEnabled",
+        "defaultValue": "Auto Detect Title is currently active."
+    },
+    {
+        "key": "DataRetrievalDisabled",
+        "defaultValue": "Data retrieval is blocked as the 'Force Save Links without retrieval' feature is currently active."
+    },
+    {
+        "key": "ForceAutoDetectTitle",
+        "defaultValue": "Force Auto-Detect Title"
+    },
+    {
+        "key": "RetryingWithSecondaryUserAgent",
+        "defaultValue": "Retrying metadata retrieval using a secondary user agent."
+    },
+    {
+        "key": "ForceSaveWithoutRetrievingMetadata",
+        "defaultValue": "Force Save Without Retrieving Metadata"
+    },
+    {
+        "key": "AddIn",
+        "defaultValue": "Add in"
+    },
+    {
+        "key": "InitialRequestFailed",
+        "defaultValue": "he initial request failed."
+    },
+    {
+        "key": "ImportantLinks",
+        "defaultValue": "Important Links"
+    },
+    {
+        "key": "Save",
+        "defaultValue": "Save"
+    },
+    {
+        "key": "Update",
+        "defaultValue": "Update"
+    },
+    {
+        "key": "SelectACollectionSource",
+        "defaultValue": "Select a collection source"
+    },
+    {
+        "key": "SaveInThisFolder",
+        "defaultValue": "Save in this folder"
+    },
+    {
+        "key": "Cancel",
+        "defaultValue": "Cancel"
+    },
+    {
+        "key": "FolderName",
+        "defaultValue": "Folder name"
+    },
+    {
+        "key": "SearchForFolders",
+        "defaultValue": "Search for Folders..."
+    },
+    {
+        "key": "NoteForCreatingTheFolder",
+        "defaultValue": "Note For Creating The Folder"
+    },
+    {
+        "key": "AllLinks",
+        "defaultValue": "All Links"
+    },
+    {
+        "key": "Links",
+        "defaultValue": "Links"
+    },
+    {
+        "key": "Archive",
+        "defaultValue": "Archive"
+    },
+    {
+        "key": "ArchiveLinks",
+        "defaultValue": "Archive Links"
+    },
+    {
+        "key": "Folders",
+        "defaultValue": "Folders"
+    },
+    {
+        "key": "SuccessfullySavedConnectionDetails",
+        "defaultValue": "Successfully saved connection details."
+    },
+    {
+        "key": "DeletedTheServerConnectionSuccessfully",
+        "defaultValue": "Deleted the server connection successfully."
+    },
+    {
+        "key": "UseInAppBrowser",
+        "defaultValue": "Use In-App Browser"
+    },
+    {
+        "key": "UseCustomAppVersionLabel",
+        "defaultValue": "Use Custom App Version Label"
+    },
+    {
+        "key": "UseCustomAppVersionDesc",
+        "defaultValue": "Enables a custom font-based version label throughout the app."
+    },
+    {
+        "key": "UseInAppBrowserDesc",
+        "defaultValue": "Enable this to open links within the app; otherwise, your default browser will open when clicking on links."
+    },
+    {
+        "key": "EnableHomeScreen",
+        "defaultValue": "Enable Home Screen"
+    },
+    {
+        "key": "EnableHomeScreenDesc",
+        "defaultValue": "When disabled, Collections opens on launch if Home is set as the initial route."
+    },
+    {
+        "key": "AutoDetectTitle",
+        "defaultValue": "Auto-Detect Title"
+    },
+    {
+        "key": "AutoDetectTitleDesc",
+        "defaultValue": "Note: This may not detect every website."
+    },
+    {
+        "key": "ForceSaveWithoutRetrievingMetadataDesc",
+        "defaultValue": "Link will be saved as you save it, nothing gets fetched. Note that this will impact on refreshing links from link menu, link will NOT be refreshed if this is enabled."
+    },
+    {
+        "key": "ShowAssociatedImageInLinkMenu",
+        "defaultValue": "Show associated image in link menu"
+    },
+    {
+        "key": "ShowAssociatedImageInLinkMenuDesc",
+        "defaultValue": "Enables the display of an associated image within the link menu."
+    },
+    {
+        "key": "AutoCheckForUpdatesDesc",
+        "defaultValue": "Enable to auto-check for updates on app launch. Disable for manual checks."
+    },
+    {
+        "key": "ShowDescriptionForSettings",
+        "defaultValue": "Show description for Settings"
+    },
+    {
+        "key": "ShowDescriptionForSettingsDesc",
+        "defaultValue": "Enable to show detailed descriptions for settings. Disable to show only titles."
+    },
+    {
+        "key": "ManageConnectedServer",
+        "defaultValue": "Manage Connected Server"
+    },
+    {
+        "key": "ManageConnectedServerDesc",
+        "defaultValue": "Your data is synced with the Linkora server. Tap to manage or disconnect."
+    },
+    {
+        "key": "CurrentlyConnectedTo",
+        "defaultValue": "Currently Connected To"
+    },
+    {
+        "key": "SyncType",
+        "defaultValue": "Sync Type"
+    },
+    {
+        "key": "EditServerConfiguration",
+        "defaultValue": "Edit server configuration"
+    },
+    {
+        "key": "DeleteTheServerConnection",
+        "defaultValue": "Delete the connection"
+    },
+    {
+        "key": "Configuration",
+        "defaultValue": "Configuration"
+    },
+    {
+        "key": "ServerURL",
+        "defaultValue": "Server URL"
+    },
+    {
+        "key": "ServerSetupInstruction",
+        "defaultValue": "Ensure the server is running. The URL pattern should be: https://<IPv4>:<HTTPS_PORT>/"
+    },
+    {
+        "key": "SecurityToken",
+        "defaultValue": "Security Token"
+    },
+    {
+        "key": "ServerIsReachable",
+        "defaultValue": "Server Exists and Is Reachable!"
+    },
+    {
+        "key": "TestServerAvailability",
+        "defaultValue": "Test Server Availability"
+    },
+    {
+        "key": "UseThisConnection",
+        "defaultValue": "Use This Connection"
+    },
+    {
+        "key": "ClientToServer",
+        "defaultValue": "Client To Server"
+    },
+    {
+        "key": "ClientToServerDesc",
+        "defaultValue": "Client changes are sent to the server, but client is not updated with server changes."
+    },
+    {
+        "key": "ServerToClient",
+        "defaultValue": "Server To Client"
+    },
+    {
+        "key": "ServerToClientDesc",
+        "defaultValue": "Server changes are sent to the client, but server is not updated with client changes."
+    },
+    {
+        "key": "TwoWaySync",
+        "defaultValue": "Two-Way Sync"
+    },
+    {
+        "key": "TwoWaySyncDesc",
+        "defaultValue": "Changes are sent both ways: client updates the server, and server updates the client."
+    },
+    {
+        "key": "ImportLabel",
+        "defaultValue": "Import"
+    },
+    {
+        "key": "ImportLabelDesc",
+        "defaultValue": "You are connected to a sync server. To load existing data from the remote database, use server-sync instead of manual import. Importing externally will duplicate data, even if it already exists remotely."
+    },
+    {
+        "key": "ExportLabel",
+        "defaultValue": "Export"
+    },
+    {
+        "key": "ExportLabelDesc",
+        "defaultValue": "Exporting will remove all data linked to the remote database, making the exported data portable across different clients."
+    },
+    {
+        "key": "ImportUsingJsonFile",
+        "defaultValue": "Import using JSON file"
+    },
+    {
+        "key": "ImportUsingJsonFileDesc",
+        "defaultValue": "Use a Linkora-compatible JSON file to import your data"
+    },
+    {
+        "key": "ImportDataFromHtmlFile",
+        "defaultValue": "Import data from HTML file"
+    },
+    {
+        "key": "ImportDataFromHtmlFileDesc",
+        "defaultValue": "Load data from a bookmarks-compatible HTML file"
+    },
+    {
+        "key": "ExportDataAsJson",
+        "defaultValue": "Export Data as JSON"
+    },
+    {
+        "key": "ExportDataAsJsonDesc",
+        "defaultValue": "Exports all data in Linkora-compatible JSON format"
+    },
+    {
+        "key": "ExportDataAsHtml",
+        "defaultValue": "Export Data as HTML"
+    },
+    {
+        "key": "ExportDataAsHtmlDesc",
+        "defaultValue": "Export all your data as an HTML file (excluding Panels and Tags). Compatible with browser-based import tools."
+    },
+    {
+        "key": "Sync",
+        "defaultValue": "Sync"
+    },
+    {
+        "key": "ConnectToALinkoraServer",
+        "defaultValue": "Connect to a Linkora Server"
+    },
+    {
+        "key": "ConnectToALinkoraServerDesc",
+        "defaultValue": "By connecting to a Linkora server, you can sync your data and access it on any device using the Linkora app."
+    },
+    {
+        "key": "DeleteEntireDataPermanently",
+        "defaultValue": "Delete entire data permanently"
+    },
+    {
+        "key": "DeleteEntireDataPermanentlyDesc",
+        "defaultValue": "Permanently delete all links, folders, panels, and localized strings."
+    },
+    {
+        "key": "DeleteDuplicateLinksFromAllCollections",
+        "defaultValue": "Delete Duplicate Links"
+    },
+    {
+        "key": "DeleteDuplicateLinksFromAllCollectionsDesc",
+        "defaultValue": "Removes all duplicate links from your local storage and the database connected via Linkora’s sync server."
+    },
+    {
+        "key": "DeletedDuplicatedLinksSuccessfully",
+        "defaultValue": "Deleted Duplicate Links Successfully."
+    },
+    {
+        "key": "DeletedEntireDataPermanently",
+        "defaultValue": "Deleted entire data permanently."
+    },
+    {
+        "key": "ClearImageCache",
+        "defaultValue": "Clear Image Cache"
+    },
+    {
+        "key": "ClearImageCacheDesc",
+        "defaultValue": "Images are cached by default. Changing the user agent might affect what you see. Clear the cache to resolve it."
+    },
+    {
+        "key": "RefreshAllLinksTitlesAndImages",
+        "defaultValue": "Refresh Titles and Images of all links"
+    },
+    {
+        "key": "RefreshAllLinksTitlesAndImagesDesc",
+        "defaultValue": "Manually entered titles will be replaced with detected titles."
+    },
+    {
+        "key": "RefreshingLinks",
+        "defaultValue": "Refreshing links…"
+    },
+    {
+        "key": "RefreshingLinksAndroidDesc",
+        "defaultValue": "Closing Linkora won't interrupt link refreshing, but newly added links might not be processed."
+    },
+    {
+        "key": "RefreshingLinksDesktopDesc",
+        "defaultValue": "Closing Linkora will cancel link refreshing."
+    },
+    {
+        "key": "InitialScreenOnLaunch",
+        "defaultValue": "Initial Screen on Launch"
+    },
+    {
+        "key": "InitialScreenOnLaunchDesc",
+        "defaultValue": "Changes made with this option will reflect in the navigation of the initial screen that will open when you launch Linkora."
+    },
+    {
+        "key": "Confirm",
+        "defaultValue": "Confirm"
+    },
+    {
+        "key": "SelectTheInitialScreen",
+        "defaultValue": "Choose the screen to launch the app with"
+    },
+    {
+        "key": "ShowBorderAroundLinks",
+        "defaultValue": "Show Border Around Links"
+    },
+    {
+        "key": "ShowTitle",
+        "defaultValue": "Show Title"
+    },
+    {
+        "key": "ShowHostAddress",
+        "defaultValue": "Show Host Address"
+    },
+    {
+        "key": "ShowBottomFadedEdge",
+        "defaultValue": "Show Bottom Faded Edge"
+    },
+    {
+        "key": "ShowNote",
+        "defaultValue": "Show Note"
+    },
+    {
+        "key": "ShowVideoTagOnUIIfApplicable",
+        "defaultValue": "Show Video Tag On UI If Applicable"
+    },
+    {
+        "key": "LinkLayoutSettings",
+        "defaultValue": "Link Layout Settings"
+    },
+    {
+        "key": "ChooseTheLayoutYouLikeBest",
+        "defaultValue": "Select your preferred layout"
+    },
+    {
+        "key": "FeedPreview",
+        "defaultValue": "Feed Preview"
+    },
+    {
+        "key": "ChangeInitialRoute",
+        "defaultValue": "Change Initial Route"
+    },
+    {
+        "key": "ChangeInitialRouteDesc",
+        "defaultValue": "Changing the initial route lets you set which screen opens first when the app launches."
+    },
+    {
+        "key": "RegularListView",
+        "defaultValue": "Regular List View"
+    },
+    {
+        "key": "TitleOnlyListView",
+        "defaultValue": "Title Only List View"
+    },
+    {
+        "key": "GridView",
+        "defaultValue": "Grid View"
+    },
+    {
+        "key": "StaggeredView",
+        "defaultValue": "Staggered View"
+    },
+    {
+        "key": "FollowSystemTheme",
+        "defaultValue": "Follow System Theme"
+    },
+    {
+        "key": "UseDynamicTheming",
+        "defaultValue": "Use dynamic theming"
+    },
+    {
+        "key": "UseDynamicThemingDesc",
+        "defaultValue": "Automatically sync the app's color theme with your wallpaper."
+    },
+    {
+        "key": "UseAmoledTheme",
+        "defaultValue": "Use Amoled Theme"
+    },
+    {
+        "key": "RetrieveLanguageInfoFromServer",
+        "defaultValue": "Retrieve Language Info from Server"
+    },
+    {
+        "key": "SelectACollection",
+        "defaultValue": "Select a Collection"
+    },
+    {
+        "key": "SelectAPanel",
+        "defaultValue": "Select a Panel"
+    },
+    {
+        "key": "FolderHasBeenCreatedSuccessful",
+        "defaultValue": "The folder >{} has been successfully created."
+    },
+    {
+        "key": "RemoteExecutionFailed",
+        "defaultValue": "Remote execution failed :"
+    },
+    {
+        "key": "SavedAvailableLanguagesInfoLocally",
+        "defaultValue": "Saved Available Languages Info locally."
+    },
+    {
+        "key": "DeletedTheStringsPack",
+        "defaultValue": "Deleted the >{} strings pack."
+    },
+    {
+        "key": "DownloadedLanguageStrings",
+        "defaultValue": "Downloaded Language Strings for the >{}."
+    },
+    {
+        "key": "Linkora",
+        "defaultValue": "Linkora"
+    },
+    {
+        "key": "LinkoraIsConnectedToAServer",
+        "defaultValue": "Linkora is connected to the server; syncing is based on >{}."
+    },
+    {
+        "key": "CopiedLinkToClipboard",
+        "defaultValue": "Copied Link to Clipboard"
+    },
+    {
+        "key": "FetchingAvailableLanguages",
+        "defaultValue": "Fetching Available Languages"
+    },
+    {
+        "key": "DownloadingStrings",
+        "defaultValue": "Downloading Strings for >{}"
+    },
+    {
+        "key": "CopiedTitleToTheClipboard",
+        "defaultValue": "Copied Title to The Clipboard"
+    },
+    {
+        "key": "CopiedNoteToTheClipboard",
+        "defaultValue": "Copied Note to The Clipboard"
+    },
+    {
+        "key": "ViewNote",
+        "defaultValue": "View Note"
+    },
+    {
+        "key": "Rename",
+        "defaultValue": "Rename"
+    },
+    {
+        "key": "RefreshImageAndTitle",
+        "defaultValue": "Refresh Image And Title"
+    },
+    {
+        "key": "Refresh",
+        "defaultValue": "Refresh"
+    },
+    {
+        "key": "UnArchive",
+        "defaultValue": "Unarchive"
+    },
+    {
+        "key": "UnArchived",
+        "defaultValue": "Unarchived and saved to the default \"Saved Links\" collection."
+    },
+    {
+        "key": "DeleteTheNote",
+        "defaultValue": "Delete The Note"
+    },
+    {
+        "key": "MoveToRootFolders",
+        "defaultValue": "Move To Root Folders"
+    },
+    {
+        "key": "DeleteTheLink",
+        "defaultValue": "Delete the Link"
+    },
+    {
+        "key": "DeletedTheLink",
+        "defaultValue": "Deleted the Link"
+    },
+    {
+        "key": "CopyFolder",
+        "defaultValue": "Copy Folder"
+    },
+    {
+        "key": "MoveToOtherFolder",
+        "defaultValue": "Move To Other Folder"
+    },
+    {
+        "key": "CopyLink",
+        "defaultValue": "Copy Link"
+    },
+    {
+        "key": "MoveLink",
+        "defaultValue": "Move Link"
+    },
+    {
+        "key": "DeleteTheFolder",
+        "defaultValue": "Delete The Folder"
+    },
+    {
+        "key": "DeletedTheFolder",
+        "defaultValue": "Folder >{}, all internal folders, and associated links have been successfully deleted."
+    },
+    {
+        "key": "DeletedTheNoteOfAFolder",
+        "defaultValue": "Successfully deleted the note of the >{}."
+    },
+    {
+        "key": "DeletedTheNoteOfALink",
+        "defaultValue": "Successfully deleted the note."
+    },
+    {
+        "key": "FolderDeletionLabel",
+        "defaultValue": "Deleting this folder will also remove all its subfolders"
+    },
+    {
+        "key": "AreYouSureDeleteSelectedLinks",
+        "defaultValue": "Are you sure you want to delete all selected links?"
+    },
+    {
+        "key": "AreYouSureDeleteLink",
+        "defaultValue": "Are you sure you want to delete the link?"
+    },
+    {
+        "key": "AreYouSureDeleteSelectedFolders",
+        "defaultValue": "Are you sure you want to delete all selected folders?"
+    },
+    {
+        "key": "AreYouSureDeleteFolder",
+        "defaultValue": "Are you sure you want to delete the folder?"
+    },
+    {
+        "key": "AreYouSureDeleteSelectedItems",
+        "defaultValue": "Are you sure you want to delete all selected items?"
+    },
+    {
+        "key": "AreYouSureDeleteEverything",
+        "defaultValue": "Are you sure you want to delete all folders, links, panels, tags, and localized strings?"
+    },
+    {
+        "key": "SavedNote",
+        "defaultValue": "Saved Note"
+    },
+    {
+        "key": "NoNoteAdded",
+        "defaultValue": "You haven't added a note for this yet."
+    },
+    {
+        "key": "Delete",
+        "defaultValue": "Delete"
+    },
+    {
+        "key": "ArchivedTheFolder",
+        "defaultValue": "The folder >{} has been archived."
+    },
+    {
+        "key": "UnArchivedTheFolder",
+        "defaultValue": "The folder >{} has been unarchived."
+    },
+    {
+        "key": "ArchivedTheLink",
+        "defaultValue": "Link has been archived."
+    },
+    {
+        "key": "ChangeBothNameAndNote",
+        "defaultValue": "Change Name and Note"
+    },
+    {
+        "key": "ChangeNoteOnly",
+        "defaultValue": "Change Note"
+    },
+    {
+        "key": "RenameFolder",
+        "defaultValue": "Rename Folder >{}"
+    },
+    {
+        "key": "ChangeLinkData",
+        "defaultValue": "Change Link data"
+    },
+    {
+        "key": "NewName",
+        "defaultValue": "New Name"
+    },
+    {
+        "key": "NewTitle",
+        "defaultValue": "New Title"
+    },
+    {
+        "key": "NewNote",
+        "defaultValue": "New Note"
+    },
+    {
+        "key": "UpdatedTheNote",
+        "defaultValue": "Updated the note successfully."
+    },
+    {
+        "key": "UpdatedTheName",
+        "defaultValue": "Updated the name successfully."
+    },
+    {
+        "key": "UpdatedTheTitle",
+        "defaultValue": "Updated the title successfully."
+    },
+    {
+        "key": "UpdatedTheFolderData",
+        "defaultValue": "Folder data has been updated successfully."
+    },
+    {
+        "key": "InvalidLink",
+        "defaultValue": "The link provided is invalid. Please check and try again."
+    },
+    {
+        "key": "SavedTheLink",
+        "defaultValue": "Saved the link successfully."
+    },
+    {
+        "key": "DeletionInProgress",
+        "defaultValue": "Deletion In Progress.."
+    },
+    {
+        "key": "RemoveALinkFromImpLink",
+        "defaultValue": "Remove from Important Links"
+    },
+    {
+        "key": "MarkALinkAsImpLink",
+        "defaultValue": "Add to Important Links"
+    },
+    {
+        "key": "NewestToOldest",
+        "defaultValue": "Newest to Oldest"
+    },
+    {
+        "key": "OldestToNewest",
+        "defaultValue": "Oldest to Newest"
+    },
+    {
+        "key": "AToZSequence",
+        "defaultValue": "A to Z Sequence"
+    },
+    {
+        "key": "ZToASequence",
+        "defaultValue": "Z to A Sequence"
+    },
+    {
+        "key": "SortFoldersBy",
+        "defaultValue": "Sort folders by"
+    },
+    {
+        "key": "SortHistoryLinksBy",
+        "defaultValue": "Sort History Links by"
+    },
+    {
+        "key": "SortBy",
+        "defaultValue": "Sort by"
+    },
+    {
+        "key": "SortSavedLinksBy",
+        "defaultValue": "Sort Saved Links by"
+    },
+    {
+        "key": "SortImportantLinksBy",
+        "defaultValue": "Sort Important Links by"
+    },
+    {
+        "key": "SortBasedOn",
+        "defaultValue": "Sort Based on"
+    },
+    {
+        "key": "SearchTitlesToFindLinksAndFolders",
+        "defaultValue": "Search links, folders, and tags by name and note, or look up a link by URL"
+    },
+    {
+        "key": "RegularFolder",
+        "defaultValue": "Regular Folder"
+    },
+    {
+        "key": "ArchiveFolder",
+        "defaultValue": "Archive Folder"
+    },
+    {
+        "key": "GoodMorning",
+        "defaultValue": "Good Morning"
+    },
+    {
+        "key": "GoodAfternoon",
+        "defaultValue": "Good Afternoon"
+    },
+    {
+        "key": "GoodEvening",
+        "defaultValue": "Good Evening"
+    },
+    {
+        "key": "HeyHi",
+        "defaultValue": "Hey, hi👋"
+    },
+    {
+        "key": "Default",
+        "defaultValue": "Default"
+    },
+    {
+        "key": "SelectedPanel",
+        "defaultValue": "Selected Panel"
+    },
+    {
+        "key": "AddANewPanel",
+        "defaultValue": "Add A New Panel"
+    },
+    {
+        "key": "Panels",
+        "defaultValue": "Panels"
+    },
+    {
+        "key": "Snapshots",
+        "defaultValue": "Snapshots"
+    },
+    {
+        "key": "RenameTagName",
+        "defaultValue": "Rename tag Name"
+    },
+    {
+        "key": "NewTagName",
+        "defaultValue": "New tag name"
+    },
+    {
+        "key": "FoldersInThisPanel",
+        "defaultValue": "Folders in this panel"
+    },
+    {
+        "key": "FoldersThatCanBeAddedToThisPanel",
+        "defaultValue": "Folders that can be added to this panel"
+    },
+    {
+        "key": "PanelName",
+        "defaultValue": "Panel Name"
+    },
+    {
+        "key": "PermanentlyDeleteThePanel",
+        "defaultValue": "Permanently Delete Panel"
+    },
+    {
+        "key": "OnceDeletedThisPanelCannotBeRestored",
+        "defaultValue": "Once deleted, this Panel cannot be restored."
+    },
+    {
+        "key": "AreYouSureWantToDeleteThePanel",
+        "defaultValue": "Are you sure want to delete the panel named >{}?"
+    },
+    {
+        "key": "NewNameForPanel",
+        "defaultValue": "New Name for Panel"
+    },
+    {
+        "key": "ChangePanelName",
+        "defaultValue": "Change Panel Name"
+    },
+    {
+        "key": "EditPanelName",
+        "defaultValue": "Edit >{} Panel Name"
+    },
+    {
+        "key": "RedirectToLatestReleasePage",
+        "defaultValue": "Redirect to latest release page"
+    },
+    {
+        "key": "NewUpdateIsAvailable",
+        "defaultValue": "Linkora just got better, new update is available."
+    },
+    {
+        "key": "CurrentVersion",
+        "defaultValue": "version you're using"
+    },
+    {
+        "key": "LatestVersionAvailableDesc",
+        "defaultValue": "a new >{} build has been released"
+    },
+    {
+        "key": "TrackRecentChangesAndUpdatesToLinkora",
+        "defaultValue": "Track recent changes and updates to Linkora."
+    },
+    {
+        "key": "Changelog",
+        "defaultValue": "Changelog"
+    },
+    {
+        "key": "OpenAGithubIssue",
+        "defaultValue": "Open a GitHub Issue"
+    },
+    {
+        "key": "HaveASuggestionCreateAnIssueOnGithubToImproveLinkora",
+        "defaultValue": "Have a suggestion? Create an issue on GitHub to improve Linkora."
+    },
+    {
+        "key": "GithubDesc",
+        "defaultValue": "The Linkora app, sync server, and localization server are public and open-source—feel free to explore the code."
+    },
+    {
+        "key": "Github",
+        "defaultValue": "Github"
+    },
+    {
+        "key": "Discord",
+        "defaultValue": "Discord"
+    },
+    {
+        "key": "Twitter",
+        "defaultValue": "Twitter"
+    },
+    {
+        "key": "Development",
+        "defaultValue": "Development"
+    },
+    {
+        "key": "Socials",
+        "defaultValue": "Socials"
+    },
+    {
+        "key": "YouAreUsingLatestVersionOfLinkora",
+        "defaultValue": "You are using latest version of Linkora."
+    },
+    {
+        "key": "CheckForLatestVersion",
+        "defaultValue": "Check for latest version"
+    },
+    {
+        "key": "RetrievingLatestInformation",
+        "defaultValue": "Retrieving latest information, this may take sometime."
+    },
+    {
+        "key": "LinkoraOpenSourceAcknowledgement",
+        "defaultValue": "Linkora wouldn't be possible without the following open-source software, libraries."
+    },
+    {
+        "key": "UserAgent",
+        "defaultValue": "User Agent"
+    },
+    {
+        "key": "UserAgentDesc",
+        "defaultValue": "Helps detect images and titles from webpage meta tags. Results may vary based on the agent string."
+    },
+    {
+        "key": "LocalizationServerDesc",
+        "defaultValue": "Linkora’s localization server lets you update strings without updating the app. By default, it uses Linkora’s server.\n\nYou can switch to your own server if needed. Changes will reflect in Linkora’s network requests for language or string updates.\n\nOnly change this if you’re sure about what you’re doing."
+    },
+    {
+        "key": "LocalizationServer",
+        "defaultValue": "Localization Server"
+    },
+    {
+        "key": "PreparingToExportYourData",
+        "defaultValue": "Preparing to export your data..."
+    },
+    {
+        "key": "CollectingLinksForExport",
+        "defaultValue": "Collecting links for export..."
+    },
+    {
+        "key": "CollectingFoldersForExport",
+        "defaultValue": "Collecting folders for export..."
+    },
+    {
+        "key": "ForceShuffleLinks",
+        "defaultValue": "Force Shuffle Links"
+    },
+    {
+        "key": "ForceShuffleLinksDesc",
+        "defaultValue": "Forces a randomized link order, overriding the sorting type above. This applies only to links, not folders."
+    },
+    {
+        "key": "CollectingPanelsForExport",
+        "defaultValue": "Collecting panels for export..."
+    },
+    {
+        "key": "CollectingPanelFoldersForExport",
+        "defaultValue": "Collecting panel-folders for export..."
+    },
+    {
+        "key": "SerializingCollectedDataForExport",
+        "defaultValue": "Serializing the collected data for export..."
+    },
+    {
+        "key": "ImportExportScreenTopAppBarDesc",
+        "defaultValue": "Stay on this page! DO NOT PANIC IF IT LOOKS STUCK."
+    },
+    {
+        "key": "ExportedSuccessfully",
+        "defaultValue": "Exported Successfully"
+    },
+    {
+        "key": "StoragePermissionIsRequired",
+        "defaultValue": "Storage permission is required to store or export the file. Please grant the permission to proceed."
+    },
+    {
+        "key": "NotificationPermissionIsRequired",
+        "defaultValue": "Enable notification permission to view the progress of link refreshes."
+    },
+    {
+        "key": "PermissionGranted",
+        "defaultValue": "Permission granted. Please retry the action to continue with your import/export."
+    },
+    {
+        "key": "LinkRefreshedSuccessfully",
+        "defaultValue": "The link data has been successfully refreshed."
+    },
+    {
+        "key": "Share",
+        "defaultValue": "Share"
+    },
+    {
+        "key": "Edit",
+        "defaultValue": "Edit"
+    },
+    {
+        "key": "AssociatedTags",
+        "defaultValue": "Associated Tags"
+    },
+    {
+        "key": "ForceOpenInABrowser",
+        "defaultValue": "Open In A Browser"
+    },
+    {
+        "key": "WorkManagerDesc",
+        "defaultValue": "Work Manager is scheduling the links refreshing task. It will continue shortly.\nYou can close the app; this task will continue in the background."
+    },
+    {
+        "key": "NoOfLinksRefreshed",
+        "defaultValue": ">{} of >{} links refreshed."
+    },
+    {
+        "key": "TopDecoratorSetting",
+        "defaultValue": "Use Linkora's Top Decorator"
+    },
+    {
+        "key": "TopDecoratorSettingDesc",
+        "defaultValue": "When disabled, the default decorator will be used. Changes will apply on the next launch."
+    },
+    {
+        "key": "ThisFolderHasNoSubfolders",
+        "defaultValue": "This folder does not contain any subfolders."
+    },
+    {
+        "key": "PanelCreatedSuccessfully",
+        "defaultValue": "Panel created successfully with the name: >{}"
+    },
+    {
+        "key": "DeletedPanelSuccessfully",
+        "defaultValue": "Panel deleted successfully."
+    },
+    {
+        "key": "UpdatedThePanelNameSuccessfully",
+        "defaultValue": "Panel name updated to: >{}."
+    },
+    {
+        "key": "ImportingDataFromTheSever",
+        "defaultValue": "Importing Data from the Remote Server"
+    },
+    {
+        "key": "ImportingDataFromTheSeverDesc",
+        "defaultValue": "If you cancel the import, some data may still be saved, and the server connection will be removed."
+    },
+    {
+        "key": "SuccessfullyConnectedToTheServer",
+        "defaultValue": "Server connection established successfully."
+    },
+    {
+        "key": "ConnectionToServerFailed",
+        "defaultValue": "Could not connect to the server. Ensure the server is reachable."
+    },
+    {
+        "key": "UpdatingChangesOnRemoteServer",
+        "defaultValue": "Updating Changes on Remote Server"
+    },
+    {
+        "key": "LOLCATplAck",
+        "defaultValue": "LOLCATpl made this logo. Across the app on all platforms, Linkora's improved UI components are inspired and based on the designs made by LOLCATpl."
+    },
+    {
+        "key": "MondsternAck",
+        "defaultValue": "mondstern painted this logo, which was based on the legacy logo."
+    },
+    {
+        "key": "AckEndingText",
+        "defaultValue": "And, of course, the underlying libraries used by these also impact Linkora's behavior."
+    },
+    {
+        "key": "LOLCATplOnDiscord",
+        "defaultValue": "LOLCATpl on Discord"
+    },
+    {
+        "key": "MondsternOnDiscord",
+        "defaultValue": "mondstern on Pixelfed"
+    },
+    {
+        "key": "NoFoldersOrLinksFound",
+        "defaultValue": "Nothing here yet. Add folders or links to begin."
+    },
+    {
+        "key": "FoldersExistsButNotLinks",
+        "defaultValue": "Folders are in. Now add links to organize your content."
+    },
+    {
+        "key": "NoFoldersFound",
+        "defaultValue": "No folders found. Add folders to get started."
+    },
+    {
+        "key": "ExportingDataToJSON",
+        "defaultValue": "Exporting Data to JSON..."
+    },
+    {
+        "key": "NoFoldersFoundInArchive",
+        "defaultValue": "No folders found."
+    },
+    {
+        "key": "ExportingDataToHTML",
+        "defaultValue": "Exporting Data to HTML..."
+    },
+    {
+        "key": "ReadingFile",
+        "defaultValue": "Reading file..."
+    },
+    {
+        "key": "SuccessfullyImportedTheData",
+        "defaultValue": "Successfully imported the data."
+    },
+    {
+        "key": "SelectAValidFile",
+        "defaultValue": "Select a valid >{} File"
+    },
+    {
+        "key": "FileTypeNotSupportedOnDesktopImport",
+        "defaultValue": ">{} files are not supported for importing, pick valid >{} file."
+    },
+    {
+        "key": "NoFoldersInThePanel",
+        "defaultValue": "No folders in this panel. Add folders in this panel to get started."
+    },
+    {
+        "key": "NoLinksFound",
+        "defaultValue": "No links available. Start by adding a few."
+    },
+    {
+        "key": "NoArchiveLinksFound",
+        "defaultValue": "No links found."
+    },
+    {
+        "key": "NoRemoteLangPacks",
+        "defaultValue": "No remote language packs found.\nLoad from the server to start using Linkora in your language."
+    },
+    {
+        "key": "StringsLocalizedStatus",
+        "defaultValue": ">{}/>{} strings localized"
+    },
+    {
+        "key": "EnableNotifications",
+        "defaultValue": "Enable Notifications"
+    },
+    {
+        "key": "NotificationPermissionRequired",
+        "defaultValue": "Notification Permission Required"
+    },
+    {
+        "key": "NotificationPermissionDesc",
+        "defaultValue": "Linkora needs notification permission to display sync progress, link refreshes, and auto-save status."
+    },
+    {
+        "key": "NoPanelsFound",
+        "defaultValue": "No panels yet.\nCreate panels and link folders to organize your work by topic or purpose."
+    },
+    {
+        "key": "SearchInLinkora",
+        "defaultValue": "Search Linkora: Find your links, folders, and tags in one place"
+    },
+    {
+        "key": "NoSearchResults",
+        "defaultValue": "No results found."
+    },
+    {
+        "key": "NoHistoryFound",
+        "defaultValue": "No history found. Your history is clean!"
+    },
+    {
+        "key": "StartingImportingProcess",
+        "defaultValue": "Starting data import from JSON file: >{}"
+    },
+    {
+        "key": "DataSynchronizationCompletedSuccessfully",
+        "defaultValue": "Data synchronization completed successfully."
+    },
+    {
+        "key": "InitiateManualSync",
+        "defaultValue": "Initiate Manual Sync"
+    },
+    {
+        "key": "InitiateManualSyncDesc",
+        "defaultValue": "Pending queue items will be force-pushed, while non-synced server items will be pulled."
+    },
+    {
+        "key": "InitiateManualSyncDescAlt",
+        "defaultValue": "Pending items will be pushed, and unsynced data from the server will be pulled."
+    },
+    {
+        "key": "SyncingDataLabel",
+        "defaultValue": "Syncing Data..."
+    },
+    {
+        "key": "RemoteDataDeletionFailure",
+        "defaultValue": "The data from the remote database could not be deleted."
+    },
+    {
+        "key": "DeleteEverythingFromRemoteDatabaseLabel",
+        "defaultValue": "Delete all data from the remote database as well"
+    },
+    {
+        "key": "ProvideAValidFileLocation",
+        "defaultValue": "Provide a valid file location"
+    },
+    {
+        "key": "ImportMethodLabel",
+        "defaultValue": "Import Method : "
+    },
+    {
+        "key": "FileLocationLabel",
+        "defaultValue": "File Location"
+    },
+    {
+        "key": "FilePickerLabel",
+        "defaultValue": "File Picker"
+    },
+    {
+        "key": "NavigateAndCopyDesc",
+        "defaultValue": "Navigate to the folder where you want to copy the selected items and hit the paste button to copy them there."
+    },
+    {
+        "key": "NavigateAndMoveDesc",
+        "defaultValue": "Navigate to the folder where you want to move the selected items and hit the paste button to move them there."
+    },
+    {
+        "key": "Moving",
+        "defaultValue": "Moving..."
+    },
+    {
+        "key": "Copying",
+        "defaultValue": "Copying..."
+    },
+    {
+        "key": "LinkoraOnTwitter",
+        "defaultValue": "Linkora on Twitter"
+    },
+    {
+        "key": "LinkoraOnDiscord",
+        "defaultValue": "Linkora on Discord"
+    },
+    {
+        "key": "LinkoraOnGithub",
+        "defaultValue": "Linkora on Github"
+    },
+    {
+        "key": "LinkoraIssues",
+        "defaultValue": "Issues · LinkoraApp/Linkora"
+    },
+    {
+        "key": "LinokraReleases",
+        "defaultValue": "Releases · LinkoraApp/Linkora"
+    },
+    {
+        "key": "LinokraReleasesOnGitHub",
+        "defaultValue": "Releases · LinkoraApp/Linkora on Github"
+    },
+    {
+        "key": "LinkoraIssuesOnGithub",
+        "defaultValue": "Issues · LinkoraApp/Linkora on Github"
+    },
+    {
+        "key": "CurrentExportLocation",
+        "defaultValue": "Current export location"
+    },
+    {
+        "key": "CurrentExportLocationSupportingText",
+        "defaultValue": "If the selected directory is deleted or moved, export will silently fail. Make sure the selected directory always exists."
+    },
+    {
+        "key": "ServerCertificateAlreadyImported",
+        "defaultValue": "A certificate has already been imported. If you're unsure whether it matches the server-generated certificate, you can import the updated certificate to replace the existing one.\n\n>{}"
+    },
+    {
+        "key": "ImportServerCertificateDescription",
+        "defaultValue": "To connect securely, please import the .cer certificate automatically generated by your server."
+    },
+    {
+        "key": "ImportedServerCertificate",
+        "defaultValue": "Import Successful, Info:\n>{}"
+    },
+    {
+        "key": "ProcessingCertificate",
+        "defaultValue": "Processing the certificate..."
+    },
+    {
+        "key": "ImportServerCertificate",
+        "defaultValue": "Import Server Certificate"
+    },
+    {
+        "key": "ForceBypassCertificateChecking",
+        "defaultValue": "Force bypass certificate checking"
+    },
+    {
+        "key": "ForceBypassCertificateCheckingDescription",
+        "defaultValue": "Bypasses certificate validation. This is not recommended. If you have a valid .cer certificate, keep this disabled and import the certificate instead."
+    },
+    {
+        "key": "Translate",
+        "defaultValue": "Translate"
+    },
+    {
+        "key": "BuyMeACoffee",
+        "defaultValue": "Buy me a Coffee"
+    },
+    {
+        "key": "UseSnapshots",
+        "defaultValue": "Use snapshots"
+    },
+    {
+        "key": "UseSnapshotsDescription",
+        "defaultValue": "Links, folders, panels, and panel folders will be auto-exported in your chosen format."
+    },
+    {
+        "key": "SnapshotsBackupLocationWarning",
+        "defaultValue": "If the selected directory is moved or deleted, backup will silently fail. Make sure the selected directory always exists."
+    },
+    {
+        "key": "SnapshotsBackupLocation",
+        "defaultValue": "Current backup location"
+    },
+    {
+        "key": "EnableAutoDeleteSnapshots",
+        "defaultValue": "Enable Auto-Deletion of Old Snapshots"
+    },
+    {
+        "key": "EnableAutoDeleteSnapshotsDescription",
+        "defaultValue": "When enabled, the app will automatically delete the oldest snapshots once they exceed the configured limit."
+    },
+    {
+        "key": "SnapshotsFileLimitWarning",
+        "defaultValue": "File limit is exclusive - checked before creating new backups, not after."
+    },
+    {
+        "key": "SnapshotsFileLimit",
+        "defaultValue": "Auto-delete if snapshots count exceeds limit:"
+    },
+    {
+        "key": "ExportAs",
+        "defaultValue": "Export As"
+    },
+    {
+        "key": "SnapshotsExportDescriptionDesktop",
+        "defaultValue": "Each create, update, or delete action on a link, folder, panel, or panel folder triggers an export. Progress is shown in the side navigation rail."
+    },
+    {
+        "key": "SnapshotsExportDescriptionAndroid",
+        "defaultValue": "Any time you add, edit, or delete a link, folder, panel, or panel folder, Linkora auto-exports in the background."
+    },
+    {
+        "key": "BackupsWorkOnlyWithDirectory",
+        "defaultValue": "Backups will only work if you pick a directory first."
+    },
+    {
+        "key": "ExportRequiresDirectory",
+        "defaultValue": "You need to pick a directory before exporting."
+    },
+    {
+        "key": "ArchivedSuccessfully",
+        "defaultValue": "Archived successfully."
+    },
+    {
+        "key": "DeletedSuccessfully",
+        "defaultValue": "Deleted successfully."
+    },
+    {
+        "key": "ServerCertificateSavedSuccessfully",
+        "defaultValue": "Server certificate saved successfully."
+    },
+    {
+        "key": "Both",
+        "defaultValue": "Both"
+    },
+    {
+        "key": "ImageURLForLinkLabel",
+        "defaultValue": "Image URL for Link"
+    },
+    {
+        "key": "ImageURLForLinkDesc",
+        "defaultValue": "Leave this field empty to automatically retrieve the image URL."
+    },
+    {
+        "key": "AutoSavingTheLinkNotifyLabel",
+        "defaultValue": "Auto-saving the link..."
+    },
+    {
+        "key": "AutoSavingTheLinkNotifyDesc",
+        "defaultValue": "Retrieving metadata to save the link: >{}"
+    },
+    {
+        "key": "AutoSavedTheLinkSuccessfully",
+        "defaultValue": "Auto-saved the link successfully"
+    },
+    {
+        "key": "SnapshotCreatedSuccessfully",
+        "defaultValue": "Snapshot created successfully"
+    },
+    {
+        "key": "RefreshType",
+        "defaultValue": "Refresh Type"
+    },
+    {
+        "key": "RefreshLinkTextFieldLabel",
+        "defaultValue": "Refreshing links concurrently count"
+    },
+    {
+        "key": "RefreshLinksComponentLabel",
+        "defaultValue": "Refresh links as per above preferences"
+    },
+    {
+        "key": "RefreshLinksComponentDesc",
+        "defaultValue": "Using a high number of concurrent refreshes may significantly impact your resources and consume more than usual."
+    },
+    {
+        "key": "FolderPathLabel",
+        "defaultValue": "Folder Path"
+    },
+    {
+        "key": "ChangeFontLabel",
+        "defaultValue": "Change Font Family"
+    },
+    {
+        "key": "SelectAFontLabel",
+        "defaultValue": "Select a font"
+    },
+    {
+        "key": "NoItemsFound",
+        "defaultValue": "No items found."
+    },
+    {
+        "key": "ShowTagsLabel",
+        "defaultValue": "Show Tags"
+    },
+    {
+        "key": "ShowDateLabel",
+        "defaultValue": "Show Date"
+    },
+    {
+        "key": "ClickToOpenMenuLabel",
+        "defaultValue": "Click to Open Menu"
+    },
+    {
+        "key": "LinkExistsInSelectedFolderMsg",
+        "defaultValue": "You've already added this link to the selected folder."
+    },
+    {
+        "key": "LinkExistsInSavedLinksMsg",
+        "defaultValue": "You've already saved this link in the \"Saved\" collection."
+    },
+    {
+        "key": "LinkExistsInHistoryMsg",
+        "defaultValue": "This link is already in your history."
+    },
+    {
+        "key": "LinkExistsInImportantLinksMsg",
+        "defaultValue": "You've already marked this link as important."
+    },
+    {
+        "key": "LinkExistsInArchivedLinksMsg",
+        "defaultValue": "This link is already archived."
+    },
+    {
+        "key": "LinkExistsMsg",
+        "defaultValue": "You've already saved this link."
+    },
+    {
+        "key": "RefreshTitleLabel",
+        "defaultValue": "Refresh Title"
+    },
+    {
+        "key": "RefreshImageLabel",
+        "defaultValue": "Refresh Image"
+    },
+    {
+        "key": "SyncServerConfigurationError",
+        "defaultValue": "syncServerClient isn't configured; make sure a valid certificate is imported."
+    },
+    {
+        "key": "NewImgURLLabel",
+        "defaultValue": "New Image URL"
+    },
+    {
+        "key": "NewURLLabel",
+        "defaultValue": "New URL"
+    },
+    {
+        "key": "RateOnPlayLabel",
+        "defaultValue": "Rate on Google Play"
+    },
+    {
+        "key": "ForceSaveLinksLabel",
+        "defaultValue": "Force Save links"
+    },
+    {
+        "key": "ForceSaveLinksDesc",
+        "defaultValue": "Even if failed to retrieve the link data, link will be force saved."
+    },
+    {
+        "key": "AutoSaveLinksLabel",
+        "defaultValue": "Auto-save links when shared from other apps"
+    },
+    {
+        "key": "AutoSaveLinksDesc",
+        "defaultValue": "Auto-saved links will be added to \"Saved Links\" without tags, and their title and image will be fetched automatically."
+    },
+    {
+        "key": "AutoSaveNotificationPermission",
+        "defaultValue": "Auto-saving requires notification permission."
+    },
+    {
+        "key": "Title",
+        "defaultValue": "Title"
+    },
+    {
+        "key": "Image",
+        "defaultValue": "Image"
+    },
+    {
+        "key": "Proxy",
+        "defaultValue": "Proxy"
+    },
+    {
+        "key": "SyncInProgress",
+        "defaultValue": "A sync process is already in progress"
+    },
+    {
+        "key": "UseAProxyServer",
+        "defaultValue": "Use a Proxy Server"
+    },
+    {
+        "key": "UseAProxyServerDesc",
+        "defaultValue": "Relay requests through the Proxy Server"
+    },
+    {
+        "key": "UseAProxyServerLongDesc",
+        "defaultValue": "All traffic sent from your device is routed via this proxy. Ensure you are using a Linkora-compatible proxy.\n\nNote: Public proxy instance does not guarantee continuous uptime. Use a self-hosted version if a proxy is really necessary."
+    },
+    {
+        "key": "InvalidExportDir",
+        "defaultValue": "Looks like you skipped picking an export location."
+    }
+]
