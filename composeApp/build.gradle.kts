@@ -1,5 +1,6 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
+import com.android.build.gradle.internal.tasks.factory.dependsOn
 import groovy.json.JsonSlurper
 import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
@@ -334,6 +335,7 @@ allprojects {
         }
     }
 }
+
 val localizationDir = "generated/com/sakethh/linkora/localization"
 
 data class LocalizationItem(
@@ -341,26 +343,28 @@ data class LocalizationItem(
     val defaultValue: String,
 )
 
+val localizationJsonFile =
+    rootProject.layout.projectDirectory.file("locales/default.json")
+val localizationItems =
+    (JsonSlurper().parse(localizationJsonFile.asFile) as List<*>)
+        .map {
+            (it as Map<*, *>).run {
+                LocalizationItem(
+                    key = get("key").toString(),
+                    defaultValue = get("defaultValue").toString(),
+                )
+            }
+        }
+
 val localizationGeneration =
     tasks.register("localizationGeneration") {
         doLast {
-            val localizationJsonFile = rootProject.layout.projectDirectory.file("locales/default.json")
             val localizationBuildDir = layout.buildDirectory.dir(localizationDir)
 
             if (!localizationBuildDir.get().asFile.exists()) {
                 localizationBuildDir.get().asFile.mkdirs()
             }
 
-            val localizationItems =
-                (JsonSlurper().parse(localizationJsonFile.asFile) as List<*>)
-                    .map {
-                        (it as Map<*, *>).run {
-                            LocalizationItem(
-                                key = get("key").toString(),
-                                defaultValue = get("defaultValue").toString(),
-                            )
-                        }
-                    }
             val generatedKeysFile = File(localizationBuildDir.get().asFile, "LocalizationKey.kt")
             if (!generatedKeysFile.exists()) {
                 generatedKeysFile.createNewFile()
@@ -408,6 +412,27 @@ kotlin.sourceSets.named("commonMain") {
     kotlin.srcDir(layout.buildDirectory.dir(localizationDir))
 }
 
+val localizationVerification =
+    tasks.register("localizationVerification") {
+        doLast {
+            val tempSet = mutableSetOf<String>()
+            localizationItems.forEach { (enumKey, defaultValue) ->
+                if (!tempSet.add(enumKey)) {
+                    error("Duplicate localization key: \"$enumKey\". Localization keys must be unique.")
+                }
+                if (enumKey != defaultValue && !tempSet.add(defaultValue)) {
+                    error(
+                        "Duplicate localization default value: \"$defaultValue\" for key \"$enumKey\". " +
+                            "Default values must be unique. Reuse the existing key that already contains this text.",
+                    )
+                }
+            }
+        }
+    }
+
+localizationGeneration.dependsOn(localizationVerification)
+
 tasks.withType<KotlinCompilationTask<*>>().configureEach {
+    dependsOn(localizationVerification)
     dependsOn(localizationGeneration)
 }
