@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
@@ -21,36 +20,37 @@ import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.platform.showDynamicThemingOption
 import com.sakethh.linkora.platform.showFollowSystemThemeOption
 import com.sakethh.linkora.ui.LocalPlatform
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
-import com.sakethh.linkora.utils.rememberLocalizedString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ThemeSettingsScreen() {
+    val localizedStrings = LocalizedStrings.current
     val settingsScreenViewModel: SettingsScreenViewModel = linkoraViewModel()
     val preferences by settingsScreenViewModel.preferencesAsFlow.collectAsStateWithLifecycle()
     val platform = LocalPlatform.current
     val isSystemInDarkTheme = isSystemInDarkTheme()
     SettingsSectionScaffold(
-        topAppBarText = Localization.Key.Theme.rememberLocalizedString(),
+        topAppBarText = localizedStrings.Theme,
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
             modifier =
-            Modifier.fillMaxSize()
-                .addEdgeToEdgeScaffoldPadding(paddingValues)
-                .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
+                Modifier.fillMaxSize()
+                    .addEdgeToEdgeScaffoldPadding(paddingValues)
+                    .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
             verticalArrangement = Arrangement.spacedBy(30.dp),
         ) {
             if (
                 platform is Platform.Android && showFollowSystemThemeOption && !preferences.useDarkTheme
             ) {
-                item(key = Localization.Key.FollowSystemTheme.defaultValue) {
+                item(key = LocalizationKey.FollowSystemTheme.name) {
                     SettingComponent(
                         SettingComponentParam(
-                            title = Localization.Key.FollowSystemTheme.rememberLocalizedString(),
+                            title = localizedStrings.FollowSystemTheme,
                             doesDescriptionExists = false,
                             isSwitchNeeded = true,
                             description = null,
@@ -67,10 +67,10 @@ fun ThemeSettingsScreen() {
                 }
             }
             if (!preferences.useSystemTheme || platform is Platform.Desktop || platform is Platform.Web) {
-                item(key = Localization.Key.UseDarkMode.defaultValue) {
+                item(key = LocalizationKey.UseDarkMode.name) {
                     SettingComponent(
                         SettingComponentParam(
-                            title = Localization.Key.UseDarkMode.rememberLocalizedString(),
+                            title = localizedStrings.UseDarkMode,
                             doesDescriptionExists = false,
                             description = null,
                             isSwitchNeeded = true,
@@ -93,7 +93,7 @@ fun ThemeSettingsScreen() {
                 item {
                     SettingComponent(
                         SettingComponentParam(
-                            title = Localization.Key.UseAmoledTheme.rememberLocalizedString(),
+                            title = localizedStrings.UseAmoledTheme,
                             doesDescriptionExists = false,
                             description = "",
                             isSwitchNeeded = true,
@@ -110,12 +110,12 @@ fun ThemeSettingsScreen() {
                 }
             }
             if (platform is Platform.Android && showDynamicThemingOption) {
-                item(key = Localization.Key.UseDynamicTheming.defaultValue) {
+                item(key = LocalizationKey.UseDynamicTheming.name) {
                     SettingComponent(
                         SettingComponentParam(
-                            title = Localization.Key.UseDynamicTheming.rememberLocalizedString(),
+                            title = localizedStrings.UseDynamicTheming,
                             doesDescriptionExists = true,
-                            description = Localization.Key.UseDynamicThemingDesc.rememberLocalizedString(),
+                            description = localizedStrings.UseDynamicThemingDesc,
                             isSwitchNeeded = true,
                             isSwitchEnabled = preferences.useDynamicTheming,
                             onSwitchStateChange = {

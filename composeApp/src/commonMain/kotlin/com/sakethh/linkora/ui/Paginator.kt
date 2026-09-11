@@ -40,7 +40,7 @@ class Paginator<T>(
         currentKey: Pair<LastSeenId, LastSeenString>,
         data: List<T>,
     ) -> Pair<UpdatedLastSeenId, UpdatedLastSeenString>,
-    private val onError: suspend (String) -> Unit,
+    private val onError: suspend (Exception) -> Unit,
     private val onRetrieving: suspend () -> Unit,
     private val onPagesFinished: suspend () -> Unit,
 ) {

@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ExportFileType
@@ -20,6 +19,7 @@ import com.sakethh.linkora.domain.onLoading
 import com.sakethh.linkora.domain.onSuccess
 import com.sakethh.linkora.domain.repository.ExportDataRepo
 import com.sakethh.linkora.domain.repository.ImportDataRepo
+import com.sakethh.linkora.domain.repository.LocalizationRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.RefreshLinksRepo
@@ -34,8 +34,8 @@ import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.screens.settings.section.data.capture.WorkerState
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
-import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.getRemoteOnlyFailureMsg
+import com.sakethh.linkora.utils.isRemoteSuccessful
 import com.sakethh.linkora.utils.pushSnackbar
 import com.sakethh.linkora.utils.pushSnackbarOnFailure
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -64,8 +64,16 @@ class DataSettingsScreenVM(
     private val refreshLinksRepo: RefreshLinksRepo,
     private val webCaptureRepo: WebCaptureRepo,
     private val webCapture: NativeUtils.WebCapture,
+    private val localizationRepo: LocalizationRepo.Local,
     webCaptureDatabaseManager: WebCaptureDatabaseManager,
-) : SettingsScreenViewModel(preferencesRepository, nativeUtils, permissionManager, webCapture, webCaptureDatabaseManager) {
+) : SettingsScreenViewModel(
+    preferencesRepository,
+    nativeUtils,
+    permissionManager,
+    webCapture,
+    webCaptureDatabaseManager,
+    localizationRepo
+) {
     val importExportProgressLogs = mutableStateListOf<String>()
 
     private var importExportJob: Job? = null
@@ -161,7 +169,7 @@ class DataSettingsScreenVM(
             }.onSuccess {
                 pushUIEvent(
                     UIEvent.Type.ShowSnackbar(
-                        Localization.Key.SuccessfullyImportedTheData.getLocalizedString(),
+                        localizedStrings.SuccessfullyImportedTheData,
                     ),
                 )
             }.pushSnackbarOnFailure()
@@ -204,7 +212,7 @@ class DataSettingsScreenVM(
                             onCompletion = {
                                 pushUIEvent(
                                     UIEvent.Type.ShowSnackbar(
-                                        Localization.Key.ExportedSuccessfully.getLocalizedString(),
+                                        localizedStrings.ExportedSuccessfully,
                                     ),
                                 )
                             },
@@ -241,7 +249,7 @@ class DataSettingsScreenVM(
                         remoteOperationFailed = true
                     }
                     it.onSuccess {
-                        remoteOperationFailed = it.isRemoteExecutionSuccessful == false
+                        remoteOperationFailed = it.isRemoteSuccessful() == false
                     }
                 }
         }.invokeOnCompletion {
@@ -249,9 +257,9 @@ class DataSettingsScreenVM(
                 pushUIEvent(
                     UIEvent.Type.ShowSnackbar(
                         if (remoteOperationFailed == null || !remoteOperationFailed) {
-                            Localization.Key.DeletedEntireDataPermanently.getLocalizedString()
+                            localizedStrings.DeletedEntireDataPermanently
                         } else {
-                            Localization.Key.RemoteDataDeletionFailure.getLocalizedString()
+                            localizedStrings.RemoteDataDeletionFailure
                         },
                     ),
                 )
@@ -344,7 +352,9 @@ class DataSettingsScreenVM(
                     onCompletion()
                     pushUIEvent(
                         UIEvent.Type.ShowSnackbar(
-                            Localization.Key.DeletedDuplicatedLinksSuccessfully.getLocalizedString() + it.getRemoteOnlyFailureMsg(),
+                            localizedStrings.DeletedDuplicatedLinksSuccessfully + it.getRemoteOnlyFailureMsg(
+                                localizedStrings.RemoteExecutionFailed
+                            ),
                         ),
                     )
                 }
@@ -353,7 +363,7 @@ class DataSettingsScreenVM(
                 }
                 it.onFailure {
                     onCompletion()
-                    pushUIEvent(UIEvent.Type.ShowSnackbar(it))
+                    pushUIEvent(UIEvent.Type.ShowSnackbar(it.message.toString()))
                 }
             }
         }.invokeOnCompletion {
@@ -374,7 +384,7 @@ class DataSettingsScreenVM(
                     exportLocation
                 } else {
                     fileManager.pickADirectory() ?: throw NullPointerException(
-                        Localization.Key.InvalidExportDir.getLocalizedString(),
+                        localizedStrings.InvalidExportDir,
                     )
                 }
 

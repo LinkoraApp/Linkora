@@ -4,11 +4,11 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onLoading
 import com.sakethh.linkora.domain.onSuccess
+import com.sakethh.linkora.domain.repository.LocalizationRepo
 import com.sakethh.linkora.domain.repository.NetworkRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
@@ -21,7 +21,6 @@ import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.utils.canPushToServer
 import com.sakethh.linkora.utils.canReadFromServer
-import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.pushSnackbarOnFailure
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
@@ -36,8 +35,10 @@ open class ServerManagementViewModel(
     private val fileManager: FileManager,
     private val permissionManager: PermissionManager,
     private val network: Network,
+    private val localizationRepo: LocalizationRepo.Local
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
+    val localizedStrings get() = localizationRepo.localizedStrings.value
     val serverSetupState =
         mutableStateOf(
             ServerSetupState(
@@ -68,14 +69,14 @@ open class ServerManagementViewModel(
                             )
                         permissionManager.permittedToShowNotification()
                     }
-                        .onFailure { failureMessage ->
+                        .onFailure { exception ->
                             serverSetupState.value =
                                 ServerSetupState(
                                     isConnecting = false,
                                     isConnectedSuccessfully = false,
                                     isError = true,
                                 )
-                            pushUIEvent(UIEvent.Type.ShowSnackbar(failureMessage))
+                            pushUIEvent(UIEvent.Type.ShowSnackbar(exception.message.toString()))
                         }
                         .onLoading {
                             serverSetupState.value =
@@ -180,7 +181,7 @@ open class ServerManagementViewModel(
                 viewModelScope.launch {
                     pushUIEvent(
                         UIEvent.Type.ShowSnackbar(
-                            Localization.Key.DataSynchronizationCompletedSuccessfully.getLocalizedString(),
+                            localizedStrings.DataSynchronizationCompletedSuccessfully,
                         ),
                     )
                 }
@@ -217,9 +218,7 @@ open class ServerManagementViewModel(
 
                 pushUIEvent(
                     UIEvent.Type.ShowSnackbar(
-                        Localization.getLocalizedString(
-                            Localization.Key.DeletedTheServerConnectionSuccessfully,
-                        ),
+                        localizedStrings.DeletedTheServerConnectionSuccessfully,
                     ),
                 )
             }
@@ -252,9 +251,7 @@ open class ServerManagementViewModel(
                         onCompletion(certInfo)
                         pushUIEvent(
                             UIEvent.Type.ShowSnackbar(
-                                Localization.getLocalizedString(
-                                    Localization.Key.ServerCertificateSavedSuccessfully,
-                                ),
+                                localizedStrings.ServerCertificateSavedSuccessfully,
                             ),
                         )
                     },

@@ -11,7 +11,6 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.KaptureOptions
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.data.local.repository.SnapshotRepoImpl
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.AppPreferences
@@ -25,6 +24,7 @@ import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onLoading
 import com.sakethh.linkora.domain.onSuccess
+import com.sakethh.linkora.domain.repository.LocalizationRepo
 import com.sakethh.linkora.domain.repository.NetworkRepo
 import com.sakethh.linkora.domain.repository.local.LocalFoldersRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
@@ -50,7 +50,6 @@ import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.utils.canPushToServer
 import com.sakethh.linkora.utils.canReadFromServer
-import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.getRemoteOnlyFailureMsg
 import com.sakethh.linkora.utils.isServerConfigured
 import com.sakethh.linkora.utils.lastSyncedLocally
@@ -83,6 +82,7 @@ class AppVM(
     private val fileManager: FileManager,
     private val dataSyncingNotificationService: NativeUtils.DataSyncingNotificationService,
     private val snapshotRepo: SnapshotRepo,
+    private val localizationRepo: LocalizationRepo.Local,
     nativeUtils: NativeUtils,
     webCapture: NativeUtils.WebCapture,
 ) : ServerManagementViewModel(
@@ -92,6 +92,7 @@ class AppVM(
     permissionManager = permissionManager,
     fileManager = fileManager,
     network = LinkoraSDK.getInstance().network,
+    localizationRepo = localizationRepo
 ) {
     var isPerformingStartupSync by mutableStateOf(false)
 
@@ -225,7 +226,7 @@ class AppVM(
                     it.onSuccess {
                         pushUIEvent(
                             UIEvent.Type.ShowSnackbar(
-                                Localization.Key.SuccessfullyConnectedToTheServer.getLocalizedString(),
+                                localizedStrings.SuccessfullyConnectedToTheServer,
                             ),
                         )
                         dataSyncingNotificationService.showNotification()
@@ -268,7 +269,7 @@ class AppVM(
                     }.onFailure {
                         pushUIEvent(
                             UIEvent.Type.ShowSnackbar(
-                                Localization.Key.ConnectionToServerFailed.getLocalizedString() + "\n" + it,
+                                localizedStrings.ConnectionToServerFailed + "\n" + it,
                             ),
                         )
                     }
@@ -417,7 +418,7 @@ class AppVM(
                 it.onSuccess {
                     pushUIEvent(
                         UIEvent.Type.ShowSnackbar(
-                            Localization.getLocalizedString(Localization.Key.ArchivedSuccessfully) + it.getRemoteOnlyFailureMsg(),
+                            localizedStrings.ArchivedSuccessfully + it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
                         ),
                     )
                 }
@@ -442,7 +443,7 @@ class AppVM(
                 it.onSuccess {
                     pushUIEvent(
                         UIEvent.Type.ShowSnackbar(
-                            Localization.getLocalizedString(Localization.Key.DeletedSuccessfully) + it.getRemoteOnlyFailureMsg(),
+                            localizedStrings.DeletedSuccessfully + it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
                         ),
                     )
                 }

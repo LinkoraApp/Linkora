@@ -45,10 +45,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalUriHandler
@@ -56,13 +54,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.HomeScreenVMAssistedFactory
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.asMenuBtmSheetType
 import com.sakethh.linkora.platform.PlatformSpecificBackHandler
 import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.CollectionLayoutManager
 import com.sakethh.linkora.ui.components.SortingIconButton
 import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
@@ -78,13 +76,13 @@ import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.openUriOrNotify
-import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen() {
+    val localizedStrings = LocalizedStrings.current
     val localFABContext = LocalFabController.current
     LifecycleResumeEffect(Unit) {
         localFABContext.updateState(CurrentFABContext.ROOT)
@@ -144,7 +142,7 @@ fun HomeScreen() {
                 }
                 if (homeScreenVM.selectedPanelData != null) {
                     Text(
-                        text = Localization.Key.SelectedPanel.rememberLocalizedString(),
+                        text = localizedStrings.SelectedPanel,
                         color = MaterialTheme.colorScheme.primary.copy(0.9f),
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.padding(start = 10.dp),
@@ -206,7 +204,7 @@ fun HomeScreen() {
         }
         Column(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
             if (activePanelAssociatedPanelFolders.isEmpty() && homeScreenVM.selectedPanelData != null) {
-                DataEmptyScreen(text = Localization.Key.NoFoldersInThePanel.rememberLocalizedString())
+                DataEmptyScreen(text = localizedStrings.NoFoldersInThePanel)
                 return@Scaffold
             }
             ScrollableTabRow(
@@ -296,7 +294,7 @@ fun HomeScreen() {
                         false
                     },
                     nestedScrollConnection = null,
-                    emptyDataText = Localization.Key.NoItemsFound.rememberLocalizedString(),
+                    emptyDataText = localizedStrings.NoItemsFound,
                     onAttachedTagClick = {
                         val collectionDetailPaneInfo =
                             CollectionDetailPaneInfo(
@@ -340,7 +338,7 @@ fun HomeScreen() {
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
                 item {
                     Text(
-                        text = Localization.Key.SelectAPanel.rememberLocalizedString(),
+                        text = localizedStrings.SelectAPanel,
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(15.dp),

@@ -13,6 +13,7 @@ import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.model.FlatSearchResult
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.onSuccess
+import com.sakethh.linkora.domain.repository.LocalizationRepo
 import com.sakethh.linkora.domain.repository.local.LocalDatabaseUtilsRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.LocalTagsRepo
@@ -28,6 +29,7 @@ import com.sakethh.linkora.utils.asStateInWhileSubscribed
 import com.sakethh.linkora.utils.getRemoteOnlyFailureMsg
 import com.sakethh.linkora.utils.hexadCombine
 import com.sakethh.linkora.utils.ifNot
+import com.sakethh.linkora.utils.isRemoteSuccessful
 import com.sakethh.linkora.utils.onError
 import com.sakethh.linkora.utils.onPagesFinished
 import com.sakethh.linkora.utils.onRetrieved
@@ -48,8 +50,10 @@ class SearchScreenVM(
     private val localDatabaseUtilsRepo: LocalDatabaseUtilsRepo,
     private val localTagsRepo: LocalTagsRepo,
     private val preferencesRepository: PreferencesRepository,
+    private val localizationRepo: LocalizationRepo.Local
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
+    val localizedStrings get() = localizationRepo.localizedStrings.value
     private val _searchQuery = mutableStateOf("")
     val searchQuery = _searchQuery
 
@@ -284,8 +288,8 @@ class SearchScreenVM(
                 )
                 .collectLatest {
                     it.onSuccess {
-                        if (it.isRemoteExecutionSuccessful.not()) {
-                            pushUIEvent(UIEvent.Type.ShowSnackbar(it.getRemoteOnlyFailureMsg()))
+                        if (!it.isRemoteSuccessful()) {
+                            pushUIEvent(UIEvent.Type.ShowSnackbar(it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed)))
                         }
                     }
                     it.pushSnackbarOnFailure()
@@ -328,7 +332,7 @@ class SearchScreenVM(
                             )
                             .flatMapLatest { result ->
                                 when (result) {
-                                    is Result.Failure -> flowOf(Result.Failure(result.message))
+                                    is Result.Failure -> flowOf(Result.Failure(result.e))
 
                                     is Result.Loading -> flowOf(Result.Loading())
 

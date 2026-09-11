@@ -65,7 +65,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.APPVMAssistedFactory
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.di.linkoraViewModel
@@ -114,7 +113,6 @@ import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.currentSavedServerConfig
-import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.host
 import com.sakethh.linkora.utils.ifServerConfigured
 import com.sakethh.linkora.utils.inRootScreen
@@ -128,6 +126,7 @@ import kotlinx.serialization.json.Json
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App(modifier: Modifier = Modifier) {
+    val localizedStrings = LocalizedStrings.current
     val onAndroidMobile = Platform.Android.onMobile()
     val appVM: AppVM =
         linkoraViewModel(factory = APPVMAssistedFactory.createForApp(LocalDensity.current))
@@ -366,7 +365,7 @@ fun App(modifier: Modifier = Modifier) {
                                 if (appVM.isPerformingStartupSync || isDataSyncingFromPullRefresh.value) {
                                     coroutineScope.pushUIEvent(
                                         UIEvent.Type.ShowSnackbar(
-                                            Localization.Key.SyncInProgress.getLocalizedString(),
+                                            localizedStrings.SyncInProgress,
                                         ),
                                     )
                                     return@pullToRefresh

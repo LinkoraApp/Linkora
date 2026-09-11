@@ -18,11 +18,10 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
-import com.sakethh.linkora.Localization
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.highlightOnFocused
-import com.sakethh.linkora.utils.rememberLocalizedString
-import com.sakethh.linkora.utils.replaceFirstPlaceHolderWith
+import com.sakethh.linkora.utils.replaceActual
 
 @Composable
 fun RenameAShelfPanelDialogBox(
@@ -30,6 +29,7 @@ fun RenameAShelfPanelDialogBox(
     onRenameClick: (String, onCompletion: () -> Unit) -> Unit,
     panelName: String,
 ) {
+    val localizedStrings = LocalizedStrings.current
     if (isDialogBoxVisible.value) {
         val newShelfName = rememberSaveable {
             mutableStateOf("")
@@ -47,9 +47,10 @@ fun RenameAShelfPanelDialogBox(
                 if (isInProgress.value) return@AlertDialog
                 Button(
                     modifier =
-                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand).highlightOnFocused(shape = ButtonDefaults.shape)
-                        .fillMaxWidth()
-                        .pressScaleEffect(),
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .highlightOnFocused(shape = ButtonDefaults.shape)
+                            .fillMaxWidth()
+                            .pressScaleEffect(),
                     onClick = {
                         isInProgress.value = true
                         onRenameClick(
@@ -62,7 +63,7 @@ fun RenameAShelfPanelDialogBox(
                     },
                 ) {
                     Text(
-                        text = Localization.Key.ChangePanelName.rememberLocalizedString(),
+                        text = localizedStrings.ChangePanelName,
                         style = MaterialTheme.typography.titleSmall,
                         fontSize = 16.sp,
                     )
@@ -71,8 +72,8 @@ fun RenameAShelfPanelDialogBox(
             title = {
                 Text(
                     text =
-                    Localization.Key.EditPanelName.rememberLocalizedString()
-                        .replaceFirstPlaceHolderWith(panelName),
+                        localizedStrings.EditPanelName
+                            .replaceActual(panelName),
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 22.sp,
                     lineHeight = 27.sp,
@@ -83,7 +84,7 @@ fun RenameAShelfPanelDialogBox(
                 OutlinedTextField(
                     label = {
                         Text(
-                            text = Localization.Key.NewNameForPanel.rememberLocalizedString(),
+                            text = localizedStrings.NewNameForPanel,
                             style = MaterialTheme.typography.titleSmall,
                             fontSize = 12.sp,
                         )
@@ -101,15 +102,16 @@ fun RenameAShelfPanelDialogBox(
                 if (isInProgress.value.not()) {
                     OutlinedButton(
                         modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand).highlightOnFocused(shape = ButtonDefaults.shape)
-                            .fillMaxWidth()
-                            .pressScaleEffect(),
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .highlightOnFocused(shape = ButtonDefaults.shape)
+                                .fillMaxWidth()
+                                .pressScaleEffect(),
                         onClick = {
                             isDialogBoxVisible.value = false
                         },
                     ) {
                         Text(
-                            text = Localization.Key.Cancel.rememberLocalizedString(),
+                            text = localizedStrings.Cancel,
                             style = MaterialTheme.typography.titleSmall,
                             fontSize = 16.sp,
                         )

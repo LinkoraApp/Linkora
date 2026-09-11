@@ -33,7 +33,6 @@ import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -43,20 +42,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.linkoraViewModel
-import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.domain.model.localization.LocalizedLanguage
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.LoadingDialog
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.DataEmptyScreen
@@ -67,11 +63,12 @@ import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.inDoubleQuotes
-import com.sakethh.linkora.utils.rememberLocalizedString
+import com.sakethh.linkora.utils.replaceActual
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LanguageSettingsScreen() {
+    val localizedStrings = LocalizedStrings.current
     val languageSettingsScreenVM: LanguageSettingsScreenVM = linkoraViewModel()
     val preferences by languageSettingsScreenVM.preferencesAsFlow.collectAsStateWithLifecycle()
     val availableLanguages =
@@ -94,12 +91,13 @@ fun LanguageSettingsScreen() {
             )
         }
     SettingsSectionScaffold(
-        topAppBarText = Navigation.Settings.LanguageSettingsScreen.toString(),
+        topAppBarText = localizedStrings.Language,
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 modifier =
                     Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .padding(start = 15.dp, end = 15.dp).highlightOnFocused(shape = FloatingActionButtonDefaults.shape),
+                        .padding(start = 15.dp, end = 15.dp)
+                        .highlightOnFocused(shape = FloatingActionButtonDefaults.shape),
                 onClick = {
                     languageSettingsScreenVM.fetchRemoteLanguages()
                 },
@@ -107,7 +105,7 @@ fun LanguageSettingsScreen() {
                 Icon(imageVector = Icons.Default.Refresh, contentDescription = "")
                 Spacer(modifier = Modifier.width(15.dp))
                 Text(
-                    text = Localization.Key.RetrieveLanguageInfoFromServer.rememberLocalizedString(),
+                    text = localizedStrings.RetrieveLanguageInfoFromServer,
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.padding(end = 5.dp),
                 )
@@ -127,7 +125,7 @@ fun LanguageSettingsScreen() {
             }
             item {
                 Text(
-                    text = Localization.Key.AppLanguage.rememberLocalizedString(),
+                    text = localizedStrings.AppLanguage,
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.primary,
                 )
@@ -150,14 +148,18 @@ fun LanguageSettingsScreen() {
                                 Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                                     .fillMaxWidth()
                                     .padding(top = 15.dp, bottom = 15.dp)
-                                    .pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
+                                    .pressScaleEffect()
+                                    .highlightOnFocused(shape = ButtonDefaults.shape),
                             onClick = {
                                 isLanguageSelectionBtmSheetVisible.value = false
-                                Localization.loadDefaultValues(preferences)
+                                languageSettingsScreenVM.loadLocalizedStrings(
+                                    languageCode = Constants.DEFAULT_APP_LANGUAGE_CODE,
+                                    languageName = Constants.DEFAULT_APP_LANGUAGE_NAME
+                                )
                             },
                         ) {
                             Text(
-                                text = Localization.Key.ResetAppLanguage.rememberLocalizedString(),
+                                text = localizedStrings.ResetAppLanguage,
                                 style = MaterialTheme.typography.titleSmall,
                             )
                         }
@@ -167,7 +169,7 @@ fun LanguageSettingsScreen() {
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = Localization.Key.AvailableLanguages.rememberLocalizedString(),
+                        text = localizedStrings.AvailableLanguages,
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.primary,
                     )
@@ -177,7 +179,7 @@ fun LanguageSettingsScreen() {
             if (availableLanguages.value.isEmpty()) {
                 item {
                     DataEmptyScreen(
-                        text = Localization.Key.NoRemoteLangPacks.rememberLocalizedString(),
+                        text = localizedStrings.NoRemoteLangPacks,
                         paddingValues = PaddingValues(top = 30.dp),
                     )
                 }
@@ -203,17 +205,12 @@ fun LanguageSettingsScreen() {
                     text = it.languageName,
                     isRemoteLanguage = true,
                     localizationStatus =
-                        Localization.Key.StringsLocalizedStatus.rememberLocalizedString()
-                            .replace(
-                                LinkoraPlaceHolder.First.value,
-                                it.localizedStringsCount.toString(),
-                            )
-                            .replace(
-                                LinkoraPlaceHolder.Second.value,
-                                Localization.Key.entries.size.toString(),
-                            ),
+                        localizedStrings.StringsLocalizedStatus.replaceActual(
+                            it.localizedStringsCount.toString(),
+                            LocalizationKey.entries.size.toString()
+                        ),
                     localizationStatusFraction =
-                        it.localizedStringsCount.toFloat() / Localization.Key.entries.size.toFloat(),
+                        it.localizedStringsCount.toFloat() / LocalizationKey.entries.size.toFloat(),
                 )
                 Spacer(modifier = Modifier.height(15.dp))
             }
@@ -247,10 +244,9 @@ fun LanguageSettingsScreen() {
                                     indication = null,
                                     onClick = {
                                         isLanguageSelectionBtmSheetVisible.value = false
-                                        Localization.loadLocalizedStrings(
+                                        languageSettingsScreenVM.loadLocalizedStrings(
                                             languageCode = selectedLanguage.value.languageCode,
                                             languageName = selectedLanguage.value.languageName,
-                                            preferences = preferences,
                                         )
                                     },
                                 )
@@ -263,10 +259,9 @@ fun LanguageSettingsScreen() {
                                 .pressScaleEffect(),
                             onClick = {
                                 isLanguageSelectionBtmSheetVisible.value = false
-                                Localization.loadLocalizedStrings(
+                                languageSettingsScreenVM.loadLocalizedStrings(
                                     languageCode = selectedLanguage.value.languageCode,
                                     languageName = selectedLanguage.value.languageName,
-                                    preferences = preferences,
                                 )
                             },
                         ) {
@@ -274,7 +269,7 @@ fun LanguageSettingsScreen() {
                         }
                         Spacer(modifier = Modifier.width(5.dp))
                         Text(
-                            text = Localization.Key.LoadServerStrings.rememberLocalizedString(),
+                            text = localizedStrings.LoadServerStrings,
                             style = MaterialTheme.typography.titleSmall,
                             fontSize = 16.sp,
                         )
@@ -316,11 +311,10 @@ fun LanguageSettingsScreen() {
                     Text(
                         text =
                             if (doesRemoteLanguagePackExistsLocallyForTheSelectedLanguage.value) {
-                                Localization.Key.UpdateLanguageStrings
+                                localizedStrings.UpdateLanguageStrings
                             } else {
-                                Localization.Key.DownloadLanguageStrings
-                            }
-                                .rememberLocalizedString(),
+                                localizedStrings.DownloadLanguageStrings
+                            },
                         style = MaterialTheme.typography.titleSmall,
                         fontSize = 16.sp,
                     )
@@ -361,7 +355,7 @@ fun LanguageSettingsScreen() {
                         }
                         Spacer(modifier = Modifier.width(5.dp))
                         Text(
-                            text = Localization.Key.RemoveLanguageStrings.rememberLocalizedString(),
+                            text = localizedStrings.RemoveLanguageStrings,
                             style = MaterialTheme.typography.titleSmall,
                             fontSize = 16.sp,
                         )
@@ -376,12 +370,11 @@ fun LanguageSettingsScreen() {
                     languageSettingsScreenVM.languageSettingsState.value.fetchingStrings,
         text =
             if (languageSettingsScreenVM.languageSettingsState.value.fetchingLanguageInfo) {
-                Localization.Key.FetchingAvailableLanguages.rememberLocalizedString()
+                localizedStrings.FetchingAvailableLanguages
             } else {
-                Localization.Key.DownloadingStrings.rememberLocalizedString()
-                    .replace(
-                        LinkoraPlaceHolder.First.value,
-                        selectedLanguage.value.languageName.inDoubleQuotes(),
+                localizedStrings.DownloadingStrings
+                    .replaceActual(
+                        selectedLanguage.value.languageName.inDoubleQuotes()
                     )
             },
     )

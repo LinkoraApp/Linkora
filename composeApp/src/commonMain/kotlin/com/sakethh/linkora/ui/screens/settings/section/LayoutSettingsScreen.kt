@@ -30,38 +30,33 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.retain.retain
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.PreferenceKey
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.link.GridViewLinkComponent
 import com.sakethh.linkora.ui.components.link.ListViewLinkComponent
 import com.sakethh.linkora.ui.domain.Layout
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
-import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.highlightOnFocused
-import com.sakethh.linkora.utils.rememberLocalizedString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LayoutSettingsScreen() {
+    val localizedStrings = LocalizedStrings.current
     val settingsScreenViewModel: SettingsScreenViewModel = linkoraViewModel()
     val preferences by settingsScreenViewModel.preferencesAsFlow.collectAsStateWithLifecycle()
     val localUriHandler = LocalUriHandler.current
@@ -70,7 +65,7 @@ fun LayoutSettingsScreen() {
             settingsScreenViewModel.sampleLinks(localUriHandler, preferences)
         }
     SettingsSectionScaffold(
-        topAppBarText = Localization.Key.LinkLayoutSettings.rememberLocalizedString(),
+        topAppBarText = localizedStrings.LinkLayoutSettings,
     ) { paddingValues, topAppBarScrollBehaviour ->
         when (preferences.selectedLinkLayout) {
             Layout.REGULAR_LIST_VIEW.name,
@@ -84,7 +79,7 @@ fun LayoutSettingsScreen() {
                 ) {
                     item {
                         Text(
-                            text = Localization.Key.ChooseTheLayoutYouLikeBest.rememberLocalizedString(),
+                            text = localizedStrings.ChooseTheLayoutYouLikeBest,
                             style = MaterialTheme.typography.titleSmall,
                             modifier = Modifier.padding(15.dp),
                             color = MaterialTheme.colorScheme.primary,
@@ -115,7 +110,7 @@ fun LayoutSettingsScreen() {
                                         newValue = !preferences.showHostInLinkListView,
                                     )
                                 },
-                                title = Localization.Key.ShowHostAddress.getLocalizedString(),
+                                title = localizedStrings.ShowHostAddress,
                                 isSwitchChecked = preferences.showHostInLinkListView,
                             )
                         }
@@ -131,7 +126,7 @@ fun LayoutSettingsScreen() {
                                         newValue = !preferences.showNoteInLinkView,
                                     )
                                 },
-                                title = Localization.Key.ShowNote.getLocalizedString(),
+                                title = localizedStrings.ShowNote,
                                 isSwitchChecked = preferences.showNoteInLinkView,
                             )
                         }
@@ -146,7 +141,7 @@ fun LayoutSettingsScreen() {
                                         newValue = !preferences.showTagsInLinkView,
                                     )
                                 },
-                                title = Localization.Key.ShowTagsLabel.rememberLocalizedString(),
+                                title = localizedStrings.ShowTagsLabel,
                                 isSwitchChecked = preferences.showTagsInLinkView,
                             )
                         }
@@ -161,7 +156,7 @@ fun LayoutSettingsScreen() {
                                         newValue = !preferences.showDateInLinkView,
                                     )
                                 },
-                                title = Localization.Key.ShowDateLabel.rememberLocalizedString(),
+                                title = localizedStrings.ShowDateLabel,
                                 isSwitchChecked = preferences.showDateInLinkView,
                             )
                         }
@@ -179,7 +174,7 @@ fun LayoutSettingsScreen() {
 
                     item {
                         Text(
-                            text = Localization.Key.FeedPreview.rememberLocalizedString(),
+                            text = localizedStrings.FeedPreview,
                             style = MaterialTheme.typography.titleSmall,
                             modifier = Modifier.padding(15.dp),
                             color = MaterialTheme.colorScheme.primary,
@@ -217,7 +212,7 @@ fun LayoutSettingsScreen() {
                         },
                     ) {
                         Text(
-                            text = Localization.Key.ChooseTheLayoutYouLikeBest.getLocalizedString(),
+                            text = localizedStrings.ChooseTheLayoutYouLikeBest,
                             style = MaterialTheme.typography.titleSmall,
                             modifier = Modifier.padding(top = 15.dp, bottom = 15.dp, start = 5.dp),
                             color = MaterialTheme.colorScheme.primary,
@@ -276,7 +271,7 @@ fun LayoutSettingsScreen() {
                         },
                     ) {
                         Text(
-                            text = Localization.Key.FeedPreview.getLocalizedString(),
+                            text = localizedStrings.FeedPreview,
                             style = MaterialTheme.typography.titleSmall,
                             modifier = Modifier.padding(top = 10.dp, bottom = 15.dp, start = 5.dp),
                             color = MaterialTheme.colorScheme.primary,
@@ -309,7 +304,7 @@ fun LayoutSettingsScreen() {
                 ) {
                     item(span = StaggeredGridItemSpan.FullLine) {
                         Text(
-                            text = Localization.Key.ChooseTheLayoutYouLikeBest.getLocalizedString(),
+                            text = localizedStrings.ChooseTheLayoutYouLikeBest,
                             style = MaterialTheme.typography.titleSmall,
                             modifier = Modifier.padding(top = 15.dp, bottom = 15.dp, start = 5.dp),
                             color = MaterialTheme.colorScheme.primary,
@@ -359,7 +354,7 @@ fun LayoutSettingsScreen() {
 
                     item(span = StaggeredGridItemSpan.FullLine) {
                         Text(
-                            text = Localization.Key.FeedPreview.getLocalizedString(),
+                            text = localizedStrings.FeedPreview,
                             style = MaterialTheme.typography.titleSmall,
                             modifier = Modifier.padding(top = 10.dp, bottom = 15.dp, start = 5.dp),
                             color = MaterialTheme.colorScheme.primary,
@@ -425,6 +420,7 @@ private fun LinkViewRadioButtonComponent(
     paddingValues: PaddingValues = PaddingValues(0.dp),
     changePreferenceValue: (preferenceKey: PreferenceKey<String>, newValue: String) -> Unit,
 ) {
+    val localizedStrings = LocalizedStrings.current
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier =
@@ -455,14 +451,14 @@ private fun LinkViewRadioButtonComponent(
         Text(
             text =
                 when (linkLayout) {
-                    Layout.REGULAR_LIST_VIEW -> Localization.Key.RegularListView.rememberLocalizedString()
+                    Layout.REGULAR_LIST_VIEW -> localizedStrings.RegularListView
 
                     Layout.TITLE_ONLY_LIST_VIEW ->
-                        Localization.Key.TitleOnlyListView.rememberLocalizedString()
+                        localizedStrings.TitleOnlyListView
 
-                    Layout.GRID_VIEW -> Localization.Key.GridView.rememberLocalizedString()
+                    Layout.GRID_VIEW -> localizedStrings.GridView
 
-                    Layout.STAGGERED_VIEW -> Localization.Key.StaggeredView.rememberLocalizedString()
+                    Layout.STAGGERED_VIEW -> localizedStrings.StaggeredView
                 },
             style = MaterialTheme.typography.titleSmall,
         )

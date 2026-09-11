@@ -15,11 +15,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
-import com.sakethh.linkora.Localization
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.highlightOnFocused
-import com.sakethh.linkora.utils.rememberLocalizedString
-import com.sakethh.linkora.utils.replaceFirstPlaceHolderWith
+import com.sakethh.linkora.utils.replaceActual
 
 data class DeleteAPanelDialogBoxParam(
     val isDialogBoxVisible: MutableState<Boolean>,
@@ -29,6 +28,7 @@ data class DeleteAPanelDialogBoxParam(
 
 @Composable
 fun DeleteAPanelDialogBox(deleteAPanelDialogBoxParam: DeleteAPanelDialogBoxParam) {
+    val localizedStrings = LocalizedStrings.current
     if (deleteAPanelDialogBoxParam.isDialogBoxVisible.value) {
         val isInProgress = rememberSaveable {
             mutableStateOf(false)
@@ -37,7 +37,8 @@ fun DeleteAPanelDialogBox(deleteAPanelDialogBoxParam: DeleteAPanelDialogBoxParam
             confirmButton = {
                 if (isInProgress.value) return@AlertDialog
                 Button(
-                    modifier = Modifier.fillMaxWidth().pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
+                    modifier = Modifier.fillMaxWidth().pressScaleEffect()
+                        .highlightOnFocused(shape = ButtonDefaults.shape),
                     onClick = {
                         isInProgress.value = true
                         deleteAPanelDialogBoxParam.onDeleteClick({
@@ -47,7 +48,7 @@ fun DeleteAPanelDialogBox(deleteAPanelDialogBoxParam: DeleteAPanelDialogBoxParam
                     },
                 ) {
                     Text(
-                        text = Localization.Key.PermanentlyDeleteThePanel.rememberLocalizedString(),
+                        text = localizedStrings.PermanentlyDeleteThePanel,
                         style = MaterialTheme.typography.titleSmall,
                         fontSize = 16.sp,
                     )
@@ -56,13 +57,14 @@ fun DeleteAPanelDialogBox(deleteAPanelDialogBoxParam: DeleteAPanelDialogBoxParam
             dismissButton = {
                 if (!isInProgress.value) {
                     OutlinedButton(
-                        modifier = Modifier.fillMaxWidth().pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
+                        modifier = Modifier.fillMaxWidth().pressScaleEffect()
+                            .highlightOnFocused(shape = ButtonDefaults.shape),
                         onClick = {
                             deleteAPanelDialogBoxParam.isDialogBoxVisible.value = false
                         },
                     ) {
                         Text(
-                            text = Localization.Key.Cancel.rememberLocalizedString(),
+                            text = localizedStrings.Cancel,
                             style = MaterialTheme.typography.titleSmall,
                             fontSize = 16.sp,
                         )
@@ -74,8 +76,8 @@ fun DeleteAPanelDialogBox(deleteAPanelDialogBoxParam: DeleteAPanelDialogBoxParam
             title = {
                 Text(
                     text =
-                    Localization.Key.AreYouSureWantToDeleteThePanel.rememberLocalizedString()
-                        .replaceFirstPlaceHolderWith(deleteAPanelDialogBoxParam.panelName),
+                        localizedStrings.AreYouSureWantToDeleteThePanel
+                            .replaceActual(deleteAPanelDialogBoxParam.panelName),
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 22.sp,
                     lineHeight = 28.sp,
@@ -85,7 +87,7 @@ fun DeleteAPanelDialogBox(deleteAPanelDialogBoxParam: DeleteAPanelDialogBoxParam
             text = {
                 Text(
                     text =
-                    Localization.Key.OnceDeletedThisPanelCannotBeRestored.rememberLocalizedString(),
+                        localizedStrings.OnceDeletedThisPanelCannotBeRestored,
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 14.sp,
                     lineHeight = 18.sp,

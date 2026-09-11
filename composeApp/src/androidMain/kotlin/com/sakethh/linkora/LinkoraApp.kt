@@ -64,8 +64,13 @@ class LinkoraApp : Application() {
                 },
                 dataSyncingNotificationService = NativeUtils.DataSyncingNotificationService(
                     applicationContext,
+                    localizedStrings = {
+                        DependencyContainer.localizationRepo.localizedStrings.value
+                    }
                 ),
-                network = Network(applicationContext),
+                network = Network(applicationContext, localizedStrings = {
+                    DependencyContainer.localizationRepo.localizedStrings.value
+                }),
                 platformPreference = PlatformPreference(
                     dataStore = PreferenceDataStoreFactory.createWithPath(
                         produceFile = {
@@ -94,11 +99,7 @@ class LinkoraApp : Application() {
         runBlocking {
             DependencyContainer.preferencesRepo.loadPersistedPreferences()
             val preferences = DependencyContainer.preferencesRepo.getPreferences()
-            Localization.loadLocalizedStrings(
-                preferences,
-                languageCode = preferences.preferredAppLanguageCode,
-                languageName = preferences.preferredAppLanguageName,
-            )?.join()
+            DependencyContainer.localizationRepo.loadLanguage(preferences.preferredAppLanguageCode)
         }
         Thread.setDefaultUncaughtExceptionHandler { _, throwable ->
             val crashLogActivityIntent = Intent(this, CrashLogActivity::class.java)

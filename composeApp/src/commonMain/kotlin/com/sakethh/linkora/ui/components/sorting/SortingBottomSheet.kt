@@ -24,32 +24,30 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ComposableContent
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.domain.SortingBtmSheetType
 import com.sakethh.linkora.ui.domain.SortingType
 import com.sakethh.linkora.ui.screens.collections.components.ItemDivider
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.highlightOnFocused
-import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun SortingBottomSheet(sortingBottomSheetParam: SortingBottomSheetParam) {
+    val localizedStrings = LocalizedStrings.current
     val coroutineScope = rememberCoroutineScope()
     val sortingBtmSheetVM: SortingBtmSheetVM = linkoraViewModel()
     val preferences by sortingBtmSheetVM.preferencesAsFlow.collectAsStateWithLifecycle()
@@ -72,7 +70,7 @@ fun SortingBottomSheet(sortingBottomSheetParam: SortingBottomSheetParam) {
             }
     }
     val sortByContent: ComposableContent = {
-        sortingBtmSheetVM.sortingBtmSheetData().forEach {
+        sortingBtmSheetVM.sortingBtmSheetData(localizedStrings).forEach {
             Row(
                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                     .highlightOnFocused().clickable(onClick = {
@@ -128,7 +126,7 @@ fun SortingBottomSheet(sortingBottomSheetParam: SortingBottomSheetParam) {
     ) {
         Column(modifier = Modifier.animateContentSize()) {
             Text(
-                text = Localization.Key.SortBy.rememberLocalizedString(),
+                text = localizedStrings.SortBy,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
                 fontSize = 14.sp,
@@ -142,7 +140,7 @@ fun SortingBottomSheet(sortingBottomSheetParam: SortingBottomSheetParam) {
             }
             if (isFolderScreen && (foldersSortingSelectedState.value || linksSortingSelectedState.value)) {
                 Text(
-                    text = Localization.Key.SortBy.rememberLocalizedString(),
+                    text = localizedStrings.SortBy,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary,
                     fontSize = 14.sp,
@@ -169,9 +167,9 @@ fun SortingBottomSheet(sortingBottomSheetParam: SortingBottomSheetParam) {
             )
             SettingComponent(
                 SettingComponentParam(
-                    title = Localization.Key.ForceShuffleLinks.rememberLocalizedString(),
+                    title = localizedStrings.ForceShuffleLinks,
                     doesDescriptionExists = true,
-                    description = Localization.Key.ForceShuffleLinksDesc.rememberLocalizedString(),
+                    description = localizedStrings.ForceShuffleLinksDesc,
                     isSwitchNeeded = true,
                     isSwitchEnabled = preferences.forceShuffleLinks,
                     onSwitchStateChange = {

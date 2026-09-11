@@ -1,18 +1,17 @@
 package com.sakethh.linkora.platform
 
 import AndroidDesktopWebCapture
+import LocalizedStrings
 import RefreshAllLinksService
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshotFlow
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.sakethh.linkora.KaptureOptions
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.WebCaptureService
 import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.HostOS
 import com.sakethh.linkora.domain.PermissionStatus
-import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
@@ -26,7 +25,6 @@ import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
-import com.sakethh.linkora.utils.getLocalizedString
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.cio.CIO
@@ -176,7 +174,7 @@ actual class NativeUtils {
 
 actual val PlatformIODispatcher: CoroutineDispatcher = Dispatchers.IO
 
-actual object Network {
+actual class Network(private val localizedStrings: () -> LocalizedStrings) {
 
     private fun HttpClientConfig<CIOEngineConfig>.installLogger() {
         install(Logging) {
@@ -210,7 +208,7 @@ actual object Network {
     private var syncServerClient: HttpClient? = null
 
     actual fun getSyncServerClient(): HttpClient = syncServerClient
-        ?: error(Localization.Key.SyncServerConfigurationError.getLocalizedString())
+        ?: error(localizedStrings().SyncServerConfigurationError)
 
     actual fun closeSyncServerClient() {
         syncServerClient?.close()
@@ -237,7 +235,7 @@ actual object Network {
         }
 
         if (!syncServerCert.exists() && !bypassCertCheck) {
-            error(Localization.Key.SyncServerConfigurationError.getLocalizedString())
+            error(localizedStrings().SyncServerConfigurationError)
         }
 
         syncServerClient =

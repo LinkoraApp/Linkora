@@ -3,17 +3,17 @@ package com.sakethh.linkora.domain
 sealed interface Result<T> {
     data class Success<T>(
         val data: T,
+        val remoteExecResult: RemoteExecResult? = null
     ) : Result<T> {
-        var isRemoteExecutionSuccessful: Boolean = true
-        var remoteFailureMessage = ""
+        data class RemoteExecResult(val isRemoteExecutionSuccessful: Boolean, val e: Exception?)
     }
 
     data class Loading<T>(
-        val message: String = "https://open.spotify.com/track/41zVhpZuRDsGYKuxnyGxgV",
+        val message: String = "",
     ) : Result<T>
 
     data class Failure<T>(
-        val message: String,
+        val e: Exception,
     ) : Result<T>
 }
 
@@ -22,15 +22,15 @@ suspend fun <T> Result<T>.onSuccess(init: suspend (Result.Success<T>) -> Unit): 
         try {
             init(this)
         } catch (e: Exception) {
-            return Result.Failure(e.message.toString())
+            return Result.Failure(e)
         }
     }
     return this
 }
 
-suspend fun <T> Result<T>.onFailure(init: suspend (failureMessage: String) -> Unit): Result<T> {
+suspend fun <T> Result<T>.onFailure(init: suspend (e: Exception) -> Unit): Result<T> {
     if (this is Result.Failure) {
-        init(this.message)
+        init(this.e)
     }
     return this
 }

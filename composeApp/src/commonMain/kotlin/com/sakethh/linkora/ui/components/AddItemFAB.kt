@@ -33,16 +33,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sakethh.linkora.Localization
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.highlightOnFocused
-import com.sakethh.linkora.utils.rememberLocalizedString
 
 @Stable
 data class AddItemFABParam(
@@ -61,6 +59,7 @@ data class AddItemFABParam(
 
 @Composable
 fun AddItemFab(addItemFABParam: AddItemFABParam) {
+    val localizedStrings = LocalizedStrings.current
     val currentIconForMainFAB =
         if (addItemFABParam.isMainFabRotated) {
             Icons.Default.AddLink
@@ -111,7 +110,7 @@ fun AddItemFab(addItemFABParam: AddItemFABParam) {
                 exit = fadeOut(tween(200)),
             ) {
                 Text(
-                    text = Localization.Key.CreateANewTag.rememberLocalizedString(),
+                    text = localizedStrings.CreateANewTag,
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 20.sp,
@@ -158,7 +157,7 @@ fun AddItemFab(addItemFABParam: AddItemFABParam) {
                 exit = fadeOut(tween(200)),
             ) {
                 Text(
-                    text = Localization.rememberLocalizedString(Localization.Key.CreateANewFolder),
+                    text = localizedStrings.CreateANewFolder,
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 20.sp,
@@ -206,7 +205,7 @@ fun AddItemFab(addItemFABParam: AddItemFABParam) {
                 exit = fadeOut(tween(300)),
             ) {
                 Text(
-                    text = Localization.rememberLocalizedString(Localization.Key.AddANewLink),
+                    text = localizedStrings.AddANewLink,
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 20.sp,

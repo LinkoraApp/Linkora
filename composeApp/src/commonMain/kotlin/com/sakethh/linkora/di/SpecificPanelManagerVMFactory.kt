@@ -18,6 +18,7 @@ object SpecificPanelManagerVMFactory {
                 preferencesRepository = DependencyContainer.preferencesRepo,
                 currentBackStackEntryFlow = currentBackStackEntryFlow,
                 onAndroidMobile = onAndroidMobile,
+                localizationRepo = DependencyContainer.localizationRepo
             )
         }
     }

@@ -10,8 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
-import com.sakethh.linkora.Localization
-import com.sakethh.linkora.utils.rememberLocalizedString
+import com.sakethh.linkora.ui.LocalizedStrings
 
 @Composable
 fun NotificationPermissionDialogBox(
@@ -19,6 +18,7 @@ fun NotificationPermissionDialogBox(
     launchRuntimePermission: () -> Unit,
     hideDialog: () -> Unit,
 ) {
+    val localizedStrings = LocalizedStrings.current
     if (isVisible) {
         AlertDialog(
             onDismissRequest = {},
@@ -33,21 +33,21 @@ fun NotificationPermissionDialogBox(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
-                        text = Localization.Key.EnableNotifications.rememberLocalizedString(),
+                        text = localizedStrings.EnableNotifications,
                         style = MaterialTheme.typography.titleSmall,
                     )
                 }
             },
             title = {
                 Text(
-                    text = Localization.Key.NotificationPermissionRequired.rememberLocalizedString(),
+                    text = localizedStrings.NotificationPermissionRequired,
                     style = MaterialTheme.typography.titleLarge,
                     fontSize = 18.sp,
                 )
             },
             text = {
                 Text(
-                    text = Localization.Key.NotificationPermissionDesc.rememberLocalizedString(),
+                    text = localizedStrings.NotificationPermissionDesc,
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 15.sp,
                 )
@@ -58,7 +58,7 @@ fun NotificationPermissionDialogBox(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
-                        text = Localization.Key.Cancel.rememberLocalizedString(),
+                        text = localizedStrings.Cancel,
                         style = MaterialTheme.typography.titleSmall,
                     )
                 }

@@ -63,6 +63,13 @@ object Constants {
         WHEN linkType = '${LinkType.ARCHIVE_LINK}' THEN $ARCHIVE_ID
     END
     """
+
+    const val SNAPSHOT_HTML_FORMAT_ID = 0
+    const val SNAPSHOT_JSON_FORMAT_ID = 1
+    const val SNAPSHOT_BOTH_FORMAT_ID = 2
+
+    const val SNAPSHOT_HTML_FORMAT = "HTML"
+    const val SNAPSHOT_JSON_FORMAT = "JSON"
 }
 
 object LinkType {

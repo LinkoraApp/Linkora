@@ -6,7 +6,6 @@ import androidx.compose.runtime.snapshotFlow
 import com.sakethh.linkora.data.local.dao.SnapshotDao
 import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.FileType
-import com.sakethh.linkora.domain.SnapshotFormat
 import com.sakethh.linkora.domain.dto.server.AllTablesDTO
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.JSONExportSchema
@@ -27,6 +26,7 @@ import com.sakethh.linkora.domain.repository.local.SnapshotRepo
 import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.ui.AppVM.Companion.pauseSnapshots
 import com.sakethh.linkora.ui.utils.linkoraLog
+import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.pushSnackbar
 import com.sakethh.linkora.utils.septetCombine
 import kotlinx.coroutines.CoroutineScope
@@ -121,13 +121,13 @@ class SnapshotRepoImpl(
                                         if (
                                             pauseSnapshots ||
                                             (
-                                                it.links +
-                                                    it.folders +
-                                                    it.panelFolders +
-                                                    it.panels +
-                                                    it.tags +
-                                                    it.linkTagsPairs
-                                                )
+                                                    it.links +
+                                                            it.folders +
+                                                            it.panelFolders +
+                                                            it.panels +
+                                                            it.tags +
+                                                            it.linkTagsPairs
+                                                    )
                                                 .isEmpty()
                                         ) {
                                             return@collectLatest
@@ -181,51 +181,51 @@ class SnapshotRepoImpl(
         }
 
         if (
-            preferences.snapshotExportFormatID.toInt() == SnapshotFormat.JSON.id ||
-            preferences.snapshotExportFormatID.toInt() == SnapshotFormat.BOTH.id
+            preferences.snapshotExportFormatID.toInt() == Constants.SNAPSHOT_JSON_FORMAT_ID ||
+            preferences.snapshotExportFormatID.toInt() == Constants.SNAPSHOT_BOTH_FORMAT_ID
         ) {
             val serializedJsonExportString =
                 JSONExportSchema(
                     schemaVersion = JSONExportSchema.VERSION,
                     links =
-                    allLinks.map {
-                        it.copy(
-                            remoteId = null,
-                            lastModified = 0,
-                        )
-                    },
+                        allLinks.map {
+                            it.copy(
+                                remoteId = null,
+                                lastModified = 0,
+                            )
+                        },
                     folders =
-                    allFolders.map {
-                        it.copy(
-                            remoteId = null,
-                            lastModified = 0,
-                        )
-                    },
+                        allFolders.map {
+                            it.copy(
+                                remoteId = null,
+                                lastModified = 0,
+                            )
+                        },
                     panels =
-                    PanelForJSONExportSchema(
-                        panels =
-                        allPanels.map {
-                            it.copy(
-                                remoteId = null,
-                                lastModified = 0,
-                            )
-                        },
-                        panelFolders =
-                        allPanelFolders.map {
-                            it.copy(
-                                remoteId = null,
-                                lastModified = 0,
-                            )
-                        },
-                    ),
+                        PanelForJSONExportSchema(
+                            panels =
+                                allPanels.map {
+                                    it.copy(
+                                        remoteId = null,
+                                        lastModified = 0,
+                                    )
+                                },
+                            panelFolders =
+                                allPanelFolders.map {
+                                    it.copy(
+                                        remoteId = null,
+                                        lastModified = 0,
+                                    )
+                                },
+                        ),
                     tags =
-                    allTags.map {
-                        it.copy(remoteId = null, lastModified = 0)
-                    },
+                        allTags.map {
+                            it.copy(remoteId = null, lastModified = 0)
+                        },
                     linkTags =
-                    allLinkTagsPairs.map {
-                        it.copy(remoteId = null, lastModified = 0)
-                    },
+                        allLinkTagsPairs.map {
+                            it.copy(remoteId = null, lastModified = 0)
+                        },
                 )
                     .run {
                         Json.encodeToString(this)
@@ -239,15 +239,15 @@ class SnapshotRepoImpl(
         }
 
         if (
-            preferences.snapshotExportFormatID.toInt() == SnapshotFormat.HTML.id ||
-            preferences.snapshotExportFormatID.toInt() == SnapshotFormat.BOTH.id
+            preferences.snapshotExportFormatID.toInt() == Constants.SNAPSHOT_HTML_FORMAT_ID ||
+            preferences.snapshotExportFormatID.toInt() == Constants.SNAPSHOT_BOTH_FORMAT_ID
         ) {
             fileManager.exportSnapshotData(
                 rawExportString =
-                exportDataRepo.rawExportDataAsHTML(
-                    links = allLinks,
-                    folders = allFolders,
-                ),
+                    exportDataRepo.rawExportDataAsHTML(
+                        links = allLinks,
+                        folders = allFolders,
+                    ),
                 fileType = ExportFileType.HTML,
                 exportLocation = preferences.currentBackupLocation,
             )

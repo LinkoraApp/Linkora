@@ -1,11 +1,9 @@
 package com.sakethh.linkora.ui.utils
 
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
-import com.sakethh.linkora.utils.getLocalizedString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -20,9 +18,7 @@ import kotlinx.coroutines.launch
  */
 object UIEvent {
     private val _uiEvents =
-        MutableSharedFlow<
-            Type,
-            >() // `StateFlow` won't emit the same value again, so to make sure we're playing it safe,
+        MutableSharedFlow<Type>() // `StateFlow` won't emit the same value again, so to make sure we're playing it safe,
 
     // `SharedFlow` is the way 🤪
     val uiEvents = _uiEvents.asSharedFlow()
@@ -37,8 +33,8 @@ object UIEvent {
         }
     }
 
-    suspend fun Localization.Key.pushLocalizedSnackbar(append: String = "") {
-        _uiEvents.emit(Type.ShowSnackbar(this.getLocalizedString() + append))
+    suspend fun String.pushLocalizedSnackbar(append: String = "") {
+        _uiEvents.emit(Type.ShowSnackbar(this + append))
     }
 
     sealed interface Type {

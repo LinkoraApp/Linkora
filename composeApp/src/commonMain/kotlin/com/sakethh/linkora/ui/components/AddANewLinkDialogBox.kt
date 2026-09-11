@@ -10,7 +10,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -109,7 +108,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ComposableContent
@@ -123,6 +121,7 @@ import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.domain.onSuccess
 import com.sakethh.linkora.ui.LastSeenId
 import com.sakethh.linkora.ui.LastSeenString
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.folder.SelectableFolderUIComponent
 import com.sakethh.linkora.ui.domain.AddANewLinkDialogBoxAction
 import com.sakethh.linkora.ui.domain.PaginationState
@@ -138,11 +137,9 @@ import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.defaultFolderIds
 import com.sakethh.linkora.utils.defaultImpLinksFolder
 import com.sakethh.linkora.utils.defaultSavedLinksFolder
-import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.pushSnackbarOnFailure
-import com.sakethh.linkora.utils.rememberLocalizedString
-import com.sakethh.linkora.utils.replaceFirstPlaceHolderWith
+import com.sakethh.linkora.utils.replaceActual
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -383,6 +380,7 @@ private fun TopPartOfAddANewLinkDialogBox(
     currentFolder: Folder?,
     shouldAutofocus: Boolean,
 ) {
+    val localizedStrings = LocalizedStrings.current
     val focusRequester = remember {
         FocusRequester()
     }
@@ -396,11 +394,11 @@ private fun TopPartOfAddANewLinkDialogBox(
             color = AlertDialogDefaults.titleContentColor,
             text =
                 when (currentFolder) {
-                    null -> Localization.rememberLocalizedString(Localization.Key.AddANewLink)
+                    null -> localizedStrings.AddANewLink
 
                     else ->
-                        Localization.rememberLocalizedString(Localization.Key.AddANewLinkIn)
-                            .replaceFirstPlaceHolderWith(currentFolder.name)
+                        localizedStrings.AddANewLinkIn
+                            .replaceActual(currentFolder.name)
                 },
             style = MaterialTheme.typography.titleMedium,
             fontSize = 22.sp,
@@ -425,7 +423,7 @@ private fun TopPartOfAddANewLinkDialogBox(
                     .focusRequester(focusRequester),
             label = {
                 Text(
-                    text = Localization.rememberLocalizedString(Localization.Key.LinkAddress),
+                    text = localizedStrings.LinkAddress,
                     color = AlertDialogDefaults.textContentColor,
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 12.sp,
@@ -453,7 +451,7 @@ private fun TopPartOfAddANewLinkDialogBox(
                             .fillMaxWidth(),
                     label = {
                         Text(
-                            text = Localization.rememberLocalizedString(Localization.Key.TitleForTheLink),
+                            text = localizedStrings.TitleForTheLink,
                             color = AlertDialogDefaults.textContentColor,
                             style = MaterialTheme.typography.titleSmall,
                             fontSize = 12.sp,
@@ -479,7 +477,7 @@ private fun TopPartOfAddANewLinkDialogBox(
                     .fillMaxWidth(),
             label = {
                 Text(
-                    text = Localization.rememberLocalizedString(Localization.Key.NoteForSavingTheLink),
+                    text = localizedStrings.NoteForSavingTheLink,
                     color = AlertDialogDefaults.textContentColor,
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 12.sp,
@@ -503,7 +501,7 @@ private fun TopPartOfAddANewLinkDialogBox(
                     .fillMaxWidth(),
             label = {
                 Text(
-                    text = Localization.Key.ImageURLForLinkLabel.rememberLocalizedString(),
+                    text = localizedStrings.ImageURLForLinkLabel,
                     color = AlertDialogDefaults.textContentColor,
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 12.sp,
@@ -511,7 +509,7 @@ private fun TopPartOfAddANewLinkDialogBox(
             },
             supportingText = {
                 Text(
-                    text = Localization.Key.ImageURLForLinkDesc.rememberLocalizedString(),
+                    text = localizedStrings.ImageURLForLinkDesc,
                     color = AlertDialogDefaults.textContentColor,
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 12.sp,
@@ -530,9 +528,9 @@ private fun TopPartOfAddANewLinkDialogBox(
         ) {
             HorizontalInfoCard(
                 info = if (preferences.isAutoDetectTitleForLinksEnabled) {
-                    Localization.rememberLocalizedString(Localization.Key.AutoDetectTitleIsEnabled)
+                    localizedStrings.AutoDetectTitleIsEnabled
                 } else {
-                    Localization.rememberLocalizedString(Localization.Key.DataRetrievalDisabled)
+                    localizedStrings.DataRetrievalDisabled
                 },
             )
         }
@@ -576,7 +574,7 @@ private fun TopPartOfAddANewLinkDialogBox(
                         },
                     )
                     Text(
-                        text = Localization.rememberLocalizedString(Localization.Key.ForceAutoDetectTitle),
+                        text = localizedStrings.ForceAutoDetectTitle,
                         style = MaterialTheme.typography.titleSmall,
                         fontSize = 16.sp,
                     )
@@ -617,10 +615,7 @@ private fun TopPartOfAddANewLinkDialogBox(
                     },
                 )
                 Text(
-                    text =
-                        Localization.rememberLocalizedString(
-                            Localization.Key.ForceSaveWithoutRetrievingMetadata,
-                        ),
+                    text = localizedStrings.ForceSaveWithoutRetrievingMetadata,
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 16.sp,
                 )
@@ -670,6 +665,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
     performAction: (AddANewLinkDialogBoxAction) -> Unit,
 ) {
     val lazyColumnState = rememberLazyListState()
+    val localizedStrings = LocalizedStrings.current
 
     val unifiedLazyColumnState = retain {
         lazyColumnState.asUnifiedLazyState()
@@ -710,7 +706,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
     val selectedFolderForSavingTheLink = rememberDeserializableMutableObject {
         mutableStateOf(
             Folder(
-                name = Localization.Key.SavedLinks.getLocalizedString(),
+                name = localizedStrings.SavedLinks,
                 note = "",
                 parentFolderId = null,
                 localId = Constants.SAVED_LINKS_ID,
@@ -780,7 +776,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                 )
             }
             Text(
-                text = Localization.Key.AttachTags.rememberLocalizedString(),
+                text = localizedStrings.AttachTags,
                 color = MaterialTheme.colorScheme.secondary,
                 style = MaterialTheme.typography.titleSmall,
                 fontSize = 18.sp,
@@ -826,7 +822,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                     )
                 }
                 Text(
-                    text = Localization.rememberLocalizedString(Localization.Key.AddIn),
+                    text = localizedStrings.AddIn,
                     color = MaterialTheme.colorScheme.secondary,
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 18.sp,
@@ -905,9 +901,9 @@ private fun BottomPartOfAddANewLinkDialogBox(
                         SelectableFolderUIComponent(
                             onClick = {
                                 isDropDownMenuIconClicked.value = false
-                                selectedFolderForSavingTheLink.value = defaultSavedLinksFolder()
+                                selectedFolderForSavingTheLink.value = defaultSavedLinksFolder(localizedStrings)
                             },
-                            folderName = Localization.rememberLocalizedString(Localization.Key.SavedLinks),
+                            folderName = localizedStrings.SavedLinks,
                             imageVector = Icons.Outlined.Link,
                             isComponentSelected =
                                 selectedFolderForSavingTheLink.value.localId == Constants.SAVED_LINKS_ID,
@@ -917,9 +913,9 @@ private fun BottomPartOfAddANewLinkDialogBox(
                         SelectableFolderUIComponent(
                             onClick = {
                                 isDropDownMenuIconClicked.value = false
-                                selectedFolderForSavingTheLink.value = defaultImpLinksFolder()
+                                selectedFolderForSavingTheLink.value = defaultImpLinksFolder(localizedStrings)
                             },
-                            folderName = Localization.rememberLocalizedString(Localization.Key.ImportantLinks),
+                            folderName = localizedStrings.ImportantLinks,
                             imageVector = Icons.Outlined.StarOutline,
                             isComponentSelected =
                                 selectedFolderForSavingTheLink.value.localId == Constants.IMPORTANT_LINKS_ID,
@@ -1002,7 +998,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                     Icon(imageVector = Icons.Default.CreateNewFolder, contentDescription = null)
                     Spacer(Modifier.width(5.dp))
                     Text(
-                        text = Localization.Key.CreateANewFolder.rememberLocalizedString(),
+                        text = localizedStrings.CreateANewFolder,
                         style = MaterialTheme.typography.titleSmall,
                         fontSize = 16.sp,
                     )
@@ -1037,7 +1033,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
             },
         ) {
             Text(
-                text = Localization.rememberLocalizedString(Localization.Key.Cancel),
+                text = localizedStrings.Cancel,
                 style = MaterialTheme.typography.titleSmall,
                 fontSize = 16.sp,
             )
@@ -1095,7 +1091,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
             },
         ) {
             Text(
-                text = Localization.rememberLocalizedString(Localization.Key.Save),
+                text = localizedStrings.Save,
                 style = MaterialTheme.typography.titleSmall,
                 fontSize = 16.sp,
             )
@@ -1119,7 +1115,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
             Scaffold(
                 topBar = {
                     Text(
-                        text = Localization.Key.SearchForFolders.rememberLocalizedString(),
+                        text = localizedStrings.SearchForFolders,
                         style = MaterialTheme.typography.titleMedium,
                         fontSize = 24.sp,
                         color = MaterialTheme.colorScheme.primary,
@@ -1142,13 +1138,13 @@ private fun BottomPartOfAddANewLinkDialogBox(
                         shape = RoundedCornerShape(25.dp),
                         label = {
                             Text(
-                                text = Localization.Key.FolderName.rememberLocalizedString(),
+                                text = localizedStrings.FolderName,
                                 style = MaterialTheme.typography.titleSmall,
                             )
                         },
                         placeholder = {
                             Text(
-                                text = Localization.Key.SearchForFolders.rememberLocalizedString(),
+                                text = localizedStrings.SearchForFolders,
                                 style = MaterialTheme.typography.titleSmall,
                             )
                         },
@@ -1170,7 +1166,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                 ) {
                     if (foldersSearchQueryResult.isEmpty()) {
                         item {
-                            DataEmptyScreen(text = Localization.Key.NoFoldersFound.rememberLocalizedString())
+                            DataEmptyScreen(text = localizedStrings.NoFoldersFound)
                         }
                     } else {
                         items(
@@ -1351,7 +1347,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                 } else {
                     item {
                         Text(
-                            text = Localization.Key.ThisFolderHasNoSubfolders.rememberLocalizedString(),
+                            text = localizedStrings.ThisFolderHasNoSubfolders,
                             color = MaterialTheme.colorScheme.onSurface,
                             style = MaterialTheme.typography.titleMedium,
                             fontSize = 24.sp,
@@ -1380,7 +1376,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                                 Icon(Icons.Default.CreateNewFolder, null)
                                 Spacer(Modifier.width(5.dp))
                                 Text(
-                                    text = Localization.Key.CreateANewFolder.rememberLocalizedString(),
+                                    text = localizedStrings.CreateANewFolder,
                                     style = MaterialTheme.typography.titleSmall,
                                     fontSize = 16.sp,
                                 )
@@ -1401,7 +1397,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                             },
                         ) {
                             Text(
-                                text = Localization.Key.SaveInThisFolder.rememberLocalizedString(),
+                                text = localizedStrings.SaveInThisFolder,
                                 style = MaterialTheme.typography.titleSmall,
                             )
                         }
@@ -1432,7 +1428,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                                 Icon(Icons.Default.CreateNewFolder, null)
                                 Spacer(Modifier.width(5.dp))
                                 Text(
-                                    text = Localization.Key.CreateANewFolder.rememberLocalizedString(),
+                                    text = localizedStrings.CreateANewFolder,
                                     style = MaterialTheme.typography.titleSmall,
                                     fontSize = 16.sp,
                                 )

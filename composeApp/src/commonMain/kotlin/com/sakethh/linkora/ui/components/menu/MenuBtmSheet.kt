@@ -58,19 +58,17 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ComposableContent
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.RefreshLinkType
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.domain.Layout
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.bottomNavPaddingAcrossPlatforms
 import com.sakethh.linkora.utils.fillMaxWidthWithPadding
-import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.highlightOnFocused
-import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -79,6 +77,7 @@ fun MenuBtmSheet(
     preferences: AppPreferences,
     menuBtmSheetParam: MenuBtmSheetParam,
 ) {
+    val localizedStrings = LocalizedStrings.current
     val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(
         menuBtmSheetParam.showProgressBarDuringRemoteSave.value,
@@ -124,7 +123,7 @@ fun MenuBtmSheet(
                     menuBtmSheetParam.onForceLaunchInAnExternalBrowser()
                     hideContent()
                 },
-                text = Localization.Key.Open.rememberLocalizedString(),
+                text = localizedStrings.Open,
                 icon = Icons.Default.OpenInNew,
             )
             val lastItemShape = retain {
@@ -145,7 +144,7 @@ fun MenuBtmSheet(
                     )
                     hideContent()
                 },
-                text = Localization.Key.Copy.rememberLocalizedString(),
+                text = localizedStrings.Copy,
                 icon = Icons.Default.CopyAll,
             )
 
@@ -158,7 +157,7 @@ fun MenuBtmSheet(
                         menuBtmSheetParam.onShare(menuBtmSheetParam.linkTagsPair!!.link.url)
                         hideContent()
                     },
-                    text = Localization.Key.Share.rememberLocalizedString(),
+                    text = localizedStrings.Share,
                     icon = Icons.Default.Share,
                 )
             }
@@ -193,7 +192,7 @@ fun MenuBtmSheet(
                             }
                         }
                     },
-                    elementName = Localization.Key.ViewNote.rememberLocalizedString(),
+                    elementName = localizedStrings.ViewNote,
                     elementImageVector = Icons.AutoMirrored.Outlined.TextSnippet,
                 )
             }
@@ -202,7 +201,7 @@ fun MenuBtmSheet(
                     hideContent()
                     menuBtmSheetParam.onRename()
                 },
-                elementName = Localization.Key.Edit.rememberLocalizedString(),
+                elementName = localizedStrings.Edit,
                 elementImageVector = Icons.Outlined.Edit,
             )
             if (menuBtmSheetParam.menuBtmSheetFor is MenuBtmSheetType.Link && menuBtmSheetParam.linkTagsPair?.link != null && (preferences.alwaysShowOpenWebCaptureFolderInMenu || preferences.useWebCaptures)) {
@@ -245,7 +244,7 @@ fun MenuBtmSheet(
                         )
                     }
                     Text(
-                        text = Localization.Key.Refresh.rememberLocalizedString(),
+                        text = localizedStrings.Refresh,
                         style = MaterialTheme.typography.titleSmall,
                         fontSize = 16.sp,
                         modifier = Modifier.fillMaxWidth(),
@@ -259,21 +258,21 @@ fun MenuBtmSheet(
                 ) {
                     Column {
                         RefreshMenuComponent(
-                            label = Localization.Key.RefreshTitleLabel.rememberLocalizedString(),
+                            label = localizedStrings.RefreshTitleLabel,
                             onClick = {
                                 menuBtmSheetParam.onRefresh(RefreshLinkType.Title)
                                 hideContent()
                             },
                         )
                         RefreshMenuComponent(
-                            label = Localization.Key.RefreshImageLabel.rememberLocalizedString(),
+                            label = localizedStrings.RefreshImageLabel,
                             onClick = {
                                 menuBtmSheetParam.onRefresh(RefreshLinkType.Image)
                                 hideContent()
                             },
                         )
                         RefreshMenuComponent(
-                            label = Localization.Key.RefreshImageAndTitle.rememberLocalizedString(),
+                            label = localizedStrings.RefreshImageAndTitle,
                             onClick = {
                                 menuBtmSheetParam.onRefresh(RefreshLinkType.Both)
                                 hideContent()
@@ -293,9 +292,9 @@ fun MenuBtmSheet(
                         hideContent()
                     },
                     elementName = if (!markedAsImportant) {
-                        Localization.Key.MarkALinkAsImpLink.getLocalizedString()
+                        localizedStrings.MarkALinkAsImpLink
                     } else {
-                        Localization.Key.RemoveALinkFromImpLink.getLocalizedString()
+                        localizedStrings.RemoveALinkFromImpLink
                     },
                     elementImageVector = if (markedAsImportant) Icons.Outlined.DeleteForever else Icons.Outlined.StarOutline,
                 )
@@ -315,9 +314,9 @@ fun MenuBtmSheet(
                         hideContent()
                     },
                     elementName = if (isArchived) {
-                        Localization.Key.UnArchive.getLocalizedString()
+                        localizedStrings.UnArchive
                     } else {
-                        Localization.Key.Archive.getLocalizedString()
+                        localizedStrings.Archive
                     },
                     elementImageVector = if (isArchived) Icons.Outlined.Unarchive else Icons.Outlined.Archive,
                 )
@@ -332,7 +331,7 @@ fun MenuBtmSheet(
                         menuBtmSheetParam.onDeleteNote()
                         hideContent()
                     },
-                    elementName = Localization.Key.DeleteTheNote.rememberLocalizedString(),
+                    elementName = localizedStrings.DeleteTheNote,
                     elementImageVector = Icons.Outlined.Delete,
                 )
             }
@@ -349,9 +348,9 @@ fun MenuBtmSheet(
                         }
                     },
                     elementName = if (menuBtmSheetParam.menuBtmSheetFor == MenuBtmSheetType.Folder.RegularFolder) {
-                        Localization.Key.DeleteTheFolder.rememberLocalizedString()
+                        localizedStrings.DeleteTheFolder
                     } else {
-                        Localization.Key.DeleteTheLink.rememberLocalizedString()
+                        localizedStrings.DeleteTheLink
                     },
                     elementImageVector = if (menuBtmSheetParam.menuBtmSheetFor == MenuBtmSheetType.Folder.RegularFolder) {
                         Icons.Outlined.FolderDelete
@@ -399,9 +398,7 @@ fun MenuBtmSheet(
             ) {
                 Spacer(modifier = Modifier.height(15.dp))
                 Text(
-                    text = Localization.rememberLocalizedString(
-                        Localization.Key.UpdatingChangesOnRemoteServer,
-                    ),
+                    text = localizedStrings.UpdatingChangesOnRemoteServer,
                     style = MaterialTheme.typography.titleLarge,
                 )
                 Spacer(modifier = Modifier.height(10.dp))

@@ -29,12 +29,11 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.Platform
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.bottomNavPaddingAcrossPlatforms
 import com.sakethh.linkora.utils.highlightOnFocused
-import com.sakethh.linkora.utils.rememberLocalizedString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,6 +43,7 @@ fun CreateATagBtmSheet(
     onCancel: () -> Unit,
     onCreateClick: (tagName: String) -> Unit,
 ) {
+    val localizedStrings = LocalizedStrings.current
     val focusRequester = remember {
         FocusRequester()
     }
@@ -67,7 +67,7 @@ fun CreateATagBtmSheet(
         ) {
             Column(modifier = Modifier.fillMaxWidth().animateContentSize()) {
                 Text(
-                    text = Localization.Key.CreateANewTag.rememberLocalizedString(),
+                    text = localizedStrings.CreateANewTag,
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 22.sp,
                     modifier = Modifier.padding(start = 15.dp),
@@ -76,7 +76,7 @@ fun CreateATagBtmSheet(
                     enabled = !showLinearProgressBar,
                     label = {
                         Text(
-                            text = Localization.Key.TagName.rememberLocalizedString(),
+                            text = localizedStrings.TagName,
                             style = MaterialTheme.typography.titleSmall,
                         )
                     },
@@ -114,7 +114,7 @@ fun CreateATagBtmSheet(
                             .highlightOnFocused(shape = ButtonDefaults.shape),
                 ) {
                     Text(
-                        text = Localization.Key.Cancel.rememberLocalizedString(),
+                        text = localizedStrings.Cancel,
                         style = MaterialTheme.typography.titleSmall,
                     )
                 }
@@ -132,7 +132,7 @@ fun CreateATagBtmSheet(
                     },
                 ) {
                     Text(
-                        text = Localization.Key.Create.rememberLocalizedString(),
+                        text = localizedStrings.Create,
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Medium,
                     )

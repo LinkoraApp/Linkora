@@ -16,6 +16,7 @@ object CollectionDetailPaneVMFactory {
                 localDatabaseUtilsRepo = DependencyContainer.localDatabaseUtilsImpl,
                 preferencesRepository = DependencyContainer.preferencesRepo,
                 collectionDetailPaneInfo = collectionDetailPaneInfo,
+                localizationRepo = DependencyContainer.localizationRepo
             )
         }
     }

@@ -38,12 +38,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.HomeScreenVMAssistedFactory
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.panel.Panel
 import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.AddANewPanelDialogBox
 import com.sakethh.linkora.ui.components.AddANewPanelParam
 import com.sakethh.linkora.ui.components.DeleteAPanelDialogBox
@@ -57,7 +57,6 @@ import com.sakethh.linkora.ui.screens.DataEmptyScreen
 import com.sakethh.linkora.ui.screens.home.HomeScreenVM
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.ui.utils.rememberDeserializableMutableObject
-import com.sakethh.linkora.utils.rememberLocalizedString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,6 +64,7 @@ fun PanelsManagerScreen(
     specificPanelManagerScreenParam: SpecificPanelManagerScreenParam,
     performAction: (PanelsAction) -> Unit,
 ) {
+    val localizedStrings = LocalizedStrings.current
     val localFABContext = LocalFabController.current
     LifecycleResumeEffect(Unit) {
         localFABContext.updateState(CurrentFABContext(FABContext.HIDE))
@@ -97,17 +97,17 @@ fun PanelsManagerScreen(
             BottomAppBar(modifier = Modifier.fillMaxWidth(if (onAndroidMobile) 1f else 0.5f)) {
                 Button(
                     modifier =
-                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .padding(15.dp)
-                        .navigationBarsPadding()
-                        .fillMaxWidth()
-                        .pressScaleEffect(0.9f),
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .padding(15.dp)
+                            .navigationBarsPadding()
+                            .fillMaxWidth()
+                            .pressScaleEffect(0.9f),
                     onClick = {
                         isAddANewPanelDialogBoxVisible.value = true
                     },
                 ) {
                     Text(
-                        text = Localization.Key.AddANewPanel.rememberLocalizedString(),
+                        text = localizedStrings.AddANewPanel,
                         style = MaterialTheme.typography.titleSmall,
                         fontSize = 16.sp,
                     )
@@ -124,13 +124,16 @@ fun PanelsManagerScreen(
                                 navController.navigateUp()
                             },
                         ) {
-                            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "")
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = ""
+                            )
                         }
                     },
                     scrollBehavior = topAppBarState,
                     title = {
                         Text(
-                            text = Localization.Key.Panels.rememberLocalizedString(),
+                            text = localizedStrings.Panels,
                             fontSize = 18.sp,
                             style = MaterialTheme.typography.titleMedium,
                         )
@@ -143,14 +146,14 @@ fun PanelsManagerScreen(
         Row(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
                 modifier =
-                Modifier.padding(it)
-                    .fillMaxWidth(if (onAndroidMobile) 1f else 0.5f)
-                    .animateContentSize()
-                    .nestedScroll(topAppBarState.nestedScrollConnection),
+                    Modifier.padding(it)
+                        .fillMaxWidth(if (onAndroidMobile) 1f else 0.5f)
+                        .animateContentSize()
+                        .nestedScroll(topAppBarState.nestedScrollConnection),
             ) {
                 if (panels.value.drop(1).isEmpty()) {
                     item {
-                        DataEmptyScreen(text = Localization.Key.NoPanelsFound.rememberLocalizedString())
+                        DataEmptyScreen(text = localizedStrings.NoPanelsFound)
                     }
                 }
                 items(panels.value.drop(1)) { panel ->
@@ -184,7 +187,7 @@ fun PanelsManagerScreen(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = Localization.Key.SelectAPanel.rememberLocalizedString(),
+                        text = localizedStrings.SelectAPanel,
                         style = MaterialTheme.typography.titleMedium,
                     )
                 }
@@ -197,40 +200,41 @@ fun PanelsManagerScreen(
     }
     AddANewPanelDialogBox(
         addANewPanelParam =
-        AddANewPanelParam(
-            isDialogBoxVisible = isAddANewPanelDialogBoxVisible,
-            onCreateClick = { panelName, onCompletion ->
-                performAction(
-                    PanelsAction.AddANewAPanel(
-                        panel = Panel(panelName = panelName),
-                        onCompletion = {
-                            onCompletion()
-                            isAddANewPanelDialogBoxVisible.value = false
-                        },
-                    ),
-                )
-            },
-        ),
+            AddANewPanelParam(
+                isDialogBoxVisible = isAddANewPanelDialogBoxVisible,
+                onCreateClick = { panelName, onCompletion ->
+                    performAction(
+                        PanelsAction.AddANewAPanel(
+                            panel = Panel(panelName = panelName),
+                            onCompletion = {
+                                onCompletion()
+                                isAddANewPanelDialogBoxVisible.value = false
+                            },
+                        ),
+                    )
+                },
+            ),
     )
 
     DeleteAPanelDialogBox(
         deleteAPanelDialogBoxParam =
-        DeleteAPanelDialogBoxParam(
-            isDialogBoxVisible = isDeleteAPanelDialogBoxVisible,
-            onDeleteClick = { onCompletion ->
-                performAction(
-                    PanelsAction.DeleteAPanel(
-                        panelId = selectedPanelForDialogBoxes.value.localId,
-                        onCompletion = {
-                            onCompletion()
-                            selectedPanelForDetailView.value = Panel(localId = -45, panelName = "")
-                            isDeleteAPanelDialogBoxVisible.value = false
-                        },
-                    ),
-                )
-            },
-            panelName = selectedPanelForDialogBoxes.value.panelName,
-        ),
+            DeleteAPanelDialogBoxParam(
+                isDialogBoxVisible = isDeleteAPanelDialogBoxVisible,
+                onDeleteClick = { onCompletion ->
+                    performAction(
+                        PanelsAction.DeleteAPanel(
+                            panelId = selectedPanelForDialogBoxes.value.localId,
+                            onCompletion = {
+                                onCompletion()
+                                selectedPanelForDetailView.value =
+                                    Panel(localId = -45, panelName = "")
+                                isDeleteAPanelDialogBoxVisible.value = false
+                            },
+                        ),
+                    )
+                },
+                panelName = selectedPanelForDialogBoxes.value.panelName,
+            ),
     )
 
     RenameAShelfPanelDialogBox(

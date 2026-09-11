@@ -20,7 +20,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.retain.retain
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,10 +41,8 @@ import com.composables.core.ScrollAreaScope
 import com.composables.core.Thumb
 import com.composables.core.ThumbVisibility
 import com.composables.core.VerticalScrollbar
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.WebCaptureMetadata
 import com.sakethh.linkora.domain.AppPreferences
-import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.RefreshLinkType
 import com.sakethh.linkora.domain.Result
@@ -57,6 +54,8 @@ import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.WebCaptureRepo
 import com.sakethh.linkora.ui.LastSeenId
 import com.sakethh.linkora.ui.LastSeenString
+import com.sakethh.linkora.ui.LocalPlatform
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.domain.PaginationState
 import com.sakethh.linkora.ui.domain.model.ServerConnection
 import com.sakethh.linkora.ui.navigation.Navigation
@@ -139,43 +138,34 @@ fun String.isAValidLink(): Boolean = try {
     false
 }
 
-fun Boolean.ifNot(init: () -> Unit): Boolean {
+inline fun Boolean.ifNot(init: () -> Unit): Boolean {
     if (!this) {
         init()
     }
     return this
 }
 
-fun Boolean.ifTrue(init: () -> Unit): Boolean {
+inline fun Boolean.ifTrue(init: () -> Unit): Boolean {
     if (this) {
         init()
     }
     return this
 }
 
-fun Localization.Key.getLocalizedString(): String = Localization.getLocalizedString(this)
-
-@Composable
-fun Localization.Key.rememberLocalizedString(): String = Localization.rememberLocalizedString(this)
-
 suspend fun <T> Result<T>.pushSnackbarOnFailure() {
     if (this is Result.Failure) {
-        pushUIEvent(UIEvent.Type.ShowSnackbar(this.message))
+        pushUIEvent(UIEvent.Type.ShowSnackbar(this.e.message.toString()))
     }
 }
 
-fun <T> Result.Success<T>.getRemoteOnlyFailureMsg(): String = if (this.isRemoteExecutionSuccessful.not()) {
-        "\n\n${Localization.Key.RemoteExecutionFailed.getLocalizedString()}\n" +
-                this.remoteFailureMessage
+fun <T> Result.Success<T>.isRemoteSuccessful() = this.remoteExecResult?.isRemoteExecutionSuccessful == true
+
+fun <T> Result.Success<T>.getRemoteOnlyFailureMsg(remoteExecFailedLocalizedLabel: String): String = if (this.remoteExecResult != null) {
+        "\n\n${remoteExecFailedLocalizedLabel}\n" +
+                this.remoteExecResult.e.toString()
     } else {
         ""
     }
-
-fun Exception?.pushSnackbar(coroutineScope: CoroutineScope) {
-    if (this != null) {
-        coroutineScope.pushUIEvent(UIEvent.Type.ShowSnackbar(this.message.toString()))
-    }
-}
 
 suspend fun Exception?.pushSnackbar() {
     if (this != null) {
@@ -189,27 +179,44 @@ fun Throwable?.pushSnackbar(coroutineScope: CoroutineScope) {
     }
 }
 
+fun Throwable.asException() = Exception(this)
+
 fun <T> Flow<Result<T>>.catchAsThrowableAndEmitFailure(
     init: suspend () -> Unit = {},
 ): Flow<Result<T>> = this.catch {
     init()
     it.printStackTrace()
-    emit(Result.Failure(message = it.message.toString()))
+    emit(Result.Failure(it.asException()))
 }
 
 fun <T> Flow<Result<T>>.catchAsExceptionAndEmitFailure(): Flow<Result<T>> = this.catch {
     try {
         it as Exception
         it.printStackTrace()
-        emit(Result.Failure(message = it.message.toString()))
+        emit(Result.Failure(it.asException()))
     } catch (e: Exception) {
         e.printStackTrace()
         it.printStackTrace()
-        emit(Result.Failure(message = it.message.toString()))
+        emit(Result.Failure(it.asException()))
     }
 }
 
-fun String.replaceFirstPlaceHolderWith(string: String): String = this.replace(LinkoraPlaceHolder.First.value, string.inDoubleQuotes())
+fun String.replaceActual(vararg actuals: String): String {
+    val finalStr = StringBuilder()
+    var currIteration = -1
+    var valuesIteration = -1
+    while (currIteration < length - 1) {
+        val c1 = this[++currIteration]
+        if (currIteration + 1 < length && c1 + this[currIteration + 1].toString() == ">{") {
+            ++currIteration // {
+            finalStr.append(actuals[++valuesIteration])
+            ++currIteration // }
+        } else {
+            finalStr.append(c1)
+        }
+    }
+    return finalStr.toString()
+}
 
 fun String.isATwitterUrl(): Boolean = this.trim().startsWith("http://twitter.com/") ||
         this.trim().startsWith("https://twitter.com/") ||
@@ -245,17 +252,10 @@ fun NavHostController.inRootScreen(includeSettingsScreen: Boolean): Boolean? {
 fun String.inDoubleQuotes(): String = "\"$this\""
 
 suspend inline fun <reified IncomingBody> HttpResponse.handleResponseBody(): Result<IncomingBody> = if (this.status.isSuccess().not()) {
-        Result.Failure(this.status.value.toString() + " " + this.status.description)
+        Result.Failure(Exception(this.status.value.toString() + " " + this.status.description))
     } else {
         Result.Success(this.body<IncomingBody>())
     }
-
-fun AppPreferences.toServerConnection(): ServerConnection = ServerConnection(
-    serverUrl = serverBaseUrl,
-    authToken = serverSecurityToken,
-    syncType = serverSyncType,
-    webSocketScheme = "wss",
-)
 
 fun AppPreferences.ifServerConfigured(init: () -> Unit) {
     if (serverBaseUrl.isNotBlank()) {
@@ -314,8 +314,7 @@ fun <T> MutableStateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, L
         currentState.copy(
             data = updatedData,
             isRetrieving = false,
-            errorOccurred = false,
-            errorMessage = null,
+            exception = null,
             pagesCompleted = false,
         )
     }
@@ -323,12 +322,11 @@ fun <T> MutableStateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, L
     return nextKeyId to nextKeyString
 }
 
-fun <T> MutableStateFlow<PaginationState<T>>.onError(errorMsg: String) {
+fun <T> MutableStateFlow<PaginationState<T>>.onError(e: Exception) {
     update { currentState ->
         currentState.copy(
             isRetrieving = false,
-            errorOccurred = true,
-            errorMessage = errorMsg,
+            exception = e,
             pagesCompleted = false,
         )
     }
@@ -338,8 +336,7 @@ fun <T> MutableStateFlow<PaginationState<T>>.onRetrieving() {
     update { currentState ->
         currentState.copy(
             isRetrieving = true,
-            errorOccurred = false,
-            errorMessage = null,
+            exception = null,
             pagesCompleted = false,
         )
     }
@@ -349,8 +346,7 @@ fun <T> MutableStateFlow<PaginationState<T>>.onPagesFinished() {
     update { currentState ->
         currentState.copy(
             isRetrieving = false,
-            errorOccurred = false,
-            errorMessage = null,
+            exception = null,
             pagesCompleted = true,
         )
     }
@@ -418,14 +414,20 @@ fun Flow<Result<List<FlatSearchResult>>>.shuffleLinks(): Flow<Result<List<FlatSe
     }
 
 @Composable
-fun RefreshLinkType.asLocalizedString() = when (this) {
-    RefreshLinkType.Title -> Localization.Key.Title.rememberLocalizedString()
-    RefreshLinkType.Image -> Localization.Key.Image.rememberLocalizedString()
-    RefreshLinkType.Both -> Localization.Key.Both.rememberLocalizedString()
+fun RefreshLinkType.asLocalizedString(): String {
+    val localizedStrings = LocalizedStrings.current
+    return when (this) {
+        RefreshLinkType.Title -> localizedStrings.Title
+        RefreshLinkType.Image -> localizedStrings.Image
+        RefreshLinkType.Both -> localizedStrings.Both
+    }
 }
 
 @Composable
 fun Modifier.highlightOnFocused(shape: Shape = RectangleShape): Modifier {
+    // this can be added as preference if needed
+    if (LocalPlatform.current !is Platform.Android.TV) return this
+
     var hasFocus by remember {
         mutableStateOf(false)
     }
@@ -477,3 +479,35 @@ suspend fun WebCaptureRepo.getOrCreateFolderUuid(url: String): String = this.get
         this.insertMetadata(WebCaptureMetadata(link = url, uuid = newUuid))
         newUuid
     }
+
+@Composable
+fun SyncType.asUIString(): String {
+    val localizedStrings = LocalizedStrings.current
+    return when (this) {
+        SyncType.ClientToServer -> localizedStrings.ClientToServer
+        SyncType.ServerToClient -> localizedStrings.ServerToClient
+        SyncType.TwoWay -> localizedStrings.TwoWaySync
+    }
+}
+
+@Composable
+fun SyncType.description(): String {
+    val localizedStrings = LocalizedStrings.current
+    return when (this) {
+        SyncType.ClientToServer -> localizedStrings.ClientToServerDesc
+        SyncType.ServerToClient -> localizedStrings.ServerToClientDesc
+        SyncType.TwoWay -> localizedStrings.TwoWaySyncDesc
+    }
+}
+
+@Composable
+fun Navigation.Root.asLocalizedString(): String {
+    val localizedStrings = LocalizedStrings.current
+    return when (this) {
+        Navigation.Root.HomeScreen -> localizedStrings.Home
+        Navigation.Root.SearchScreen -> localizedStrings.Search
+        Navigation.Root.CollectionsScreen -> localizedStrings.Collections
+        Navigation.Root.SettingsScreen -> localizedStrings.Settings
+        else -> "Something is wrong"
+    }
+}

@@ -1,5 +1,6 @@
 package com.sakethh.linkora.ui.screens.settings
 
+import LocalizedStrings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -50,9 +51,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.navigation.NavController
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.domain.CurrentFABContext
 import com.sakethh.linkora.ui.domain.FABContext
 import com.sakethh.linkora.ui.navigation.Navigation
@@ -62,7 +63,6 @@ import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.openUriOrNotify
-import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
 import linkora.composeapp.generated.resources.Res
 import linkora.composeapp.generated.resources.discord
@@ -73,6 +73,7 @@ import org.jetbrains.compose.resources.painterResource
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen() {
+    val localizedStrings = LocalizedStrings.current
     val localFABContext = LocalFabController.current
     LifecycleResumeEffect(Unit) {
         localFABContext.updateState(CurrentFABContext(FABContext.HIDE))
@@ -89,7 +90,7 @@ fun SettingsScreen() {
                     scrollBehavior = topAppBarScrollState,
                     title = {
                         Text(
-                            text = Localization.rememberLocalizedString(Localization.Key.Settings),
+                            text = localizedStrings.Settings,
                             color = MaterialTheme.colorScheme.onSurface,
                             style = MaterialTheme.typography.titleLarge,
                             fontSize = 22.sp,
@@ -200,7 +201,7 @@ fun SettingsScreen() {
                         Icon(imageVector = Icons.Default.Translate, contentDescription = null)
                         Spacer(modifier = Modifier.width(6.5.dp))
                         Text(
-                            text = Localization.rememberLocalizedString(Localization.Key.Translate),
+                            text = localizedStrings.Translate,
                             style = MaterialTheme.typography.titleMedium,
                             fontSize = 16.5.sp,
                         )
@@ -220,7 +221,7 @@ fun SettingsScreen() {
                         Icon(imageVector = Icons.Default.Coffee, contentDescription = null)
                         Spacer(modifier = Modifier.width(6.5.dp))
                         Text(
-                            text = Localization.rememberLocalizedString(Localization.Key.BuyMeACoffee),
+                            text = localizedStrings.BuyMeACoffee,
                             style = MaterialTheme.typography.titleMedium,
                             fontSize = 16.5.sp,
                         )
@@ -242,14 +243,14 @@ fun SettingsScreen() {
                         Icon(imageVector = Icons.Default.RateReview, contentDescription = null)
                         Spacer(modifier = Modifier.width(6.5.dp))
                         Text(
-                            text = Localization.Key.RateOnPlayLabel.rememberLocalizedString(),
+                            text = localizedStrings.RateOnPlayLabel,
                             style = MaterialTheme.typography.titleMedium,
                             fontSize = 16.5.sp,
                         )
                     }
                 }
             }
-            items(settingsScreenOptions(navController)) {
+            items(settingsScreenOptions(localizedStrings, navController)) {
                 SettingSectionComponent(
                     SettingSectionComponentParam(
                         onClick = it.onClick,
@@ -268,9 +269,10 @@ fun SettingsScreen() {
 
 @Composable
 fun AppVersionLabel(modifier: Modifier = Modifier.padding(top = 7.5.dp, start = 15.dp)) {
+    val localizedStrings = LocalizedStrings.current
     Row(modifier) {
         Text(
-            text = Localization.Key.Linkora.rememberLocalizedString(),
+            text = localizedStrings.Linkora,
             style = MaterialTheme.typography.labelSmall,
             fontSize = 22.sp,
             modifier = Modifier.alignByBaseline(),
@@ -287,69 +289,70 @@ fun AppVersionLabel(modifier: Modifier = Modifier.padding(top = 7.5.dp, start = 
 }
 
 private fun settingsScreenOptions(
+    localizedStrings: LocalizedStrings,
     navController: NavController,
 ): List<SettingSectionComponentParam> = listOf(
     SettingSectionComponentParam(
         onClick = {
             navController.navigate(Navigation.Settings.ThemeSettingsScreen)
         },
-        sectionTitle = Localization.getLocalizedString(Localization.Key.Theme),
+        sectionTitle = localizedStrings.Theme,
         sectionIcon = Icons.Default.ColorLens,
     ),
     SettingSectionComponentParam(
         onClick = {
             navController.navigate(Navigation.Settings.GeneralSettingsScreen)
         },
-        sectionTitle = Localization.getLocalizedString(Localization.Key.General),
+        sectionTitle = localizedStrings.General,
         sectionIcon = Icons.Default.SettingsInputSvideo,
     ),
     SettingSectionComponentParam(
         onClick = {
             navController.navigate(Navigation.Settings.AdvancedSettingsScreen)
         },
-        sectionTitle = Localization.getLocalizedString(Localization.Key.Advanced),
+        sectionTitle = localizedStrings.Advanced,
         sectionIcon = Icons.Default.Build,
     ),
     SettingSectionComponentParam(
         onClick = {
             navController.navigate(Navigation.Settings.LayoutSettingsScreen)
         },
-        sectionTitle = Localization.getLocalizedString(Localization.Key.Layout),
+        sectionTitle = localizedStrings.Layout,
         sectionIcon = Icons.Default.Dashboard,
     ),
     SettingSectionComponentParam(
         onClick = {
             navController.navigate(Navigation.Settings.LanguageSettingsScreen)
         },
-        sectionTitle = Localization.getLocalizedString(Localization.Key.Language),
+        sectionTitle = localizedStrings.Language,
         sectionIcon = Icons.Default.Language,
     ),
     SettingSectionComponentParam(
         onClick = {
             navController.navigate(Navigation.Settings.DataSettingsScreen)
         },
-        sectionTitle = Localization.getLocalizedString(Localization.Key.Data),
+        sectionTitle = localizedStrings.Data,
         sectionIcon = Icons.Default.Storage,
     ),
     /*SettingSectionComponentParam(
         onClick = {
 
         },
-        sectionTitle = Localization.getLocalizedString(Localization.Key.Privacy),
+        sectionTitle = localizedStrings.Privacy,
         sectionIcon = Icons.Default.PrivacyTip
     ),*/
     SettingSectionComponentParam(
         onClick = {
             navController.navigate(Navigation.Settings.AboutScreen)
         },
-        sectionTitle = Localization.getLocalizedString(Localization.Key.About),
+        sectionTitle = localizedStrings.About,
         sectionIcon = Icons.Default.Info,
     ),
     SettingSectionComponentParam(
         onClick = {
             navController.navigate(Navigation.Settings.AcknowledgementScreen)
         },
-        sectionTitle = Localization.getLocalizedString(Localization.Key.Acknowledgments),
+        sectionTitle = localizedStrings.Acknowledgments,
         sectionIcon = Icons.Default.Group,
     ),
 )

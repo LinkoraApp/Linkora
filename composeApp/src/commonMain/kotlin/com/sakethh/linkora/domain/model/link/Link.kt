@@ -5,7 +5,6 @@ import androidx.room3.Entity
 import androidx.room3.Ignore
 import androidx.room3.Index
 import androidx.room3.PrimaryKey
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.MediaType
 import com.sakethh.linkora.domain.model.Folder
@@ -43,13 +42,18 @@ data class Link(
     val mediaType: MediaType = MediaType.IMAGE,
     val lastModified: Long = getSystemEpochSeconds(),
 ) {
-    @Ignore @Transient
+    @Ignore
+    @Transient
     val date: String? = epochToReadableDateTime(lastModified)
 
-    @Ignore @Transient
+    @Ignore
+    @Transient
     var path: List<Folder>? = null
 
-    class Invalid(
-        message: String = Localization.getLocalizedString(Localization.Key.InvalidLink),
-    ) : Throwable(message)
+    class Invalid : Exception()
+    class LinkExistsInSelectedFolder : Exception()
+    class LinkExistsInSavedLinks : Exception()
+    class LinkExistsInHistory : Exception()
+    class LinkExistsInImportantLinks : Exception()
+    class LinkExistsInArchivedLinks : Exception()
 }

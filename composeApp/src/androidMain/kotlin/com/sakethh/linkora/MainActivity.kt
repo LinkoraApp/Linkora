@@ -33,6 +33,7 @@ import com.sakethh.linkora.ui.FabStateController
 import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.NotificationPermissionDialogBox
 import com.sakethh.linkora.ui.theme.LinkoraTheme
 import com.sakethh.linkora.utils.AndroidUIEvent
@@ -147,6 +148,7 @@ class MainActivity : ComponentActivity() {
                         },
                 )
             val preferences by mainVM.preferencesAsFlow.collectAsStateWithLifecycle()
+            val localizedStrings by mainVM.localizedStrings.collectAsStateWithLifecycle()
             CompositionLocalProvider(
                 LocalNavController provides navController,
                 LocalFabController provides
@@ -157,6 +159,7 @@ class MainActivity : ComponentActivity() {
                     LocalWindowInfo.current.containerSize,
                     LocalConfiguration.current.orientation
                 ) { currentAndroidPlatform() },
+                LocalizedStrings provides localizedStrings
             ) {
                 val context = LocalContext.current
                 val isSystemInDarkTheme = isSystemInDarkTheme()

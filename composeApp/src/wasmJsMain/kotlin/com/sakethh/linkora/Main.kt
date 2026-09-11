@@ -53,6 +53,7 @@ import com.sakethh.linkora.ui.FabStateController
 import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.theme.DarkColors
 import com.sakethh.linkora.ui.theme.LightColors
 import com.sakethh.linkora.ui.theme.LinkoraTheme
@@ -87,7 +88,9 @@ fun main() {
                 .setDriver(WebWorkerSQLiteDriver(createWorker()))
                 .build(),
             platformPreference = PlatformPreference,
-            network = Network,
+            network = Network(localizedStrings = {
+                DependencyContainer.localizationRepo.localizedStrings.value
+            }),
             dataSyncingNotificationService = NativeUtils.DataSyncingNotificationService(),
             webCapture = NativeUtils.WebCapture(),
             webCaptureDatabaseManager = WebCaptureDatabaseManager(databaseBuilder = {
@@ -99,12 +102,7 @@ fun main() {
     MainScope().launch {
         DependencyContainer.preferencesRepo.loadPersistedPreferences()
         val preferences = DependencyContainer.preferencesRepo.getPreferences()
-        Localization.loadLocalizedStrings(
-            preferences,
-            languageName = preferences.preferredAppLanguageName,
-            languageCode = preferences.preferredAppLanguageCode,
-        )
-            ?.join()
+        DependencyContainer.localizationRepo.loadLanguage(preferences.preferredAppLanguageCode)
     }
 
     ComposeViewport {
@@ -129,6 +127,7 @@ fun main() {
             mutableStateOf(true)
         }
         val coroutineScope = rememberCoroutineScope()
+        val localizedStrings by DependencyContainer.localizationRepo.localizedStrings.collectAsStateWithLifecycle()
         CompositionLocalProvider(
             LocalNavController provides navController,
             LocalFabController provides
@@ -136,6 +135,7 @@ fun main() {
                     FabStateController()
                 },
             LocalPlatform provides Platform.Web,
+            LocalizedStrings provides localizedStrings
         ) {
             LinkoraTheme(
                 colorScheme = if (preferences.useDarkTheme) DarkColors else LightColors,
@@ -170,8 +170,6 @@ fun main() {
                                 Text(
                                     text =
                                     "Room handles database operations on Linkora Web using OPFS, which has strict browser locking limits. " +
-                                        "Room Web is still in early alpha, so the Linkora web port is highly experimental and can be unstable at times. " +
-                                        "It is not recommended for daily use yet, unlike Linkora Android and Desktop. " +
                                         "If something breaks, please report it on GitHub with your browser version and console logs.",
                                     fontSize = 16.sp,
                                     style = MaterialTheme.typography.titleSmall,

@@ -20,12 +20,12 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.ui.LocalPlatform
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.screens.settings.common.composables.PreferenceTextField
@@ -33,11 +33,11 @@ import com.sakethh.linkora.ui.screens.settings.common.composables.SettingCompone
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
-import com.sakethh.linkora.utils.rememberLocalizedString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdvancedSettingsScreen() {
+    val localizedStrings = LocalizedStrings.current
     val settingsScreenVM: SettingsScreenViewModel = linkoraViewModel()
     val preferences by settingsScreenVM.preferencesAsFlow.collectAsStateWithLifecycle()
     val primaryJsoupStringAgent =
@@ -49,9 +49,9 @@ fun AdvancedSettingsScreen() {
             mutableStateOf(preferences.localizationServerURL)
         }
     var proxyServerUrl by
-        rememberSaveable(preferences.proxyUrl) {
-            mutableStateOf(preferences.proxyUrl)
-        }
+    rememberSaveable(preferences.proxyUrl) {
+        mutableStateOf(preferences.proxyUrl)
+    }
     var isReadOnlyTextFieldForProxyServer by rememberSaveable {
         mutableStateOf(true)
     }
@@ -62,22 +62,22 @@ fun AdvancedSettingsScreen() {
         mutableStateOf(true)
     }
     val useProxy by
-        rememberSaveable(preferences.useProxy) {
-            mutableStateOf(preferences.useProxy)
-        }
+    rememberSaveable(preferences.useProxy) {
+        mutableStateOf(preferences.useProxy)
+    }
     val proxyUrlFocusRequester = remember { FocusRequester() }
     val primaryJsoupUserAgentFocusRequester = remember { FocusRequester() }
     val localizationServerTextFieldFocusRequester = remember { FocusRequester() }
     val platform = LocalPlatform.current
     SettingsSectionScaffold(
-        topAppBarText = Navigation.Settings.AdvancedSettingsScreen.toString(),
+        topAppBarText = localizedStrings.Advanced,
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
             modifier =
-            Modifier.animateContentSize()
-                .fillMaxSize()
-                .addEdgeToEdgeScaffoldPadding(paddingValues)
-                .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
+                Modifier.animateContentSize()
+                    .fillMaxSize()
+                    .addEdgeToEdgeScaffoldPadding(paddingValues)
+                    .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
             verticalArrangement = Arrangement.spacedBy(30.dp),
         ) {
             item {
@@ -88,21 +88,21 @@ fun AdvancedSettingsScreen() {
                 item {
                     SettingComponent(
                         settingComponentParam =
-                        SettingComponentParam(
-                            title = Localization.Key.UseAProxyServer.rememberLocalizedString(),
-                            doesDescriptionExists = true,
-                            description = Localization.Key.UseAProxyServerDesc.rememberLocalizedString(),
-                            isSwitchNeeded = true,
-                            isSwitchEnabled = useProxy,
-                            onSwitchStateChange = {
-                                settingsScreenVM.changeSettingPreferenceValue(
-                                    preferenceKey = AppPreferences.USE_PROXY,
-                                    newValue = it,
-                                )
-                            },
-                            isIconNeeded = true,
-                            icon = Icons.Default.Route,
-                        ),
+                            SettingComponentParam(
+                                title = localizedStrings.UseAProxyServer,
+                                doesDescriptionExists = true,
+                                description = localizedStrings.UseAProxyServerDesc,
+                                isSwitchNeeded = true,
+                                isSwitchEnabled = useProxy,
+                                onSwitchStateChange = {
+                                    settingsScreenVM.changeSettingPreferenceValue(
+                                        preferenceKey = AppPreferences.USE_PROXY,
+                                        newValue = it,
+                                    )
+                                },
+                                isIconNeeded = true,
+                                icon = Icons.Default.Route,
+                            ),
                     )
                 }
             }
@@ -111,8 +111,8 @@ fun AdvancedSettingsScreen() {
                 item {
                     PreferenceTextField(
                         textFieldDescText =
-                        Localization.Key.UseAProxyServerLongDesc.rememberLocalizedString(),
-                        textFieldLabel = Localization.Key.Proxy.rememberLocalizedString(),
+                            localizedStrings.UseAProxyServerLongDesc,
+                        textFieldLabel = localizedStrings.Proxy,
                         textFieldValue = proxyServerUrl,
                         onResetButtonClick = {
                             settingsScreenVM.changeSettingPreferenceValue(
@@ -145,8 +145,8 @@ fun AdvancedSettingsScreen() {
 
             item {
                 PreferenceTextField(
-                    textFieldDescText = Localization.Key.UserAgentDesc.rememberLocalizedString(),
-                    textFieldLabel = Localization.Key.UserAgent.rememberLocalizedString(),
+                    textFieldDescText = localizedStrings.UserAgentDesc,
+                    textFieldLabel = localizedStrings.UserAgent,
                     textFieldValue = primaryJsoupStringAgent.value,
                     onResetButtonClick = {
                         settingsScreenVM.changeSettingPreferenceValue(
@@ -179,8 +179,8 @@ fun AdvancedSettingsScreen() {
 
             item {
                 PreferenceTextField(
-                    textFieldDescText = Localization.Key.LocalizationServerDesc.rememberLocalizedString(),
-                    textFieldLabel = Localization.Key.LocalizationServer.rememberLocalizedString(),
+                    textFieldDescText = localizedStrings.LocalizationServerDesc,
+                    textFieldLabel = localizedStrings.LocalizationServer,
                     textFieldValue = localizationServerURL.value,
                     onResetButtonClick = {
                         settingsScreenVM.changeSettingPreferenceValue(

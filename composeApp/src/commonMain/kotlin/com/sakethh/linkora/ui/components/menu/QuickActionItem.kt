@@ -26,6 +26,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
+import com.sakethh.linkora.domain.Platform
+import com.sakethh.linkora.ui.LocalPlatform
 
 @Composable
 fun QuickActionItem(
@@ -38,6 +40,7 @@ fun QuickActionItem(
     var hasFocus by rememberSaveable {
         mutableStateOf(false)
     }
+    val onAndroidTV = LocalPlatform.current is Platform.Android.TV
     Card(
         shape = shape,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
@@ -48,12 +51,12 @@ fun QuickActionItem(
                     hasFocus = focusState.hasFocus
                 }
                 .then(
-                    if (hasFocus) {
+                    if (hasFocus && onAndroidTV) {
                         Modifier.border(
-                        width = 4.5.dp,
-                        color = MaterialTheme.colorScheme.inversePrimary,
-                        shape
-                    )
+                            width = 4.5.dp,
+                            color = MaterialTheme.colorScheme.inversePrimary,
+                            shape
+                        )
                     } else {
                         Modifier
                     }

@@ -51,13 +51,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.asUnifiedLazyState
 import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.ui.LastSeenId
 import com.sakethh.linkora.ui.LastSeenString
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.domain.PaginationState
-import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -72,6 +71,7 @@ fun TagSelectionComponent(
     onFirstVisibleIndexChange: (Int) -> Unit,
     showCreateNewTagSheet: () -> Unit,
 ) {
+    val localizedStrings = LocalizedStrings.current
     val lazyColumnState = rememberLazyListState()
     val lazyColumnUnifiedState = retain {
         lazyColumnState.asUnifiedLazyState()
@@ -101,15 +101,15 @@ fun TagSelectionComponent(
         OutlinedButton(
             shape = RoundedCornerShape(bottomStart = 25.dp, bottomEnd = 25.dp),
             modifier =
-            Modifier.align(Alignment.BottomCenter)
-                .zIndex(1f)
-                .padding(
-                    start = paddingValues.calculateStartPadding(LocalLayoutDirection.current),
-                    end = paddingValues.calculateEndPadding(LocalLayoutDirection.current),
-                )
-                .fillMaxWidth()
-                .height(buttonTotalHeight)
-                .pointerHoverIcon(icon = PointerIcon.Hand),
+                Modifier.align(Alignment.BottomCenter)
+                    .zIndex(1f)
+                    .padding(
+                        start = paddingValues.calculateStartPadding(LocalLayoutDirection.current),
+                        end = paddingValues.calculateEndPadding(LocalLayoutDirection.current),
+                    )
+                    .fillMaxWidth()
+                    .height(buttonTotalHeight)
+                    .pointerHoverIcon(icon = PointerIcon.Hand),
             onClick = {
                 showCreateNewTagSheet()
             },
@@ -125,7 +125,7 @@ fun TagSelectionComponent(
                     )
                     Spacer(Modifier.width(5.dp))
                     Text(
-                        text = Localization.Key.CreateANewTag.rememberLocalizedString(),
+                        text = localizedStrings.CreateANewTag,
                         style = MaterialTheme.typography.titleSmall,
                         fontSize = 16.sp,
                     )
@@ -135,19 +135,19 @@ fun TagSelectionComponent(
         LazyColumn(
             state = lazyColumnState,
             modifier =
-            Modifier.zIndex(2f)
-                .fillMaxWidth()
-                .heightIn(min = 75.dp, max = 345.dp)
-                .padding(bottom = buttonVisibleHeight)
-                .padding(paddingValues)
-                .clip(RoundedCornerShape(25.dp))
-                .background(MaterialTheme.colorScheme.surface)
-                .border(
-                    width = 1.5.dp,
-                    color = MaterialTheme.colorScheme.outline.copy(0.15f),
-                    shape = RoundedCornerShape(25.dp),
-                )
-                .padding(horizontal = 15.dp),
+                Modifier.zIndex(2f)
+                    .fillMaxWidth()
+                    .heightIn(min = 75.dp, max = 345.dp)
+                    .padding(bottom = buttonVisibleHeight)
+                    .padding(paddingValues)
+                    .clip(RoundedCornerShape(25.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .border(
+                        width = 1.5.dp,
+                        color = MaterialTheme.colorScheme.outline.copy(0.15f),
+                        shape = RoundedCornerShape(25.dp),
+                    )
+                    .padding(horizontal = 15.dp),
         ) {
             item {
                 Spacer(Modifier.height(10.dp))
@@ -155,7 +155,7 @@ fun TagSelectionComponent(
             item {
                 AnimatedVisibility(!allTags.isRetrieving && isTagsEmpty) {
                     Text(
-                        text = Localization.Key.NoTagsFound.rememberLocalizedString(),
+                        text = localizedStrings.NoTagsFound,
                         style = MaterialTheme.typography.titleSmall,
                         fontSize = 18.sp,
                         modifier = Modifier.padding(end = 75.dp, bottom = 10.dp),
@@ -174,30 +174,30 @@ fun TagSelectionComponent(
                     },
                 ) {
                     val isTagSelected by
-                        rememberSaveable(selectedTags.contains(it)) {
-                            mutableStateOf(selectedTags.contains(it))
-                        }
+                    rememberSaveable(selectedTags.contains(it)) {
+                        mutableStateOf(selectedTags.contains(it))
+                    }
                     AssistChip(
                         shape = RoundedCornerShape(15.dp),
                         colors =
-                        AssistChipDefaults.assistChipColors(
-                            containerColor =
-                            if (isTagSelected) {
-                                MaterialTheme.colorScheme.secondaryContainer
-                            } else {
-                                Color.Transparent
-                            },
-                        ),
+                            AssistChipDefaults.assistChipColors(
+                                containerColor =
+                                    if (isTagSelected) {
+                                        MaterialTheme.colorScheme.secondaryContainer
+                                    } else {
+                                        Color.Transparent
+                                    },
+                            ),
                         border =
-                        AssistChipDefaults.assistChipBorder(
-                            enabled = true,
-                            borderColor =
-                            if (isTagSelected) {
-                                MaterialTheme.colorScheme.secondaryContainer
-                            } else {
-                                LocalContentColor.current.copy(0.25f)
-                            },
-                        ),
+                            AssistChipDefaults.assistChipBorder(
+                                enabled = true,
+                                borderColor =
+                                    if (isTagSelected) {
+                                        MaterialTheme.colorScheme.secondaryContainer
+                                    } else {
+                                        LocalContentColor.current.copy(0.25f)
+                                    },
+                            ),
                         onClick = {
                             onTagClick(it)
                         },
@@ -205,11 +205,11 @@ fun TagSelectionComponent(
                             Text(
                                 text = it.name,
                                 color =
-                                if (isTagSelected) {
-                                    MaterialTheme.colorScheme.onSecondaryContainer
-                                } else {
-                                    MaterialTheme.colorScheme.secondary
-                                },
+                                    if (isTagSelected) {
+                                        MaterialTheme.colorScheme.onSecondaryContainer
+                                    } else {
+                                        MaterialTheme.colorScheme.secondary
+                                    },
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = if (isTagSelected) FontWeight.SemiBold else FontWeight.Normal,
                             )
@@ -217,20 +217,20 @@ fun TagSelectionComponent(
                         leadingIcon = {
                             Icon(
                                 tint =
-                                if (isTagSelected) {
-                                    MaterialTheme.colorScheme.onSecondaryContainer
-                                } else {
-                                    MaterialTheme.colorScheme.secondary
-                                },
+                                    if (isTagSelected) {
+                                        MaterialTheme.colorScheme.onSecondaryContainer
+                                    } else {
+                                        MaterialTheme.colorScheme.secondary
+                                    },
                                 imageVector = Icons.Default.Tag,
                                 contentDescription = null,
                             )
                         },
                         modifier =
-                        Modifier.padding(top = 7.5.dp, bottom = 7.5.dp)
-                            .fillMaxWidth()
-                            .height(50.dp)
-                            .pointerHoverIcon(icon = PointerIcon.Hand),
+                            Modifier.padding(top = 7.5.dp, bottom = 7.5.dp)
+                                .fillMaxWidth()
+                                .height(50.dp)
+                                .pointerHoverIcon(icon = PointerIcon.Hand),
                     )
                 }
             }

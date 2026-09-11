@@ -33,6 +33,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -46,13 +47,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
-import com.sakethh.linkora.domain.SnapshotFormat
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.ui.LocalPlatform
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.HorizontalInfoCard
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
@@ -61,6 +61,7 @@ import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.ui.screens.settings.section.data.components.ToggleButton
 import com.sakethh.linkora.ui.utils.pressScaleEffect
+import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.highlightOnFocused
 import kotlinx.coroutines.launch
@@ -68,6 +69,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SnapshotsScreen() {
+    val localizedStrings = LocalizedStrings.current
     val dataSettingsScreenVM: DataSettingsScreenVM = linkoraViewModel()
     val preferences by dataSettingsScreenVM.preferencesAsFlow.collectAsStateWithLifecycle()
     var backupLocation by
@@ -88,7 +90,7 @@ fun SnapshotsScreen() {
     val platform = LocalPlatform.current
     val coroutineScope = rememberCoroutineScope()
     SettingsSectionScaffold(
-        topAppBarText = Navigation.Settings.Data.SnapshotsScreen.toString(),
+        topAppBarText = localizedStrings.Snapshots,
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
             modifier =
@@ -105,10 +107,10 @@ fun SnapshotsScreen() {
                 SettingComponent(
                     SettingComponentParam(
                         isIconNeeded = true,
-                        title = Localization.rememberLocalizedString(Localization.Key.UseSnapshots),
+                        title = localizedStrings.UseSnapshots,
                         doesDescriptionExists = true,
                         description =
-                            Localization.rememberLocalizedString(Localization.Key.UseSnapshotsDescription),
+                            localizedStrings.UseSnapshotsDescription,
                         isSwitchNeeded = true,
                         isSwitchEnabled = preferences.areSnapshotsEnabled,
                         onSwitchStateChange = {
@@ -146,9 +148,7 @@ fun SnapshotsScreen() {
                                 if (platform is Platform.Android) {
                                     Text(
                                         text =
-                                            Localization.rememberLocalizedString(
-                                                Localization.Key.SnapshotsBackupLocationWarning,
-                                            ),
+                                            localizedStrings.SnapshotsBackupLocationWarning,
                                         style = MaterialTheme.typography.titleSmall,
                                     )
                                 }
@@ -185,9 +185,7 @@ fun SnapshotsScreen() {
                             label = {
                                 Text(
                                     text =
-                                        Localization.rememberLocalizedString(
-                                            Localization.Key.SnapshotsBackupLocation,
-                                        ),
+                                        localizedStrings.SnapshotsBackupLocation,
                                     style = MaterialTheme.typography.titleMedium,
                                     textAlign = TextAlign.Start,
                                 )
@@ -218,14 +216,10 @@ fun SnapshotsScreen() {
                         SettingComponentParam(
                             isIconNeeded = true,
                             title =
-                                Localization.rememberLocalizedString(
-                                    Localization.Key.EnableAutoDeleteSnapshots,
-                                ),
+                                localizedStrings.EnableAutoDeleteSnapshots,
                             doesDescriptionExists = true,
                             description =
-                                Localization.rememberLocalizedString(
-                                    Localization.Key.EnableAutoDeleteSnapshotsDescription,
-                                ),
+                                localizedStrings.EnableAutoDeleteSnapshotsDescription,
                             isSwitchNeeded = true,
                             isSwitchEnabled = isBackupAutoDeletionEnabled,
                             onSwitchStateChange = {
@@ -249,9 +243,7 @@ fun SnapshotsScreen() {
                             supportingText = {
                                 Text(
                                     text =
-                                        Localization.rememberLocalizedString(
-                                            Localization.Key.SnapshotsFileLimitWarning,
-                                        ),
+                                        localizedStrings.SnapshotsFileLimitWarning,
                                     style = MaterialTheme.typography.titleSmall,
                                 )
                             },
@@ -284,7 +276,7 @@ fun SnapshotsScreen() {
                             label = {
                                 Text(
                                     text =
-                                        Localization.rememberLocalizedString(Localization.Key.SnapshotsFileLimit),
+                                        localizedStrings.SnapshotsFileLimit,
                                     style = MaterialTheme.typography.titleMedium,
                                     textAlign = TextAlign.Start,
                                 )
@@ -307,20 +299,24 @@ fun SnapshotsScreen() {
                 item {
                     Column(modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp)) {
                         Text(
-                            text = Localization.rememberLocalizedString(Localization.Key.ExportAs),
+                            text = localizedStrings.ExportAs,
                             style = MaterialTheme.typography.titleMedium,
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.primary,
                         )
                         Spacer(Modifier.height(15.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                            remember {
-                                SnapshotFormat.entries
+                            retain(localizedStrings) {
+                                listOf(
+                                    Constants.SNAPSHOT_JSON_FORMAT to Constants.SNAPSHOT_JSON_FORMAT_ID,
+                                    Constants.SNAPSHOT_HTML_FORMAT to Constants.SNAPSHOT_HTML_FORMAT_ID,
+                                    localizedStrings.Both to Constants.SNAPSHOT_BOTH_FORMAT_ID
+                                )
                             }
                                 .let {
-                                    it.forEachIndexed { index, snapshotFormat ->
+                                    it.forEachIndexed { index, (snapshotFormatLocalizedStr, snapshotFormatID) ->
                                         val checked =
-                                            snapshotFormat.id.toString() == preferences.snapshotExportFormatID
+                                            snapshotFormatID.toString() == preferences.snapshotExportFormatID
                                         ToggleButton(
                                             shape =
                                                 when (index) {
@@ -346,12 +342,12 @@ fun SnapshotsScreen() {
                                             onCheckedChange = {
                                                 dataSettingsScreenVM.changeSettingPreferenceValue(
                                                     preferenceKey = AppPreferences.SNAPSHOTS_EXPORT_TYPE,
-                                                    newValue = snapshotFormat.id.toString(),
+                                                    newValue = snapshotFormatID.toString(),
                                                 )
                                             },
                                         ) {
                                             Text(
-                                                text = snapshotFormat.localizedValue,
+                                                text = snapshotFormatLocalizedStr,
                                                 style =
                                                     if (checked) {
                                                         MaterialTheme.typography.titleMedium
@@ -376,13 +372,9 @@ fun SnapshotsScreen() {
                 Text(
                     text =
                         if (platform !is Platform.Android) {
-                            Localization.rememberLocalizedString(
-                                Localization.Key.SnapshotsExportDescriptionDesktop,
-                            )
+                            localizedStrings.SnapshotsExportDescriptionDesktop
                         } else {
-                            Localization.rememberLocalizedString(
-                                Localization.Key.SnapshotsExportDescriptionAndroid,
-                            )
+                            localizedStrings.SnapshotsExportDescriptionAndroid
                         },
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 14.sp,

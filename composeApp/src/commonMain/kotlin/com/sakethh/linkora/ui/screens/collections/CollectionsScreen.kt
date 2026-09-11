@@ -73,7 +73,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -93,7 +92,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.Folder
@@ -101,6 +99,7 @@ import com.sakethh.linkora.platform.PlatformSpecificBackHandler
 import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.SortingIconButton
 import com.sakethh.linkora.ui.components.folder.FolderComponent
 import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
@@ -118,9 +117,7 @@ import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.Utils
-import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.highlightOnFocused
-import com.sakethh.linkora.utils.rememberLocalizedString
 import com.sakethh.linkora.utils.supportsWideDisplay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
@@ -138,6 +135,7 @@ fun CollectionsScreen(
     preferences: AppPreferences,
     collectionScreenParams: CollectionScreenParams,
 ) {
+    val localizedStrings = LocalizedStrings.current
     val localFABContext = LocalFabController.current
     val onAndroidMobile = Platform.Android.onMobile()
     val scaffoldNavigator = rememberListDetailPaneScaffoldNavigator<Unit>()
@@ -258,7 +256,7 @@ fun CollectionsScreen(
                     scrollBehavior = topAppBarScrollBehavior,
                     title = {
                         Text(
-                            text = Navigation.Root.CollectionsScreen.toString(),
+                            text = localizedStrings.Collections,
                             color = MaterialTheme.colorScheme.onSurface,
                             style = MaterialTheme.typography.titleLarge,
                             fontSize = 22.sp,
@@ -277,14 +275,14 @@ fun CollectionsScreen(
                 val screenHeight = maxHeight
                 Column(modifier = Modifier.fillMaxWidth().verticalScroll(parentScrollState)) {
                     DefaultFolderComponent(
-                        name = Localization.rememberLocalizedString(Localization.Key.AllLinks),
+                        name = localizedStrings.AllLinks,
                         icon = Icons.Outlined.DatasetLinked,
                         onClick = {
                             val collectionDetailPaneInfo =
                                 CollectionDetailPaneInfo(
                                     currentFolder =
                                         Folder(
-                                            name = Localization.Key.AllLinks.getLocalizedString(),
+                                            name = localizedStrings.AllLinks,
                                             note = "",
                                             parentFolderId = null,
                                             localId = Constants.ALL_LINKS_ID,
@@ -308,14 +306,14 @@ fun CollectionsScreen(
                     )
                     ItemDivider()
                     DefaultFolderComponent(
-                        name = Localization.rememberLocalizedString(Localization.Key.SavedLinks),
+                        name = localizedStrings.SavedLinks,
                         icon = Icons.Outlined.Link,
                         onClick = {
                             val collectionDetailPaneInfo =
                                 CollectionDetailPaneInfo(
                                     currentFolder =
                                         Folder(
-                                            name = Localization.Key.SavedLinks.getLocalizedString(),
+                                            name = localizedStrings.SavedLinks,
                                             note = "",
                                             parentFolderId = null,
                                             localId = Constants.SAVED_LINKS_ID,
@@ -339,14 +337,14 @@ fun CollectionsScreen(
                             lastDetailDestination?.currentFolder?.localId == Constants.SAVED_LINKS_ID,
                     )
                     DefaultFolderComponent(
-                        name = Localization.rememberLocalizedString(Localization.Key.ImportantLinks),
+                        name = localizedStrings.ImportantLinks,
                         icon = Icons.Outlined.StarOutline,
                         onClick = {
                             val collectionDetailPaneInfo =
                                 CollectionDetailPaneInfo(
                                     currentFolder =
                                         Folder(
-                                            name = Localization.Key.ImportantLinks.getLocalizedString(),
+                                            name = localizedStrings.ImportantLinks,
                                             note = "",
                                             parentFolderId = null,
                                             localId = Constants.IMPORTANT_LINKS_ID,
@@ -370,14 +368,14 @@ fun CollectionsScreen(
                             lastDetailDestination?.currentFolder?.localId == Constants.IMPORTANT_LINKS_ID,
                     )
                     DefaultFolderComponent(
-                        name = Localization.rememberLocalizedString(Localization.Key.Archive),
+                        name = localizedStrings.Archive,
                         icon = Icons.Outlined.Archive,
                         onClick = {
                             val collectionDetailPaneInfo =
                                 CollectionDetailPaneInfo(
                                     currentFolder =
                                         Folder(
-                                            name = Localization.Key.Archive.getLocalizedString(),
+                                            name = localizedStrings.Archive,
                                             note = "",
                                             parentFolderId = null,
                                             localId = Constants.ARCHIVE_ID,
@@ -410,8 +408,8 @@ fun CollectionsScreen(
                         Row(modifier = Modifier.padding(start = 7.5.dp)) {
                             retain {
                                 listOf(
-                                    0 to Localization.Key.Folders.getLocalizedString(),
-                                    1 to Localization.Key.Tags.getLocalizedString(),
+                                    0 to localizedStrings.Folders,
+                                    1 to localizedStrings.Tags,
                                 )
                             }
                                 .forEach { (collectionRef, collectionType) ->
@@ -489,7 +487,7 @@ fun CollectionsScreen(
                                     item {
                                         AnimatedVisibility(!rootFolders.isRetrieving && isRootFoldersEmpty) {
                                             DataEmptyScreen(
-                                                text = Localization.Key.NoFoldersFound.rememberLocalizedString(),
+                                                text = localizedStrings.NoFoldersFound,
                                                 paddingValues =
                                                     PaddingValues(
                                                         top = 50.dp,
@@ -617,7 +615,7 @@ fun CollectionsScreen(
                                 1 -> {
                                     item {
                                         AnimatedVisibility(!allTags.isRetrieving && isTagsEmpty) {
-                                            DataEmptyScreen(text = Localization.Key.NoTagsFound.rememberLocalizedString())
+                                            DataEmptyScreen(text = localizedStrings.NoTagsFound)
                                         }
                                     }
 
@@ -761,7 +759,7 @@ fun CollectionsScreen(
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     Text(
-                                        text = Localization.Key.SelectACollection.rememberLocalizedString(),
+                                        text = localizedStrings.SelectACollection,
                                         style = MaterialTheme.typography.titleMedium,
                                     )
                                 }

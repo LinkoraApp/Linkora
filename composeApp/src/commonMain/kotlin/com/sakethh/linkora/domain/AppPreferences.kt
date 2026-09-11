@@ -56,7 +56,7 @@ data class AppPreferences(
     // OLDER LINKORA VERSIONS STORED DATA AS STRINGS (JSON/HTML/BOTH instead of 0/1/1)
     // CHANGING THIS TO INT/LONG WILL BREAK READING OF EXISTING PREFERENCES
     // SAVED BY PREVIOUS VERSIONS
-    val snapshotExportFormatID: String = SnapshotFormat.JSON.id.toString(),
+    val snapshotExportFormatID: String = Constants.SNAPSHOT_JSON_FORMAT,
     val skipCertCheckForSync: Boolean = false,
     val currentExportLocation: String = "",
     val currentBackupLocation: String = "",

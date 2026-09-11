@@ -4,7 +4,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.model.FlatChildFolderData
@@ -12,6 +11,7 @@ import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onSuccess
+import com.sakethh.linkora.domain.repository.LocalizationRepo
 import com.sakethh.linkora.domain.repository.local.LocalDatabaseUtilsRepo
 import com.sakethh.linkora.domain.repository.local.LocalFoldersRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
@@ -52,9 +52,10 @@ class CollectionDetailPaneVM(
     private val localDatabaseUtilsRepo: LocalDatabaseUtilsRepo,
     val collectionDetailPaneInfo: CollectionDetailPaneInfo,
     private val preferencesRepository: PreferencesRepository,
+    private val localizationRepo: LocalizationRepo.Local
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
-
+    val localizedStrings get() = localizationRepo.localizedStrings.value
     private val _linkTagsPairsState =
         MutableStateFlow(
             value = PaginationState.retrieving<List<LinkTagsPair>>(),
@@ -141,23 +142,23 @@ class CollectionDetailPaneVM(
                     .addANewLink(
                         link = collectionPaneAction.link,
                         selectedTagIds =
-                        collectionPaneAction.selectedTags.map {
-                            it.localId
-                        },
+                            collectionPaneAction.selectedTags.map {
+                                it.localId
+                            },
                         linkSaveConfig = collectionPaneAction.linkSaveConfig,
                     )
                     .collectLatest {
                         it.onSuccess {
                             collectionPaneAction.onCompletion()
                             if (collectionPaneAction.pushSnackbarOnSuccess) {
-                                Localization.Key.SavedTheLink.pushLocalizedSnackbar(
-                                    append = it.getRemoteOnlyFailureMsg(),
+                                localizedStrings.SavedTheLink.pushLocalizedSnackbar(
+                                    append = it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
                                 )
                             }
                         }
                             .onFailure {
                                 collectionPaneAction.onCompletion()
-                                UIEvent.pushUIEvent(UIEvent.Type.ShowSnackbar(it))
+                                UIEvent.pushUIEvent(UIEvent.Type.ShowSnackbar(it.message.toString()))
                             }
                     }
             }
@@ -189,36 +190,35 @@ class CollectionDetailPaneVM(
     // localDatabaseUtilsRepo#getChildFolderData supports this directly, since it directly queries and
     // returns the result. This can be replaced with it, but this should be fine.
     fun Flow<Result<List<Link>>>.mapToLinkTagsPair(): Flow<Result<List<LinkTagsPair>>> = flatMapLatest { result ->
-        when (result) {
-            is Result.Failure -> flowOf(Result.Failure(result.message))
+            when (result) {
+                is Result.Failure -> flowOf(Result.Failure(result.e))
 
-            is Result.Loading -> flowOf(Result.Loading())
+                is Result.Loading -> flowOf(Result.Loading())
 
-            is Result.Success -> {
-                val linksIds = result.data.map { it.localId }
-                localTagsRepo
-                    .getTagsForLinks(linksIds)
-                    .map { tagsMap ->
-                        result.data.map { link ->
-                            LinkTagsPair(
-                                link = link,
-                                tags = tagsMap[link.localId] ?: emptyList(),
-                            )
+                is Result.Success -> {
+                    val linksIds = result.data.map { it.localId }
+                    localTagsRepo
+                        .getTagsForLinks(linksIds)
+                        .map { tagsMap ->
+                            result.data.map { link ->
+                                LinkTagsPair(
+                                    link = link,
+                                    tags = tagsMap[link.localId] ?: emptyList(),
+                                )
+                            }
                         }
-                    }
-                    .flatMapLatest {
-                        flowOf(Result.Success(it))
-                    }
+                        .flatMapLatest {
+                            flowOf(Result.Success(it))
+                        }
+                }
             }
         }
-    }
 
     private val _rootArchiveFolders =
         MutableStateFlow(
             PaginationState(
                 isRetrieving = true,
-                errorOccurred = false,
-                errorMessage = null,
+                exception = null,
                 pagesCompleted = false,
                 data = emptyMap<Pair<LastSeenId, LastSeenString>, List<Folder>>(),
             ),
@@ -226,13 +226,12 @@ class CollectionDetailPaneVM(
     val rootArchiveFolders =
         _rootArchiveFolders.asStateInWhileSubscribed(
             initialValue =
-            PaginationState(
-                isRetrieving = true,
-                errorOccurred = false,
-                errorMessage = null,
-                pagesCompleted = false,
-                data = emptyMap(),
-            ),
+                PaginationState(
+                    isRetrieving = true,
+                    exception = null,
+                    pagesCompleted = false,
+                    data = emptyMap(),
+                ),
         )
 
     private val archiveRootFoldersPaginator =
@@ -269,8 +268,8 @@ class CollectionDetailPaneVM(
                     localLinksRepo
                         .getLinks(
                             tagId =
-                            collectionDetailPaneInfo.currentTag?.localId
-                                ?: error("collectionDetailPaneInfo.currentTag?.localId is null"),
+                                collectionDetailPaneInfo.currentTag?.localId
+                                    ?: error("collectionDetailPaneInfo.currentTag?.localId is null"),
                             sortOption = sortingType,
                             pageSize = Constants.PAGE_SIZE,
                             lastSeenTitle = lastSeenString,
@@ -285,8 +284,8 @@ class CollectionDetailPaneVM(
                         .getLinks(
                             linkType = currentInstanceLinkType,
                             parentFolderId =
-                            collectionDetailPaneInfo.currentFolder?.localId
-                                ?: error("collectionDetailPaneInfo.currentFolder?.localId is null"),
+                                collectionDetailPaneInfo.currentFolder?.localId
+                                    ?: error("collectionDetailPaneInfo.currentFolder?.localId is null"),
                             sortOption = sortingType,
                             pageSize = Constants.PAGE_SIZE,
                             lastSeenId = lastSeenId,
@@ -333,8 +332,8 @@ class CollectionDetailPaneVM(
 
                 localDatabaseUtilsRepo.getChildFolderData(
                     parentFolderId =
-                    collectionDetailPaneInfo.currentFolder?.localId
-                        ?: error("childFoldersPaginator: Parent ID is null"),
+                        collectionDetailPaneInfo.currentFolder?.localId
+                            ?: error("childFoldersPaginator: Parent ID is null"),
                     linkType = LinkType.FOLDER_LINK,
                     sortOption = sortingType,
                     pageSize = Constants.PAGE_SIZE,

@@ -20,30 +20,26 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.utils.pressScaleEffect
-import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.highlightOnFocused
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SettingComponent(settingComponentParam: SettingComponentParam) {
+    val localizedStrings = LocalizedStrings.current
     val uriHandler = LocalUriHandler.current
     Row(
         modifier =
@@ -84,7 +80,7 @@ fun SettingComponent(settingComponentParam: SettingComponentParam) {
                     modifier =
                         if (
                             settingComponentParam.title ==
-                            Localization.Key.TopDecoratorSetting.getLocalizedString()
+                            localizedStrings.TopDecoratorSetting
                         ) {
                             Modifier.rotate(180f)
                         } else {

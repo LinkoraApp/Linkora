@@ -8,7 +8,6 @@ import android.os.Looper
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.sakethh.linkora.IntentActivityVM
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.MainActivity
 import com.sakethh.linkora.R
 import com.sakethh.linkora.di.DependencyContainer
@@ -19,8 +18,7 @@ import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onSuccess
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
-import com.sakethh.linkora.utils.getLocalizedString
-import com.sakethh.linkora.utils.replaceFirstPlaceHolderWith
+import com.sakethh.linkora.utils.replaceActual
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -50,8 +48,9 @@ class AutoSaveLinkService : Service() {
             snapshotRepo = DependencyContainer.snapshotRepo,
             preferencesRepository = DependencyContainer.preferencesRepo,
             showToast = ::toast,
+            localizationRepo = DependencyContainer.localizationRepo,
         )
-
+    private val localizedStrings get() = intentActivityVM.localizedStrings.value
     private var areSnapshotsEnabled = false
 
     override fun onStartCommand(
@@ -68,10 +67,10 @@ class AutoSaveLinkService : Service() {
         val notification =
             NotificationCompat.Builder(applicationContext, "1")
                 .setSmallIcon(R.drawable.ic_stat_name)
-                .setContentTitle(Localization.Key.AutoSavingTheLinkNotifyLabel.getLocalizedString())
+                .setContentTitle(localizedStrings.AutoSavingTheLinkNotifyLabel)
                 .setContentText(
-                    Localization.Key.AutoSavingTheLinkNotifyLabel.getLocalizedString()
-                        .replaceFirstPlaceHolderWith(url),
+                    localizedStrings.AutoSavingTheLinkNotifyLabel
+                        .replaceActual(url),
                 )
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .build()
@@ -86,32 +85,33 @@ class AutoSaveLinkService : Service() {
                     .addANewLink(
                         selectedTagIds = null,
                         linkSaveConfig =
-                        LinkSaveConfig(
-                            forceAutoDetectTitle = true,
-                            forceSaveWithoutRetrievingData = false,
-                            useProxy = preferences.useProxy,
-                            skipSavingIfExists = preferences.skipSavingExistingLink,
-                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
-                        ),
+                            LinkSaveConfig(
+                                forceAutoDetectTitle = true,
+                                forceSaveWithoutRetrievingData = false,
+                                useProxy = preferences.useProxy,
+                                skipSavingIfExists = preferences.skipSavingExistingLink,
+                                forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
+                            ),
                         viaSocket = false,
                         link =
-                        Link(
-                            linkType = LinkType.SAVED_LINK,
-                            title = "",
-                            url = url,
-                            imgURL = "",
-                            note = "",
-                            idOfLinkedFolder = Constants.SAVED_LINKS_ID,
-                            userAgent = preferences.primaryJsoupUserAgent,
-                        ),
+                            Link(
+                                linkType = LinkType.SAVED_LINK,
+                                title = "",
+                                url = url,
+                                imgURL = "",
+                                note = "",
+                                idOfLinkedFolder = Constants.SAVED_LINKS_ID,
+                                userAgent = preferences.primaryJsoupUserAgent,
+                            ),
                     )
                     .collectLatest {
                         withContext(Dispatchers.Main) {
                             it.onSuccess {
-                                toast(Localization.Key.AutoSavedTheLinkSuccessfully.getLocalizedString())
+                                toast(localizedStrings.AutoSavedTheLinkSuccessfully)
                             }
                                 .onFailure {
-                                    toast(it)
+                                    it.printStackTrace()
+                                    toast(it.message.toString())
                                 }
                         }
                     }
@@ -120,7 +120,7 @@ class AutoSaveLinkService : Service() {
                 if (!MainActivity.wasLaunched && areSnapshotsEnabled) {
                     intentActivityVM.createADataSnapshot(
                         onCompletion = {
-                            toast(Localization.Key.SnapshotCreatedSuccessfully.getLocalizedString())
+                            toast(localizedStrings.SnapshotCreatedSuccessfully)
                         },
                     )
                 }

@@ -23,13 +23,12 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sakethh.linkora.Localization
-import com.sakethh.linkora.domain.LinkoraPlaceHolder
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.bottomNavPaddingAcrossPlatforms
 import com.sakethh.linkora.utils.openUriOrNotify
-import com.sakethh.linkora.utils.rememberLocalizedString
+import com.sakethh.linkora.utils.replaceActual
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,12 +40,13 @@ fun NewVersionUpdateBtmContent(
     urlOfLatestReleasePage: String,
     tagName: String,
 ) {
+    val localizedStrings = LocalizedStrings.current
     val uriHandler = LocalUriHandler.current
     val coroutineScope = rememberCoroutineScope()
     LazyColumn(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
         item {
             Text(
-                text = Localization.Key.NewUpdateIsAvailable.rememberLocalizedString(),
+                text = localizedStrings.NewUpdateIsAvailable,
                 style = MaterialTheme.typography.titleLarge,
                 fontSize = 24.sp,
                 textAlign = TextAlign.Start,
@@ -56,15 +56,15 @@ fun NewVersionUpdateBtmContent(
         }
         item {
             VersionCardForBtmSheetContent(
-                title = Localization.Key.CurrentVersion.rememberLocalizedString(),
+                title = localizedStrings.CurrentVersion,
                 value = Constants.APP_VERSION_NAME,
             )
         }
         item {
             VersionCardForBtmSheetContent(
                 title =
-                Localization.Key.LatestVersionAvailableDesc.rememberLocalizedString()
-                    .replace(LinkoraPlaceHolder.First.value, tagName.substringBefore("-")),
+                    localizedStrings.LatestVersionAvailableDesc
+                        .replaceActual(tagName.substringBefore("-")),
                 value = latestVersion,
             )
         }
@@ -74,10 +74,10 @@ fun NewVersionUpdateBtmContent(
         item {
             Button(
                 modifier =
-                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                    .padding(start = 20.dp, end = 20.dp)
-                    .fillMaxWidth()
-                    .pressScaleEffect(),
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        .padding(start = 20.dp, end = 20.dp)
+                        .fillMaxWidth()
+                        .pressScaleEffect(),
                 onClick = {
                     coroutineScope
                         .launch {
@@ -94,7 +94,7 @@ fun NewVersionUpdateBtmContent(
                 },
             ) {
                 Text(
-                    text = Localization.Key.RedirectToLatestReleasePage.rememberLocalizedString(),
+                    text = localizedStrings.RedirectToLatestReleasePage,
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 16.sp,
                     textAlign = TextAlign.Center,

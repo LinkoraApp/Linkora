@@ -88,18 +88,17 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.ImageLoader
 import coil3.compose.LocalPlatformContext
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.ImportFileType
-import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.RefreshLinkType
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.platform.PlatformSpecificBackHandler
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.DeleteDialogBoxType
 import com.sakethh.linkora.ui.components.DeleteFolderOrLinkDialog
 import com.sakethh.linkora.ui.components.DeleteFolderOrLinkDialogParam
@@ -117,16 +116,16 @@ import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.asLocalizedString
 import com.sakethh.linkora.utils.currentSavedServerConfig
-import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.isServerConfigured
 import com.sakethh.linkora.utils.lastSyncedLocally
-import com.sakethh.linkora.utils.rememberLocalizedString
+import com.sakethh.linkora.utils.replaceActual
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DataSettingsScreen() {
+    val localizedStrings = LocalizedStrings.current
     val navController = LocalNavController.current
     val serverManagementViewModel: ServerManagementViewModel = linkoraViewModel()
     val dataSettingsScreenVM: DataSettingsScreenVM = linkoraViewModel()
@@ -177,7 +176,7 @@ fun DataSettingsScreen() {
     val refreshAllLinksState by dataSettingsScreenVM.refreshAllLinksState.collectAsStateWithLifecycle()
     val isOnTV = Platform.Android.onTV()
     SettingsSectionScaffold(
-        topAppBarText = Navigation.Settings.DataSettingsScreen.toString(),
+        topAppBarText = localizedStrings.Data,
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
             modifier = Modifier.animateContentSize().fillMaxSize()
@@ -191,7 +190,7 @@ fun DataSettingsScreen() {
             if (platform != Platform.Web) {
                 item {
                     Text(
-                        text = Localization.rememberLocalizedString(Localization.Key.ImportLabel),
+                        text = localizedStrings.ImportLabel,
                         style = MaterialTheme.typography.titleMedium,
                         fontSize = 16.sp,
                         lineHeight = 20.sp,
@@ -204,15 +203,15 @@ fun DataSettingsScreen() {
                             modifier = Modifier.padding(start = 15.dp, end = 15.dp, top = 5.dp),
                         ) {
                             Text(
-                                text = Localization.Key.ImportMethodLabel.rememberLocalizedString(),
+                                text = localizedStrings.ImportMethodLabel,
                                 style = MaterialTheme.typography.titleMedium,
                             )
                             Spacer(modifier = Modifier.width(5.dp))
                             Text(
                                 text = if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) {
-                                    Localization.Key.FileLocationLabel.rememberLocalizedString()
+                                    localizedStrings.FileLocationLabel
                                 } else {
-                                    Localization.Key.FilePickerLabel.rememberLocalizedString()
+                                    localizedStrings.FilePickerLabel
                                 },
                                 style = MaterialTheme.typography.titleLarge,
                             )
@@ -246,7 +245,7 @@ fun DataSettingsScreen() {
                     }
                     if (preferences.isServerConfigured()) {
                         Text(
-                            text = Localization.rememberLocalizedString(Localization.Key.ImportLabelDesc),
+                            text = localizedStrings.ImportLabelDesc,
                             style = MaterialTheme.typography.titleSmall,
                             lineHeight = 20.sp,
                             textAlign = TextAlign.Start,
@@ -259,11 +258,10 @@ fun DataSettingsScreen() {
                     SettingComponent(
                         SettingComponentParam(
                             isIconNeeded = true,
-                            title = Localization.rememberLocalizedString(Localization.Key.ImportUsingJsonFile),
+                            title = localizedStrings.ImportUsingJsonFile,
                             doesDescriptionExists = true,
-                            description = Localization.rememberLocalizedString(
-                                Localization.Key.ImportUsingJsonFileDesc,
-                            ),
+                            description =
+                                localizedStrings.ImportUsingJsonFileDesc,
                             isSwitchNeeded = false,
                             isSwitchEnabled = false,
                             onSwitchStateChange = {
@@ -273,7 +271,7 @@ fun DataSettingsScreen() {
                                     return@SettingComponentParam
                                 }
                                 dataOperationTitle.value =
-                                    Localization.getLocalizedString(Localization.Key.ImportUsingJsonFile)
+                                    localizedStrings.ImportUsingJsonFile
                                 dataSettingsScreenVM.importDataFromAFile(
                                     importFileType = ImportFileType.JSON,
                                     onStart = {
@@ -295,11 +293,10 @@ fun DataSettingsScreen() {
                     SettingComponent(
                         SettingComponentParam(
                             isIconNeeded = true,
-                            title = Localization.rememberLocalizedString(Localization.Key.ImportDataFromHtmlFile),
+                            title = localizedStrings.ImportDataFromHtmlFile,
                             doesDescriptionExists = true,
-                            description = Localization.rememberLocalizedString(
-                                Localization.Key.ImportDataFromHtmlFileDesc,
-                            ),
+                            description =
+                                localizedStrings.ImportDataFromHtmlFileDesc,
                             isSwitchNeeded = false,
                             isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
@@ -309,7 +306,7 @@ fun DataSettingsScreen() {
                                     return@SettingComponentParam
                                 }
                                 dataOperationTitle.value =
-                                    Localization.getLocalizedString(Localization.Key.ImportDataFromHtmlFile)
+                                    localizedStrings.ImportDataFromHtmlFile
                                 dataSettingsScreenVM.importDataFromAFile(
                                     importFileType = ImportFileType.HTML,
                                     onStart = {
@@ -329,7 +326,7 @@ fun DataSettingsScreen() {
 
                 item {
                     Text(
-                        text = Localization.rememberLocalizedString(Localization.Key.ExportLabel),
+                        text = localizedStrings.ExportLabel,
                         style = MaterialTheme.typography.titleMedium,
                         fontSize = 16.sp,
                         lineHeight = 20.sp,
@@ -338,7 +335,7 @@ fun DataSettingsScreen() {
                     )
                     if (preferences.isServerConfigured()) {
                         Text(
-                            text = Localization.rememberLocalizedString(Localization.Key.ExportLabelDesc),
+                            text = localizedStrings.ExportLabelDesc,
                             style = MaterialTheme.typography.titleSmall,
                             lineHeight = 20.sp,
                             textAlign = TextAlign.Start,
@@ -357,7 +354,7 @@ fun DataSettingsScreen() {
                         TextField(
                             supportingText = {
                                 Text(
-                                    text = Localization.Key.CurrentExportLocationSupportingText.rememberLocalizedString(),
+                                    text = localizedStrings.CurrentExportLocationSupportingText,
                                     style = MaterialTheme.typography.titleSmall,
                                 )
                             },
@@ -389,7 +386,7 @@ fun DataSettingsScreen() {
                             readOnly = platform is Platform.Android,
                             label = {
                                 Text(
-                                    text = Localization.Key.CurrentExportLocation.rememberLocalizedString(),
+                                    text = localizedStrings.CurrentExportLocation,
                                     style = MaterialTheme.typography.titleMedium,
                                     textAlign = TextAlign.Start,
                                 )
@@ -417,14 +414,14 @@ fun DataSettingsScreen() {
                     SettingComponent(
                         SettingComponentParam(
                             isIconNeeded = true,
-                            title = Localization.rememberLocalizedString(Localization.Key.ExportDataAsJson),
+                            title = localizedStrings.ExportDataAsJson,
                             doesDescriptionExists = true,
-                            description = Localization.rememberLocalizedString(Localization.Key.ExportDataAsJsonDesc),
+                            description = localizedStrings.ExportDataAsJsonDesc,
                             isSwitchNeeded = false,
                             isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
                                 dataOperationTitle.value =
-                                    Localization.Key.ExportingDataToJSON.getLocalizedString()
+                                    localizedStrings.ExportingDataToJSON
                                 dataSettingsScreenVM.exportDataToAFile(
                                     platform = platform,
                                     exportFileType = ExportFileType.JSON,
@@ -446,14 +443,14 @@ fun DataSettingsScreen() {
                     SettingComponent(
                         SettingComponentParam(
                             isIconNeeded = true,
-                            title = Localization.rememberLocalizedString(Localization.Key.ExportDataAsHtml),
+                            title = localizedStrings.ExportDataAsHtml,
                             doesDescriptionExists = true,
-                            description = Localization.rememberLocalizedString(Localization.Key.ExportDataAsHtmlDesc),
+                            description = localizedStrings.ExportDataAsHtmlDesc,
                             isSwitchNeeded = false,
                             isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
                                 dataOperationTitle.value =
-                                    Localization.Key.ExportingDataToHTML.getLocalizedString()
+                                    localizedStrings.ExportingDataToHTML
                                 dataSettingsScreenVM.exportDataToAFile(
                                     platform = platform,
                                     exportFileType = ExportFileType.HTML,
@@ -475,7 +472,7 @@ fun DataSettingsScreen() {
                             onClick = {
                                 navController.navigate(Navigation.Settings.Data.SnapshotsScreen)
                             },
-                            sectionTitle = Localization.Key.Snapshots.rememberLocalizedString(),
+                            sectionTitle = localizedStrings.Snapshots,
                             sectionIcon = Icons.Default.BackupTable,
                             shouldArrowIconAppear = true,
                             fontSize = 16.sp,
@@ -502,7 +499,7 @@ fun DataSettingsScreen() {
 
             item {
                 Text(
-                    text = Localization.rememberLocalizedString(Localization.Key.Sync),
+                    text = localizedStrings.Sync,
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 16.sp,
                     lineHeight = 20.sp,
@@ -516,13 +513,11 @@ fun DataSettingsScreen() {
                     SettingComponent(
                         SettingComponentParam(
                             isIconNeeded = true,
-                            title = Localization.rememberLocalizedString(
-                                Localization.Key.ConnectToALinkoraServer,
-                            ),
+                            title =
+                                localizedStrings.ConnectToALinkoraServer,
                             doesDescriptionExists = true,
-                            description = Localization.rememberLocalizedString(
-                                Localization.Key.ConnectToALinkoraServerDesc,
-                            ),
+                            description =
+                                localizedStrings.ConnectToALinkoraServerDesc,
                             isSwitchNeeded = false,
                             isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
@@ -536,11 +531,10 @@ fun DataSettingsScreen() {
                     SettingComponent(
                         SettingComponentParam(
                             isIconNeeded = true,
-                            title = Localization.rememberLocalizedString(Localization.Key.ManageConnectedServer),
+                            title = localizedStrings.ManageConnectedServer,
                             doesDescriptionExists = true,
-                            description = Localization.rememberLocalizedString(
-                                Localization.Key.ManageConnectedServerDesc,
-                            ),
+                            description =
+                                localizedStrings.ManageConnectedServerDesc,
                             isSwitchNeeded = false,
                             isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
@@ -561,9 +555,9 @@ fun DataSettingsScreen() {
                     SettingComponent(
                         SettingComponentParam(
                             isIconNeeded = true,
-                            title = Localization.Key.InitiateManualSync.rememberLocalizedString(),
+                            title = localizedStrings.InitiateManualSync,
                             doesDescriptionExists = true,
-                            description = Localization.Key.InitiateManualSyncDesc.rememberLocalizedString(),
+                            description = localizedStrings.InitiateManualSyncDesc,
                             isSwitchNeeded = false,
                             isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
@@ -601,16 +595,16 @@ fun DataSettingsScreen() {
                 SettingComponent(
                     SettingComponentParam(
                         isIconNeeded = true,
-                        title = Localization.Key.EnforceStrictDefaultIDsLabel.rememberLocalizedString(),
+                        title = localizedStrings.EnforceStrictDefaultIDsLabel,
                         doesDescriptionExists = true,
-                        description = Localization.Key.EnforceStrictDefaultIDsDesc.rememberLocalizedString(),
+                        description = localizedStrings.EnforceStrictDefaultIDsDesc,
                         isSwitchNeeded = false,
                         isSwitchEnabled = preferences.useAmoledTheme,
                         onSwitchStateChange = {
                             dataSettingsScreenVM.forceSetDefaultFolderToInternalIds(
                                 onStart = {
                                     labelForAlertDialogWithProgress =
-                                        Localization.Key.UpdatingInternalIDsLabel.getLocalizedString()
+                                        localizedStrings.UpdatingInternalIDsLabel
                                     showAlertDialogWithProgress.value = true
                                 },
                                 onCompletion = {
@@ -636,20 +630,18 @@ fun DataSettingsScreen() {
                 SettingComponent(
                     SettingComponentParam(
                         isIconNeeded = true,
-                        title = Localization.rememberLocalizedString(
-                            Localization.Key.DeleteDuplicateLinksFromAllCollections,
-                        ),
+                        title =
+                            localizedStrings.DeleteDuplicateLinksFromAllCollections,
                         doesDescriptionExists = true,
-                        description = Localization.rememberLocalizedString(
-                            Localization.Key.DeleteDuplicateLinksFromAllCollectionsDesc,
-                        ),
+                        description =
+                            localizedStrings.DeleteDuplicateLinksFromAllCollectionsDesc,
                         isSwitchNeeded = false,
                         isSwitchEnabled = preferences.useAmoledTheme,
                         onSwitchStateChange = {
                             dataSettingsScreenVM.deleteDuplicates(
                                 onStart = {
                                     labelForAlertDialogWithProgress =
-                                        Localization.Key.DeletingDuplicatesLabel.getLocalizedString()
+                                        localizedStrings.DeletingDuplicatesLabel
                                     showAlertDialogWithProgress.value = true
                                 },
                                 onCompletion = {
@@ -674,13 +666,11 @@ fun DataSettingsScreen() {
                 SettingComponent(
                     SettingComponentParam(
                         isIconNeeded = true,
-                        title = Localization.rememberLocalizedString(
-                            Localization.Key.DeleteEntireDataPermanently,
-                        ),
+                        title =
+                            localizedStrings.DeleteEntireDataPermanently,
                         doesDescriptionExists = true,
-                        description = Localization.rememberLocalizedString(
-                            Localization.Key.DeleteEntireDataPermanentlyDesc,
-                        ),
+                        description =
+                            localizedStrings.DeleteEntireDataPermanentlyDesc,
                         isSwitchNeeded = false,
                         isSwitchEnabled = preferences.useAmoledTheme,
                         onSwitchStateChange = {
@@ -702,9 +692,9 @@ fun DataSettingsScreen() {
                 )
                 SettingComponent(
                     SettingComponentParam(
-                        title = Localization.rememberLocalizedString(Localization.Key.ClearImageCache),
+                        title = localizedStrings.ClearImageCache,
                         doesDescriptionExists = true,
-                        description = Localization.rememberLocalizedString(Localization.Key.ClearImageCacheDesc),
+                        description = localizedStrings.ClearImageCacheDesc,
                         isSwitchNeeded = false,
                         isIconNeeded = true,
                         icon = Icons.Default.BrokenImage,
@@ -728,7 +718,7 @@ fun DataSettingsScreen() {
                     color = DividerDefaults.color.copy(0.5f),
                 )
                 Text(
-                    text = Localization.Key.Refresh.rememberLocalizedString(),
+                    text = localizedStrings.Refresh,
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 16.sp,
                     lineHeight = 20.sp,
@@ -750,7 +740,7 @@ fun DataSettingsScreen() {
                         WorkerState.ENQUEUED -> {
                             if (platform !is Platform.Android) return@AnimatedContent
                             HorizontalInfoCard(
-                                info = Localization.Key.WorkManagerDesc.rememberLocalizedString(),
+                                info = localizedStrings.WorkManagerDesc,
                                 paddingValues = PaddingValues(
                                     start = 20.dp,
                                     end = 20.dp,
@@ -763,7 +753,7 @@ fun DataSettingsScreen() {
                         WorkerState.IN_PROGRESS -> {
                             Column(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
                                 Text(
-                                    text = Localization.rememberLocalizedString(Localization.Key.RefreshingLinks),
+                                    text = localizedStrings.RefreshingLinks,
                                     style = MaterialTheme.typography.titleMedium,
                                     modifier = Modifier.padding(start = 15.dp, end = 15.dp),
                                 )
@@ -789,12 +779,9 @@ fun DataSettingsScreen() {
                                     }
                                 }
                                 Text(
-                                    text = Localization.Key.NoOfLinksRefreshed.rememberLocalizedString()
-                                        .replace(
-                                            LinkoraPlaceHolder.First.value,
+                                    text = localizedStrings.NoOfLinksRefreshed
+                                        .replaceActual(
                                             DataSettingsScreenVM.refreshLinksState.value.currentIteration.toString(),
-                                        ).replace(
-                                            LinkoraPlaceHolder.Second.value,
                                             DataSettingsScreenVM.refreshLinksState.value.total.toString(),
                                         ),
                                     style = MaterialTheme.typography.titleSmall,
@@ -822,9 +809,9 @@ fun DataSettingsScreen() {
                                         )
                                         Text(
                                             text = if (platform is Platform.Android) {
-                                                Localization.Key.RefreshingLinksAndroidDesc.rememberLocalizedString()
+                                                localizedStrings.RefreshingLinksAndroidDesc
                                             } else {
-                                                Localization.Key.RefreshingLinksDesktopDesc.rememberLocalizedString()
+                                                localizedStrings.RefreshingLinksDesktopDesc
                                             },
                                             style = MaterialTheme.typography.titleSmall,
                                             lineHeight = 18.sp,
@@ -849,7 +836,7 @@ fun DataSettingsScreen() {
                                     ),
                                 ) {
                                     Text(
-                                        text = Localization.Key.RefreshType.rememberLocalizedString(),
+                                        text = localizedStrings.RefreshType,
                                         style = MaterialTheme.typography.titleSmall,
                                         lineHeight = 20.sp,
                                         textAlign = TextAlign.Start,
@@ -894,12 +881,13 @@ fun DataSettingsScreen() {
                                     if (preferences.useWebCaptures) {
                                         Row(
                                             verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier.highlightOnFocused().clickable(onClick = {
-                                                dataSettingsScreenVM.changeSettingPreferenceValue(
-                                                    preferenceKey = AppPreferences.CAPTURE_WHEN_REFRESH_ALL_LINK,
-                                                    newValue = !preferences.captureWhenRefreshAllLink,
-                                                )
-                                            }, indication = null, interactionSource = null)
+                                            modifier = Modifier.highlightOnFocused()
+                                                .clickable(onClick = {
+                                                    dataSettingsScreenVM.changeSettingPreferenceValue(
+                                                        preferenceKey = AppPreferences.CAPTURE_WHEN_REFRESH_ALL_LINK,
+                                                        newValue = !preferences.captureWhenRefreshAllLink,
+                                                    )
+                                                }, indication = null, interactionSource = null)
                                                 .pointerHoverIcon(
                                                     PointerIcon.Hand,
                                                 ),
@@ -956,7 +944,7 @@ fun DataSettingsScreen() {
                                         },
                                         label = {
                                             Text(
-                                                text = Localization.Key.RefreshLinkTextFieldLabel.rememberLocalizedString(),
+                                                text = localizedStrings.RefreshLinkTextFieldLabel,
                                                 style = MaterialTheme.typography.titleMedium,
                                                 textAlign = TextAlign.Start,
                                             )
@@ -980,9 +968,9 @@ fun DataSettingsScreen() {
                                 }
                                 SettingComponent(
                                     SettingComponentParam(
-                                        title = Localization.Key.RefreshLinksComponentLabel.rememberLocalizedString(),
+                                        title = localizedStrings.RefreshLinksComponentLabel,
                                         doesDescriptionExists = true,
-                                        description = Localization.Key.RefreshLinksComponentDesc.rememberLocalizedString(),
+                                        description = localizedStrings.RefreshLinksComponentDesc,
                                         isSwitchNeeded = false,
                                         isIconNeeded = true,
                                         icon = Icons.Default.Refresh,
@@ -1030,7 +1018,7 @@ fun DataSettingsScreen() {
                     },
                 ) {
                     Text(
-                        text = Localization.Key.ImportLabel.rememberLocalizedString(),
+                        text = localizedStrings.ImportLabel,
                         style = MaterialTheme.typography.titleSmall,
                     )
                 }
@@ -1043,7 +1031,7 @@ fun DataSettingsScreen() {
                     },
                 ) {
                     Text(
-                        text = Localization.Key.Cancel.rememberLocalizedString(),
+                        text = localizedStrings.Cancel,
                         style = MaterialTheme.typography.titleSmall,
                     )
                 }
@@ -1052,7 +1040,7 @@ fun DataSettingsScreen() {
                 OutlinedTextField(
                     label = {
                         Text(
-                            text = Localization.Key.FileLocationLabel.rememberLocalizedString(),
+                            text = localizedStrings.FileLocationLabel,
                             style = MaterialTheme.typography.titleSmall,
                             maxLines = 1,
                         )
@@ -1067,7 +1055,7 @@ fun DataSettingsScreen() {
             },
             title = {
                 Text(
-                    text = Localization.Key.ProvideAValidFileLocation.rememberLocalizedString(),
+                    text = localizedStrings.ProvideAValidFileLocation,
                     style = MaterialTheme.typography.titleLarge,
                     fontSize = 18.sp,
                 )
@@ -1089,7 +1077,7 @@ fun DataSettingsScreen() {
         },
         logs = dataSettingsScreenVM.importExportProgressLogs,
         operationTitle = dataOperationTitle.value,
-        operationDesc = Localization.Key.ImportExportScreenTopAppBarDesc.rememberLocalizedString(),
+        operationDesc = localizedStrings.ImportExportScreenTopAppBarDesc,
     )
     LogsScreen(
         isVisible = isForcePushAndPullProgressUIVisible,
@@ -1098,8 +1086,8 @@ fun DataSettingsScreen() {
             isForcePushAndPullProgressUIVisible = false
         },
         logs = serverManagementViewModel.dataSyncLogs,
-        operationTitle = Localization.Key.SyncingDataLabel.rememberLocalizedString(),
-        operationDesc = Localization.Key.InitiateManualSyncDescAlt.rememberLocalizedString(),
+        operationTitle = localizedStrings.SyncingDataLabel,
+        operationDesc = localizedStrings.InitiateManualSyncDescAlt,
     )
     if (shouldDeleteEntireDialogBoxAppear.value) {
         DeleteFolderOrLinkDialog(

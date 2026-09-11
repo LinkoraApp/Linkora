@@ -1,11 +1,11 @@
 package com.sakethh.linkora.utils
 
+import LocalizedStrings
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.unit.dp
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.model.Folder
@@ -34,15 +34,15 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 fun <T> wrappedResultFlow(init: suspend (SendChannel<Result<T>>) -> T): Flow<Result<T>> = channelFlow {
-    send(Result.Loading())
-    init(this.channel).let {
-        send(Result.Success(it))
+        send(Result.Loading())
+        init(this.channel).let {
+            send(Result.Success(it))
+        }
     }
-}
-    .catchAsExceptionAndEmitFailure()
+        .catchAsExceptionAndEmitFailure()
 
-fun defaultSavedLinksFolder(): Folder = Folder(
-    name = Localization.Key.SavedLinks.getLocalizedString(),
+fun defaultSavedLinksFolder(localizedStrings: LocalizedStrings): Folder = Folder(
+    name = localizedStrings.SavedLinks,
     note = "",
     parentFolderId = null,
     localId = Constants.SAVED_LINKS_ID,
@@ -50,8 +50,8 @@ fun defaultSavedLinksFolder(): Folder = Folder(
     isArchived = false,
 )
 
-fun defaultImpLinksFolder(): Folder = Folder(
-    name = Localization.Key.ImportantLinks.getLocalizedString(),
+fun defaultImpLinksFolder(localizedStrings: LocalizedStrings): Folder = Folder(
+    name = localizedStrings.ImportantLinks,
     note = "",
     parentFolderId = null,
     localId = Constants.IMPORTANT_LINKS_ID,
@@ -157,25 +157,30 @@ fun <LocalType, RemoteType> performLocalOperationWithRemoteSyncFlow(
 ): Flow<Result<LocalType>> = flow {
     emit(Result.Loading())
     val localResult = localOperation()
-    Result.Success(localResult).let { success ->
-        if (performRemoteOperation && canPushToServer()) {
-            remoteOperation().collect { remoteResult ->
-                remoteResult.onFailure { failureMessage ->
-                    success.isRemoteExecutionSuccessful = false
-                    success.remoteFailureMessage = failureMessage
-                    onRemoteOperationFailure()
-                }
-                remoteResult.onSuccess {
-                    remoteOperationOnSuccess(it.data)
-                }
+    var remoteExecResult: Result.Success.RemoteExecResult? = null
+    if (performRemoteOperation && canPushToServer()) {
+        remoteOperation().collect { remoteResult ->
+            remoteResult.onFailure { exception ->
+                remoteExecResult = Result.Success.RemoteExecResult(
+                    isRemoteExecutionSuccessful = false,
+                    e = exception
+                )
+                onRemoteOperationFailure()
+            }
+            remoteResult.onSuccess {
+                remoteOperationOnSuccess(it.data)
+                remoteExecResult = Result.Success.RemoteExecResult(
+                    isRemoteExecutionSuccessful = true,
+                    e = null
+                )
             }
         }
-        emit(success)
     }
+    emit(Result.Success(data = localResult, remoteExecResult = remoteExecResult))
 }
     .catch {
         it.printStackTrace()
-        emit(Result.Failure(message = it.message.toString()))
+        emit(Result.Failure(e = Exception(it)))
     }
 
 fun defaultFolderIds(): List<Long> = listOf(

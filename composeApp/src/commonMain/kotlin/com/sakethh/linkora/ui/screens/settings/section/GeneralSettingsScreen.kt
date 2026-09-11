@@ -52,20 +52,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.HorizontalInfoCard
 import com.sakethh.linkora.ui.domain.AppIconCode
 import com.sakethh.linkora.ui.domain.Font
@@ -76,7 +75,6 @@ import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectio
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.highlightOnFocused
-import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
@@ -85,6 +83,7 @@ import org.jetbrains.compose.resources.painterResource
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GeneralSettingsScreen() {
+    val localizedStrings = LocalizedStrings.current
     val navController = LocalNavController.current
     val settingsScreenViewModel: SettingsScreenViewModel = linkoraViewModel()
     val preferences by settingsScreenViewModel.preferencesAsFlow.collectAsStateWithLifecycle()
@@ -126,7 +125,7 @@ fun GeneralSettingsScreen() {
         )
     }
     SettingsSectionScaffold(
-        topAppBarText = Navigation.Settings.GeneralSettingsScreen.toString(),
+        topAppBarText = localizedStrings.General,
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
             modifier =
@@ -142,9 +141,9 @@ fun GeneralSettingsScreen() {
                 item {
                     SettingComponent(
                         SettingComponentParam(
-                            title = Localization.Key.TopDecoratorSetting.rememberLocalizedString(),
+                            title = localizedStrings.TopDecoratorSetting,
                             doesDescriptionExists = true,
-                            description = Localization.Key.TopDecoratorSettingDesc.rememberLocalizedString(),
+                            description = localizedStrings.TopDecoratorSettingDesc,
                             isSwitchNeeded = true,
                             isSwitchEnabled = isLinkoraTopAppBarEnabled,
                             onSwitchStateChange = {
@@ -172,9 +171,9 @@ fun GeneralSettingsScreen() {
             item {
                 SettingComponent(
                     SettingComponentParam(
-                        title = Localization.Key.ChangeInitialRoute.rememberLocalizedString(),
+                        title = localizedStrings.ChangeInitialRoute,
                         doesDescriptionExists = true,
-                        description = Localization.Key.ChangeInitialRouteDesc.rememberLocalizedString(),
+                        description = localizedStrings.ChangeInitialRouteDesc,
                         isSwitchNeeded = false,
                         isSwitchEnabled = true,
                         onSwitchStateChange = {
@@ -189,7 +188,7 @@ fun GeneralSettingsScreen() {
             item {
                 SettingComponent(
                     SettingComponentParam(
-                        title = Localization.Key.ChangeFontLabel.rememberLocalizedString(),
+                        title = localizedStrings.ChangeFontLabel,
                         doesDescriptionExists = false,
                         description = "",
                         isSwitchNeeded = false,
@@ -205,7 +204,7 @@ fun GeneralSettingsScreen() {
             item {
                 SettingComponent(
                     SettingComponentParam(
-                        title = Localization.getLocalizedString(Localization.Key.ShowOnboardingSlides),
+                        title = localizedStrings.ShowOnboardingSlides,
                         doesDescriptionExists = false,
                         description = "",
                         isSwitchNeeded = false,
@@ -226,7 +225,7 @@ fun GeneralSettingsScreen() {
                 }
                 item {
                     Text(
-                        text = Localization.Key.SelectAnAppIcon.rememberLocalizedString(),
+                        text = localizedStrings.SelectAnAppIcon,
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
                         fontSize = 16.sp,
@@ -279,7 +278,7 @@ fun GeneralSettingsScreen() {
                         }
                     }
                     Text(
-                        text = Localization.Key.AppIconCurrentlyInUse.rememberLocalizedString(),
+                        text = localizedStrings.AppIconCurrentlyInUse,
                         style = MaterialTheme.typography.titleSmall,
                         modifier =
                             Modifier.padding(
@@ -338,7 +337,7 @@ fun GeneralSettingsScreen() {
                                 .fillMaxWidth().highlightOnFocused(shape = ButtonDefaults.shape),
                     ) {
                         Text(
-                            text = Localization.Key.Confirm.rememberLocalizedString(),
+                            text = localizedStrings.Confirm,
                             style = MaterialTheme.typography.titleMedium,
                         )
                     }
@@ -358,7 +357,7 @@ fun GeneralSettingsScreen() {
                                 .fillMaxWidth().highlightOnFocused(shape = ButtonDefaults.shape),
                     ) {
                         Text(
-                            text = Localization.Key.Cancel.rememberLocalizedString(),
+                            text = localizedStrings.Cancel,
                             style = MaterialTheme.typography.titleSmall,
                         )
                     }
@@ -386,7 +385,7 @@ fun GeneralSettingsScreen() {
                             Spacer(modifier = Modifier.height(5.dp))
                         }
                     Text(
-                        text = Localization.Key.ChangeAppIcon.rememberLocalizedString(),
+                        text = localizedStrings.ChangeAppIcon,
                         style = MaterialTheme.typography.titleMedium,
                         fontSize = 22.sp,
                     )
@@ -395,14 +394,14 @@ fun GeneralSettingsScreen() {
             text = {
                 Column {
                     Text(
-                        text = Localization.Key.ChangeAppIconDesc.rememberLocalizedString(),
+                        text = localizedStrings.ChangeAppIconDesc,
                         style = MaterialTheme.typography.titleSmall,
                         fontSize = 18.sp,
                     )
                     if (tempSelectedAppIcon == AppIconCode.must_be_weather.name) {
                         HorizontalInfoCard(
                             paddingValues = PaddingValues(top = 10.dp),
-                            info = Localization.Key.ChangeInAppNameDesc.rememberLocalizedString(),
+                            info = localizedStrings.ChangeInAppNameDesc,
                         )
                     }
                 }
@@ -419,7 +418,7 @@ fun GeneralSettingsScreen() {
             }
         }
         SwitchDialogBox(
-            title = Localization.Key.SelectTheInitialScreen.rememberLocalizedString(),
+            title = localizedStrings.SelectTheInitialScreen,
             entries = initialRouteEntries,
             selected = {
                 currentlySelectedRoute.value == it.toString()
@@ -444,7 +443,7 @@ fun GeneralSettingsScreen() {
             mutableStateOf(preferences.selectedFont.name)
         }
         SwitchDialogBox(
-            title = Localization.Key.SelectAFontLabel.rememberLocalizedString(),
+            title = localizedStrings.SelectAFontLabel,
             entries = fontsEntries,
             selected = {
                 tempSelectedFont == it.name
@@ -476,15 +475,17 @@ private fun <T> SwitchDialogBox(
     onDismissRequest: () -> Unit,
     onConfirm: () -> Unit,
 ) {
+    val localizedStrings = LocalizedStrings.current
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             Button(
                 onClick = onConfirm,
-                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth().highlightOnFocused(shape = ButtonDefaults.shape),
+                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
+                    .highlightOnFocused(shape = ButtonDefaults.shape),
             ) {
                 Text(
-                    text = Localization.Key.Confirm.rememberLocalizedString(),
+                    text = localizedStrings.Confirm,
                     style = MaterialTheme.typography.titleMedium,
                 )
             }
@@ -492,10 +493,11 @@ private fun <T> SwitchDialogBox(
         dismissButton = {
             OutlinedButton(
                 onClick = onDismissRequest,
-                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth().highlightOnFocused(shape = ButtonDefaults.shape),
+                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
+                    .highlightOnFocused(shape = ButtonDefaults.shape),
             ) {
                 Text(
-                    text = Localization.Key.Cancel.rememberLocalizedString(),
+                    text = localizedStrings.Cancel,
                     style = MaterialTheme.typography.titleSmall,
                 )
             }

@@ -9,11 +9,13 @@ import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onLoading
 import com.sakethh.linkora.domain.onSuccess
+import com.sakethh.linkora.domain.repository.LocalizationRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.remote.GitHubReleasesRepo
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.utils.getRemoteOnlyFailureMsg
+import com.sakethh.linkora.utils.isRemoteSuccessful
 import com.sakethh.linkora.utils.pushSnackbarOnFailure
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -21,7 +23,9 @@ import kotlinx.coroutines.launch
 class AboutSettingsScreenVM(
     private val localLinksRepo: LocalLinksRepo,
     private val gitHubReleasesRepo: GitHubReleasesRepo,
+    private val localizationRepo: LocalizationRepo.Local
 ) : ViewModel() {
+    val localizedStrings get() = localizationRepo.localizedStrings.value
     fun addANewLinkToHistory(
         link: Link,
         tagIds: List<Long>?,
@@ -49,8 +53,8 @@ class AboutSettingsScreenVM(
                 )
                 .collectLatest {
                     it.onSuccess {
-                        if (it.isRemoteExecutionSuccessful.not()) {
-                            pushUIEvent(UIEvent.Type.ShowSnackbar(it.getRemoteOnlyFailureMsg()))
+                        if (!it.isRemoteSuccessful()) {
+                            pushUIEvent(UIEvent.Type.ShowSnackbar(it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed)))
                         }
                     }
                     it.pushSnackbarOnFailure()
@@ -72,7 +76,7 @@ class AboutSettingsScreenVM(
                     }
                     .onFailure { failureMsg ->
                         onCompletion(null)
-                        this.pushUIEvent(UIEvent.Type.ShowSnackbar(failureMsg))
+                        this.pushUIEvent(UIEvent.Type.ShowSnackbar(failureMsg.message.toString()))
                     }
             }
         }

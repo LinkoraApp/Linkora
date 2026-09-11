@@ -23,6 +23,7 @@ object APPVMAssistedFactory {
                 snapshotRepo = DependencyContainer.snapshotRepo,
                 nativeUtils = LinkoraSDK.getInstance().nativeUtils,
                 webCapture = LinkoraSDK.getInstance().webCapture,
+                localizationRepo = DependencyContainer.localizationRepo,
             )
         }
     }

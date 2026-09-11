@@ -6,7 +6,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkSaveConfig
 import com.sakethh.linkora.domain.LinkType
@@ -15,6 +14,7 @@ import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.model.panel.Panel
 import com.sakethh.linkora.domain.model.panel.PanelFolder
 import com.sakethh.linkora.domain.model.tag.Tag
+import com.sakethh.linkora.domain.repository.LocalizationRepo
 import com.sakethh.linkora.domain.repository.local.LocalDatabaseUtilsRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.LocalPanelsRepo
@@ -25,7 +25,6 @@ import com.sakethh.linkora.ui.Paginator
 import com.sakethh.linkora.ui.domain.PaginationState
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.asStateInWhileSubscribed
-import com.sakethh.linkora.utils.getLocalizedString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,12 +51,14 @@ class HomeScreenVM(
     private val localDatabaseUtilsRepo: LocalDatabaseUtilsRepo,
     private val localPanelsRepo: LocalPanelsRepo,
     private val preferencesRepository: PreferencesRepository,
+    private val localizationRepo: LocalizationRepo.Local,
     triggerCollectionOfPanels: Boolean = true,
     private val triggerCollectionOfPanelFolders: Boolean = true,
 ) : ViewModel() {
     val currentPhaseOfTheDay = mutableStateOf("")
 
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
+    val localizedStrings get() = localizationRepo.localizedStrings.value
 
     // TODO: migrate to the pagination
     private val _existingPanels = MutableStateFlow(emptyList<Panel>())
@@ -98,20 +99,20 @@ class HomeScreenVM(
         listOf(
             PanelFolder(
                 folderId = Constants.SAVED_LINKS_ID,
-                folderName = Localization.Key.SavedLinks.getLocalizedString(),
+                folderName = localizedStrings.SavedLinks,
                 connectedPanelId = Constants.DEFAULT_PANELS_ID,
                 panelPosition = 0,
             ),
             PanelFolder(
                 folderId = Constants.IMPORTANT_LINKS_ID,
-                folderName = Localization.Key.ImportantLinks.getLocalizedString(),
+                folderName = localizedStrings.ImportantLinks,
                 connectedPanelId = Constants.DEFAULT_PANELS_ID,
                 panelPosition = 0,
             ),
         )
 
     private fun defaultPanel(): Panel = Panel(
-        panelName = Localization.Key.Default.getLocalizedString(),
+        panelName = localizedStrings.Default,
         localId = Constants.DEFAULT_PANELS_ID,
     )
 
@@ -275,9 +276,12 @@ class HomeScreenVM(
 
                                         val nextString =
                                             lastItem?.let { item ->
-                                                val typeOrder = if (item.itemType == "FOLDER") 0 else 1
-                                                val sortStr = item.folderName ?: item.linkTitle ?: ""
-                                                val sortId = item.folderLocalId ?: item.linkLocalId ?: 0L
+                                                val typeOrder =
+                                                    if (item.itemType == "FOLDER") 0 else 1
+                                                val sortStr =
+                                                    item.folderName ?: item.linkTitle ?: ""
+                                                val sortId =
+                                                    item.folderLocalId ?: item.linkLocalId ?: 0L
                                                 "$typeOrder|$sortStr|$sortId"
                                             } ?: ""
 
@@ -291,8 +295,7 @@ class HomeScreenVM(
                                                 updatedOuterMap[panelFolder.folderId]
                                                     ?: PaginationState(
                                                         isRetrieving = false,
-                                                        errorOccurred = false,
-                                                        errorMessage = null,
+                                                        exception = null,
                                                         pagesCompleted = false,
                                                         data = emptyMap(),
                                                     )
@@ -304,8 +307,8 @@ class HomeScreenVM(
                                                 existingState.copy(
                                                     isRetrieving = false,
                                                     pagesCompleted =
-                                                    retrievedData.isEmpty() ||
-                                                        retrievedData.size < Constants.PAGE_SIZE,
+                                                        retrievedData.isEmpty() ||
+                                                                retrievedData.size < Constants.PAGE_SIZE,
                                                     data = updatedInnerData,
                                                 )
                                             updatedOuterMap
@@ -321,15 +324,13 @@ class HomeScreenVM(
                                                     ?: PaginationState(
                                                         data = emptyMap(),
                                                         isRetrieving = false,
-                                                        errorOccurred = false,
-                                                        errorMessage = null,
+                                                        exception = null,
                                                         pagesCompleted = false,
                                                     )
                                             map[panelFolder.folderId] =
                                                 folderState.copy(
                                                     isRetrieving = false,
-                                                    errorOccurred = true,
-                                                    errorMessage = error,
+                                                    exception = error,
                                                 )
                                             map
                                         }
@@ -342,11 +343,11 @@ class HomeScreenVM(
                                                     ?: PaginationState(
                                                         data = emptyMap(),
                                                         isRetrieving = false,
-                                                        errorOccurred = false,
-                                                        errorMessage = null,
+                                                        exception = null,
                                                         pagesCompleted = false,
                                                     )
-                                            map[panelFolder.folderId] = folderState.copy(isRetrieving = true)
+                                            map[panelFolder.folderId] =
+                                                folderState.copy(isRetrieving = true)
                                             map
                                         }
                                     },
@@ -358,11 +359,11 @@ class HomeScreenVM(
                                                     ?: PaginationState(
                                                         data = emptyMap(),
                                                         isRetrieving = false,
-                                                        errorOccurred = false,
-                                                        errorMessage = null,
+                                                        exception = null,
                                                         pagesCompleted = false,
                                                     )
-                                            map[panelFolder.folderId] = folderState.copy(pagesCompleted = true)
+                                            map[panelFolder.folderId] =
+                                                folderState.copy(pagesCompleted = true)
                                             map
                                         }
                                     },
@@ -385,22 +386,22 @@ class HomeScreenVM(
             localLinksRepo
                 .addANewLink(
                     link =
-                    link.copy(
-                        linkType = LinkType.HISTORY_LINK,
-                        localId = 0,
-                    ),
+                        link.copy(
+                            linkType = LinkType.HISTORY_LINK,
+                            localId = 0,
+                        ),
                     selectedTagIds =
-                    selectedTags?.map {
-                        it.localId
-                    },
+                        selectedTags?.map {
+                            it.localId
+                        },
                     linkSaveConfig =
-                    LinkSaveConfig(
-                        forceAutoDetectTitle = false,
-                        forceSaveWithoutRetrievingData = true,
-                        useProxy = preferences.useProxy,
-                        skipSavingIfExists = preferences.skipSavingExistingLink,
-                        forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
-                    ),
+                        LinkSaveConfig(
+                            forceAutoDetectTitle = false,
+                            forceSaveWithoutRetrievingData = true,
+                            useProxy = preferences.useProxy,
+                            skipSavingIfExists = preferences.skipSavingExistingLink,
+                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
+                        ),
                 )
                 .collect()
         }
@@ -412,19 +413,19 @@ class HomeScreenVM(
         currentPhaseOfTheDay.value =
             when (currentHour) {
                 in 0..11 -> {
-                    Localization.Key.GoodMorning.getLocalizedString()
+                    localizedStrings.GoodMorning
                 }
 
                 in 12..15 -> {
-                    Localization.Key.GoodAfternoon.getLocalizedString()
+                    localizedStrings.GoodAfternoon
                 }
 
                 in 16..23 -> {
-                    Localization.Key.GoodEvening.getLocalizedString()
+                    localizedStrings.GoodEvening
                 }
 
                 else -> {
-                    Localization.Key.HeyHi.getLocalizedString()
+                    localizedStrings.HeyHi
                 }
             }
     }

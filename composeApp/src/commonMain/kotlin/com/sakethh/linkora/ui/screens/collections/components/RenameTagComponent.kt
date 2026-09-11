@@ -27,10 +27,9 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.Platform
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.utils.pressScaleEffect
-import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,10 +41,11 @@ fun RenameTagComponent(
     onHide: () -> Unit,
     onSave: (newName: String) -> Unit,
 ) {
+    val localizedStrings = LocalizedStrings.current
     var newTagName by
-        rememberSaveable(existingName) {
-            mutableStateOf(existingName)
-        }
+    rememberSaveable(existingName) {
+        mutableStateOf(existingName)
+    }
     val tagFieldFocusRequester = remember {
         FocusRequester()
     }
@@ -71,7 +71,7 @@ fun RenameTagComponent(
         ModalBottomSheet(sheetState = sheetState, onDismissRequest = hideComponent) {
             Column(modifier = Modifier.fillMaxWidth().animateContentSize()) {
                 Text(
-                    text = Localization.Key.RenameTagName.rememberLocalizedString(),
+                    text = localizedStrings.RenameTagName,
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 24.sp,
                     modifier = Modifier.padding(start = 15.dp),
@@ -84,10 +84,11 @@ fun RenameTagComponent(
                         newTagName = it
                     },
                     modifier =
-                    Modifier.padding(15.dp).fillMaxWidth().focusRequester(tagFieldFocusRequester),
+                        Modifier.padding(15.dp).fillMaxWidth()
+                            .focusRequester(tagFieldFocusRequester),
                     label = {
                         Text(
-                            text = Localization.Key.NewTagName.rememberLocalizedString(),
+                            text = localizedStrings.NewTagName,
                             style = MaterialTheme.typography.titleSmall,
                         )
                     },
@@ -95,27 +96,27 @@ fun RenameTagComponent(
                 if (showLinearProgressBar) {
                     LinearProgressIndicator(
                         modifier =
-                        Modifier.fillMaxWidth()
-                            .padding(
-                                start = 15.dp,
-                                end = 15.dp,
-                                bottom = if (!Platform.Android.onMobile()) 15.dp else 0.dp,
-                            ),
+                            Modifier.fillMaxWidth()
+                                .padding(
+                                    start = 15.dp,
+                                    end = 15.dp,
+                                    bottom = if (!Platform.Android.onMobile()) 15.dp else 0.dp,
+                                ),
                     )
                     return@Column
                 }
                 Button(
                     modifier =
-                    Modifier.pressScaleEffect()
-                        .pointerHoverIcon(icon = PointerIcon.Hand)
-                        .fillMaxWidth()
-                        .padding(start = 15.dp, end = 15.dp),
+                        Modifier.pressScaleEffect()
+                            .pointerHoverIcon(icon = PointerIcon.Hand)
+                            .fillMaxWidth()
+                            .padding(start = 15.dp, end = 15.dp),
                     onClick = {
                         onSave(newTagName)
                     },
                 ) {
                     Text(
-                        text = Localization.Key.Update.rememberLocalizedString(),
+                        text = localizedStrings.Update,
                         style = MaterialTheme.typography.titleMedium,
                     )
                 }

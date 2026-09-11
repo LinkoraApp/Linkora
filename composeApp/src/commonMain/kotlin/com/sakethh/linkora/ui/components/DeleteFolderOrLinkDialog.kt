@@ -1,5 +1,6 @@
 package com.sakethh.linkora.ui.components
 
+import LocalizedStrings
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
@@ -25,11 +26,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.canPushToServer
-import com.sakethh.linkora.utils.rememberLocalizedString
 
 enum class DeleteDialogBoxType {
     LINK,
@@ -50,6 +50,7 @@ fun DeleteFolderOrLinkDialog(
     preferences: AppPreferences,
     deleteFolderOrLinkDialogParam: DeleteFolderOrLinkDialogParam,
 ) {
+    val localizedStrings = LocalizedStrings.current
     val isDeletionInProgress: MutableState<Boolean> = rememberSaveable {
         mutableStateOf(false)
     }
@@ -62,9 +63,9 @@ fun DeleteFolderOrLinkDialog(
             if (isDeletionInProgress.value.not()) {
                 Button(
                     modifier =
-                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .fillMaxWidth()
-                        .pressScaleEffect(),
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .fillMaxWidth()
+                            .pressScaleEffect(),
                     onClick = {
                         isDeletionInProgress.value = true
                         deleteFolderOrLinkDialogParam.onDeleteClick(
@@ -77,7 +78,7 @@ fun DeleteFolderOrLinkDialog(
                     },
                 ) {
                     Text(
-                        text = Localization.rememberLocalizedString(Localization.Key.Delete),
+                        text = localizedStrings.Delete,
                         style = MaterialTheme.typography.titleSmall,
                         fontSize = 16.sp,
                     )
@@ -88,13 +89,13 @@ fun DeleteFolderOrLinkDialog(
             if (isDeletionInProgress.value.not()) {
                 OutlinedButton(
                     modifier =
-                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .fillMaxWidth()
-                        .pressScaleEffect(),
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .fillMaxWidth()
+                            .pressScaleEffect(),
                     onClick = deleteFolderOrLinkDialogParam.onDismiss,
                 ) {
                     Text(
-                        text = Localization.rememberLocalizedString(Localization.Key.Cancel),
+                        text = localizedStrings.Cancel,
                         style = MaterialTheme.typography.titleSmall,
                         fontSize = 16.sp,
                     )
@@ -104,13 +105,14 @@ fun DeleteFolderOrLinkDialog(
         title = {
             Text(
                 text =
-                if (isDeletionInProgress.value) {
-                    Localization.Key.DeletionInProgress.rememberLocalizedString()
-                } else {
-                    deleteFolderOrLinkDialogParam.deleteDialogBoxType.getTitle(
-                        areFoldersSelectable = deleteFolderOrLinkDialogParam.areFoldersSelectable,
-                    )
-                },
+                    if (isDeletionInProgress.value) {
+                        localizedStrings.DeletionInProgress
+                    } else {
+                        deleteFolderOrLinkDialogParam.deleteDialogBoxType.getTitle(
+                            localizedStrings = localizedStrings,
+                            areFoldersSelectable = deleteFolderOrLinkDialogParam.areFoldersSelectable,
+                        )
+                    },
                 style = MaterialTheme.typography.titleMedium,
                 fontSize = 22.sp,
                 lineHeight = 27.sp,
@@ -126,11 +128,13 @@ fun DeleteFolderOrLinkDialog(
             ) {
                 Row(
                     modifier =
-                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth().clickable {
-                        if (!isDeletionInProgress.value) {
-                            deleteEverythingFromRemote.value = !deleteEverythingFromRemote.value
-                        }
-                    },
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
+                            .clickable {
+                                if (!isDeletionInProgress.value) {
+                                    deleteEverythingFromRemote.value =
+                                        !deleteEverythingFromRemote.value
+                                }
+                            },
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Checkbox(
@@ -143,8 +147,7 @@ fun DeleteFolderOrLinkDialog(
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
                         text =
-                        Localization.Key.DeleteEverythingFromRemoteDatabaseLabel
-                            .rememberLocalizedString(),
+                            localizedStrings.DeleteEverythingFromRemoteDatabaseLabel,
                         style = MaterialTheme.typography.titleLarge,
                     )
                 }
@@ -154,7 +157,7 @@ fun DeleteFolderOrLinkDialog(
                 deleteFolderOrLinkDialogParam.deleteDialogBoxType == DeleteDialogBoxType.FOLDER
             ) {
                 Text(
-                    text = Localization.Key.FolderDeletionLabel.rememberLocalizedString(),
+                    text = localizedStrings.FolderDeletionLabel,
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 14.sp,
                     lineHeight = 18.sp,
@@ -173,16 +176,16 @@ fun DeleteFolderOrLinkDialog(
     )
 }
 
-private fun DeleteDialogBoxType.getTitle(areFoldersSelectable: Boolean): String = if (this == DeleteDialogBoxType.LINK && areFoldersSelectable) {
-    Localization.getLocalizedString(Localization.Key.AreYouSureDeleteSelectedLinks)
-} else if (this == DeleteDialogBoxType.LINK) {
-    Localization.getLocalizedString(Localization.Key.AreYouSureDeleteLink)
-} else if (this == DeleteDialogBoxType.FOLDER && areFoldersSelectable) {
-    Localization.getLocalizedString(Localization.Key.AreYouSureDeleteSelectedFolders)
-} else if (this == DeleteDialogBoxType.FOLDER) {
-    Localization.getLocalizedString(Localization.Key.AreYouSureDeleteFolder)
-} else if (this == DeleteDialogBoxType.SELECTED_DATA) {
-    Localization.getLocalizedString(Localization.Key.AreYouSureDeleteSelectedItems)
-} else {
-    Localization.getLocalizedString(Localization.Key.AreYouSureDeleteEverything)
-}
+private fun DeleteDialogBoxType.getTitle(areFoldersSelectable: Boolean, localizedStrings: LocalizedStrings): String = if (this == DeleteDialogBoxType.LINK && areFoldersSelectable) {
+        localizedStrings.AreYouSureDeleteSelectedLinks
+    } else if (this == DeleteDialogBoxType.LINK) {
+        localizedStrings.AreYouSureDeleteLink
+    } else if (this == DeleteDialogBoxType.FOLDER && areFoldersSelectable) {
+        localizedStrings.AreYouSureDeleteSelectedFolders
+    } else if (this == DeleteDialogBoxType.FOLDER) {
+        localizedStrings.AreYouSureDeleteFolder
+    } else if (this == DeleteDialogBoxType.SELECTED_DATA) {
+        localizedStrings.AreYouSureDeleteSelectedItems
+    } else {
+        localizedStrings.AreYouSureDeleteEverything
+    }

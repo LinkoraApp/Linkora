@@ -45,7 +45,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.FolderType
 import com.sakethh.linkora.domain.LinkType
@@ -53,6 +52,7 @@ import com.sakethh.linkora.domain.asLocalizedString
 import com.sakethh.linkora.domain.asMenuBtmSheetType
 import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.CollectionLayoutManager
 import com.sakethh.linkora.ui.components.SortingIconButton
 import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
@@ -66,7 +66,6 @@ import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.openUriOrNotify
-import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
@@ -76,6 +75,7 @@ fun SearchScreen(
     forceActiveSearch: Boolean,
     cancelForceSearchActive: () -> Unit,
 ) {
+    val localizedStrings = LocalizedStrings.current
     val searchScreenVM: SearchScreenVM = linkoraViewModel()
     val preferences by searchScreenVM.preferencesAsFlow.collectAsStateWithLifecycle()
     val searchBarFocusRequester = retain {
@@ -104,11 +104,12 @@ fun SearchScreen(
         cancelForceSearchActive()
     }
     val historyLinkTagsPairsState by
-        searchScreenVM.historyLinkTagsPairsState.collectAsStateWithLifecycle()
+    searchScreenVM.historyLinkTagsPairsState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
     val localUriHandler = LocalUriHandler.current
     val navController = LocalNavController.current
-    val searchBarPadding = animateDpAsState(if (!searchScreenVM.isSearchActive.value) 15.dp else 0.dp)
+    val searchBarPadding =
+        animateDpAsState(if (!searchScreenVM.isSearchActive.value) 15.dp else 0.dp)
     val searchResultsState by searchScreenVM.searchResultsState.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -123,25 +124,26 @@ fun SearchScreen(
                 },
                 placeholder = {
                     Text(
-                        text = Localization.Key.SearchTitlesToFindLinksAndFolders.rememberLocalizedString(),
+                        text = localizedStrings.SearchTitlesToFindLinksAndFolders,
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.basicMarquee(),
                         maxLines = 1,
                     )
                 },
                 modifier =
-                Modifier.focusRequester(searchBarFocusRequester)
-                    .animateContentSize()
-                    .padding(searchBarPadding.value)
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
+                    Modifier.focusRequester(searchBarFocusRequester)
+                        .animateContentSize()
+                        .padding(searchBarPadding.value)
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
                 trailingIcon = {
                     Row {
                         if (searchScreenVM.isSearchActive.value) {
                             SortingIconButton()
                             IconButton(
                                 modifier =
-                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(),
+                                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                        .pressScaleEffect(),
                                 onClick = {
                                     if (searchScreenVM.searchQuery.value == "") {
                                         searchScreenVM.isSearchActive.value = false
@@ -163,7 +165,7 @@ fun SearchScreen(
                 },
             ) {
                 if (searchScreenVM.searchQuery.value.isBlank()) {
-                    DataEmptyScreen(text = Localization.Key.SearchInLinkora.rememberLocalizedString())
+                    DataEmptyScreen(text = localizedStrings.SearchInLinkora)
                 } else {
                     Column {
                         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())) {
@@ -190,7 +192,7 @@ fun SearchScreen(
                                 }
                             }
                             FilterChip(
-                                text = Localization.Key.Tags.rememberLocalizedString(),
+                                text = localizedStrings.Tags,
                                 isSelected = searchScreenVM.appliedTagFiltering,
                                 onClick = {
                                     searchScreenVM.toggleTagFilter()
@@ -200,7 +202,7 @@ fun SearchScreen(
                         }
                         CollectionLayoutManager(
                             screenType = ScreenType.TAGS_FOLDERS_LINKS,
-                            emptyDataText = Localization.Key.NoSearchResults.rememberLocalizedString(),
+                            emptyDataText = localizedStrings.NoSearchResults,
                             flatChildFolderDataState = null,
                             linksTagsPairsState = null,
                             flatSearchResultState = searchResultsState,
@@ -209,11 +211,11 @@ fun SearchScreen(
                                 coroutineScope.pushUIEvent(
                                     UIEvent.Type.ShowMenuBtmSheet(
                                         menuBtmSheetFor =
-                                        if (it.isArchived) {
-                                            MenuBtmSheetType.Folder.ArchiveFolder
-                                        } else {
-                                            MenuBtmSheetType.Folder.RegularFolder
-                                        },
+                                            if (it.isArchived) {
+                                                MenuBtmSheetType.Folder.ArchiveFolder
+                                            } else {
+                                                MenuBtmSheetType.Folder.RegularFolder
+                                            },
                                         selectedLinkForMenuBtmSheet = null,
                                         selectedFolderForMenuBtmSheet = it,
                                     ),
@@ -247,10 +249,10 @@ fun SearchScreen(
                                 }
                                 searchScreenVM.addANewLinkToHistory(
                                     link =
-                                    it.link.copy(
-                                        linkType = LinkType.HISTORY_LINK,
-                                        localId = 0,
-                                    ),
+                                        it.link.copy(
+                                            linkType = LinkType.HISTORY_LINK,
+                                            localId = 0,
+                                        ),
                                     tagIds = it.tags.map { it.localId },
                                 )
                             },
@@ -285,12 +287,16 @@ fun SearchScreen(
                                 )
                             },
                             tagMoreIconClick = {
-                                coroutineScope.pushUIEvent(UIEvent.Type.ShowTagMenuBtmSheet(selectedTag = it))
+                                coroutineScope.pushUIEvent(
+                                    UIEvent.Type.ShowTagMenuBtmSheet(
+                                        selectedTag = it
+                                    )
+                                )
                             },
                             onRetrieveNextPage = searchScreenVM::retrieveNextSearchPage,
                             preferences = preferences,
                             onFirstVisibleItemIndexChange =
-                            searchScreenVM::updateFirstVisibleIndexOfSearchPaginator,
+                                searchScreenVM::updateFirstVisibleIndexOfSearchPaginator,
                         )
                     }
                 }
@@ -302,7 +308,7 @@ fun SearchScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
-                text = Localization.rememberLocalizedString(Localization.Key.History),
+                text = localizedStrings.History,
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.titleMedium,
                 fontSize = 20.sp,
@@ -315,7 +321,7 @@ fun SearchScreen(
         }
         CollectionLayoutManager(
             screenType = ScreenType.LINKS_ONLY,
-            emptyDataText = Localization.Key.NoHistoryFound.rememberLocalizedString(),
+            emptyDataText = localizedStrings.NoHistoryFound,
             flatChildFolderDataState = null,
             linksTagsPairsState = historyLinkTagsPairsState,
             paddingValues = PaddingValues(0.dp),

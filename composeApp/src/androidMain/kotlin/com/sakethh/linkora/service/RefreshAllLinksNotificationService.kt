@@ -6,12 +6,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.R
 import com.sakethh.linkora.di.DependencyContainer
-import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
-import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.replaceActual
 import com.sakethh.linkora.worker.RefreshAllLinksWorker
 
 class RefreshAllLinksNotificationService(
@@ -32,22 +30,18 @@ class RefreshAllLinksNotificationService(
     fun clearNotifications() {
         notificationManager.cancelAll()
     }
-
+    private val localizedStrings get() = DependencyContainer.localizationRepo.localizedStrings.value
     fun showNotification() {
         val notification =
             NotificationCompat.Builder(context, "1")
                 .setSmallIcon(R.drawable.ic_stat_name)
-                .setContentTitle(Localization.Key.RefreshingLinks.getLocalizedString())
+                .setContentTitle(localizedStrings.RefreshingLinks)
                 .setContentText(
-                    Localization.Key.NoOfLinksRefreshed.getLocalizedString()
-                        .replace(
-                            LinkoraPlaceHolder.First.value,
+                    localizedStrings.NoOfLinksRefreshed
+                        .replaceActual(
                             DataSettingsScreenVM.refreshLinksState.value.currentIteration.toString(),
+                            DataSettingsScreenVM.refreshLinksState.value.total.toString()
                         )
-                        .replace(
-                            LinkoraPlaceHolder.Second.value,
-                            DataSettingsScreenVM.refreshLinksState.value.total.toString(),
-                        ),
                 )
                 .setProgress(
                     DataSettingsScreenVM.refreshLinksState.value.total,
@@ -58,7 +52,7 @@ class RefreshAllLinksNotificationService(
                 .setSilent(true)
                 .addAction(
                     R.drawable.ic_stat_name,
-                    Localization.Key.Cancel.getLocalizedString(),
+                    localizedStrings.Cancel,
                     cancelRefreshingPendingIntent,
                 )
                 .build()

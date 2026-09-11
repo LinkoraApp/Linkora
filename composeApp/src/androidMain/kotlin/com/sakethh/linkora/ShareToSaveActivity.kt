@@ -8,26 +8,24 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.retain.retain
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.compose.rememberNavController
 import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.di.linkoraViewModel
+import com.sakethh.linkora.domain.repository.LocalizationRepo
 import com.sakethh.linkora.domain.repository.local.LocalFoldersRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.LocalPanelsRepo
@@ -39,22 +37,41 @@ import com.sakethh.linkora.ui.FabStateController
 import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.AddANewLinkDialogBox
 import com.sakethh.linkora.ui.domain.model.AddNewLinkDialogParams
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM
-import com.sakethh.linkora.ui.theme.DarkColors
-import com.sakethh.linkora.ui.theme.LightColors
 import com.sakethh.linkora.ui.theme.LinkoraTheme
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.currentAndroidPlatform
-import com.sakethh.linkora.utils.getLocalizedString
+import com.sakethh.linkora.utils.getAppColorScheme
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class ShareToSaveActivity : ComponentActivity() {
+
+    val intentActivityVM by viewModels<IntentActivityVM> {
+        viewModelFactory {
+            initializer {
+                IntentActivityVM(
+                    localLinksRepo = DependencyContainer.localLinksRepo,
+                    localFoldersRepo = DependencyContainer.localFoldersRepo,
+                    localPanelsRepo = DependencyContainer.localPanelsRepo,
+                    localTagsRepo = DependencyContainer.localTagsRepo,
+                    snapshotRepo = DependencyContainer.snapshotRepo,
+                    preferencesRepository = DependencyContainer.preferencesRepo,
+                    localizationRepo = DependencyContainer.localizationRepo,
+                    showToast = { message ->
+                        Toast.makeText(this@ShareToSaveActivity, message, Toast.LENGTH_SHORT).show()
+                    },
+                )
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val autoSave = runBlocking {
@@ -67,7 +84,7 @@ class ShareToSaveActivity : ComponentActivity() {
             ) {
                 Toast.makeText(
                     applicationContext,
-                    Localization.Key.AutoSaveNotificationPermission.getLocalizedString(),
+                    intentActivityVM.localizedStrings.value.AutoSaveNotificationPermission,
                     Toast.LENGTH_SHORT,
                 )
                     .show()
@@ -97,27 +114,9 @@ class ShareToSaveActivity : ComponentActivity() {
         }
 
         setContent {
+            val localizedStrings by intentActivityVM.localizedStrings.collectAsStateWithLifecycle()
             val navController = rememberNavController()
             val context = LocalContext.current
-            val intentActivityVM =
-                viewModel<IntentActivityVM>(
-                    factory =
-                        viewModelFactory {
-                            initializer {
-                                IntentActivityVM(
-                                    localLinksRepo = DependencyContainer.localLinksRepo,
-                                    localFoldersRepo = DependencyContainer.localFoldersRepo,
-                                    localPanelsRepo = DependencyContainer.localPanelsRepo,
-                                    localTagsRepo = DependencyContainer.localTagsRepo,
-                                    snapshotRepo = DependencyContainer.snapshotRepo,
-                                    preferencesRepository = DependencyContainer.preferencesRepo,
-                                    showToast = { message ->
-                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                                    },
-                                )
-                            }
-                        },
-                )
             val preferences by intentActivityVM.preferencesAsFlow.collectAsStateWithLifecycle()
             CompositionLocalProvider(
                 LocalNavController provides navController,
@@ -128,88 +127,16 @@ class ShareToSaveActivity : ComponentActivity() {
                 LocalPlatform provides remember(
                     LocalWindowInfo.current.containerSize,
                     LocalConfiguration.current.orientation
-                ) { currentAndroidPlatform() }
+                ) { currentAndroidPlatform() },
+                LocalizedStrings provides localizedStrings
             ) {
-                val darkColors =
-                    DarkColors.copy(
-                        background =
-                            if (preferences.useAmoledTheme) Color(0xFF000000) else DarkColors.background,
-                        surface = if (preferences.useAmoledTheme) Color(0xFF000000) else DarkColors.surface,
-                    )
-                val colors =
-                    when {
-                        preferences.useDynamicTheming && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                            if (preferences.useSystemTheme) {
-                                if (isSystemInDarkTheme()) {
-                                    dynamicDarkColorScheme(context)
-                                        .copy(
-                                            background =
-                                                if (preferences.useAmoledTheme) {
-                                                    Color(
-                                                        0xFF000000,
-                                                    )
-                                                } else {
-                                                    dynamicDarkColorScheme(context).background
-                                                },
-                                            surface =
-                                                if (preferences.useAmoledTheme) {
-                                                    Color(
-                                                        0xFF000000,
-                                                    )
-                                                } else {
-                                                    dynamicDarkColorScheme(
-                                                        context,
-                                                    )
-                                                        .surface
-                                                },
-                                        )
-                                } else {
-                                    dynamicLightColorScheme(
-                                        context,
-                                    )
-                                }
-                            } else {
-                                if (preferences.useDarkTheme) {
-                                    dynamicDarkColorScheme(
-                                        context,
-                                    )
-                                        .copy(
-                                            background =
-                                                if (preferences.useAmoledTheme) {
-                                                    Color(
-                                                        0xFF000000,
-                                                    )
-                                                } else {
-                                                    dynamicDarkColorScheme(context).background
-                                                },
-                                            surface =
-                                                if (preferences.useAmoledTheme) {
-                                                    Color(
-                                                        0xFF000000,
-                                                    )
-                                                } else {
-                                                    dynamicDarkColorScheme(
-                                                        context,
-                                                    )
-                                                        .surface
-                                                },
-                                        )
-                                } else {
-                                    dynamicLightColorScheme(context)
-                                }
-                            }
-                        }
-
-                        else ->
-                            if (preferences.useSystemTheme) {
-                                if (isSystemInDarkTheme()) darkColors else LightColors
-                            } else {
-                                if (preferences.useDarkTheme) darkColors else LightColors
-                            }
-                    }
+                val isSystemInDarkTheme = isSystemInDarkTheme()
+                val colorScheme = retain(isSystemInDarkTheme, preferences) {
+                    getAppColorScheme(preferences, context, isSystemInDarkTheme)
+                }
                 val collectionsScreenVM: CollectionsScreenVM = linkoraViewModel()
                 LinkoraTheme(
-                    colorScheme = colors,
+                    colorScheme = colorScheme,
                     preferredFont = preferences.selectedFont,
                 ) {
                     AddANewLinkDialogBox(
@@ -260,10 +187,11 @@ class IntentActivityVM(
     private val localTagsRepo: LocalTagsRepo,
     private val snapshotRepo: SnapshotRepo,
     val preferencesRepository: PreferencesRepository,
+    val localizationRepo: LocalizationRepo.Local,
     showToast: (message: String) -> Unit,
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
-
+    val localizedStrings = localizationRepo.localizedStrings
     fun createADataSnapshot(onCompletion: () -> Unit) {
         viewModelScope.launch {
             val allLinks = async { localLinksRepo.getAllLinks() }

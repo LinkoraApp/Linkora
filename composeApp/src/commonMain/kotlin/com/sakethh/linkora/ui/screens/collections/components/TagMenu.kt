@@ -17,14 +17,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.model.tag.Tag
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.menu.IndividualMenuComponent
 import com.sakethh.linkora.ui.components.menu.MenuNonImageHeader
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
-import com.sakethh.linkora.utils.getLocalizedString
-import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -37,6 +35,7 @@ fun TagMenu(
     onRename: () -> Unit,
     onDelete: () -> Unit,
 ) {
+    val localizedStrings = LocalizedStrings.current
     val coroutineScope = rememberCoroutineScope()
     val localClipBoardManager = LocalClipboardManager.current
     if (showMenu) {
@@ -61,7 +60,7 @@ fun TagMenu(
                             sheetState.hide()
                             pushUIEvent(
                                 UIEvent.Type.ShowSnackbar(
-                                    Localization.Key.CopiedTitleToTheClipboard.getLocalizedString(),
+                                    localizedStrings.CopiedTitleToTheClipboard,
                                 ),
                             )
                         }
@@ -79,12 +78,12 @@ fun TagMenu(
             Spacer(Modifier.height(5.dp))
             IndividualMenuComponent(
                 onClick = onRename,
-                elementName = Localization.Key.Rename.rememberLocalizedString(),
+                elementName = localizedStrings.Rename,
                 elementImageVector = Icons.Default.DriveFileRenameOutline,
             )
             IndividualMenuComponent(
                 onClick = onDelete,
-                elementName = Localization.Key.Delete.rememberLocalizedString(),
+                elementName = localizedStrings.Delete,
                 elementImageVector = Icons.Default.Delete,
             )
         }

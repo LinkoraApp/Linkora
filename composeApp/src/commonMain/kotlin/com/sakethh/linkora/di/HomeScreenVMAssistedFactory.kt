@@ -14,6 +14,7 @@ object HomeScreenVMAssistedFactory {
                 triggerCollectionOfPanelFolders = false,
                 preferencesRepository = DependencyContainer.preferencesRepo,
                 localDatabaseUtilsRepo = DependencyContainer.localDatabaseUtilsImpl,
+                localizationRepo = DependencyContainer.localizationRepo
             )
         }
     }
@@ -25,6 +26,7 @@ object HomeScreenVMAssistedFactory {
                 localPanelsRepo = DependencyContainer.localPanelsRepo,
                 localLinksRepo = DependencyContainer.localLinksRepo,
                 preferencesRepository = DependencyContainer.preferencesRepo,
+                localizationRepo = DependencyContainer.localizationRepo
             )
         }
     }

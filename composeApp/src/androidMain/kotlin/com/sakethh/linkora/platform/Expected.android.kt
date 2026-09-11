@@ -1,5 +1,6 @@
 package com.sakethh.linkora.platform
 
+import LocalizedStrings
 import android.content.Context
 import android.os.Build
 import android.util.Log
@@ -8,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.HostOS
 import com.sakethh.linkora.domain.PreferenceKey
@@ -17,7 +17,6 @@ import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
-import com.sakethh.linkora.utils.getLocalizedString
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.cio.CIO
@@ -74,7 +73,10 @@ actual fun platformSpecificLogging(string: String) {
 
 actual val PlatformIODispatcher: CoroutineDispatcher = Dispatchers.IO
 
-actual class Network(private val context: Context) {
+actual class Network(
+    private val context: Context,
+    private val localizedStrings: () -> LocalizedStrings
+) {
 
     private fun HttpClientConfig<CIOEngineConfig>.installLogger() {
         install(Logging) {
@@ -108,7 +110,7 @@ actual class Network(private val context: Context) {
     private var syncServerClient: HttpClient? = null
 
     actual fun getSyncServerClient(): HttpClient = syncServerClient
-        ?: error(Localization.Key.SyncServerConfigurationError.getLocalizedString())
+        ?: error(localizedStrings().SyncServerConfigurationError)
 
     actual fun closeSyncServerClient() {
         syncServerClient?.close()
@@ -125,7 +127,8 @@ actual class Network(private val context: Context) {
         if (syncServerCert.exists() && !bypassCertCheck) {
             syncServerCert.inputStream().use {
                 try {
-                    signedCertificate = certificateFactory.generateCertificate(it) as X509Certificate
+                    signedCertificate =
+                        certificateFactory.generateCertificate(it) as X509Certificate
                 } catch (e: Exception) {
                     pushUIEvent(UIEvent.Type.ShowSnackbar(e.message.toString()))
                     null
@@ -134,7 +137,7 @@ actual class Network(private val context: Context) {
         }
 
         if (!syncServerCert.exists() && !bypassCertCheck) {
-            error(Localization.Key.SyncServerConfigurationError.getLocalizedString())
+            error(localizedStrings().SyncServerConfigurationError)
         }
 
         syncServerClient =
@@ -151,7 +154,8 @@ actual class Network(private val context: Context) {
                                 override fun checkClientTrusted(
                                     chain: Array<out X509Certificate?>?,
                                     authType: String?,
-                                ) {}
+                                ) {
+                                }
 
                                 override fun checkServerTrusted(
                                     chain: Array<out X509Certificate?>?,

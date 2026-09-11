@@ -33,6 +33,7 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
                 localLinksRepo = DependencyContainer.localLinksRepo,
                 localTagsRepo = DependencyContainer.localTagsRepo,
                 preferencesRepo = DependencyContainer.preferencesRepo,
+                localizationRepo = DependencyContainer.localizationRepo
             )
 
         SortingBtmSheetVM::class ->
@@ -42,6 +43,7 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
                 permissionManager = LinkoraSDK.getInstance().permissionManager,
                 webCapture = LinkoraSDK.getInstance().webCapture,
                 webCaptureDatabaseManager = LinkoraSDK.getInstance().webCaptureDatabaseManager,
+                localizationRepo = DependencyContainer.localizationRepo
             )
 
         SearchScreenVM::class ->
@@ -50,6 +52,7 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
                 localTagsRepo = DependencyContainer.localTagsRepo,
                 localDatabaseUtilsRepo = DependencyContainer.localDatabaseUtilsImpl,
                 preferencesRepository = DependencyContainer.preferencesRepo,
+                localizationRepo = DependencyContainer.localizationRepo
             )
 
         SettingsScreenViewModel::class ->
@@ -59,6 +62,7 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
                 permissionManager = LinkoraSDK.getInstance().permissionManager,
                 webCapture = LinkoraSDK.getInstance().webCapture,
                 webCaptureDatabaseManager = LinkoraSDK.getInstance().webCaptureDatabaseManager,
+                localizationRepo = DependencyContainer.localizationRepo
             )
 
         LanguageSettingsScreenVM::class ->
@@ -75,6 +79,7 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
             AboutSettingsScreenVM(
                 localLinksRepo = DependencyContainer.localLinksRepo,
                 gitHubReleasesRepo = DependencyContainer.gitHubReleasesRepo,
+                localizationRepo = DependencyContainer.localizationRepo
             )
 
         ServerManagementViewModel::class ->
@@ -85,6 +90,7 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
                 fileManager = LinkoraSDK.getInstance().fileManager,
                 permissionManager = LinkoraSDK.getInstance().permissionManager,
                 network = LinkoraSDK.getInstance().network,
+                localizationRepo = DependencyContainer.localizationRepo
             )
 
         DataSettingsScreenVM::class ->
@@ -102,6 +108,7 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
                 webCaptureRepo = DependencyContainer.webCaptureRepo,
                 webCapture = LinkoraSDK.getInstance().webCapture,
                 webCaptureDatabaseManager = LinkoraSDK.getInstance().webCaptureDatabaseManager,
+                localizationRepo = DependencyContainer.localizationRepo
             )
 
         else ->

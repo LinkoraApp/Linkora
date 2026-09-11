@@ -5,14 +5,11 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import com.fleeksoft.io.ByteArrayInputStream
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.HostOS
-import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.domain.RefreshLinkType
-import com.sakethh.linkora.domain.SnapshotFormat
 import com.sakethh.linkora.domain.SyncType
 import com.sakethh.linkora.domain.dto.server.Correlation
 import com.sakethh.linkora.platform.PlatformPreference
@@ -26,7 +23,6 @@ import com.sakethh.linkora.ui.domain.SortingType
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.utils.Constants
-import com.sakethh.linkora.utils.getLocalizedString
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
 import java.security.cert.CertificateFactory
@@ -160,15 +156,15 @@ suspend fun readAllPreferences(
     areSnapshotsEnabled = prefs[dsBooleanKey(AppPreferences.USE_SNAPSHOTS.key)] ?: false,
     snapshotExportFormatID =
     prefs[dsStringKey(AppPreferences.SNAPSHOTS_EXPORT_TYPE.key)]
-        ?: SnapshotFormat.JSON.id.toString(),
+        ?: Constants.SNAPSHOT_JSON_FORMAT,
     skipCertCheckForSync =
     prefs[dsBooleanKey(AppPreferences.SKIP_CERT_CHECK_FOR_SYNC_SERVER.key)] ?: false,
     currentExportLocation =
     (prefs[dsStringKey(AppPreferences.EXPORT_LOCATION.key)] ?: defaultExportLocation())
-        ?: Localization.Key.ExportRequiresDirectory.getLocalizedString(),
+        ?: LocalizedStrings.Default.ExportRequiresDirectory,
     currentBackupLocation =
     (prefs[dsStringKey(AppPreferences.BACKUP_LOCATION.key)] ?: defaultSnapshotLocation())
-        ?: Localization.Key.BackupsWorkOnlyWithDirectory.getLocalizedString(),
+        ?: LocalizedStrings.Default.BackupsWorkOnlyWithDirectory,
     backupAutoDeleteThreshold =
     prefs[dsIntKey(AppPreferences.BACKUP_AUTO_DELETION_THRESHOLD.key)] ?: 25,
     backupAutoDeletionEnabled =

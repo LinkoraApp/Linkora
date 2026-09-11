@@ -59,7 +59,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import androidx.lifecycle.compose.LifecycleResumeEffect
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.AppPreferences
@@ -70,6 +69,7 @@ import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.folder.FolderComponent
 import com.sakethh.linkora.ui.components.link.ListViewLinkComponent
 import com.sakethh.linkora.ui.domain.CurrentFABContext
@@ -80,9 +80,7 @@ import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.collections.components.ItemDivider
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.utils.pressScaleEffect
-import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.openUriOrNotify
-import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
 import linkora.composeapp.generated.resources.LOLCATpl_logo
 import linkora.composeapp.generated.resources.Res
@@ -94,6 +92,7 @@ data class OnboardingSlide(val screen: @Composable () -> Unit)
 
 @Composable
 fun OnboardingSlidesScreen(onOnboardingComplete: () -> Unit) {
+    val localizedStrings = LocalizedStrings.current
     val localFABContext = LocalFabController.current
     LifecycleResumeEffect(Unit) {
         localFABContext.updateState(CurrentFABContext(FABContext.HIDE))
@@ -112,16 +111,16 @@ fun OnboardingSlidesScreen(onOnboardingComplete: () -> Unit) {
         ) {
             Box(
                 modifier =
-                Modifier.background(MaterialTheme.colorScheme.surface)
-                    .fillMaxSize()
-                    .navigationBarsPadding()
-                    .graphicsLayer {
-                        val pageOffset =
-                            (pagerState.currentPage - it) + pagerState.currentPageOffsetFraction
-                        val scale = lerp(1f, 2f, pageOffset)
-                        scaleX = scale
-                        scaleY = scale
-                    },
+                    Modifier.background(MaterialTheme.colorScheme.surface)
+                        .fillMaxSize()
+                        .navigationBarsPadding()
+                        .graphicsLayer {
+                            val pageOffset =
+                                (pagerState.currentPage - it) + pagerState.currentPageOffsetFraction
+                            val scale = lerp(1f, 2f, pageOffset)
+                            scaleX = scale
+                            scaleY = scale
+                        },
             ) {
                 slides[it].screen()
             }
@@ -133,13 +132,13 @@ fun OnboardingSlidesScreen(onOnboardingComplete: () -> Unit) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier =
-                Modifier.then(
-                    if (platform is Platform.Desktop || platform is Platform.Web) {
-                        Modifier.padding(15.dp)
-                    } else {
-                        Modifier.padding(end = 15.dp)
-                    },
-                ),
+                    Modifier.then(
+                        if (platform is Platform.Desktop || platform is Platform.Web) {
+                            Modifier.padding(15.dp)
+                        } else {
+                            Modifier.padding(end = 15.dp)
+                        },
+                    ),
             ) {
                 AnimatedVisibility(
                     visible = pagerState.currentPage != 0,
@@ -147,7 +146,8 @@ fun OnboardingSlidesScreen(onOnboardingComplete: () -> Unit) {
                     exit = fadeOut(),
                 ) {
                     FilledTonalButton(
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(),
+                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .pressScaleEffect(),
                         onClick = {
                             if (pagerState.isScrollInProgress) return@FilledTonalButton
                             coroutineScope.launch {
@@ -163,14 +163,15 @@ fun OnboardingSlidesScreen(onOnboardingComplete: () -> Unit) {
                         },
                     ) {
                         Text(
-                            text = Localization.Key.PreviousPage.rememberLocalizedString(),
+                            text = localizedStrings.PreviousPage,
                             style = MaterialTheme.typography.titleMedium,
                         )
                     }
                 }
                 Spacer(Modifier.width(15.dp))
                 Button(
-                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(),
+                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        .pressScaleEffect(),
                     onClick = {
                         if (pagerState.currentPage == pagerState.pageCount - 1) {
                             onOnboardingComplete()
@@ -195,9 +196,9 @@ fun OnboardingSlidesScreen(onOnboardingComplete: () -> Unit) {
                     val text =
                         rememberSaveable(pagerState.currentPage) {
                             if (pagerState.currentPage == pagerState.pageCount - 1) {
-                                Localization.Key.Done.getLocalizedString()
+                                localizedStrings.Done
                             } else {
-                                Localization.Key.NextPage.getLocalizedString()
+                                localizedStrings.NextPage
                             }
                         }
                     AnimatedContent(
@@ -216,6 +217,7 @@ fun OnboardingSlidesScreen(onOnboardingComplete: () -> Unit) {
 
 @Composable
 fun Slide1() {
+    val localizedStrings = LocalizedStrings.current
     Column(
         modifier = Modifier.padding(15.dp).fillMaxSize(),
         verticalArrangement = Arrangement.Bottom,
@@ -223,40 +225,40 @@ fun Slide1() {
     ) {
         Image(
             painter =
-            painterResource(
-                listOf(
-                    Res.drawable.mondstern_logo,
-                    Res.drawable.new_logo,
-                    Res.drawable.LOLCATpl_logo,
-                )
-                    .random(),
-            ),
+                painterResource(
+                    listOf(
+                        Res.drawable.mondstern_logo,
+                        Res.drawable.new_logo,
+                        Res.drawable.LOLCATpl_logo,
+                    )
+                        .random(),
+                ),
             contentDescription = null,
             modifier =
-            Modifier.clip(RoundedCornerShape(15.dp))
-                .sizeIn(maxWidth = 250.dp, maxHeight = 250.dp)
-                .wrapContentSize()
-                .border(
-                    shape = RoundedCornerShape(15.dp),
-                    width = 2.dp,
-                    brush =
-                    Brush.horizontalGradient(
-                        listOf(
-                            MaterialTheme.colorScheme.primary,
-                            MaterialTheme.colorScheme.primaryContainer,
-                        ),
+                Modifier.clip(RoundedCornerShape(15.dp))
+                    .sizeIn(maxWidth = 250.dp, maxHeight = 250.dp)
+                    .wrapContentSize()
+                    .border(
+                        shape = RoundedCornerShape(15.dp),
+                        width = 2.dp,
+                        brush =
+                            Brush.horizontalGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.primary,
+                                    MaterialTheme.colorScheme.primaryContainer,
+                                ),
+                            ),
                     ),
-                ),
         )
         Spacer(modifier = Modifier.height(15.dp))
-        SlideTitle(Localization.Key.Linkora.rememberLocalizedString())
+        SlideTitle(localizedStrings.Linkora)
         Text(
-            text = Localization.Key.AppIntroSlide1Label.rememberLocalizedString(),
+            text = localizedStrings.AppIntroSlide1Label,
             style = MaterialTheme.typography.titleSmall,
             fontSize = 18.sp,
         )
         Spacer(modifier = Modifier.height(15.dp))
-        SlideDesc(Localization.Key.AppIntroSlide1SwipeLabel.rememberLocalizedString())
+        SlideDesc(localizedStrings.AppIntroSlide1SwipeLabel)
         Spacer(modifier = Modifier.height(75.dp))
     }
 }
@@ -285,38 +287,39 @@ private fun SlideDesc(string: String, modifier: Modifier = Modifier) {
 
 @Composable
 fun Slide2() {
+    val localizedStrings = LocalizedStrings.current
     val localUriHandler = LocalUriHandler.current
     val coroutineScope = rememberCoroutineScope()
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier =
-            Modifier.verticalScroll(rememberScrollState(1))
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter),
+                Modifier.verticalScroll(rememberScrollState(1))
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter),
         ) {
             FolderComponent(
                 FolderComponentParam(
-                    name = Localization.Key.AppIntroSlide2Folder2Name.rememberLocalizedString(),
-                    note = Localization.Key.AppIntroSlide2Folder2Note.rememberLocalizedString(),
+                    name = localizedStrings.AppIntroSlide2Folder2Name,
+                    note = localizedStrings.AppIntroSlide2Folder2Note,
                     onClick = {},
                     onLongClick = {},
                     onMoreIconClick = {},
                     isCurrentlyInDetailsView =
-                    rememberSaveable {
-                        mutableStateOf(false)
-                    },
+                        rememberSaveable {
+                            mutableStateOf(false)
+                        },
                     showMoreIcon =
-                    rememberSaveable {
-                        mutableStateOf(true)
-                    },
+                        rememberSaveable {
+                            mutableStateOf(true)
+                        },
                     isSelectedForSelection =
-                    rememberSaveable {
-                        mutableStateOf(false)
-                    },
+                        rememberSaveable {
+                            mutableStateOf(false)
+                        },
                     showCheckBox =
-                    rememberSaveable {
-                        mutableStateOf(false)
-                    },
+                        rememberSaveable {
+                            mutableStateOf(false)
+                        },
                     onCheckBoxChanged = {},
                     path = null,
                     showPath = false,
@@ -325,47 +328,47 @@ fun Slide2() {
             )
             ListViewLinkComponent(
                 linkComponentParam =
-                LinkComponentParam(
-                    link =
-                    Link(
-                        title = "Red Dead Redemption 2 - Rockstar Games",
-                        host = "rockstargames.com",
-                        imgURL =
-                        "https://media-rockstargames-com.akamaized.net/rockstargames-newsite/img/global/downloads/buddyiconsconavatars/rdr2_officialart1_256x256.jpg",
-                        url = "https://www.rockstargames.com/reddeadredemption2",
-                        userAgent = "Twitterbot/1.0",
-                        linkType = LinkType.SAVED_LINK,
-                        localId = 0L,
-                        note = "",
-                        idOfLinkedFolder = null,
+                    LinkComponentParam(
+                        link =
+                            Link(
+                                title = "Red Dead Redemption 2 - Rockstar Games",
+                                host = "rockstargames.com",
+                                imgURL =
+                                    "https://media-rockstargames-com.akamaized.net/rockstargames-newsite/img/global/downloads/buddyiconsconavatars/rdr2_officialart1_256x256.jpg",
+                                url = "https://www.rockstargames.com/reddeadredemption2",
+                                userAgent = "Twitterbot/1.0",
+                                linkType = LinkType.SAVED_LINK,
+                                localId = 0L,
+                                note = "",
+                                idOfLinkedFolder = null,
+                            ),
+                        onMoreIconClick = {},
+                        onLinkClick = {
+                            coroutineScope.launch {
+                                localUriHandler.openUriOrNotify(
+                                    "https://www.rockstargames.com/reddeadredemption2",
+                                )
+                            }
+                        },
+                        onForceOpenInExternalBrowserClicked = {},
+                        isSelectionModeEnabled =
+                            rememberSaveable {
+                                mutableStateOf(false)
+                            },
+                        isItemSelected =
+                            rememberSaveable {
+                                mutableStateOf(false)
+                            },
+                        onLongClick = {},
+                        tags =
+                            listOf(
+                                Tag(name = "Tahiti"),
+                                Tag(name = "AndaquarterDONTFORGETTHEQUARTRR"),
+                            ),
+                        onTagClick = {},
+                        showPath = false,
+                        onFolderClick = {},
                     ),
-                    onMoreIconClick = {},
-                    onLinkClick = {
-                        coroutineScope.launch {
-                            localUriHandler.openUriOrNotify(
-                                "https://www.rockstargames.com/reddeadredemption2",
-                            )
-                        }
-                    },
-                    onForceOpenInExternalBrowserClicked = {},
-                    isSelectionModeEnabled =
-                    rememberSaveable {
-                        mutableStateOf(false)
-                    },
-                    isItemSelected =
-                    rememberSaveable {
-                        mutableStateOf(false)
-                    },
-                    onLongClick = {},
-                    tags =
-                    listOf(
-                        Tag(name = "Tahiti"),
-                        Tag(name = "AndaquarterDONTFORGETTHEQUARTRR"),
-                    ),
-                    onTagClick = {},
-                    showPath = false,
-                    onFolderClick = {},
-                ),
                 titleOnlyView = false,
                 onShare = {
                     LinkoraSDK.getInstance().nativeUtils.onShare(it)
@@ -374,43 +377,43 @@ fun Slide2() {
             )
             ListViewLinkComponent(
                 linkComponentParam =
-                LinkComponentParam(
-                    link =
-                    Link(
-                        title = "Nas | Spotify",
-                        host = "open.spotify.com",
-                        imgURL =
-                        "https://ucarecdn.com/9b4d5145-a417-4ff9-a7e5-93a452a443c8/-/crop/974x818/26,197/-/preview/",
-                        url = "https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q",
-                        userAgent = "Twitterbot/1.0",
-                        linkType = LinkType.SAVED_LINK,
-                        localId = 0L,
-                        note = "",
-                        idOfLinkedFolder = null,
+                    LinkComponentParam(
+                        link =
+                            Link(
+                                title = "Nas | Spotify",
+                                host = "open.spotify.com",
+                                imgURL =
+                                    "https://ucarecdn.com/9b4d5145-a417-4ff9-a7e5-93a452a443c8/-/crop/974x818/26,197/-/preview/",
+                                url = "https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q",
+                                userAgent = "Twitterbot/1.0",
+                                linkType = LinkType.SAVED_LINK,
+                                localId = 0L,
+                                note = "",
+                                idOfLinkedFolder = null,
+                            ),
+                        onForceOpenInExternalBrowserClicked = {},
+                        isSelectionModeEnabled =
+                            rememberSaveable {
+                                mutableStateOf(false)
+                            },
+                        isItemSelected =
+                            rememberSaveable {
+                                mutableStateOf(false)
+                            },
+                        onLongClick = {},
+                        onMoreIconClick = {},
+                        onLinkClick = {
+                            coroutineScope.launch {
+                                localUriHandler.openUriOrNotify(
+                                    "https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q",
+                                )
+                            }
+                        },
+                        tags = listOf(),
+                        onTagClick = {},
+                        showPath = false,
+                        onFolderClick = {},
                     ),
-                    onForceOpenInExternalBrowserClicked = {},
-                    isSelectionModeEnabled =
-                    rememberSaveable {
-                        mutableStateOf(false)
-                    },
-                    isItemSelected =
-                    rememberSaveable {
-                        mutableStateOf(false)
-                    },
-                    onLongClick = {},
-                    onMoreIconClick = {},
-                    onLinkClick = {
-                        coroutineScope.launch {
-                            localUriHandler.openUriOrNotify(
-                                "https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q",
-                            )
-                        }
-                    },
-                    tags = listOf(),
-                    onTagClick = {},
-                    showPath = false,
-                    onFolderClick = {},
-                ),
                 titleOnlyView = false,
                 imageAlignment = Alignment.TopCenter,
                 onShare = {
@@ -420,13 +423,13 @@ fun Slide2() {
             )
             Spacer(modifier = Modifier.height(5.dp))
             SlideTitle(
-                string = Localization.Key.AppIntroSlide2MainLabel.rememberLocalizedString(),
+                string = localizedStrings.AppIntroSlide2MainLabel,
                 modifier = Modifier.padding(start = 15.dp),
             )
             Spacer(modifier = Modifier.height(5.dp))
             SlideDesc(
                 modifier = Modifier.padding(start = 15.dp, bottom = 75.dp),
-                string = Localization.Key.AppIntroSlide2MainLabelDesc.rememberLocalizedString(),
+                string = localizedStrings.AppIntroSlide2MainLabelDesc,
             )
         }
     }
@@ -434,12 +437,13 @@ fun Slide2() {
 
 @Composable
 fun Slide3() {
+    val localizedStrings = LocalizedStrings.current
     val pagerState = rememberPagerState { 2 }
     val localUriHandler = LocalUriHandler.current
     val coroutineScope = rememberCoroutineScope()
     Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Bottom) {
         Text(
-            text = Localization.Key.SelectedPanel.rememberLocalizedString(),
+            text = localizedStrings.SelectedPanel,
             color = MaterialTheme.colorScheme.primary.copy(0.9f),
             style = MaterialTheme.typography.titleSmall,
             modifier = Modifier.padding(start = 10.dp, bottom = 5.dp),
@@ -458,7 +462,7 @@ fun Slide3() {
             }
             Spacer(Modifier.width(10.dp))
             Text(
-                text = Localization.Key.AppIntroSlide3PanelName.rememberLocalizedString(),
+                text = localizedStrings.AppIntroSlide3PanelName,
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.titleLarge,
                 fontSize = 20.sp,
@@ -485,20 +489,20 @@ fun Slide3() {
                     ) {
                         Text(
                             text =
-                            if (it == 0) {
-                                Localization.Key.AppIntroSlide2Folder1Name.rememberLocalizedString()
-                            } else {
-                                Localization.Key.AppIntroSlide3Folder2Name.rememberLocalizedString()
-                            },
+                                if (it == 0) {
+                                    localizedStrings.AppIntroSlide2Folder1Name
+                                } else {
+                                    localizedStrings.AppIntroSlide3Folder2Name
+                                },
                             style = MaterialTheme.typography.titleLarge,
                             fontSize = 18.sp,
                             modifier = Modifier.padding(15.dp),
                             color =
-                            if (pagerState.currentPage == it) {
-                                primaryContentColor
-                            } else {
-                                MaterialTheme.colorScheme.onSurface.copy(0.70f)
-                            },
+                                if (pagerState.currentPage == it) {
+                                    primaryContentColor
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface.copy(0.70f)
+                                },
                         )
                     }
                 }
@@ -513,27 +517,27 @@ fun Slide3() {
                     0 -> {
                         FolderComponent(
                             FolderComponentParam(
-                                name = Localization.Key.AppIntroSlide3Folder2_1Name.rememberLocalizedString(),
-                                note = Localization.Key.AppIntroSlide3Folder2_1Note.rememberLocalizedString(),
+                                name = localizedStrings.AppIntroSlide3Folder2_1Name,
+                                note = localizedStrings.AppIntroSlide3Folder2_1Note,
                                 onClick = {},
                                 onLongClick = {},
                                 onMoreIconClick = {},
                                 isCurrentlyInDetailsView =
-                                rememberSaveable {
-                                    mutableStateOf(false)
-                                },
+                                    rememberSaveable {
+                                        mutableStateOf(false)
+                                    },
                                 showMoreIcon =
-                                rememberSaveable {
-                                    mutableStateOf(true)
-                                },
+                                    rememberSaveable {
+                                        mutableStateOf(true)
+                                    },
                                 isSelectedForSelection =
-                                rememberSaveable {
-                                    mutableStateOf(false)
-                                },
+                                    rememberSaveable {
+                                        mutableStateOf(false)
+                                    },
                                 showCheckBox =
-                                rememberSaveable {
-                                    mutableStateOf(false)
-                                },
+                                    rememberSaveable {
+                                        mutableStateOf(false)
+                                    },
                                 onCheckBoxChanged = {},
                                 path = null,
                                 showPath = false,
@@ -542,38 +546,38 @@ fun Slide3() {
                         )
                         ListViewLinkComponent(
                             linkComponentParam =
-                            LinkComponentParam(
-                                link =
-                                Link(
-                                    title = "Building Webpage Capture in Linkora | Saketh Pathike",
-                                    host = "sakethpathike.github.io",
-                                    imgURL =
-                                        "https://sakethpathike.github.io/images/web-capture-in-linkora/og.png",
-                                    url =
-                                        "https://sakethpathike.github.io/blog/web-capture-in-linkora",
-                                    userAgent = "Twitterbot/1.0",
-                                    linkType = LinkType.SAVED_LINK,
-                                    localId = 0L,
-                                    note = "",
-                                    idOfLinkedFolder = null,
+                                LinkComponentParam(
+                                    link =
+                                        Link(
+                                            title = "Building Webpage Capture in Linkora | Saketh Pathike",
+                                            host = "sakethpathike.github.io",
+                                            imgURL =
+                                                "https://sakethpathike.github.io/images/web-capture-in-linkora/og.png",
+                                            url =
+                                                "https://sakethpathike.github.io/blog/web-capture-in-linkora",
+                                            userAgent = "Twitterbot/1.0",
+                                            linkType = LinkType.SAVED_LINK,
+                                            localId = 0L,
+                                            note = "",
+                                            idOfLinkedFolder = null,
+                                        ),
+                                    onMoreIconClick = {},
+                                    onLinkClick = {
+                                        coroutineScope.launch {
+                                            localUriHandler.openUriOrNotify(
+                                                "https://sakethpathike.github.io/blog/web-capture-in-linkora",
+                                            )
+                                        }
+                                    },
+                                    onForceOpenInExternalBrowserClicked = {},
+                                    isSelectionModeEnabled = rememberSaveable { mutableStateOf(false) },
+                                    isItemSelected = rememberSaveable { mutableStateOf(false) },
+                                    onLongClick = {},
+                                    tags = listOf(Tag(name = "Linkora")),
+                                    onTagClick = {},
+                                    showPath = false,
+                                    onFolderClick = {},
                                 ),
-                                onMoreIconClick = {},
-                                onLinkClick = {
-                                    coroutineScope.launch {
-                                        localUriHandler.openUriOrNotify(
-                                            "https://sakethpathike.github.io/blog/web-capture-in-linkora",
-                                        )
-                                    }
-                                },
-                                onForceOpenInExternalBrowserClicked = {},
-                                isSelectionModeEnabled = rememberSaveable { mutableStateOf(false) },
-                                isItemSelected = rememberSaveable { mutableStateOf(false) },
-                                onLongClick = {},
-                                tags = listOf(Tag(name = "Linkora")),
-                                onTagClick = {},
-                                showPath = false,
-                                onFolderClick = {},
-                            ),
                             titleOnlyView = false,
                             onShare = {
                                 LinkoraSDK.getInstance().nativeUtils.onShare(it)
@@ -585,27 +589,27 @@ fun Slide3() {
                     1 -> {
                         FolderComponent(
                             FolderComponentParam(
-                                name = Localization.Key.AppIntroSlide3Folder3_1Name.rememberLocalizedString(),
-                                note = Localization.Key.AppIntroSlide3Folder3_1Note.rememberLocalizedString(),
+                                name = localizedStrings.AppIntroSlide3Folder3_1Name,
+                                note = localizedStrings.AppIntroSlide3Folder3_1Note,
                                 onClick = {},
                                 onLongClick = {},
                                 onMoreIconClick = {},
                                 isCurrentlyInDetailsView =
-                                rememberSaveable {
-                                    mutableStateOf(false)
-                                },
+                                    rememberSaveable {
+                                        mutableStateOf(false)
+                                    },
                                 showMoreIcon =
-                                rememberSaveable {
-                                    mutableStateOf(true)
-                                },
+                                    rememberSaveable {
+                                        mutableStateOf(true)
+                                    },
                                 isSelectedForSelection =
-                                rememberSaveable {
-                                    mutableStateOf(false)
-                                },
+                                    rememberSaveable {
+                                        mutableStateOf(false)
+                                    },
                                 showCheckBox =
-                                rememberSaveable {
-                                    mutableStateOf(false)
-                                },
+                                    rememberSaveable {
+                                        mutableStateOf(false)
+                                    },
                                 onCheckBoxChanged = {},
                                 path = null,
                                 showPath = false,
@@ -614,41 +618,41 @@ fun Slide3() {
                         )
                         ListViewLinkComponent(
                             linkComponentParam =
-                            LinkComponentParam(
-                                link =
-                                Link(
-                                    title =
-                                    "LinkoraApp/sync-server: self-hostable sync-server for Linkora with browser extension support.",
-                                    host = "github.com",
-                                    imgURL =
-                                    "https://opengraph.githubassets.com/45fc9e2969396c9f27f7af994014d3a75ff93899d98ef2f6c5504fef71edd9cf/LinkoraApp/sync-server",
-                                    url = "https://github.com/LinkoraApp/sync-server",
-                                    userAgent = "Twitterbot/1.0",
-                                    linkType = LinkType.SAVED_LINK,
-                                    localId = 0L,
-                                    note = "",
-                                    idOfLinkedFolder = null,
+                                LinkComponentParam(
+                                    link =
+                                        Link(
+                                            title =
+                                                "LinkoraApp/sync-server: self-hostable sync-server for Linkora with browser extension support.",
+                                            host = "github.com",
+                                            imgURL =
+                                                "https://opengraph.githubassets.com/45fc9e2969396c9f27f7af994014d3a75ff93899d98ef2f6c5504fef71edd9cf/LinkoraApp/sync-server",
+                                            url = "https://github.com/LinkoraApp/sync-server",
+                                            userAgent = "Twitterbot/1.0",
+                                            linkType = LinkType.SAVED_LINK,
+                                            localId = 0L,
+                                            note = "",
+                                            idOfLinkedFolder = null,
+                                        ),
+                                    onMoreIconClick = {},
+                                    onLinkClick = {
+                                        coroutineScope.launch {
+                                            localUriHandler.openUriOrNotify(
+                                                "https://github.com/LinkoraApp/sync-server",
+                                            )
+                                        }
+                                    },
+                                    onForceOpenInExternalBrowserClicked = {},
+                                    isSelectionModeEnabled = rememberSaveable { mutableStateOf(false) },
+                                    isItemSelected =
+                                        rememberSaveable {
+                                            mutableStateOf(false)
+                                        },
+                                    onLongClick = {},
+                                    tags = listOf(Tag(name = "Linkora")),
+                                    onTagClick = {},
+                                    showPath = false,
+                                    onFolderClick = {},
                                 ),
-                                onMoreIconClick = {},
-                                onLinkClick = {
-                                    coroutineScope.launch {
-                                        localUriHandler.openUriOrNotify(
-                                            "https://github.com/LinkoraApp/sync-server",
-                                        )
-                                    }
-                                },
-                                onForceOpenInExternalBrowserClicked = {},
-                                isSelectionModeEnabled = rememberSaveable { mutableStateOf(false) },
-                                isItemSelected =
-                                rememberSaveable {
-                                    mutableStateOf(false)
-                                },
-                                onLongClick = {},
-                                tags = listOf(Tag(name = "Linkora")),
-                                onTagClick = {},
-                                showPath = false,
-                                onFolderClick = {},
-                            ),
                             titleOnlyView = false,
                             imageAlignment = Alignment.TopCenter,
                             onShare = {
@@ -662,13 +666,13 @@ fun Slide3() {
         }
         Spacer(modifier = Modifier.height(10.dp))
         SlideTitle(
-            string = Localization.Key.AppIntroSlide3MainLabel.rememberLocalizedString(),
+            string = localizedStrings.AppIntroSlide3MainLabel,
             modifier = Modifier.fillMaxWidth().padding(start = 15.dp),
         )
         Spacer(modifier = Modifier.height(5.dp))
         SlideDesc(
             modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp),
-            string = Localization.Key.AppIntroSlide3MainLabelDesc.rememberLocalizedString(),
+            string = localizedStrings.AppIntroSlide3MainLabelDesc,
         )
         Spacer(modifier = Modifier.height(75.dp))
     }
@@ -676,24 +680,25 @@ fun Slide3() {
 
 @Composable
 fun Slide4() {
+    val localizedStrings = LocalizedStrings.current
     Column(
         modifier = Modifier.padding(start = 15.dp, end = 15.dp, bottom = 75.dp).fillMaxSize(),
         verticalArrangement = Arrangement.Bottom,
     ) {
-        SlideTitle(string = Localization.Key.AppIntroSlide4Label1.rememberLocalizedString())
+        SlideTitle(string = localizedStrings.AppIntroSlide4Label1)
         Spacer(Modifier.height(5.dp))
         listOf(
-            Localization.Key.AppIntroSlide4Label1Desc1.getLocalizedString(),
-            Localization.Key.AppIntroSlide4Label1Desc2.getLocalizedString(),
-            Localization.Key.AppIntroSlide4Label1Desc2_1.getLocalizedString(),
-            Localization.Key.AppIntroSlide4Label1Desc3.getLocalizedString(),
-            Localization.Key.AppIntroSlide4Label1Desc4.getLocalizedString(),
-            Localization.Key.AppIntroSlide4Label1Desc5.getLocalizedString(),
-            Localization.Key.AppIntroSlide4Label1Desc6.getLocalizedString(),
-            Localization.Key.AppIntroSlide4Label1Desc7.getLocalizedString(),
-            Localization.Key.AppIntroSlide4Label1Desc8.getLocalizedString(),
-            Localization.Key.AppIntroSlide4Label1Desc9.getLocalizedString(),
-            Localization.Key.AppIntroSlide4Label1Desc10.getLocalizedString(),
+            localizedStrings.AppIntroSlide4Label1Desc1,
+            localizedStrings.AppIntroSlide4Label1Desc2,
+            localizedStrings.AppIntroSlide4Label1Desc2_1,
+            localizedStrings.AppIntroSlide4Label1Desc3,
+            localizedStrings.AppIntroSlide4Label1Desc4,
+            localizedStrings.AppIntroSlide4Label1Desc5,
+            localizedStrings.AppIntroSlide4Label1Desc6,
+            localizedStrings.AppIntroSlide4Label1Desc7,
+            localizedStrings.AppIntroSlide4Label1Desc8,
+            localizedStrings.AppIntroSlide4Label1Desc9,
+            localizedStrings.AppIntroSlide4Label1Desc10,
         )
             .forEach {
                 key(it) {
@@ -709,8 +714,8 @@ fun Slide4() {
             colorOpacity = 0.95f,
             thickness = 2.dp,
         )
-        SlideTitle(string = Localization.Key.AppIntroSlide4Label2.rememberLocalizedString())
+        SlideTitle(string = localizedStrings.AppIntroSlide4Label2)
         Spacer(Modifier.height(5.dp))
-        SlideDesc(string = Localization.Key.AppIntroSlide4Label2Desc.rememberLocalizedString())
+        SlideDesc(string = localizedStrings.AppIntroSlide4Label2Desc)
     }
 }

@@ -124,7 +124,7 @@ class RefreshAllLinksWorker(
                     ).map { result ->
                         when (result) {
                             is com.sakethh.linkora.domain.Result.Failure -> com.sakethh.linkora.domain.Result.Failure(
-                                result.message,
+                                result.e,
                             )
 
                             is com.sakethh.linkora.domain.Result.Loading -> com.sakethh.linkora.domain.Result.Loading()

@@ -55,7 +55,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.CollectionDetailPaneVMFactory
 import com.sakethh.linkora.domain.LinkSaveConfig
 import com.sakethh.linkora.domain.LinkType
@@ -65,6 +64,7 @@ import com.sakethh.linkora.domain.asMenuBtmSheetType
 import com.sakethh.linkora.domain.asUnifiedLazyState
 import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.CollectionLayoutManager
 import com.sakethh.linkora.ui.components.PerformAtTheEndOfTheList
 import com.sakethh.linkora.ui.components.SortingIconButton
@@ -85,9 +85,7 @@ import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.Utils
 import com.sakethh.linkora.utils.VerticalScrollbar
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
-import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.openUriOrNotify
-import com.sakethh.linkora.utils.rememberLocalizedString
 import com.sakethh.linkora.utils.supportsWideDisplay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
@@ -119,6 +117,7 @@ fun CollectionDetailPane(
     collectionDetailPaneInfo: CollectionDetailPaneInfo,
     navigateUp: () -> Unit,
 ) {
+    val localizedStrings = LocalizedStrings.current
     val collectionDetailPaneVM: CollectionDetailPaneVM =
         viewModel(factory = CollectionDetailPaneVMFactory.create(collectionDetailPaneInfo))
     val preferences by collectionDetailPaneVM.preferencesAsFlow.collectAsStateWithLifecycle()
@@ -126,7 +125,7 @@ fun CollectionDetailPane(
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { 2 })
     val rootArchiveFoldersState by
-        collectionDetailPaneVM.rootArchiveFolders.collectAsStateWithLifecycle()
+    collectionDetailPaneVM.rootArchiveFolders.collectAsStateWithLifecycle()
     val rootArchiveFoldersListState = rememberLazyListState()
     val rootArchiveFoldersUnifiedListState = retain {
         rootArchiveFoldersListState.asUnifiedLazyState()
@@ -155,9 +154,9 @@ fun CollectionDetailPane(
         } else if (
             folder != null &&
             (
-                folder.localId == Constants.SAVED_LINKS_ID ||
-                    folder.localId == Constants.IMPORTANT_LINKS_ID
-                )
+                    folder.localId == Constants.SAVED_LINKS_ID ||
+                            folder.localId == Constants.IMPORTANT_LINKS_ID
+                    )
         ) {
             localFabStateController.updateState(
                 CurrentFABContext(
@@ -221,11 +220,11 @@ fun CollectionDetailPane(
                             }
                             Text(
                                 text =
-                                if (isTag) {
-                                    collectionDetailPaneInfo.currentTag?.name ?: ""
-                                } else {
-                                    collectionDetailPaneInfo.currentFolder?.name ?: ""
-                                },
+                                    if (isTag) {
+                                        collectionDetailPaneInfo.currentTag?.name ?: ""
+                                    } else {
+                                        collectionDetailPaneInfo.currentFolder?.name ?: ""
+                                    },
                                 color = MaterialTheme.colorScheme.onSurface,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontSize = 18.sp,
@@ -243,8 +242,8 @@ fun CollectionDetailPane(
             Column(modifier = Modifier.addEdgeToEdgeScaffoldPadding(paddingValues).fillMaxSize()) {
                 TabRow(selectedTabIndex = pagerState.currentPage) {
                     listOf(
-                        Localization.Key.Links.rememberLocalizedString(),
-                        Localization.Key.Folders.rememberLocalizedString(),
+                        localizedStrings.Links,
+                        localizedStrings.Folders,
                     )
                         .forEachIndexed { index, screenName ->
                             Tab(
@@ -264,11 +263,11 @@ fun CollectionDetailPane(
                                     fontSize = 18.sp,
                                     modifier = Modifier.padding(15.dp),
                                     color =
-                                    if (pagerState.currentPage == index) {
-                                        primaryContentColor
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurface.copy(0.70f)
-                                    },
+                                        if (pagerState.currentPage == index) {
+                                            primaryContentColor
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurface.copy(0.70f)
+                                        },
                                 )
                             }
                         }
@@ -296,19 +295,19 @@ fun CollectionDetailPane(
                                     collectionDetailPaneVM.performAction(
                                         CollectionPaneAction.AddANewLink(
                                             link =
-                                            it.link.copy(
-                                                linkType = LinkType.HISTORY_LINK,
-                                                localId = 0,
-                                            ),
+                                                it.link.copy(
+                                                    linkType = LinkType.HISTORY_LINK,
+                                                    localId = 0,
+                                                ),
                                             linkSaveConfig =
-                                            LinkSaveConfig(
-                                                forceAutoDetectTitle = false,
-                                                forceSaveWithoutRetrievingData = true,
-                                                useProxy = preferences.useProxy,
-                                                skipSavingIfExists = preferences.skipSavingExistingLink,
-                                                forceSaveIfRetrievalFails =
-                                                preferences.forceSaveIfRetrievalFails,
-                                            ),
+                                                LinkSaveConfig(
+                                                    forceAutoDetectTitle = false,
+                                                    forceSaveWithoutRetrievingData = true,
+                                                    useProxy = preferences.useProxy,
+                                                    skipSavingIfExists = preferences.skipSavingExistingLink,
+                                                    forceSaveIfRetrievalFails =
+                                                        preferences.forceSaveIfRetrievalFails,
+                                                ),
                                             onCompletion = {},
                                             pushSnackbarOnSuccess = false,
                                             selectedTags = it.tags,
@@ -321,7 +320,7 @@ fun CollectionDetailPane(
                                 isCurrentlyInDetailsView = {
                                     collectionDetailPaneInfo.currentFolder.localId == it.localId
                                 },
-                                emptyDataText = Localization.Key.NoArchiveLinksFound.getLocalizedString(),
+                                emptyDataText = localizedStrings.NoArchiveLinksFound,
                                 nestedScrollConnection = topAppBarScrollBehavior.nestedScrollConnection,
                                 onAttachedTagClick = {
                                     if (collectionDetailPaneInfo.currentTag?.localId == it.localId) {
@@ -342,7 +341,9 @@ fun CollectionDetailPane(
                                 },
                                 onFirstVisibleItemIndexChange = {
                                     collectionDetailPaneVM.performAction(
-                                        CollectionPaneAction.OnFirstVisibleItemIndexChangeOfLinkTagsPair(it),
+                                        CollectionPaneAction.OnFirstVisibleItemIndexChangeOfLinkTagsPair(
+                                            it
+                                        ),
                                     )
                                 },
                                 flatSearchResultState = null,
@@ -351,7 +352,8 @@ fun CollectionDetailPane(
                         }
 
                         1 -> {
-                            val state = rememberScrollAreaState(lazyListState = rootArchiveFoldersListState)
+                            val state =
+                                rememberScrollAreaState(lazyListState = rootArchiveFoldersListState)
                             ScrollArea(state = state) {
                                 LazyColumn(
                                     state = rootArchiveFoldersListState,
@@ -360,13 +362,14 @@ fun CollectionDetailPane(
                                     if (
                                         !rootArchiveFoldersState.isRetrieving &&
                                         (
-                                            rootArchiveFoldersState.data.isEmpty() ||
-                                                rootArchiveFoldersState.data.values.first().isEmpty()
-                                            )
+                                                rootArchiveFoldersState.data.isEmpty() ||
+                                                        rootArchiveFoldersState.data.values.first()
+                                                            .isEmpty()
+                                                )
                                     ) {
                                         item {
                                             DataEmptyScreen(
-                                                text = Localization.Key.NoFoldersFoundInArchive.getLocalizedString(),
+                                                text = localizedStrings.NoFoldersFoundInArchive,
                                             )
                                         }
                                         return@LazyColumn
@@ -400,7 +403,8 @@ fun CollectionDetailPane(
                                                     },
                                                     onLongClick = {
                                                         if (CollectionsScreenVM.isSelectionEnabled.value.not()) {
-                                                            CollectionsScreenVM.isSelectionEnabled.value = true
+                                                            CollectionsScreenVM.isSelectionEnabled.value =
+                                                                true
                                                             CollectionsScreenVM.selectedFoldersViaLongClick.add(
                                                                 rootArchiveFolder,
                                                             )
@@ -416,29 +420,31 @@ fun CollectionDetailPane(
                                                         )
                                                     },
                                                     isCurrentlyInDetailsView =
-                                                    remember(collectionDetailPaneInfo.currentFolder?.localId) {
-                                                        mutableStateOf(
-                                                            collectionDetailPaneInfo.currentFolder?.localId ==
-                                                                rootArchiveFolder.localId,
-                                                        )
-                                                    },
+                                                        remember(collectionDetailPaneInfo.currentFolder?.localId) {
+                                                            mutableStateOf(
+                                                                collectionDetailPaneInfo.currentFolder?.localId ==
+                                                                        rootArchiveFolder.localId,
+                                                            )
+                                                        },
                                                     showMoreIcon =
-                                                    rememberSaveable {
-                                                        mutableStateOf(true)
-                                                    },
+                                                        rememberSaveable {
+                                                            mutableStateOf(true)
+                                                        },
                                                     isSelectedForSelection =
-                                                    rememberSaveable(
-                                                        CollectionsScreenVM.isSelectionEnabled.value,
-                                                        CollectionsScreenVM.selectedFoldersViaLongClick.contains(
-                                                            rootArchiveFolder,
-                                                        ),
-                                                    ) {
-                                                        mutableStateOf(
-                                                            CollectionsScreenVM.isSelectionEnabled.value &&
-                                                                CollectionsScreenVM.selectedFoldersViaLongClick
-                                                                    .contains(rootArchiveFolder),
-                                                        )
-                                                    },
+                                                        rememberSaveable(
+                                                            CollectionsScreenVM.isSelectionEnabled.value,
+                                                            CollectionsScreenVM.selectedFoldersViaLongClick.contains(
+                                                                rootArchiveFolder,
+                                                            ),
+                                                        ) {
+                                                            mutableStateOf(
+                                                                CollectionsScreenVM.isSelectionEnabled.value &&
+                                                                        CollectionsScreenVM.selectedFoldersViaLongClick
+                                                                            .contains(
+                                                                                rootArchiveFolder
+                                                                            ),
+                                                            )
+                                                        },
                                                     showCheckBox = CollectionsScreenVM.isSelectionEnabled,
                                                     onCheckBoxChanged = { bool ->
                                                         if (bool) {
@@ -498,7 +504,9 @@ fun CollectionDetailPane(
                         key(it.name) {
                             FilterChip(
                                 text = it.asLocalizedString(),
-                                isSelected = collectionDetailPaneVM.appliedFiltersForAllLinks.contains(it),
+                                isSelected = collectionDetailPaneVM.appliedFiltersForAllLinks.contains(
+                                    it
+                                ),
                                 onClick = {
                                     collectionDetailPaneVM.performAction(
                                         CollectionPaneAction.ToggleAllLinksFilter(filter = it),
@@ -512,14 +520,14 @@ fun CollectionDetailPane(
             }
             CollectionLayoutManager(
                 screenType =
-                if (
-                    collectionDetailPaneInfo.currentFolder?.localId != null &&
-                    collectionDetailPaneInfo.currentFolder.localId >= 0
-                ) {
-                    ScreenType.FOLDERS_AND_LINKS
-                } else {
-                    ScreenType.LINKS_ONLY
-                },
+                    if (
+                        collectionDetailPaneInfo.currentFolder?.localId != null &&
+                        collectionDetailPaneInfo.currentFolder.localId >= 0
+                    ) {
+                        ScreenType.FOLDERS_AND_LINKS
+                    } else {
+                        ScreenType.LINKS_ONLY
+                    },
                 flatChildFolderDataState = flatChildFolderDataState,
                 linksTagsPairsState = linkTagsPairs,
                 paddingValues = PaddingValues(0.dp),
@@ -555,13 +563,13 @@ fun CollectionDetailPane(
                         CollectionPaneAction.AddANewLink(
                             link = it.link.copy(linkType = LinkType.HISTORY_LINK, localId = 0),
                             linkSaveConfig =
-                            LinkSaveConfig(
-                                forceAutoDetectTitle = false,
-                                forceSaveWithoutRetrievingData = true,
-                                useProxy = preferences.useProxy,
-                                skipSavingIfExists = preferences.skipSavingExistingLink,
-                                forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
-                            ),
+                                LinkSaveConfig(
+                                    forceAutoDetectTitle = false,
+                                    forceSaveWithoutRetrievingData = true,
+                                    useProxy = preferences.useProxy,
+                                    skipSavingIfExists = preferences.skipSavingExistingLink,
+                                    forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
+                                ),
                             onCompletion = {},
                             pushSnackbarOnSuccess = false,
                             selectedTags = it.tags,
@@ -576,11 +584,11 @@ fun CollectionDetailPane(
                 },
                 nestedScrollConnection = topAppBarScrollBehavior.nestedScrollConnection,
                 emptyDataText =
-                if (collectionDetailPaneInfo.currentTag != null) {
-                    Localization.Key.NoAttachmentsToTags.rememberLocalizedString()
-                } else {
-                    Localization.Key.NoLinksFound.rememberLocalizedString()
-                },
+                    if (collectionDetailPaneInfo.currentTag != null) {
+                        localizedStrings.NoAttachmentsToTags
+                    } else {
+                        localizedStrings.NoLinksFound
+                    },
                 onAttachedTagClick = {
                     if (collectionDetailPaneInfo.currentTag?.localId == it.localId) {
                         return@CollectionLayoutManager

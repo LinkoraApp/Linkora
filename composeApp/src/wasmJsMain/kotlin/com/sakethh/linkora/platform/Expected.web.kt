@@ -1,9 +1,9 @@
 package com.sakethh.linkora.platform
 
+import LocalizedStrings
 import RefreshAllLinksService
 import androidx.compose.runtime.Composable
 import com.sakethh.linkora.KaptureOptions
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ExportFileType
@@ -13,7 +13,6 @@ import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.domain.RawExportString
 import com.sakethh.linkora.domain.RefreshLinkType
 import com.sakethh.linkora.domain.Result
-import com.sakethh.linkora.domain.SnapshotFormat
 import com.sakethh.linkora.domain.SyncType
 import com.sakethh.linkora.domain.dto.server.Correlation
 import com.sakethh.linkora.domain.model.JSONExportSchema
@@ -29,7 +28,6 @@ import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
-import com.sakethh.linkora.utils.getLocalizedString
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.HttpClientEngineConfig
@@ -162,7 +160,7 @@ actual class NativeUtils {
         actual suspend fun saveHTMLPage(
             nativeFolderPath: String,
             url: String,
-        ): Result<Boolean> = Result.Failure("huh")
+        ): Result<Boolean> = Result.Failure(Exception())
 
         actual suspend fun onCaptureAllWebPages(
             preferences: AppPreferences,
@@ -183,7 +181,7 @@ actual class NativeUtils {
 
 actual val PlatformIODispatcher: CoroutineDispatcher = Dispatchers.Default
 
-actual object Network {
+actual class Network(private val localizedStrings: () -> LocalizedStrings) {
 
     private fun <T : HttpClientEngineConfig> HttpClientConfig<T>.installLogger() {
         install(Logging) {
@@ -217,7 +215,7 @@ actual object Network {
     private var syncServerClient: HttpClient? = null
 
     actual fun getSyncServerClient(): HttpClient = syncServerClient
-        ?: error(Localization.Key.SyncServerConfigurationError.getLocalizedString())
+        ?: error(localizedStrings().SyncServerConfigurationError)
 
     actual fun closeSyncServerClient() {
         syncServerClient?.close()
@@ -382,7 +380,7 @@ actual object PlatformPreference {
                 ?: false,
         snapshotExportFormatID =
             localStorage.getItem(AppPreferences.SNAPSHOTS_EXPORT_TYPE.key)
-                ?: SnapshotFormat.JSON.id.toString(),
+                ?: Constants.SNAPSHOT_JSON_FORMAT_ID.toString(),
         skipCertCheckForSync =
             localStorage
                 .getItem(AppPreferences.SKIP_CERT_CHECK_FOR_SYNC_SERVER.key)

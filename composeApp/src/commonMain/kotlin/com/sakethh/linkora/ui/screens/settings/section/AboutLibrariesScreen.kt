@@ -8,27 +8,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import com.mikepenz.aboutlibraries.ui.compose.produceLibraries
-import com.sakethh.linkora.Localization
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
-import com.sakethh.linkora.utils.rememberLocalizedString
 import linkora.composeapp.generated.resources.Res
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutLibrariesScreen() {
+    val localizedStrings = LocalizedStrings.current
     val libraries by produceLibraries {
         Res.readBytes("files/aboutlibraries.json").decodeToString()
     }
     SettingsSectionScaffold(
-        topAppBarText = Localization.Key.Libraries.rememberLocalizedString(),
+        topAppBarText = localizedStrings.Libraries,
     ) { paddingValues, topAppBarScrollBehaviour ->
         LibrariesContainer(
             libraries,
             modifier =
-            Modifier.fillMaxSize()
-                .addEdgeToEdgeScaffoldPadding(paddingValues)
-                .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
+                Modifier.fillMaxSize()
+                    .addEdgeToEdgeScaffoldPadding(paddingValues)
+                    .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
         )
     }
 }

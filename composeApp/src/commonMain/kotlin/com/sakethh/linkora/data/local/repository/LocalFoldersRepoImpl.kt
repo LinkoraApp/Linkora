@@ -9,7 +9,6 @@ import com.sakethh.linkora.domain.asAddFolderDTO
 import com.sakethh.linkora.domain.asFolderDTO
 import com.sakethh.linkora.domain.dto.server.IDBasedDTO
 import com.sakethh.linkora.domain.dto.server.folder.MarkSelectedFoldersAsRootDTO
-import com.sakethh.linkora.domain.linkoraPlaceHolders
 import com.sakethh.linkora.domain.mapToResultFlow
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.PendingSyncQueue
@@ -81,18 +80,18 @@ class LocalFoldersRepoImpl(
                     PendingSyncQueue(
                         operation = SyncServerRoute.CREATE_FOLDER.name,
                         payload =
-                        Json.encodeToString(
-                            folder
-                                .asAddFolderDTO(preferences.correlation)
-                                .copy(
-                                    offlineSyncItemId = newLocalId!!,
-                                ),
-                        ),
+                            Json.encodeToString(
+                                folder
+                                    .asAddFolderDTO(preferences.correlation)
+                                    .copy(
+                                        offlineSyncItemId = newLocalId!!,
+                                    ),
+                            ),
                     ),
                 )
             },
             localOperation = {
-                if (folder.name.isEmpty() || linkoraPlaceHolders().contains(folder.name)) {
+                if (folder.name.isEmpty()) {
                     throw Folder.InvalidName(
                         if (folder.name.isEmpty()) {
                             "Folder name cannot be blank."
@@ -112,13 +111,13 @@ class LocalFoldersRepoImpl(
     override suspend fun getAllRootFoldersAsList(): List<Folder> = foldersDao.getAllRootFoldersAsList()
 
     override fun getAllFoldersAsResultList(): Flow<Result<List<Folder>>> = performLocalOperationWithRemoteSyncFlow<List<Folder>, Unit>(
-        canPushToServer = {
-            false
-        },
-        performRemoteOperation = false,
-    ) {
-        foldersDao.getAllFoldersAsList()
-    }
+            canPushToServer = {
+                false
+            },
+            performRemoteOperation = false,
+        ) {
+            foldersDao.getAllFoldersAsList()
+        }
 
     override fun getAllFoldersAsFlow(): Flow<List<Folder>> = foldersDao.getAllFoldersAsFlow()
 
@@ -131,13 +130,13 @@ class LocalFoldersRepoImpl(
     override suspend fun getLatestFoldersTableID(): Long = foldersDao.getLatestFoldersTableID()
 
     override suspend fun getThisFolderData(folderID: Long): Flow<Result<Folder>> = performLocalOperationWithRemoteSyncFlow<Folder, Unit>(
-        canPushToServer = {
-            false
-        },
-        performRemoteOperation = false,
-    ) {
-        foldersDao.getThisFolderData(folderID)
-    }
+            canPushToServer = {
+                false
+            },
+            performRemoteOperation = false,
+        ) {
+            foldersDao.getThisFolderData(folderID)
+        }
 
     override suspend fun doesThisChildFolderExists(
         folderName: String,
@@ -155,13 +154,13 @@ class LocalFoldersRepoImpl(
     }
 
     override suspend fun doesThisRootFolderExists(folderName: String): Flow<Result<Boolean>> = performLocalOperationWithRemoteSyncFlow<Boolean, Unit>(
-        canPushToServer = {
-            false
-        },
-        performRemoteOperation = false,
-    ) {
-        foldersDao.doesThisRootFolderExists(folderName)
-    }
+            canPushToServer = {
+                false
+            },
+            performRemoteOperation = false,
+        ) {
+            foldersDao.doesThisRootFolderExists(folderName)
+        }
 
     override suspend fun getRootFolders(
         sortOption: String,
@@ -172,7 +171,7 @@ class LocalFoldersRepoImpl(
     ): Flow<Result<List<Folder>>> = when (sortOption) {
         Sorting.A_TO_Z,
         Sorting.Z_TO_A,
-        ->
+            ->
             foldersDao.getRootFoldersSortedByName(
                 lastSeenId = lastSeenId,
                 lastSeenName = lastSeenName?.takeIf { it.isNotEmpty() },
@@ -195,7 +194,8 @@ class LocalFoldersRepoImpl(
         sortOption: String,
         pageSize: Int,
         startIndex: Long,
-    ): Flow<Result<List<Folder>>> = foldersDao.getChildFolders(parentFolderId, sortOption, pageSize, startIndex).mapToResultFlow()
+    ): Flow<Result<List<Folder>>> = foldersDao.getChildFolders(parentFolderId, sortOption, pageSize, startIndex)
+            .mapToResultFlow()
 
     override suspend fun getChildFoldersAsList(parentFolderId: Long): List<Folder> = foldersDao.getChildFoldersAsList(parentFolderId)
 
@@ -243,13 +243,13 @@ class LocalFoldersRepoImpl(
                     PendingSyncQueue(
                         operation = SyncServerRoute.MARK_FOLDER_AS_ARCHIVE.name,
                         payload =
-                        Json.encodeToString(
-                            IDBasedDTO(
-                                folderID,
-                                eventTimestamp,
-                                preferences.correlation,
+                            Json.encodeToString(
+                                IDBasedDTO(
+                                    folderID,
+                                    eventTimestamp,
+                                    preferences.correlation,
+                                ),
                             ),
-                        ),
                     ),
                 )
             },
@@ -290,14 +290,14 @@ class LocalFoldersRepoImpl(
                     PendingSyncQueue(
                         operation = SyncServerRoute.MARK_AS_REGULAR_FOLDER.name,
                         payload =
-                        Json.encodeToString(
-                            value =
-                            IDBasedDTO(
-                                folderID,
-                                eventTimestamp,
-                                preferences.correlation,
+                            Json.encodeToString(
+                                value =
+                                    IDBasedDTO(
+                                        folderID,
+                                        eventTimestamp,
+                                        preferences.correlation,
+                                    ),
                             ),
-                        ),
                     ),
                 )
             },
@@ -308,13 +308,13 @@ class LocalFoldersRepoImpl(
     }
 
     override suspend fun updateLocalFolderData(folder: Folder): Flow<Result<Unit>> = performLocalOperationWithRemoteSyncFlow<Unit, Unit>(
-        canPushToServer = {
-            false
-        },
-        performRemoteOperation = false,
-    ) {
-        foldersDao.updateFolder(folder.copy(lastModified = getSystemEpochSeconds()))
-    }
+            canPushToServer = {
+                false
+            },
+            performRemoteOperation = false,
+        ) {
+            foldersDao.updateFolder(folder.copy(lastModified = getSystemEpochSeconds()))
+        }
 
     override suspend fun updateFolder(
         folder: Folder,
@@ -334,13 +334,13 @@ class LocalFoldersRepoImpl(
                     folder.asFolderDTO(
                         remoteId = folder.remoteId,
                         remoteParentFolderId =
-                        if (folder.parentFolderId == null) {
-                            null
-                        } else {
-                            foldersDao.getRemoteFolderId(
-                                folder.parentFolderId,
-                            )
-                        },
+                            if (folder.parentFolderId == null) {
+                                null
+                            } else {
+                                foldersDao.getRemoteFolderId(
+                                    folder.parentFolderId,
+                                )
+                            },
                         preferences.correlation,
                     )
                 remoteFoldersRepo.updateFolder(remoteFolderDTO.copy(eventTimestamp = eventTimestamp))
@@ -353,9 +353,9 @@ class LocalFoldersRepoImpl(
                     PendingSyncQueue(
                         operation = SyncServerRoute.UPDATE_FOLDER.name,
                         payload =
-                        Json.encodeToString(
-                            value = folder.copy(lastModified = eventTimestamp),
-                        ),
+                            Json.encodeToString(
+                                value = folder.copy(lastModified = eventTimestamp),
+                            ),
                     ),
                 )
             },
@@ -395,14 +395,14 @@ class LocalFoldersRepoImpl(
                     PendingSyncQueue(
                         operation = SyncServerRoute.DELETE_FOLDER_NOTE.name,
                         payload =
-                        Json.encodeToString(
-                            value =
-                            IDBasedDTO(
-                                folderID,
-                                eventTimestamp,
-                                preferences.correlation,
+                            Json.encodeToString(
+                                value =
+                                    IDBasedDTO(
+                                        folderID,
+                                        eventTimestamp,
+                                        preferences.correlation,
+                                    ),
                             ),
-                        ),
                     ),
                 )
             },
@@ -443,14 +443,14 @@ class LocalFoldersRepoImpl(
                     PendingSyncQueue(
                         operation = SyncServerRoute.DELETE_FOLDER.name,
                         payload =
-                        Json.encodeToString(
-                            value =
-                            IDBasedDTO(
-                                folderID,
-                                eventTimestamp,
-                                preferences.correlation,
+                            Json.encodeToString(
+                                value =
+                                    IDBasedDTO(
+                                        folderID,
+                                        eventTimestamp,
+                                        preferences.correlation,
+                                    ),
                             ),
-                        ),
                     ),
                 )
             },
@@ -529,13 +529,13 @@ class LocalFoldersRepoImpl(
                     PendingSyncQueue(
                         operation = SyncServerRoute.MARK_FOLDERS_AS_ROOT.name,
                         payload =
-                        Json.encodeToString(
-                            MarkSelectedFoldersAsRootDTO(
-                                folderIds = folderIDs,
-                                eventTimestamp = eventTimestamp,
-                                correlation = preferences.correlation,
+                            Json.encodeToString(
+                                MarkSelectedFoldersAsRootDTO(
+                                    folderIds = folderIDs,
+                                    eventTimestamp = eventTimestamp,
+                                    correlation = preferences.correlation,
+                                ),
                             ),
-                        ),
                     ),
                 )
             },

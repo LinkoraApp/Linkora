@@ -6,12 +6,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination.Companion.hasRoute
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.panel.Panel
 import com.sakethh.linkora.domain.model.panel.PanelFolder
 import com.sakethh.linkora.domain.onSuccess
+import com.sakethh.linkora.domain.repository.LocalizationRepo
 import com.sakethh.linkora.domain.repository.local.LocalFoldersRepo
 import com.sakethh.linkora.domain.repository.local.LocalPanelsRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
@@ -20,10 +20,9 @@ import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
-import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.getRemoteOnlyFailureMsg
 import com.sakethh.linkora.utils.pushSnackbarOnFailure
-import com.sakethh.linkora.utils.replaceFirstPlaceHolderWith
+import com.sakethh.linkora.utils.replaceActual
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -39,11 +38,12 @@ class SpecificPanelManagerScreenVM(
     private val localFoldersRepo: LocalFoldersRepo,
     private val localPanelsRepo: LocalPanelsRepo,
     private val preferencesRepository: PreferencesRepository,
+    private val localizationRepo: LocalizationRepo.Local,
     currentBackStackEntryFlow: Flow<NavBackStackEntry>,
     onAndroidMobile: Boolean,
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
-
+    val localizedStrings get() = localizationRepo.localizedStrings.value
     private val _foldersToIncludeInPanel = MutableStateFlow(emptyList<Folder>())
     val foldersToIncludeInPanel = _foldersToIncludeInPanel.asStateFlow()
 
@@ -75,17 +75,17 @@ class SpecificPanelManagerScreenVM(
                 .transform { navBackStackEntry ->
                     if (
                         (
-                            onAndroidMobile &&
-                                navBackStackEntry.destination.hasRoute(
-                                    panelRoutes[1]::class,
-                                )
-                            ) ||
+                                onAndroidMobile &&
+                                        navBackStackEntry.destination.hasRoute(
+                                            panelRoutes[1]::class,
+                                        )
+                                ) ||
                         (
-                            !onAndroidMobile &&
-                                panelRoutes.any {
-                                    navBackStackEntry.destination.hasRoute(it::class)
-                                }
-                            )
+                                !onAndroidMobile &&
+                                        panelRoutes.any {
+                                            navBackStackEntry.destination.hasRoute(it::class)
+                                        }
+                                )
                     ) {
                         emit(Unit)
                     } else {
@@ -166,20 +166,20 @@ class SpecificPanelManagerScreenVM(
             ) { allFolders, foldersOfTheSelectedPanel, foldersSearchQuery ->
                 PanelFolderMetaInfo(
                     foldersToIncludeInPanel =
-                    allFolders
-                        .filter {
-                            it.localId !in foldersOfTheSelectedPanel.map { it.folderId } &&
-                                !it.isArchived
-                        }
-                        .run {
-                            if (foldersSearchQuery.isEmpty()) {
-                                this
-                            } else {
-                                filter {
-                                    it.name.lowercase().contains(foldersSearchQuery.lowercase())
-                                }
+                        allFolders
+                            .filter {
+                                it.localId !in foldersOfTheSelectedPanel.map { it.folderId } &&
+                                        !it.isArchived
                             }
-                        },
+                            .run {
+                                if (foldersSearchQuery.isEmpty()) {
+                                    this
+                                } else {
+                                    filter {
+                                        it.name.lowercase().contains(foldersSearchQuery.lowercase())
+                                    }
+                                }
+                            },
                     foldersOfTheSelectedPanel = foldersOfTheSelectedPanel,
                 )
             }
@@ -201,8 +201,14 @@ class SpecificPanelManagerScreenVM(
         viewModelScope.launch {
             localPanelsRepo.addANewFolderInAPanel(panelFolder).collectLatest {
                 it.onSuccess {
-                    if (it.isRemoteExecutionSuccessful.not()) {
-                        pushUIEvent(UIEvent.Type.ShowSnackbar(message = it.getRemoteOnlyFailureMsg()))
+                    if (it.remoteExecResult?.isRemoteExecutionSuccessful == false) {
+                        pushUIEvent(
+                            UIEvent.Type.ShowSnackbar(
+                                message = it.getRemoteOnlyFailureMsg(
+                                    localizedStrings.RemoteExecutionFailed
+                                )
+                            )
+                        )
                     }
                 }
                 it.pushSnackbarOnFailure()
@@ -221,9 +227,9 @@ class SpecificPanelManagerScreenVM(
                         pushUIEvent(
                             UIEvent.Type.ShowSnackbar(
                                 message =
-                                Localization.Key.PanelCreatedSuccessfully.getLocalizedString()
-                                    .replaceFirstPlaceHolderWith(panel.panelName) +
-                                    it.getRemoteOnlyFailureMsg(),
+                                    localizedStrings.PanelCreatedSuccessfully
+                                        .replaceActual(panel.panelName) +
+                                            it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
                             ),
                         )
                     }
@@ -248,7 +254,7 @@ class SpecificPanelManagerScreenVM(
                 ) {
                     preferencesRepository.changePreferenceValue(
                         preferenceKey =
-                        AppPreferences.LAST_SELECTED_PANEL_ID,
+                            AppPreferences.LAST_SELECTED_PANEL_ID,
                         newValue = Constants.DEFAULT_PANELS_ID,
                     )
                 }
@@ -257,8 +263,8 @@ class SpecificPanelManagerScreenVM(
                         pushUIEvent(
                             UIEvent.Type.ShowSnackbar(
                                 message =
-                                Localization.Key.DeletedPanelSuccessfully.getLocalizedString() +
-                                    it.getRemoteOnlyFailureMsg(),
+                                    localizedStrings.DeletedPanelSuccessfully +
+                                            it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
                             ),
                         )
                     }
@@ -282,9 +288,9 @@ class SpecificPanelManagerScreenVM(
                         pushUIEvent(
                             UIEvent.Type.ShowSnackbar(
                                 message =
-                                Localization.Key.UpdatedThePanelNameSuccessfully.getLocalizedString()
-                                    .replaceFirstPlaceHolderWith(newName) +
-                                    it.getRemoteOnlyFailureMsg(),
+                                    localizedStrings.UpdatedThePanelNameSuccessfully
+                                        .replaceActual(newName) +
+                                            it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
                             ),
                         )
                     }
@@ -303,8 +309,14 @@ class SpecificPanelManagerScreenVM(
         viewModelScope.launch {
             localPanelsRepo.deleteAFolderFromAPanel(panelId, folderId).collectLatest {
                 it.onSuccess {
-                    if (it.isRemoteExecutionSuccessful.not()) {
-                        pushUIEvent(UIEvent.Type.ShowSnackbar(it.getRemoteOnlyFailureMsg()))
+                    if (it.remoteExecResult?.isRemoteExecutionSuccessful == false) {
+                        pushUIEvent(
+                            UIEvent.Type.ShowSnackbar(
+                                it.getRemoteOnlyFailureMsg(
+                                    localizedStrings.RemoteExecutionFailed
+                                )
+                            )
+                        )
                     }
                 }
                 it.pushSnackbarOnFailure()

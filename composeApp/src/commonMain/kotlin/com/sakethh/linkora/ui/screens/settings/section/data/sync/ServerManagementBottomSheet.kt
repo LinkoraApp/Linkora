@@ -29,10 +29,11 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.ui.LocalNavController
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.navigation.Navigation
+import com.sakethh.linkora.utils.asUIString
 import com.sakethh.linkora.utils.bottomNavPaddingAcrossPlatforms
 import com.sakethh.linkora.utils.fillMaxWidthWithPadding
 import kotlinx.coroutines.launch
@@ -45,6 +46,7 @@ fun ServerManagementBottomSheet(
     sheetState: SheetState,
     isVisible: MutableState<Boolean>,
 ) {
+    val localizedStrings = LocalizedStrings.current
     val navController = LocalNavController.current
     val coroutineScope = rememberCoroutineScope()
     if (isVisible.value) {
@@ -63,7 +65,7 @@ fun ServerManagementBottomSheet(
             LazyColumn(modifier = Modifier.fillMaxWidth().bottomNavPaddingAcrossPlatforms()) {
                 item {
                     Text(
-                        text = Localization.rememberLocalizedString(Localization.Key.ManageConnectedServer),
+                        text = localizedStrings.ManageConnectedServer,
                         style = MaterialTheme.typography.titleMedium,
                         fontSize = 18.sp,
                         modifier = Modifier.fillMaxWidth().padding(end = 25.dp, start = 15.dp),
@@ -82,7 +84,7 @@ fun ServerManagementBottomSheet(
                         Column {
                             Text(
                                 text =
-                                Localization.rememberLocalizedString(Localization.Key.CurrentlyConnectedTo),
+                                    localizedStrings.CurrentlyConnectedTo,
                                 style = MaterialTheme.typography.titleSmall,
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.secondary,
@@ -105,7 +107,7 @@ fun ServerManagementBottomSheet(
                         Spacer(Modifier.width(15.dp))
                         Column {
                             Text(
-                                text = Localization.rememberLocalizedString(Localization.Key.SyncType),
+                                text = localizedStrings.SyncType,
                                 style = MaterialTheme.typography.titleSmall,
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.secondary,
@@ -122,14 +124,15 @@ fun ServerManagementBottomSheet(
                     Spacer(Modifier.height(30.dp))
                     FilledTonalButton(
                         modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidthWithPadding(),
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .fillMaxWidthWithPadding(),
                         onClick = {
                             navController.navigate(Navigation.Settings.Data.ServerSetupScreen)
                         },
                     ) {
                         Text(
                             text =
-                            Localization.rememberLocalizedString(Localization.Key.EditServerConfiguration),
+                                localizedStrings.EditServerConfiguration,
                             style = MaterialTheme.typography.titleSmall,
                         )
                     }
@@ -137,12 +140,13 @@ fun ServerManagementBottomSheet(
                 item {
                     Button(
                         modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidthWithPadding(),
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .fillMaxWidthWithPadding(),
                         colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer,
-                            contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                        ),
+                            ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                            ),
                         onClick = {
                             removeTheConnection {
                                 coroutineScope
@@ -157,9 +161,7 @@ fun ServerManagementBottomSheet(
                     ) {
                         Text(
                             text =
-                            Localization.rememberLocalizedString(
-                                Localization.Key.DeleteTheServerConnection,
-                            ),
+                                localizedStrings.DeleteTheServerConnection,
                             style = MaterialTheme.typography.titleSmall,
                         )
                     }

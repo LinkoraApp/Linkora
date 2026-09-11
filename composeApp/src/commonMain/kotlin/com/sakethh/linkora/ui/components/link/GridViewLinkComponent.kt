@@ -50,16 +50,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.MediaType
+import com.sakethh.linkora.domain.Platform
+import com.sakethh.linkora.ui.LocalPlatform
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.CoilImage
 import com.sakethh.linkora.ui.domain.model.LinkComponentParam
 import com.sakethh.linkora.ui.utils.fadedEdges
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.getVideoPlatformBaseUrls
 import com.sakethh.linkora.utils.host
-import com.sakethh.linkora.utils.rememberLocalizedString
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -69,6 +70,7 @@ fun GridViewLinkComponent(
     forStaggeredView: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val localizedStrings = LocalizedStrings.current
     val colorScheme = MaterialTheme.colorScheme
 
     var hasFocus by remember { mutableStateOf(false) }
@@ -79,7 +81,7 @@ fun GridViewLinkComponent(
     val currentOnLongClick by rememberUpdatedState(linkComponentParam.onLongClick)
     val currentShowMenuOnGridLinkClick by rememberUpdatedState(preferences.showMenuOnGridLinkClick)
     val currentIsSelectionModeEnabled by rememberUpdatedState(linkComponentParam.isSelectionModeEnabled.value)
-
+    val onAndroidTV = LocalPlatform.current is Platform.Android.TV
     val handleCardClick: () -> Unit = {
         if (currentShowMenuOnGridLinkClick && !currentIsSelectionModeEnabled) {
             currentOnMoreIconClick()
@@ -163,7 +165,7 @@ fun GridViewLinkComponent(
                 .border(
                     width = 2.5.dp,
                     color =
-                        if (hasFocus && !isMoreButtonFocused) {
+                        if (hasFocus && !isMoreButtonFocused && onAndroidTV) {
                             colorScheme.primary
                         } else {
                             Color.Transparent
@@ -353,7 +355,7 @@ fun GridViewLinkComponent(
 
                 if (linkComponentParam.showPath && !foldersPath.isNullOrEmpty()) {
                     Text(
-                        text = Localization.Key.FolderPathLabel.rememberLocalizedString(),
+                        text = localizedStrings.FolderPathLabel,
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.padding(top = 5.dp, start = 10.dp),

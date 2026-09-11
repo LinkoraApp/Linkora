@@ -54,12 +54,11 @@ import com.sakethh.linkora.ui.FabStateController
 import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.theme.DarkColors
 import com.sakethh.linkora.ui.theme.LightColors
 import com.sakethh.linkora.ui.theme.LinkoraTheme
-import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.isServerConfigured
-import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.Dispatchers
 import java.awt.Dimension
 import java.io.File
@@ -76,65 +75,53 @@ val linkoraSpecificFolder =
 suspend fun main() {
     LinkoraSDK.set(
         linkoraSdk =
-        LinkoraSDK(
-            platform = Platform.Desktop,
-            nativeUtils = NativeUtils(),
-            fileManager = FileManager(),
-            permissionManager = PermissionManager(),
-            localDatabase =
-            File(linkoraSpecificFolder, "${LocalDatabase.NAME}.db").run {
-                Room.databaseBuilder<LocalDatabase>(name = this.absolutePath)
-                    .setDriver(BundledSQLiteDriver())
-                    .addMigrations(
-                        LocalDatabase.MIGRATION_9_10,
-                        LocalDatabase.MIGRATION_10_11,
-                        LocalDatabase.MIGRATION_11_12,
-                        LocalDatabase.MIGRATION_12_13,
-                        LocalDatabase.MIGRATION_13_14,
-                        LocalDatabase.MIGRATION_14_15,
-                    )
-                    .build()
-            },
-            platformPreference = PlatformPreference,
-            network = Network,
-            dataSyncingNotificationService = NativeUtils.DataSyncingNotificationService(),
-            webCapture = NativeUtils.WebCapture(),
-            webCaptureDatabaseManager =
-            WebCaptureDatabaseManager(
-                databaseBuilder = { webCaptureDirPath ->
-                    File(webCaptureDirPath, "${WebCaptureDatabase.NAME}.db").run {
-                        Room.databaseBuilder<WebCaptureDatabase>(name = this.absolutePath)
+            LinkoraSDK(
+                platform = Platform.Desktop,
+                nativeUtils = NativeUtils(),
+                fileManager = FileManager(localizedStrings = {
+                    DependencyContainer.localizationRepo.localizedStrings.value
+                }),
+                permissionManager = PermissionManager(),
+                localDatabase =
+                    File(linkoraSpecificFolder, "${LocalDatabase.NAME}.db").run {
+                        Room.databaseBuilder<LocalDatabase>(name = this.absolutePath)
                             .setDriver(BundledSQLiteDriver())
-                            .setQueryCoroutineContext(Dispatchers.IO)
+                            .addMigrations(
+                                LocalDatabase.MIGRATION_9_10,
+                                LocalDatabase.MIGRATION_10_11,
+                                LocalDatabase.MIGRATION_11_12,
+                                LocalDatabase.MIGRATION_12_13,
+                                LocalDatabase.MIGRATION_13_14,
+                                LocalDatabase.MIGRATION_14_15,
+                            )
                             .build()
-                    }
-                },
+                    },
+                platformPreference = PlatformPreference,
+                network = Network(localizedStrings = {
+                    DependencyContainer.localizationRepo.localizedStrings.value
+                }),
+                dataSyncingNotificationService = NativeUtils.DataSyncingNotificationService(),
+                webCapture = NativeUtils.WebCapture(),
+                webCaptureDatabaseManager =
+                    WebCaptureDatabaseManager(
+                        databaseBuilder = { webCaptureDirPath ->
+                            File(webCaptureDirPath, "${WebCaptureDatabase.NAME}.db").run {
+                                Room.databaseBuilder<WebCaptureDatabase>(name = this.absolutePath)
+                                    .setDriver(BundledSQLiteDriver())
+                                    .setQueryCoroutineContext(Dispatchers.IO)
+                                    .build()
+                            }
+                        },
+                    ),
             ),
-        ),
     )
 
     DependencyContainer.preferencesRepo.loadPersistedPreferences()
     val preferences = DependencyContainer.preferencesRepo.getPreferences()
-    Localization.loadLocalizedStrings(
-        preferences,
-        languageCode = preferences.preferredAppLanguageCode,
-        languageName = preferences.preferredAppLanguageName,
-    )
-        ?.join()
-
-  /* CoroutineScope(Dispatchers.IO).launch {
-      val preferences = DependencyContainer.preferencesRepo.getPreferences()
-      println("Starting bulk capture")
-      BulkWebCaptureService.captureAllWebPages(
-          preferences = preferences,
-          localLinksRepo = DependencyContainer.localLinksRepo,
-          metaDataDao = LinkoraSDK.getInstance().webCaptureDatabaseManager.getDatabase(
-              preferences.webCapturesLocation
-          ).metaDataDao
-      )
-  }*/
+    DependencyContainer.localizationRepo.loadLanguage(preferences.preferredAppLanguageCode)
 
     application {
+        val localizedStrings = DependencyContainer.localizationRepo.localizedStrings
         val windowState =
             rememberWindowState(
                 width = 1054.dp,
@@ -145,19 +132,21 @@ suspend fun main() {
         Window(
             state = windowState,
             onCloseRequest = ::exitApplication,
-            title = Localization.Key.Linkora.getLocalizedString(),
+            title = localizedStrings.value.Linkora,
             undecorated = useLinkoraTopDecoratorOnDesktop,
         ) {
+            val localizedStrings by localizedStrings.collectAsStateWithLifecycle()
             val preferences by
-                DependencyContainer.preferencesRepo.preferencesAsFlow.collectAsStateWithLifecycle()
+            DependencyContainer.preferencesRepo.preferencesAsFlow.collectAsStateWithLifecycle()
             window.minimumSize = Dimension(1054, 600)
             CompositionLocalProvider(
                 LocalNavController provides navController,
                 LocalFabController provides
-                    retain {
-                        FabStateController()
-                    },
+                        retain {
+                            FabStateController()
+                        },
                 LocalPlatform provides Platform.Desktop,
+                LocalizedStrings provides localizedStrings
             ) {
                 LinkoraTheme(
                     colorScheme = if (preferences.useDarkTheme) DarkColors else LightColors,
@@ -181,10 +170,10 @@ suspend fun main() {
                             }
                         },
                         modifier =
-                        Modifier.border(
-                            0.5.dp,
-                            MaterialTheme.colorScheme.outline.copy(0.25f),
-                        ),
+                            Modifier.border(
+                                0.5.dp,
+                                MaterialTheme.colorScheme.outline.copy(0.25f),
+                            ),
                     ) {
                         App(modifier = Modifier.padding(it))
                     }
@@ -201,6 +190,7 @@ private fun ApplicationScope.TopDecorator(
     currentPlacement: WindowPlacement,
     changePlacement: (WindowPlacement) -> Unit,
 ) {
+    val localizedStrings = LocalizedStrings.current
     Column {
         Box(Modifier.fillMaxWidth().padding(2.dp), contentAlignment = Alignment.CenterEnd) {
             Row(
@@ -215,10 +205,12 @@ private fun ApplicationScope.TopDecorator(
                     )
                 }
                 Spacer(
-                    Modifier.padding(start = if (preferences.isServerConfigured().not()) 15.dp else 5.dp),
+                    Modifier.padding(
+                        start = if (preferences.isServerConfigured().not()) 15.dp else 5.dp
+                    ),
                 )
                 Text(
-                    text = Localization.Key.Linkora.rememberLocalizedString(),
+                    text = localizedStrings.Linkora,
                     style = MaterialTheme.typography.labelSmall,
                 )
             }
@@ -241,11 +233,11 @@ private fun ApplicationScope.TopDecorator(
                 ) {
                     Icon(
                         imageVector =
-                        if (currentPlacement != WindowPlacement.Fullscreen) {
-                            Icons.Default.Maximize
-                        } else {
-                            Icons.Outlined.Window
-                        },
+                            if (currentPlacement != WindowPlacement.Fullscreen) {
+                                Icons.Default.Maximize
+                            } else {
+                                Icons.Outlined.Window
+                            },
                         contentDescription = null,
                     )
                 }

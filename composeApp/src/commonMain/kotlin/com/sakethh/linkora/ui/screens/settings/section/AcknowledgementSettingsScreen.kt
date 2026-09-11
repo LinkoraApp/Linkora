@@ -17,7 +17,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,8 +30,8 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.ui.LocalNavController
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.SettingSectionComponent
 import com.sakethh.linkora.ui.screens.settings.SettingSectionComponentParam
@@ -41,7 +40,6 @@ import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.openUriOrNotify
-import com.sakethh.linkora.utils.rememberLocalizedString
 import kotlinx.coroutines.launch
 import linkora.composeapp.generated.resources.LOLCATpl_logo
 import linkora.composeapp.generated.resources.Res
@@ -52,31 +50,32 @@ import org.jetbrains.compose.resources.painterResource
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AcknowledgementScreen() {
+    val localizedStrings = LocalizedStrings.current
     val navController = LocalNavController.current
     SettingsSectionScaffold(
-        topAppBarText = Navigation.Settings.AcknowledgementScreen.toString(),
+        topAppBarText = localizedStrings.Acknowledgments,
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
             modifier =
-            Modifier.fillMaxSize()
-                .addEdgeToEdgeScaffoldPadding(paddingValues)
-                .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
+                Modifier.fillMaxSize()
+                    .addEdgeToEdgeScaffoldPadding(paddingValues)
+                    .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
             verticalArrangement = Arrangement.spacedBy(30.dp),
         ) {
             item {
                 Spacer(modifier = Modifier.height(15.dp))
                 AcknowledgeComponent(
-                    btnText = Localization.Key.MondsternOnDiscord.rememberLocalizedString(),
+                    btnText = localizedStrings.MondsternOnDiscord,
                     image = Res.drawable.mondstern_logo,
                     btnRedirectUrl = "https://pixelfed.social/mondstern",
-                    text = Localization.Key.MondsternAck.rememberLocalizedString(),
+                    text = localizedStrings.MondsternAck,
                 )
                 Spacer(modifier = Modifier.height(15.dp))
                 AcknowledgeComponent(
-                    btnText = Localization.Key.LOLCATplOnDiscord.rememberLocalizedString(),
+                    btnText = localizedStrings.LOLCATplOnDiscord,
                     image = Res.drawable.LOLCATpl_logo,
                     btnRedirectUrl = "https://discord.com/users/494115165927637007",
-                    text = Localization.Key.LOLCATplAck.rememberLocalizedString(),
+                    text = localizedStrings.LOLCATplAck,
                 )
             }
             item {
@@ -86,7 +85,7 @@ fun AcknowledgementScreen() {
                             navController.navigate(Navigation.Settings.AboutLibraries)
                         },
                         sectionIcon = Icons.Default.Info,
-                        sectionTitle = Localization.Key.AboutLibraries.rememberLocalizedString(),
+                        sectionTitle = localizedStrings.AboutLibraries,
                     ),
                 )
             }
@@ -108,22 +107,22 @@ private fun AcknowledgeComponent(
     val coroutineScope = rememberCoroutineScope()
     Column(
         modifier =
-        Modifier.fillMaxWidth()
-            .padding(start = 15.dp, end = 15.dp)
-            .clip(RoundedCornerShape(15.dp))
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.primary.copy(0.5f),
-                shape = RoundedCornerShape(15.dp),
-            ),
+            Modifier.fillMaxWidth()
+                .padding(start = 15.dp, end = 15.dp)
+                .clip(RoundedCornerShape(15.dp))
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.primary.copy(0.5f),
+                    shape = RoundedCornerShape(15.dp),
+                ),
     ) {
         Image(
             painter = painterResource(image),
             contentDescription = null,
             modifier =
-            Modifier.padding(start = 15.dp, top = 15.dp, bottom = 10.dp)
-                .clip(RoundedCornerShape(15.dp))
-                .size(65.dp),
+                Modifier.padding(start = 15.dp, top = 15.dp, bottom = 10.dp)
+                    .clip(RoundedCornerShape(15.dp))
+                    .size(65.dp),
         )
         Text(
             text = text,
@@ -141,10 +140,10 @@ private fun AcknowledgeComponent(
                 }
             },
             modifier =
-            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                .fillMaxWidth()
-                .padding(start = 15.dp, top = 10.dp, end = 15.dp)
-                .pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
+                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                    .fillMaxWidth()
+                    .padding(start = 15.dp, top = 10.dp, end = 15.dp)
+                    .pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
         ) {
             Text(
                 text = btnText,

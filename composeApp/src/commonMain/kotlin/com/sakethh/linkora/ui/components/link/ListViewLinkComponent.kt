@@ -63,17 +63,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.ui.LocalPlatform
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.CoilImage
 import com.sakethh.linkora.ui.domain.model.LinkComponentParam
 import com.sakethh.linkora.ui.screens.collections.components.ItemDivider
 import com.sakethh.linkora.ui.utils.pressScaleEffect
-import com.sakethh.linkora.utils.rememberLocalizedString
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -85,11 +84,12 @@ fun ListViewLinkComponent(
     imageAlignment: Alignment = Alignment.Center,
     onShare: (url: String) -> Unit,
 ) {
+    val localizedStrings = LocalizedStrings.current
     val localClipBoardManager = LocalClipboardManager.current
     val platform = LocalPlatform.current
 
     var hasFocus by remember { mutableStateOf(false) }
-
+    val onAndroidTV = platform is Platform.Android.TV
     Column(
         modifier =
             Modifier
@@ -107,11 +107,11 @@ fun ListViewLinkComponent(
                     )
                 }
                 .border(
-                    width = if (hasFocus) 2.5.dp else 0.dp,
-                    color = if (hasFocus) MaterialTheme.colorScheme.primary else Color.Transparent,
+                    width = if (hasFocus && onAndroidTV) 2.5.dp else 0.dp,
+                    color = if (hasFocus && onAndroidTV) MaterialTheme.colorScheme.primary else Color.Transparent,
                 )
                 .background(
-                    if (hasFocus) {
+                    if (hasFocus && onAndroidTV) {
                         MaterialTheme.colorScheme.primaryContainer.copy(0.15f)
                     } else {
                         Color.Transparent
@@ -302,7 +302,7 @@ fun ListViewLinkComponent(
 
         if (!foldersPath.isNullOrEmpty() && linkComponentParam.showPath) {
             Text(
-                text = Localization.Key.FolderPathLabel.rememberLocalizedString(),
+                text = localizedStrings.FolderPathLabel,
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.padding(top = 15.dp),

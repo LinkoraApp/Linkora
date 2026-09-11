@@ -43,13 +43,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.domain.AppAction
 import com.sakethh.linkora.ui.domain.TransferActionType
 import com.sakethh.linkora.ui.navigation.Navigation
@@ -60,8 +60,7 @@ import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.bottomNavPaddingAcrossPlatforms
 import com.sakethh.linkora.utils.defaultFolderIds
 import com.sakethh.linkora.utils.highlightOnFocused
-import com.sakethh.linkora.utils.rememberLocalizedString
-import com.sakethh.linkora.utils.replaceFirstPlaceHolderWith
+import com.sakethh.linkora.utils.replaceActual
 
 @Composable
 fun BottomNavOnSelection(
@@ -73,6 +72,7 @@ fun BottomNavOnSelection(
     selectedAndInRoot: MutableState<Boolean>,
     performAction: (AppAction) -> Unit,
 ) {
+    val localizedStrings = LocalizedStrings.current
     val coroutineScope = rememberCoroutineScope()
     val localNavController = LocalNavController.current
     val currentBackStackEntryState by localNavController.currentBackStackEntryAsState()
@@ -91,9 +91,9 @@ fun BottomNavOnSelection(
             Text(
                 text =
                     if (transferActionType == TransferActionType.COPY) {
-                        Localization.Key.Copying.rememberLocalizedString()
+                        localizedStrings.Copying
                     } else {
-                        Localization.Key.Moving.rememberLocalizedString()
+                        localizedStrings.Moving
                     },
                 style = MaterialTheme.typography.titleMedium,
                 fontSize = 14.sp,
@@ -123,16 +123,16 @@ fun BottomNavOnSelection(
             Column {
                 Text(
                     text =
-                        Localization.Key.SelectedLinksCount.rememberLocalizedString()
-                            .replaceFirstPlaceHolderWith(
+                        localizedStrings.SelectedLinksCount
+                            .replaceActual(
                                 CollectionsScreenVM.selectedLinkTagPairsViaLongClick.size.toString(),
                             ),
                     style = MaterialTheme.typography.titleSmall,
                 )
                 Text(
                     text =
-                        Localization.Key.SelectedFoldersCount.rememberLocalizedString()
-                            .replaceFirstPlaceHolderWith(
+                        localizedStrings.SelectedFoldersCount
+                            .replaceActual(
                                 CollectionsScreenVM.selectedFoldersViaLongClick.size.toString(),
                             ),
                     style = MaterialTheme.typography.titleSmall,
@@ -161,7 +161,7 @@ fun BottomNavOnSelection(
             ) {
                 if (transferActionType == TransferActionType.NONE || showPasteButton) {
                     Text(
-                        text = Localization.Key.MultiActionsLabel.rememberLocalizedString(),
+                        text = localizedStrings.MultiActionsLabel,
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(start = 15.dp),
@@ -322,9 +322,9 @@ fun BottomNavOnSelection(
             Text(
                 text =
                     if (transferActionType == TransferActionType.COPY) {
-                        Localization.Key.NavigateAndCopyDesc.rememberLocalizedString()
+                        localizedStrings.NavigateAndCopyDesc
                     } else {
-                        Localization.Key.NavigateAndMoveDesc.rememberLocalizedString()
+                        localizedStrings.NavigateAndMoveDesc
                     },
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.padding(start = 15.dp, end = 15.dp),
@@ -359,7 +359,7 @@ fun BottomNavOnSelection(
                         ).highlightOnFocused(shape = ButtonDefaults.shape),
             ) {
                 Text(
-                    text = Localization.Key.MarkSelectedFoldersAsRoot.rememberLocalizedString(),
+                    text = localizedStrings.MarkSelectedFoldersAsRoot,
                     style = MaterialTheme.typography.titleSmall,
                 )
             }
@@ -395,7 +395,7 @@ fun BottomNavOnSelection(
                         ).highlightOnFocused(shape = ButtonDefaults.shape),
             ) {
                 Text(
-                    text = Localization.Key.NavigateToCollectionsScreen.rememberLocalizedString(),
+                    text = localizedStrings.NavigateToCollectionsScreen,
                     style = MaterialTheme.typography.titleSmall,
                 )
             }

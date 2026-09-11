@@ -1,6 +1,5 @@
 package com.sakethh.linkora.data
 
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.RawExportString
 import com.sakethh.linkora.domain.Result
@@ -15,7 +14,6 @@ import com.sakethh.linkora.domain.repository.local.LocalPanelsRepo
 import com.sakethh.linkora.domain.repository.local.LocalTagsRepo
 import com.sakethh.linkora.utils.LinkoraExports
 import com.sakethh.linkora.utils.catchAsExceptionAndEmitFailure
-import com.sakethh.linkora.utils.getLocalizedString
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.SendChannel
@@ -35,7 +33,7 @@ class ExportDataRepoImpl(
         supervisorScope {
             emit(
                 Result.Loading(
-                    message = Localization.Key.PreparingToExportYourData.getLocalizedString(),
+                    message = "Preparing to export your data...",
                 ),
             )
             val deferredLinks = async {
@@ -58,21 +56,21 @@ class ExportDataRepoImpl(
             }
             emit(
                 Result.Loading(
-                    message = Localization.Key.CollectingLinksForExport.getLocalizedString(),
+                    message = "Collecting links for export...",
                 ),
             )
             val links = deferredLinks.await()
 
             emit(
                 Result.Loading(
-                    message = Localization.Key.CollectingFoldersForExport.getLocalizedString(),
+                    message = "Collecting folders for export...",
                 ),
             )
             val folders = deferredFolders.await()
 
             emit(
                 Result.Loading(
-                    message = Localization.Key.CollectingPanelsForExport.getLocalizedString(),
+                    message = "Collecting panels for export...",
                 ),
             )
             val panels = deferredPanels.await()
@@ -80,7 +78,7 @@ class ExportDataRepoImpl(
             emit(
                 Result.Loading(
                     message =
-                    Localization.Key.CollectingPanelFoldersForExport.getLocalizedString(),
+                        "Collecting panel-folders for export...",
                 ),
             )
             val panelFolders = deferredPanelFolders.await()
@@ -88,7 +86,7 @@ class ExportDataRepoImpl(
             emit(
                 Result.Loading(
                     message =
-                    Localization.Key.SerializingCollectedDataForExport.getLocalizedString(),
+                        "Serializing the collected data for export...",
                 ),
             )
 
@@ -102,16 +100,16 @@ class ExportDataRepoImpl(
                     links = links.map { it.copy(remoteId = null, lastModified = 0) },
                     folders = folders.map { it.copy(remoteId = null, lastModified = 0) },
                     panels =
-                    PanelForJSONExportSchema(
-                        panels = panels.map { it.copy(remoteId = null, lastModified = 0) },
-                        panelFolders =
-                        panelFolders.map {
-                            it.copy(
-                                remoteId = null,
-                                lastModified = 0,
-                            )
-                        },
-                    ),
+                        PanelForJSONExportSchema(
+                            panels = panels.map { it.copy(remoteId = null, lastModified = 0) },
+                            panelFolders =
+                                panelFolders.map {
+                                    it.copy(
+                                        remoteId = null,
+                                        lastModified = 0,
+                                    )
+                                },
+                        ),
                     tags = tags.map { it.copy(remoteId = null, lastModified = 0) },
                     linkTags = linkTags.map { it.copy(remoteId = null, lastModified = 0) },
                 )
@@ -131,116 +129,122 @@ class ExportDataRepoImpl(
     }
 
     override suspend fun rawExportDataAsHTML(): Flow<Result<RawExportString>> = channelFlow<Result<RawExportString>> {
-        supervisorScope {
-            val htmlFileRawText = StringBuilder()
+            supervisorScope {
+                val htmlFileRawText = StringBuilder()
 
-            send(Result.Loading(message = "Starting export data as HTML"))
+                send(Result.Loading(message = "Starting export data as HTML"))
 
-            val allLinks =
-                localLinksRepo.getAllLinks().groupBy {
-                    it.linkType
+                val allLinks =
+                    localLinksRepo.getAllLinks().groupBy {
+                        it.linkType
+                    }
+
+                send(Result.Loading(message = "Fetched all links, total: ${allLinks.size}"))
+
+                val savedLinksSection =
+                    StringBuilder(dtH3(LinkoraExports.SAVED_LINKS__LINKORA_EXPORT.name))
+                send(Result.Loading(message = "Processing saved links"))
+
+                val savedLinks = StringBuilder()
+                val deferredSavedLinks = async {
+                    allLinks[LinkType.SAVED_LINK]?.forEach { savedLink ->
+                        savedLinks += dtA(linkTitle = savedLink.title, link = savedLink.url)
+                        send(Result.Loading(message = "Processed saved link: ${savedLink.title}"))
+                    }
                 }
 
-            send(Result.Loading(message = "Fetched all links, total: ${allLinks.size}"))
+                val impLinksSection =
+                    StringBuilder(dtH3(LinkoraExports.IMPORTANT_LINKS__LINKORA_EXPORT.name))
+                send(Result.Loading(message = "Processing important links"))
 
-            val savedLinksSection =
-                StringBuilder(dtH3(LinkoraExports.SAVED_LINKS__LINKORA_EXPORT.name))
-            send(Result.Loading(message = "Processing saved links"))
-
-            val savedLinks = StringBuilder()
-            val deferredSavedLinks = async {
-                allLinks[LinkType.SAVED_LINK]?.forEach { savedLink ->
-                    savedLinks += dtA(linkTitle = savedLink.title, link = savedLink.url)
-                    send(Result.Loading(message = "Processed saved link: ${savedLink.title}"))
+                val impLinks = StringBuilder()
+                val deferredImpLinks = async {
+                    allLinks[LinkType.IMPORTANT_LINK]?.forEach { impLink ->
+                        impLinks += dtA(linkTitle = impLink.title, link = impLink.url)
+                        send(Result.Loading(message = "Processed important link: ${impLink.title}"))
+                    }
                 }
-            }
 
-            val impLinksSection =
-                StringBuilder(dtH3(LinkoraExports.IMPORTANT_LINKS__LINKORA_EXPORT.name))
-            send(Result.Loading(message = "Processing important links"))
-
-            val impLinks = StringBuilder()
-            val deferredImpLinks = async {
-                allLinks[LinkType.IMPORTANT_LINK]?.forEach { impLink ->
-                    impLinks += dtA(linkTitle = impLink.title, link = impLink.url)
-                    send(Result.Loading(message = "Processed important link: ${impLink.title}"))
+                send(Result.Loading(message = "Processing regular folders and respective links"))
+                val deferredRegularFoldersAndRespectiveLinks = async {
+                    dtH3(LinkoraExports.REGULAR_FOLDERS__LINKORA_EXPORT.name) +
+                            dlP(
+                                foldersSectionInHtml(
+                                    parentFolderId = null,
+                                    forArchiveFolders = false
+                                ),
+                            )
                 }
-            }
 
-            send(Result.Loading(message = "Processing regular folders and respective links"))
-            val deferredRegularFoldersAndRespectiveLinks = async {
-                dtH3(LinkoraExports.REGULAR_FOLDERS__LINKORA_EXPORT.name) +
-                    dlP(
-                        foldersSectionInHtml(parentFolderId = null, forArchiveFolders = false),
-                    )
-            }
-
-            send(Result.Loading(message = "Processing archived folders and respective links"))
-            val deferredArchivedFoldersAndRespectiveLinks = async {
-                dtH3(LinkoraExports.ARCHIVED_FOLDERS__LINKORA_EXPORT.name) +
-                    dlP(
-                        foldersSectionInHtml(parentFolderId = null, forArchiveFolders = true),
-                    )
-            }
-
-            val historyLinksSection =
-                StringBuilder(dtH3(LinkoraExports.HISTORY_LINKS__LINKORA_EXPORT.name))
-            send(Result.Loading(message = "Processing history links"))
-
-            val historyLinks = StringBuilder()
-            val deferredHistoryLinks = async {
-                allLinks[LinkType.HISTORY_LINK]?.forEach { historyLink ->
-                    historyLinks +=
-                        dtA(
-                            linkTitle = historyLink.title,
-                            link = historyLink.url,
-                        )
-                    send(Result.Loading(message = "Processed history link: ${historyLink.title}"))
+                send(Result.Loading(message = "Processing archived folders and respective links"))
+                val deferredArchivedFoldersAndRespectiveLinks = async {
+                    dtH3(LinkoraExports.ARCHIVED_FOLDERS__LINKORA_EXPORT.name) +
+                            dlP(
+                                foldersSectionInHtml(
+                                    parentFolderId = null,
+                                    forArchiveFolders = true
+                                ),
+                            )
                 }
-            }
 
-            val archivedLinksSection =
-                StringBuilder(dtH3(LinkoraExports.ARCHIVED_LINKS__LINKORA_EXPORT.name))
-            send(Result.Loading(message = "Processing archived links"))
+                val historyLinksSection =
+                    StringBuilder(dtH3(LinkoraExports.HISTORY_LINKS__LINKORA_EXPORT.name))
+                send(Result.Loading(message = "Processing history links"))
 
-            val archivedLinks = StringBuilder()
-            val deferredArchivedLinks = async {
-                allLinks[LinkType.ARCHIVE_LINK]?.forEach { archivedLink ->
-                    archivedLinks +=
-                        dtA(
-                            linkTitle = archivedLink.title,
-                            link = archivedLink.url,
-                        )
-                    send(Result.Loading(message = "Processed archived link: ${archivedLink.title}"))
+                val historyLinks = StringBuilder()
+                val deferredHistoryLinks = async {
+                    allLinks[LinkType.HISTORY_LINK]?.forEach { historyLink ->
+                        historyLinks +=
+                            dtA(
+                                linkTitle = historyLink.title,
+                                link = historyLink.url,
+                            )
+                        send(Result.Loading(message = "Processed history link: ${historyLink.title}"))
+                    }
                 }
+
+                val archivedLinksSection =
+                    StringBuilder(dtH3(LinkoraExports.ARCHIVED_LINKS__LINKORA_EXPORT.name))
+                send(Result.Loading(message = "Processing archived links"))
+
+                val archivedLinks = StringBuilder()
+                val deferredArchivedLinks = async {
+                    allLinks[LinkType.ARCHIVE_LINK]?.forEach { archivedLink ->
+                        archivedLinks +=
+                            dtA(
+                                linkTitle = archivedLink.title,
+                                link = archivedLink.url,
+                            )
+                        send(Result.Loading(message = "Processed archived link: ${archivedLink.title}"))
+                    }
+                }
+
+                deferredSavedLinks.await()
+                savedLinksSection += dlP(savedLinks.toString())
+                htmlFileRawText += savedLinksSection
+
+                deferredImpLinks.await()
+                impLinksSection += dlP(impLinks.toString())
+                htmlFileRawText += impLinksSection
+
+                htmlFileRawText += deferredRegularFoldersAndRespectiveLinks.await()
+
+                htmlFileRawText += deferredArchivedFoldersAndRespectiveLinks.await()
+
+                deferredHistoryLinks.await()
+                historyLinksSection += dlP(historyLinks.toString())
+                htmlFileRawText += historyLinksSection
+
+                deferredArchivedLinks.await()
+                archivedLinksSection += dlP(archivedLinks.toString())
+                htmlFileRawText += archivedLinksSection
+
+                send(Result.Loading(message = "Completed export process, finalizing HTML"))
+
+                send(Result.Success(dlP(htmlFileRawText.toString())))
             }
-
-            deferredSavedLinks.await()
-            savedLinksSection += dlP(savedLinks.toString())
-            htmlFileRawText += savedLinksSection
-
-            deferredImpLinks.await()
-            impLinksSection += dlP(impLinks.toString())
-            htmlFileRawText += impLinksSection
-
-            htmlFileRawText += deferredRegularFoldersAndRespectiveLinks.await()
-
-            htmlFileRawText += deferredArchivedFoldersAndRespectiveLinks.await()
-
-            deferredHistoryLinks.await()
-            historyLinksSection += dlP(historyLinks.toString())
-            htmlFileRawText += historyLinksSection
-
-            deferredArchivedLinks.await()
-            archivedLinksSection += dlP(archivedLinks.toString())
-            htmlFileRawText += archivedLinksSection
-
-            send(Result.Loading(message = "Completed export process, finalizing HTML"))
-
-            send(Result.Success(dlP(htmlFileRawText.toString())))
         }
-    }
-        .catchAsExceptionAndEmitFailure()
+            .catchAsExceptionAndEmitFailure()
 
     override suspend fun rawExportDataAsHTML(
         links: List<Link>,
@@ -253,7 +257,8 @@ class ExportDataRepoImpl(
         supervisorScope {
             val htmlFileRawText = StringBuilder()
 
-            val savedLinksSection = StringBuilder(dtH3(LinkoraExports.SAVED_LINKS__LINKORA_EXPORT.name))
+            val savedLinksSection =
+                StringBuilder(dtH3(LinkoraExports.SAVED_LINKS__LINKORA_EXPORT.name))
 
             val savedLinks = StringBuilder()
             val deferredSavedLinks = async {
@@ -262,7 +267,8 @@ class ExportDataRepoImpl(
                 }
             }
 
-            val impLinksSection = StringBuilder(dtH3(LinkoraExports.IMPORTANT_LINKS__LINKORA_EXPORT.name))
+            val impLinksSection =
+                StringBuilder(dtH3(LinkoraExports.IMPORTANT_LINKS__LINKORA_EXPORT.name))
 
             val impLinks = StringBuilder()
             val deferredImpLinks = async {
@@ -273,24 +279,24 @@ class ExportDataRepoImpl(
 
             val deferredRegularFoldersAndRespectiveLinks = async {
                 dtH3(LinkoraExports.REGULAR_FOLDERS__LINKORA_EXPORT.name) +
-                    dlP(
-                        foldersSectionInHtml(
-                            allFolders = folders,
-                            allLinks = links,
-                            forArchiveFolders = false,
-                        ),
-                    )
+                        dlP(
+                            foldersSectionInHtml(
+                                allFolders = folders,
+                                allLinks = links,
+                                forArchiveFolders = false,
+                            ),
+                        )
             }
 
             val deferredArchivedFoldersAndRespectiveLinks = async {
                 dtH3(LinkoraExports.ARCHIVED_FOLDERS__LINKORA_EXPORT.name) +
-                    dlP(
-                        foldersSectionInHtml(
-                            allFolders = folders,
-                            allLinks = links,
-                            forArchiveFolders = true,
-                        ),
-                    )
+                        dlP(
+                            foldersSectionInHtml(
+                                allFolders = folders,
+                                allLinks = links,
+                                forArchiveFolders = true,
+                            ),
+                        )
             }
 
             val historyLinksSection =
@@ -398,16 +404,22 @@ class ExportDataRepoImpl(
                     send(
                         Result.Loading(
                             message =
-                            "Processing link: ${filteredLink.title} (URL: ${filteredLink.url}) in folder: ${childFolder.name}",
+                                "Processing link: ${filteredLink.title} (URL: ${filteredLink.url}) in folder: ${childFolder.name}",
                         ),
                     )
-                    folderLinksDTA.append(dtA(linkTitle = filteredLink.title, link = filteredLink.url))
+                    folderLinksDTA.append(
+                        dtA(
+                            linkTitle = filteredLink.title,
+                            link = filteredLink.url
+                        )
+                    )
                 }
                 frame.linksHtml = folderLinksDTA.toString()
 
                 send(Result.Loading(message = "Completed links for folder: ${childFolder.name}"))
 
-                val children = localFoldersRepo.getChildFoldersOfThisParentIDAsList(childFolder.localId)
+                val children =
+                    localFoldersRepo.getChildFoldersOfThisParentIDAsList(childFolder.localId)
                 frame.childIds = children.map { it.localId }
 
                 if (children.isNotEmpty()) {
@@ -433,9 +445,9 @@ class ExportDataRepoImpl(
 
                 val fullHtml =
                     currentFolderDTH3 +
-                        dlP(
-                            frame.linksHtml + nestedFolderHTML.toString(),
-                        )
+                            dlP(
+                                frame.linksHtml + nestedFolderHTML.toString(),
+                            )
 
                 folderHtmlMap[childFolder.localId] = fullHtml
 
@@ -455,7 +467,7 @@ class ExportDataRepoImpl(
                 send(
                     Result.Loading(
                         message =
-                        "Finished processing folder: ${childFolder.name} (ID: ${childFolder.localId})",
+                            "Finished processing folder: ${childFolder.name} (ID: ${childFolder.localId})",
                     ),
                 )
             }
@@ -528,9 +540,9 @@ class ExportDataRepoImpl(
                 val currentFolderDTH3 = dtH3(folder.name)
                 val fullHtml =
                     currentFolderDTH3 +
-                        dlP(
-                            frame.linksHtml + nestedHtmlBuilder.toString(),
-                        )
+                            dlP(
+                                frame.linksHtml + nestedHtmlBuilder.toString(),
+                            )
 
                 folderHtmlMap[folder.localId] = fullHtml
             }

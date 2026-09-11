@@ -23,11 +23,9 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.Platform
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.utils.pressScaleEffect
-import com.sakethh.linkora.utils.getLocalizedString
-import com.sakethh.linkora.utils.rememberLocalizedString
 
 @Composable
 fun TagDeletionConfirmation(
@@ -35,6 +33,7 @@ fun TagDeletionConfirmation(
     onHide: () -> Unit,
     onDelete: () -> Unit,
 ) {
+    val localizedStrings = LocalizedStrings.current
     if (showConfirmation) {
         var showLinearProgressBar by rememberSaveable {
             mutableStateOf(false)
@@ -51,12 +50,12 @@ fun TagDeletionConfirmation(
                     Button(
                         onClick = onDelete,
                         modifier =
-                        Modifier.pressScaleEffect()
-                            .pointerHoverIcon(icon = PointerIcon.Hand)
-                            .fillMaxWidth(),
+                            Modifier.pressScaleEffect()
+                                .pointerHoverIcon(icon = PointerIcon.Hand)
+                                .fillMaxWidth(),
                     ) {
                         Text(
-                            text = Localization.Key.Delete.getLocalizedString(),
+                            text = localizedStrings.Delete,
                             style = MaterialTheme.typography.titleMedium,
                         )
                     }
@@ -67,12 +66,12 @@ fun TagDeletionConfirmation(
                     OutlinedButton(
                         onClick = onHide,
                         modifier =
-                        Modifier.pressScaleEffect()
-                            .pointerHoverIcon(icon = PointerIcon.Hand)
-                            .fillMaxWidth(),
+                            Modifier.pressScaleEffect()
+                                .pointerHoverIcon(icon = PointerIcon.Hand)
+                                .fillMaxWidth(),
                     ) {
                         Text(
-                            text = Localization.Key.Cancel.getLocalizedString(),
+                            text = localizedStrings.Cancel,
                             style = MaterialTheme.typography.titleSmall,
                         )
                     }
@@ -87,7 +86,7 @@ fun TagDeletionConfirmation(
             },
             title = {
                 Text(
-                    text = Localization.Key.TagDeletionConfirmation.rememberLocalizedString(),
+                    text = localizedStrings.TagDeletionConfirmation,
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 24.sp,
                 )
@@ -96,12 +95,12 @@ fun TagDeletionConfirmation(
                 if (showLinearProgressBar) {
                     LinearProgressIndicator(
                         modifier =
-                        Modifier.fillMaxWidth()
-                            .padding(
-                                start = 15.dp,
-                                end = 15.dp,
-                                bottom = if (!Platform.Android.onMobile()) 15.dp else 0.dp,
-                            ),
+                            Modifier.fillMaxWidth()
+                                .padding(
+                                    start = 15.dp,
+                                    end = 15.dp,
+                                    bottom = if (!Platform.Android.onMobile()) 15.dp else 0.dp,
+                                ),
                     )
                 }
             },

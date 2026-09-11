@@ -1,6 +1,7 @@
 package com.sakethh.linkora.platform
 
 import AndroidDesktopWebCapture
+import LocalizedStrings
 import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
@@ -18,7 +19,6 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.sakethh.linkora.KaptureOptions
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.R
 import com.sakethh.linkora.WebCaptureDatabase
 import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
@@ -31,7 +31,6 @@ import com.sakethh.linkora.domain.repository.local.RefreshLinksRepo
 import com.sakethh.linkora.domain.repository.local.WebCaptureRepo
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.utils.getDefaultFolder
-import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.getPOSIXPathFromSafUri
 import com.sakethh.linkora.utils.onTV
 import com.sakethh.linkora.worker.AllLinksWebCaptureWorker
@@ -112,6 +111,7 @@ actual class NativeUtils(
 
     actual class DataSyncingNotificationService(
         private val context: Context,
+        private val localizedStrings: () -> LocalizedStrings
     ) {
         private val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -119,7 +119,7 @@ actual class NativeUtils(
         actual fun showNotification() {
             val notification =
                 NotificationCompat.Builder(context, "1").setSmallIcon(R.drawable.ic_stat_name)
-                    .setContentTitle(Localization.Key.SyncingDataLabel.getLocalizedString())
+                    .setContentTitle(localizedStrings().SyncingDataLabel)
                     .setProgress(
                         0,
                         0,
@@ -312,27 +312,36 @@ actual class NativeUtils(
             ).toString()
             val dbFilePath = "$rawDirPath/${WebCaptureDatabase.NAME}.db"
 
-            checkAndFixDBPermissions(dbFilePath, webCaptureDatabaseManager, captureLocation, onAccessError = {
-                val webCaptureFolder = DocumentFile.fromTreeUri(context, captureLocation.toUri())
-                    ?: return@checkAndFixDBPermissions
+            checkAndFixDBPermissions(
+                dbFilePath,
+                webCaptureDatabaseManager,
+                captureLocation,
+                onAccessError = {
+                    val webCaptureFolder =
+                        DocumentFile.fromTreeUri(context, captureLocation.toUri())
+                            ?: return@checkAndFixDBPermissions
 
-                recreateDB(
-                    dbFilePath = dbFilePath,
-                    readExistingDb = { tempFile ->
-                        val existingDbDoc = webCaptureFolder.findFile("${WebCaptureDatabase.NAME}.db")
-                        if (existingDbDoc != null && existingDbDoc.exists()) {
-                            context.contentResolver.openInputStream(existingDbDoc.uri)?.use { input ->
-                                tempFile.outputStream().use { output -> input.copyTo(output) }
+                    recreateDB(
+                        dbFilePath = dbFilePath,
+                        readExistingDb = { tempFile ->
+                            val existingDbDoc =
+                                webCaptureFolder.findFile("${WebCaptureDatabase.NAME}.db")
+                            if (existingDbDoc != null && existingDbDoc.exists()) {
+                                context.contentResolver.openInputStream(existingDbDoc.uri)
+                                    ?.use { input ->
+                                        tempFile.outputStream()
+                                            .use { output -> input.copyTo(output) }
+                                    }
+                            }
+                        },
+                        deleteExistingFiles = {
+                            captureDBFiles.forEach { fileName ->
+                                webCaptureFolder.findFile(fileName)?.delete()
                             }
                         }
-                    },
-                    deleteExistingFiles = {
-                        captureDBFiles.forEach { fileName ->
-                            webCaptureFolder.findFile(fileName)?.delete()
-                        }
-                    }
-                )
-            })
+                    )
+                }
+            )
         }
 
         private suspend fun prepareExternalDatabaseViaPOSIX(
@@ -342,22 +351,28 @@ actual class NativeUtils(
             val dbFilePath = "${webCaptureFolder.absolutePath}/${WebCaptureDatabase.NAME}.db"
             val defaultPath = getDefaultFolder(ExportLocationType.WEB_CAPTURE).absolutePath
 
-            checkAndFixDBPermissions(dbFilePath, webCaptureDatabaseManager, defaultPath, onAccessError = {
-                recreateDB(
-                    dbFilePath = dbFilePath,
-                    readExistingDb = { tempFile ->
-                        val existingDbFile = File(webCaptureFolder, "${WebCaptureDatabase.NAME}.db")
-                        if (existingDbFile.exists()) {
-                            existingDbFile.copyTo(tempFile, overwrite = true)
+            checkAndFixDBPermissions(
+                dbFilePath,
+                webCaptureDatabaseManager,
+                defaultPath,
+                onAccessError = {
+                    recreateDB(
+                        dbFilePath = dbFilePath,
+                        readExistingDb = { tempFile ->
+                            val existingDbFile =
+                                File(webCaptureFolder, "${WebCaptureDatabase.NAME}.db")
+                            if (existingDbFile.exists()) {
+                                existingDbFile.copyTo(tempFile, overwrite = true)
+                            }
+                        },
+                        deleteExistingFiles = {
+                            captureDBFiles.forEach { fileName ->
+                                File(webCaptureFolder, fileName).delete()
+                            }
                         }
-                    },
-                    deleteExistingFiles = {
-                        captureDBFiles.forEach { fileName ->
-                            File(webCaptureFolder, fileName).delete()
-                        }
-                    }
-                )
-            })
+                    )
+                }
+            )
         }
 
         actual suspend fun prepareExternalDatabase(

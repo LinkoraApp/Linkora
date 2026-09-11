@@ -42,10 +42,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ComposableContent
 import com.sakethh.linkora.domain.model.Folder
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.CoilImage
 import com.sakethh.linkora.ui.components.link.TagsRow
 import com.sakethh.linkora.ui.domain.Layout
@@ -56,8 +56,6 @@ import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.fadedEdges
 import com.sakethh.linkora.ui.utils.pressScaleEffect
-import com.sakethh.linkora.utils.getLocalizedString
-import com.sakethh.linkora.utils.rememberLocalizedString
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -69,6 +67,7 @@ fun MobileMenu(
     showNote: MutableState<Boolean>,
     commonMenuContent: ComposableContent,
 ) {
+    val localizedStrings = LocalizedStrings.current
     val localClipBoardManager = LocalClipboardManager.current
     val coroutineScope = rememberCoroutineScope()
     val menuBtmSheetFor = remember {
@@ -76,37 +75,37 @@ fun MobileMenu(
     }
     val showTags = remember {
         menuBtmSheetParam.linkTagsPair?.tags?.isEmpty() == false &&
-            preferences.selectedLinkLayout in
-            listOf(
-                Layout.STAGGERED_VIEW.name,
-                Layout.GRID_VIEW.name,
-            )
+                preferences.selectedLinkLayout in
+                listOf(
+                    Layout.STAGGERED_VIEW.name,
+                    Layout.GRID_VIEW.name,
+                )
     }
     val hostComponent: ComposableContent = {
         Text(
             modifier =
-            Modifier.then(if (!showTags) Modifier else Modifier.padding(start = 10.dp))
-                .background(
-                    color =
-                    MaterialTheme.colorScheme.secondaryContainer.copy(
-                        if (!showTags) 1f else 0.5f,
-                    ),
-                    shape = RoundedCornerShape(10.dp),
-                )
-                .padding(5.dp),
+                Modifier.then(if (!showTags) Modifier else Modifier.padding(start = 10.dp))
+                    .background(
+                        color =
+                            MaterialTheme.colorScheme.secondaryContainer.copy(
+                                if (!showTags) 1f else 0.5f,
+                            ),
+                        shape = RoundedCornerShape(10.dp),
+                    )
+                    .padding(5.dp),
             text =
-            menuBtmSheetParam.linkTagsPair!!
-                .link
-                .host
-                .replace("www.", "")
-                .replace("http://", "")
-                .replace("https://", ""),
+                menuBtmSheetParam.linkTagsPair!!
+                    .link
+                    .host
+                    .replace("www.", "")
+                    .replace("http://", "")
+                    .replace("https://", ""),
             style =
-            if (!showTags) {
-                MaterialTheme.typography.titleLarge
-            } else {
-                MaterialTheme.typography.titleMedium
-            },
+                if (!showTags) {
+                    MaterialTheme.typography.titleLarge
+                } else {
+                    MaterialTheme.typography.titleMedium
+                },
             maxLines = 1,
             textAlign = TextAlign.Start,
             overflow = TextOverflow.Ellipsis,
@@ -123,25 +122,26 @@ fun MobileMenu(
             Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
                 CoilImage(
                     modifier =
-                    Modifier.height(200.dp)
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp))
-                        .fadedEdges(
-                            MaterialTheme.colorScheme,
-                            edgeType = EdgeType.BOTTOM,
-                        )
-                        .fadedEdges(
-                            MaterialTheme.colorScheme,
-                            edgeType = EdgeType.TOP,
-                        ),
+                        Modifier.height(200.dp)
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp))
+                            .fadedEdges(
+                                MaterialTheme.colorScheme,
+                                edgeType = EdgeType.BOTTOM,
+                            )
+                            .fadedEdges(
+                                MaterialTheme.colorScheme,
+                                edgeType = EdgeType.TOP,
+                            ),
                     imgURL = currentLinkTagsPair.link.imgURL,
                     preferences = preferences,
-                    userAgent = currentLinkTagsPair.link.userAgent ?: preferences.primaryJsoupUserAgent,
+                    userAgent = currentLinkTagsPair.link.userAgent
+                        ?: preferences.primaryJsoupUserAgent,
                 )
                 Column(
                     modifier =
-                    Modifier.align(Alignment.BottomStart)
-                        .padding(start = 8.dp, end = 15.dp, top = 15.dp, bottom = 8.dp),
+                        Modifier.align(Alignment.BottomStart)
+                            .padding(start = 8.dp, end = 15.dp, top = 15.dp, bottom = 8.dp),
                 ) {
                     Text(
                         text = currentLinkTagsPair.link.title,
@@ -152,17 +152,17 @@ fun MobileMenu(
                         fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .clickable(
-                                interactionSource = null,
-                                onClick = {
-                                    localClipBoardManager.setText(
-                                        AnnotatedString(menuBtmSheetParam.linkTagsPair!!.link.title),
-                                    )
-                                },
-                                indication = null,
-                            )
-                            .padding(end = 20.dp),
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .clickable(
+                                    interactionSource = null,
+                                    onClick = {
+                                        localClipBoardManager.setText(
+                                            AnnotatedString(menuBtmSheetParam.linkTagsPair!!.link.title),
+                                        )
+                                    },
+                                    indication = null,
+                                )
+                                .padding(end = 20.dp),
                     )
                     if (!showTags) {
                         Spacer(Modifier.height(5.dp))
@@ -174,16 +174,16 @@ fun MobileMenu(
         if (
             menuBtmSheetLinkEntries().contains(menuBtmSheetFor) &&
             (
-                !preferences.showAssociatedImageInLinkMenu ||
-                    currentLinkTagsPair.link.imgURL.isEmpty()
-                )
+                    !preferences.showAssociatedImageInLinkMenu ||
+                            currentLinkTagsPair.link.imgURL.isEmpty()
+                    )
         ) {
             MenuNonImageHeader(
                 onClick = {
                     localClipBoardManager.setText(AnnotatedString(currentLinkTagsPair.link.title))
                     coroutineScope.pushUIEvent(
                         UIEvent.Type.ShowSnackbar(
-                            Localization.Key.CopiedTitleToTheClipboard.getLocalizedString(),
+                            localizedStrings.CopiedTitleToTheClipboard,
                         ),
                     )
                 },
@@ -202,7 +202,7 @@ fun MobileMenu(
                     localClipBoardManager.setText(AnnotatedString(currentFolder.name))
                     coroutineScope.pushUIEvent(
                         UIEvent.Type.ShowSnackbar(
-                            Localization.Key.CopiedTitleToTheClipboard.getLocalizedString(),
+                            localizedStrings.CopiedTitleToTheClipboard,
                         ),
                     )
                 },
@@ -226,21 +226,21 @@ fun MobileMenu(
                         .fillMaxWidth()
                 if (showTags) {
                     Text(
-                        text = Localization.Key.AssociatedTags.rememberLocalizedString(),
+                        text = localizedStrings.AssociatedTags,
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier =
-                        commonModifier.padding(
-                            top =
-                            if (
-                                !preferences.showAssociatedImageInLinkMenu ||
-                                currentLinkTagsPair.link.imgURL.isEmpty()
-                            ) {
-                                10.dp
-                            } else {
-                                0.dp
-                            },
-                        ),
+                            commonModifier.padding(
+                                top =
+                                    if (
+                                        !preferences.showAssociatedImageInLinkMenu ||
+                                        currentLinkTagsPair.link.imgURL.isEmpty()
+                                    ) {
+                                        10.dp
+                                    } else {
+                                        0.dp
+                                    },
+                            ),
                         fontSize = 12.sp,
                     )
                     TagsRow(
@@ -265,7 +265,7 @@ fun MobileMenu(
                 }
             if (note.isNotEmpty()) {
                 Text(
-                    text = Localization.Key.SavedNote.rememberLocalizedString(),
+                    text = localizedStrings.SavedNote,
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.primary,
                     fontSize = 16.sp,
@@ -276,23 +276,23 @@ fun MobileMenu(
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 20.sp,
                     modifier =
-                    Modifier.fillMaxWidth()
-                        .pointerHoverIcon(icon = PointerIcon.Hand)
-                        .combinedClickable(
-                            onClick = {},
-                            onLongClick = {
-                                localClipBoardManager.setText(AnnotatedString(note))
-                                coroutineScope.pushUIEvent(
-                                    UIEvent.Type.ShowSnackbar(
-                                        Localization.Key.CopiedNoteToTheClipboard.getLocalizedString(),
-                                    ),
-                                )
-                            },
-                        )
-                        .padding(
-                            start = 20.dp,
-                            end = 25.dp,
-                        ),
+                        Modifier.fillMaxWidth()
+                            .pointerHoverIcon(icon = PointerIcon.Hand)
+                            .combinedClickable(
+                                onClick = {},
+                                onLongClick = {
+                                    localClipBoardManager.setText(AnnotatedString(note))
+                                    coroutineScope.pushUIEvent(
+                                        UIEvent.Type.ShowSnackbar(
+                                            localizedStrings.CopiedNoteToTheClipboard,
+                                        ),
+                                    )
+                                },
+                            )
+                            .padding(
+                                start = 20.dp,
+                                end = 25.dp,
+                            ),
                     textAlign = TextAlign.Start,
                     lineHeight = 24.sp,
                 )
@@ -304,7 +304,7 @@ fun MobileMenu(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = Localization.Key.NoNoteAdded.rememberLocalizedString(),
+                        text = localizedStrings.NoNoteAdded,
                         style = MaterialTheme.typography.titleSmall,
                         fontSize = 15.sp,
                         textAlign = TextAlign.Start,
@@ -322,17 +322,17 @@ fun MobileMenu(
 fun MenuNonImageHeader(onClick: () -> Unit, leadingIcon: ImageVector, text: String) {
     Row(
         modifier =
-        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-            .combinedClickable(
-                interactionSource =
-                remember {
-                    MutableInteractionSource()
-                },
-                indication = null,
-                onClick = onClick,
-            )
-            .pressScaleEffect()
-            .fillMaxWidth(),
+            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                .combinedClickable(
+                    interactionSource =
+                        remember {
+                            MutableInteractionSource()
+                        },
+                    indication = null,
+                    onClick = onClick,
+                )
+                .pressScaleEffect()
+                .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(

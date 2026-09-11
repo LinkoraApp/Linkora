@@ -42,6 +42,7 @@ import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.domain.AppAction
 import com.sakethh.linkora.ui.navigation.Navigation
+import com.sakethh.linkora.utils.asLocalizedString
 import com.sakethh.linkora.utils.currentSavedServerConfig
 
 @Composable
@@ -109,7 +110,7 @@ fun DesktopNavigationRail(
                         },
                         label = {
                             Text(
-                                text = navRouteItem.toString(),
+                                text = navRouteItem.asLocalizedString(),
                                 style = MaterialTheme.typography.titleSmall,
                                 maxLines = 1,
                                 fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,

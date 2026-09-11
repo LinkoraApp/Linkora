@@ -14,7 +14,6 @@ import androidx.compose.ui.platform.UriHandler
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.KaptureOptions
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkType
@@ -24,6 +23,7 @@ import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.domain.model.tag.Tag
+import com.sakethh.linkora.domain.repository.LocalizationRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.PermissionManager
@@ -37,7 +37,6 @@ import com.sakethh.linkora.ui.screens.onboarding.Slide2
 import com.sakethh.linkora.ui.screens.onboarding.Slide3
 import com.sakethh.linkora.ui.screens.onboarding.Slide4
 import com.sakethh.linkora.ui.utils.UIEvent
-import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.openUriOrNotify
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -49,9 +48,10 @@ open class SettingsScreenViewModel(
     private val permissionManager: PermissionManager,
     private val webCapture: NativeUtils.WebCapture,
     private val webCaptureDatabaseManager: WebCaptureDatabaseManager,
+    private val localizationRepo: LocalizationRepo.Local
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
-
+    val localizedStrings get() = localizationRepo.localizedStrings.value
     fun generalSection(
         onAndroidMobile: Boolean,
         preferences: AppPreferences,
@@ -59,9 +59,9 @@ open class SettingsScreenViewModel(
         this.addAll(
             listOf(
                 SettingComponentParam(
-                    title = Localization.getLocalizedString(Localization.Key.AutoDetectTitle),
+                    title = localizedStrings.AutoDetectTitle,
                     doesDescriptionExists = true,
-                    description = Localization.getLocalizedString(Localization.Key.AutoDetectTitleDesc),
+                    description = localizedStrings.AutoDetectTitleDesc,
                     isSwitchNeeded = true,
                     isSwitchEnabled = preferences.isAutoDetectTitleForLinksEnabled,
                     isIconNeeded = true,
@@ -84,14 +84,10 @@ open class SettingsScreenViewModel(
                 ),
                 SettingComponentParam(
                     title =
-                        Localization.getLocalizedString(
-                            Localization.Key.ForceSaveWithoutRetrievingMetadata,
-                        ),
+                        localizedStrings.ForceSaveWithoutRetrievingMetadata,
                     doesDescriptionExists = true,
                     description =
-                        Localization.getLocalizedString(
-                            Localization.Key.ForceSaveWithoutRetrievingMetadataDesc,
-                        ),
+                        localizedStrings.ForceSaveWithoutRetrievingMetadataDesc,
                     isSwitchNeeded = true,
                     isSwitchEnabled = preferences.forceSaveWithoutFetchingAnyMetaData,
                     isIconNeeded = true,
@@ -113,9 +109,9 @@ open class SettingsScreenViewModel(
                     },
                 ),
                 SettingComponentParam(
-                    title = Localization.Key.SkipSavingExistingLinksLabel.getLocalizedString(),
+                    title = localizedStrings.SkipSavingExistingLinksLabel,
                     doesDescriptionExists = true,
-                    description = Localization.Key.SkipSavingExistingLinksDesc.getLocalizedString(),
+                    description = localizedStrings.SkipSavingExistingLinksDesc,
                     isSwitchNeeded = true,
                     isSwitchEnabled = preferences.skipSavingExistingLink,
                     isIconNeeded = true,
@@ -135,12 +131,10 @@ open class SettingsScreenViewModel(
             add(
                 SettingComponentParam(
                     title =
-                        Localization.getLocalizedString(Localization.Key.ShowAssociatedImageInLinkMenu),
+                        localizedStrings.ShowAssociatedImageInLinkMenu,
                     doesDescriptionExists = true,
                     description =
-                        Localization.getLocalizedString(
-                            Localization.Key.ShowAssociatedImageInLinkMenuDesc,
-                        ),
+                        localizedStrings.ShowAssociatedImageInLinkMenuDesc,
                     isSwitchNeeded = true,
                     isSwitchEnabled = preferences.showAssociatedImageInLinkMenu,
                     isIconNeeded = true,
@@ -158,9 +152,9 @@ open class SettingsScreenViewModel(
 
         add(
             SettingComponentParam(
-                title = Localization.Key.ForceSaveLinksLabel.getLocalizedString(),
+                title = localizedStrings.ForceSaveLinksLabel,
                 doesDescriptionExists = true,
-                description = Localization.Key.ForceSaveLinksDesc.getLocalizedString(),
+                description = localizedStrings.ForceSaveLinksDesc,
                 isSwitchNeeded = true,
                 isSwitchEnabled = preferences.forceSaveIfRetrievalFails,
                 onSwitchStateChange = {
@@ -177,9 +171,9 @@ open class SettingsScreenViewModel(
         if (onAndroidMobile) {
             add(
                 SettingComponentParam(
-                    title = Localization.Key.AutoSaveLinksLabel.getLocalizedString(),
+                    title = localizedStrings.AutoSaveLinksLabel,
                     doesDescriptionExists = true,
-                    description = Localization.Key.AutoSaveLinksDesc.getLocalizedString(),
+                    description = localizedStrings.AutoSaveLinksDesc,
                     isSwitchNeeded = true,
                     isSwitchEnabled = preferences.autoSaveOnShareIntent,
                     onSwitchStateChange = {
@@ -194,8 +188,7 @@ open class SettingsScreenViewModel(
                                 UIEvent.pushUIEvent(
                                     UIEvent.Type.ShowSnackbar(
                                         message =
-                                            Localization.Key.AutoSaveNotificationPermission
-                                                .getLocalizedString(),
+                                            localizedStrings.AutoSaveNotificationPermission,
                                     ),
                                 )
                             }
@@ -209,9 +202,9 @@ open class SettingsScreenViewModel(
 
         add(
             SettingComponentParam(
-                title = Localization.Key.EnableHomeScreen.getLocalizedString(),
+                title = localizedStrings.EnableHomeScreen,
                 doesDescriptionExists = true,
-                description = Localization.Key.EnableHomeScreenDesc.getLocalizedString(),
+                description = localizedStrings.EnableHomeScreenDesc,
                 isSwitchNeeded = true,
                 isSwitchEnabled = preferences.isHomeScreenEnabled,
                 onSwitchStateChange = {
@@ -612,7 +605,7 @@ open class SettingsScreenViewModel(
                     newValue = !preferences.showTitleInLinkGridView,
                 )
             },
-            title = Localization.Key.ShowTitle.getLocalizedString(),
+            title = localizedStrings.ShowTitle,
             isSwitchChecked = { preferences.showTitleInLinkGridView },
         ),
         LinkPref(
@@ -623,7 +616,7 @@ open class SettingsScreenViewModel(
                     newValue = !preferences.showNoteInLinkView,
                 )
             },
-            title = Localization.Key.ShowNote.getLocalizedString(),
+            title = localizedStrings.ShowNote,
             isSwitchChecked = { preferences.showNoteInLinkView },
         ),
         LinkPref(
@@ -634,7 +627,7 @@ open class SettingsScreenViewModel(
                     newValue = !preferences.showHostInLinkListView,
                 )
             },
-            title = Localization.Key.ShowHostAddress.getLocalizedString(),
+            title = localizedStrings.ShowHostAddress,
             isSwitchChecked = { preferences.showHostInLinkListView },
         ),
         LinkPref(
@@ -645,7 +638,7 @@ open class SettingsScreenViewModel(
                     newValue = !preferences.showTagsInLinkView,
                 )
             },
-            title = Localization.Key.ShowTagsLabel.getLocalizedString(),
+            title = localizedStrings.ShowTagsLabel,
             isSwitchChecked = { preferences.showTagsInLinkView },
         ),
         LinkPref(
@@ -656,7 +649,7 @@ open class SettingsScreenViewModel(
                     newValue = !preferences.showDateInLinkView,
                 )
             },
-            title = Localization.Key.ShowDateLabel.getLocalizedString(),
+            title = localizedStrings.ShowDateLabel,
             isSwitchChecked = { preferences.showDateInLinkView },
         ),
         LinkPref(
@@ -667,7 +660,7 @@ open class SettingsScreenViewModel(
                     newValue = !preferences.enableFadedEdgeForNonListViews,
                 )
             },
-            title = Localization.Key.ShowBottomFadedEdge.getLocalizedString(),
+            title = localizedStrings.ShowBottomFadedEdge,
             isSwitchChecked = { preferences.enableFadedEdgeForNonListViews },
         ),
         LinkPref(
@@ -678,7 +671,7 @@ open class SettingsScreenViewModel(
                     newValue = !preferences.showMenuOnGridLinkClick,
                 )
             },
-            title = Localization.Key.ClickToOpenMenuLabel.getLocalizedString(),
+            title = localizedStrings.ClickToOpenMenuLabel,
             isSwitchChecked = { preferences.showMenuOnGridLinkClick },
         ),
     )

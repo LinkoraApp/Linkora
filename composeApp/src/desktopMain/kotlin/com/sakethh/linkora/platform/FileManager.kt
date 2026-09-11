@@ -1,10 +1,9 @@
 package com.sakethh.linkora.platform
 
-import com.sakethh.linkora.Localization
+import LocalizedStrings
 import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.FileType
-import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.domain.RawExportString
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.asJSONExportSchema
@@ -16,10 +15,9 @@ import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Utils
-import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.getSystemEpochSeconds
 import com.sakethh.linkora.utils.ifNot
-import com.sakethh.linkora.utils.replaceFirstPlaceHolderWith
+import com.sakethh.linkora.utils.replaceActual
 import getCertificateInfo
 import getFileNameWithTimestamp
 import kotlinx.coroutines.Dispatchers
@@ -40,7 +38,7 @@ import java.nio.file.Paths
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 
-actual class FileManager {
+actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
     private suspend fun writeToFile(
         exportLocation: String,
         exportFileType: ExportFileType,
@@ -148,8 +146,8 @@ actual class FileManager {
         val fileDialog =
             FileDialog(
                 Frame(),
-                Localization.Key.SelectAValidFile.getLocalizedString()
-                    .replaceFirstPlaceHolderWith(fileType.name),
+                localizedStrings().SelectAValidFile
+                    .replaceActual(fileType.name),
                 FileDialog.LOAD,
             )
         fileDialog.isVisible = true
@@ -159,9 +157,8 @@ actual class FileManager {
         } else if (sourceFile.extension != fileType.name.lowercase()) {
             UIEvent.pushUIEvent(
                 UIEvent.Type.ShowSnackbar(
-                    Localization.Key.FileTypeNotSupportedOnDesktopImport.getLocalizedString()
-                        .replace(LinkoraPlaceHolder.First.value, sourceFile.extension)
-                        .replace(LinkoraPlaceHolder.Second.value, fileType.name),
+                    localizedStrings().FileTypeNotSupportedOnDesktopImport
+                        .replaceActual(sourceFile.extension, fileType.name)
                 ),
             )
             null
@@ -183,9 +180,8 @@ actual class FileManager {
         } else if (sourceFile.extension != fileType.name.lowercase()) {
             UIEvent.pushUIEvent(
                 UIEvent.Type.ShowSnackbar(
-                    Localization.Key.FileTypeNotSupportedOnDesktopImport.getLocalizedString()
-                        .replace(LinkoraPlaceHolder.First.value, sourceFile.extension)
-                        .replace(LinkoraPlaceHolder.Second.value, fileType.name),
+                    localizedStrings().FileTypeNotSupportedOnDesktopImport
+                        .replaceActual(sourceFile.extension, fileType.name),
                 ),
             )
             null
@@ -199,7 +195,7 @@ actual class FileManager {
 
     actual suspend fun importFromJSONObj(): Flow<Result<JSONExportSchema>> = flow {
         val importFile =
-            getFile(FileType.JSON) ?: return@flow emit(Result.Failure("Importing Failed."))
+            getFile(FileType.JSON) ?: return@flow emit(Result.Failure(Exception("Importing Failed.")))
 
         getJsonObj(importFile, importFile.name)
     }
@@ -291,12 +287,12 @@ actual class FileManager {
                 }
             emit(Result.Success(jsonObj))
         } catch (e: Exception) {
-            emit(Result.Failure(e.message ?: "Import failed"))
+            emit(Result.Failure(Exception(e.message ?: "Import failed")))
         }
     }
 
     actual suspend fun importFromHTMLString(): Flow<Result<String>> = flow {
-        val file = getFile(FileType.HTML) ?: return@flow emit(Result.Failure("Importing Failed."))
+        val file = getFile(FileType.HTML) ?: return@flow emit(Result.Failure(Exception("Importing Failed.")))
         getHtmlStr(file)
     }
 
@@ -308,7 +304,7 @@ actual class FileManager {
             emit(Result.Loading(message = "Read the file $fileName"))
             emit(Result.Success(htmlStr))
         } catch (e: Exception) {
-            emit(Result.Failure(e.message ?: "Import failed"))
+            emit(Result.Failure(Exception(e.message ?: "Import failed")))
         }
     }
 
@@ -316,7 +312,7 @@ actual class FileManager {
             val importFile =
                 getFile(fileType = FileType.JSON, fileLocation = fileLocation)
                     ?: return@flow emit(
-                        Result.Failure("Importing Failed."),
+                        Result.Failure(Exception("Importing Failed.")),
                     )
 
             getJsonObj(importFile, importFile.name)
@@ -326,7 +322,7 @@ actual class FileManager {
         val file =
             getFile(fileType = FileType.HTML, fileLocation = fileLocation)
                 ?: return@flow emit(
-                    Result.Failure("Importing Failed."),
+                    Result.Failure(Exception("Importing Failed.")),
                 )
         getHtmlStr(file)
     }
@@ -339,8 +335,8 @@ actual class FileManager {
             val fileDialog =
                 FileDialog(
                     Frame(),
-                    Localization.Key.SelectAValidFile.getLocalizedString()
-                        .replaceFirstPlaceHolderWith("CER"),
+                    localizedStrings().SelectAValidFile
+                        .replaceActual("CER"),
                     FileDialog.LOAD,
                 )
             fileDialog.isVisible = true
@@ -348,9 +344,8 @@ actual class FileManager {
             if (sourceFile.extension != "cer") {
                 UIEvent.pushUIEvent(
                     UIEvent.Type.ShowSnackbar(
-                        Localization.Key.FileTypeNotSupportedOnDesktopImport.getLocalizedString()
-                            .replace(LinkoraPlaceHolder.First.value, sourceFile.extension)
-                            .replace(LinkoraPlaceHolder.Second.value, "cer"),
+                        localizedStrings().FileTypeNotSupportedOnDesktopImport
+                            .replaceActual(sourceFile.extension, "cer"),
                     ),
                 )
                 return null

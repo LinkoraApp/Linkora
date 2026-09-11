@@ -31,9 +31,8 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sakethh.linkora.Localization
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.utils.highlightOnFocused
-import com.sakethh.linkora.utils.rememberLocalizedString
 
 @Composable
 fun LogsScreen(
@@ -43,15 +42,16 @@ fun LogsScreen(
     logs: List<String>,
     onCancel: () -> Unit,
 ) {
+    val localizedStrings = LocalizedStrings.current
     val logsListState = rememberLazyListState()
     if (isVisible) {
         Scaffold(
             topBar = {
                 Column(
                     modifier =
-                    Modifier.fillMaxWidth()
-                        .padding(15.dp)
-                        .windowInsetsPadding(WindowInsets.statusBars),
+                        Modifier.fillMaxWidth()
+                            .padding(15.dp)
+                            .windowInsetsPadding(WindowInsets.statusBars),
                 ) {
                     Text(
                         text = operationTitle,
@@ -74,15 +74,15 @@ fun LogsScreen(
                 BottomAppBar(modifier = Modifier.fillMaxWidth()) {
                     FilledTonalButton(
                         modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .fillMaxWidth()
-                            .padding(15.dp),
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .fillMaxWidth()
+                                .padding(15.dp),
                         onClick = {
                             onCancel()
                         },
                     ) {
                         Text(
-                            text = Localization.Key.Cancel.rememberLocalizedString(),
+                            text = localizedStrings.Cancel,
                             style = MaterialTheme.typography.titleMedium,
                         )
                     }
@@ -91,18 +91,18 @@ fun LogsScreen(
         ) {
             Box(
                 modifier =
-                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                    .padding(it)
-                    .highlightOnFocused(shape = ButtonDefaults.shape).clickable(
-                        onClick = {},
-                        indication = null,
-                        interactionSource =
-                        remember {
-                            MutableInteractionSource()
-                        },
-                    )
-                    .fillMaxSize()
-                    .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        .padding(it)
+                        .highlightOnFocused(shape = ButtonDefaults.shape).clickable(
+                            onClick = {},
+                            indication = null,
+                            interactionSource =
+                                remember {
+                                    MutableInteractionSource()
+                                },
+                        )
+                        .fillMaxSize()
+                        .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
                 contentAlignment = Alignment.BottomCenter,
             ) {
                 LazyColumn(

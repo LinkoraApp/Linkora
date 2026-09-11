@@ -52,13 +52,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.di.linkoraViewModel
-import com.sakethh.linkora.domain.LinkoraPlaceHolder
 import com.sakethh.linkora.domain.SyncServerRoute
 import com.sakethh.linkora.domain.SyncType
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.ui.LocalNavController
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.HorizontalInfoCard
 import com.sakethh.linkora.ui.domain.model.ServerConnection
 import com.sakethh.linkora.ui.navigation.Navigation
@@ -68,13 +67,16 @@ import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectio
 import com.sakethh.linkora.ui.screens.settings.section.data.LogsScreen
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
+import com.sakethh.linkora.utils.asUIString
+import com.sakethh.linkora.utils.description
 import com.sakethh.linkora.utils.fillMaxWidthWithPadding
 import com.sakethh.linkora.utils.highlightOnFocused
-import com.sakethh.linkora.utils.rememberLocalizedString
+import com.sakethh.linkora.utils.replaceActual
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ServerSetupScreen() {
+    val localizedStrings = LocalizedStrings.current
     val navController = LocalNavController.current
     val serverManagementViewModel: ServerManagementViewModel = linkoraViewModel()
     val preferences by serverManagementViewModel.preferencesAsFlow.collectAsStateWithLifecycle()
@@ -107,13 +109,13 @@ fun ServerSetupScreen() {
     }
 
     SettingsSectionScaffold(
-        topAppBarText = Navigation.Settings.Data.ServerSetupScreen.toString(),
+        topAppBarText = localizedStrings.LinkoraServerSetup,
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
             modifier =
-            Modifier.fillMaxSize()
-                .addEdgeToEdgeScaffoldPadding(paddingValues)
-                .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
+                Modifier.fillMaxSize()
+                    .addEdgeToEdgeScaffoldPadding(paddingValues)
+                    .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
             verticalArrangement = Arrangement.spacedBy(30.dp),
         ) {
             item {
@@ -121,7 +123,7 @@ fun ServerSetupScreen() {
             }
             item {
                 Text(
-                    text = Localization.rememberLocalizedString(Localization.Key.Configuration),
+                    text = localizedStrings.Configuration,
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 16.sp,
                     lineHeight = 20.sp,
@@ -141,20 +143,20 @@ fun ServerSetupScreen() {
                     },
                     label = {
                         Text(
-                            text = Localization.rememberLocalizedString(Localization.Key.ServerURL),
+                            text = localizedStrings.ServerURL,
                             style = MaterialTheme.typography.titleMedium,
                         )
                     },
                     supportingText = {
                         Text(
                             text =
-                            Localization.rememberLocalizedString(Localization.Key.ServerSetupInstruction),
+                                localizedStrings.ServerSetupInstruction,
                             style = MaterialTheme.typography.titleLarge,
                         )
                     },
                     readOnly =
-                    serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully &&
-                        serverManagementViewModel.serverSetupState.value.isConnecting.not(),
+                        serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully &&
+                                serverManagementViewModel.serverSetupState.value.isConnecting.not(),
                 )
             }
 
@@ -168,19 +170,19 @@ fun ServerSetupScreen() {
                     },
                     label = {
                         Text(
-                            text = Localization.rememberLocalizedString(Localization.Key.SecurityToken),
+                            text = localizedStrings.SecurityToken,
                             style = MaterialTheme.typography.titleMedium,
                         )
                     },
                     readOnly =
-                    serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully &&
-                        serverManagementViewModel.serverSetupState.value.isConnecting.not(),
+                        serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully &&
+                                serverManagementViewModel.serverSetupState.value.isConnecting.not(),
                     visualTransformation =
-                    if (isSecurityTokenVisible.value) {
-                        VisualTransformation.None
-                    } else {
-                        pwdVisualTransformation
-                    },
+                        if (isSecurityTokenVisible.value) {
+                            VisualTransformation.None
+                        } else {
+                            pwdVisualTransformation
+                        },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     trailingIcon = {
                         IconButton(
@@ -191,11 +193,11 @@ fun ServerSetupScreen() {
                         ) {
                             Icon(
                                 imageVector =
-                                if (isSecurityTokenVisible.value) {
-                                    Icons.Default.Visibility
-                                } else {
-                                    Icons.Default.VisibilityOff
-                                },
+                                    if (isSecurityTokenVisible.value) {
+                                        Icons.Default.Visibility
+                                    } else {
+                                        Icons.Default.VisibilityOff
+                                    },
                                 contentDescription = null,
                             )
                         }
@@ -207,18 +209,17 @@ fun ServerSetupScreen() {
                 item {
                     Text(
                         text =
-                        Localization.Key.ServerCertificateAlreadyImported.rememberLocalizedString()
-                            .replace(
-                                LinkoraPlaceHolder.First.value,
-                                serverManagementViewModel.existingCertificateInfo.value,
-                            ),
+                            localizedStrings.ServerCertificateAlreadyImported
+                                .replaceActual(
+                                    serverManagementViewModel.existingCertificateInfo.value,
+                                ),
                         style = MaterialTheme.typography.titleSmall,
                         modifier =
-                        Modifier.padding(
-                            start = 15.dp,
-                            end = 15.dp,
-                            top = 5.dp,
-                        ),
+                            Modifier.padding(
+                                start = 15.dp,
+                                end = 15.dp,
+                                top = 5.dp,
+                            ),
                         softWrap = true,
                     )
                 }
@@ -229,38 +230,36 @@ fun ServerSetupScreen() {
                     if (!preferences.skipCertCheckForSync) {
                         Text(
                             modifier =
-                            Modifier.padding(
-                                start = 15.dp,
-                                end = 15.dp,
-                                top = 15.dp,
-                                bottom = 5.dp,
-                            ),
+                                Modifier.padding(
+                                    start = 15.dp,
+                                    end = 15.dp,
+                                    top = 15.dp,
+                                    bottom = 5.dp,
+                                ),
                             text =
-                            if (importedCertInfo.value.isNotBlank()) {
-                                Localization.Key.ImportedServerCertificate.rememberLocalizedString()
-                                    .replace(
-                                        LinkoraPlaceHolder.First.value,
-                                        importedCertInfo.value,
-                                    )
-                            } else if (isCertificateInProcessing.value) {
-                                Localization.Key.ProcessingCertificate.rememberLocalizedString()
-                            } else {
-                                Localization.Key.ImportServerCertificateDescription
-                                    .rememberLocalizedString()
-                            },
+                                if (importedCertInfo.value.isNotBlank()) {
+                                    localizedStrings.ImportedServerCertificate
+                                        .replaceActual(
+                                            importedCertInfo.value,
+                                        )
+                                } else if (isCertificateInProcessing.value) {
+                                    localizedStrings.ProcessingCertificate
+                                } else {
+                                    localizedStrings.ImportServerCertificateDescription
+                                },
                             style = MaterialTheme.typography.titleSmall,
                         )
 
                         if (isCertificateInProcessing.value) {
                             LinearProgressIndicator(
                                 modifier =
-                                Modifier.fillMaxWidth()
-                                    .padding(
-                                        start = 15.dp,
-                                        end = 15.dp,
-                                        bottom = 15.dp,
-                                        top = 10.dp,
-                                    ),
+                                    Modifier.fillMaxWidth()
+                                        .padding(
+                                            start = 15.dp,
+                                            end = 15.dp,
+                                            bottom = 15.dp,
+                                            top = 10.dp,
+                                        ),
                             )
                         } else {
                             ElevatedButton(
@@ -281,17 +280,17 @@ fun ServerSetupScreen() {
                                     }
                                 },
                                 modifier =
-                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                    .fillMaxWidth()
-                                    .padding(
-                                        start = 15.dp,
-                                        end = 15.dp,
-                                        bottom = 15.dp,
-                                    )
-                                    .pressScaleEffect(),
+                                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                        .fillMaxWidth()
+                                        .padding(
+                                            start = 15.dp,
+                                            end = 15.dp,
+                                            bottom = 15.dp,
+                                        )
+                                        .pressScaleEffect(),
                             ) {
                                 Text(
-                                    text = Localization.Key.ImportServerCertificate.rememberLocalizedString(),
+                                    text = localizedStrings.ImportServerCertificate,
                                     style = MaterialTheme.typography.titleMedium,
                                 )
                             }
@@ -300,26 +299,25 @@ fun ServerSetupScreen() {
                     }
                     Box(
                         modifier =
-                        Modifier.then(
-                            if (preferences.skipCertCheckForSync) {
-                                Modifier.background(MaterialTheme.colorScheme.errorContainer)
-                            } else {
-                                Modifier
-                            },
-                        )
-                            .padding(
-                                top = 15.dp,
-                                bottom = 15.dp,
-                            ),
+                            Modifier.then(
+                                if (preferences.skipCertCheckForSync) {
+                                    Modifier.background(MaterialTheme.colorScheme.errorContainer)
+                                } else {
+                                    Modifier
+                                },
+                            )
+                                .padding(
+                                    top = 15.dp,
+                                    bottom = 15.dp,
+                                ),
                     ) {
                         SettingComponent(
                             SettingComponentParam(
                                 title =
-                                Localization.Key.ForceBypassCertificateChecking.rememberLocalizedString(),
+                                    localizedStrings.ForceBypassCertificateChecking,
                                 doesDescriptionExists = true,
                                 description =
-                                Localization.Key.ForceBypassCertificateCheckingDescription
-                                    .rememberLocalizedString(),
+                                    localizedStrings.ForceBypassCertificateCheckingDescription,
                                 isSwitchNeeded = true,
                                 isSwitchEnabled = preferences.skipCertCheckForSync,
                                 onSwitchStateChange = {
@@ -343,7 +341,7 @@ fun ServerSetupScreen() {
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidthWithPadding())
                 } else if (serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully) {
                     HorizontalInfoCard(
-                        info = Localization.rememberLocalizedString(Localization.Key.ServerIsReachable),
+                        info = localizedStrings.ServerIsReachable,
                         paddingValues = PaddingValues(start = 15.dp, end = 15.dp),
                     )
                 } else {
@@ -355,13 +353,14 @@ fun ServerSetupScreen() {
                             )
                         },
                         modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .fillMaxWidthWithPadding()
-                            .pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .fillMaxWidthWithPadding()
+                                .pressScaleEffect()
+                                .highlightOnFocused(shape = ButtonDefaults.shape),
                     ) {
                         Text(
                             text =
-                            Localization.rememberLocalizedString(Localization.Key.TestServerAvailability),
+                                localizedStrings.TestServerAvailability,
                             style = MaterialTheme.typography.titleMedium,
                         )
                     }
@@ -376,7 +375,7 @@ fun ServerSetupScreen() {
             }
             item {
                 Text(
-                    text = Localization.rememberLocalizedString(Localization.Key.SyncType),
+                    text = localizedStrings.SyncType,
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 16.sp,
                     lineHeight = 20.sp,
@@ -392,19 +391,19 @@ fun ServerSetupScreen() {
                     }
                     Column(
                         modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand).highlightOnFocused()
-                            .clickable(
-                                onClick = {
-                                    selectedSyncType.value = syncType
-                                },
-                                indication = null,
-                                interactionSource =
-                                remember {
-                                    MutableInteractionSource()
-                                },
-                            )
-                            .pressScaleEffect()
-                            .fillMaxWidthWithPadding(),
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand).highlightOnFocused()
+                                .clickable(
+                                    onClick = {
+                                        selectedSyncType.value = syncType
+                                    },
+                                    indication = null,
+                                    interactionSource =
+                                        remember {
+                                            MutableInteractionSource()
+                                        },
+                                )
+                                .pressScaleEffect()
+                                .fillMaxWidthWithPadding(),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(
@@ -433,12 +432,12 @@ fun ServerSetupScreen() {
                     onClick = {
                         serverManagementViewModel.saveServerConnectionAndSync(
                             serverConnection =
-                            ServerConnection(
-                                serverUrl =
-                                serverUrl.value.substringBefore(SyncServerRoute.TEST_BEARER.name),
-                                authToken = securityToken.value,
-                                syncType = selectedSyncType.value,
-                            ),
+                                ServerConnection(
+                                    serverUrl =
+                                        serverUrl.value.substringBefore(SyncServerRoute.TEST_BEARER.name),
+                                    authToken = securityToken.value,
+                                    syncType = selectedSyncType.value,
+                                ),
                             onSyncStart = {
                                 showImportLogsFromServer = true
                             },
@@ -449,12 +448,12 @@ fun ServerSetupScreen() {
                         )
                     },
                     modifier =
-                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .fillMaxWidthWithPadding()
-                        .pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .fillMaxWidthWithPadding()
+                            .pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
                 ) {
                     Text(
-                        text = Localization.rememberLocalizedString(Localization.Key.UseThisConnection),
+                        text = localizedStrings.UseThisConnection,
                         style = MaterialTheme.typography.titleMedium,
                     )
                 }
@@ -466,8 +465,8 @@ fun ServerSetupScreen() {
     }
     LogsScreen(
         isVisible = showImportLogsFromServer,
-        operationDesc = Localization.Key.SyncingDataLabel.rememberLocalizedString(),
-        operationTitle = Localization.Key.InitiateManualSyncDescAlt.rememberLocalizedString(),
+        operationDesc = localizedStrings.SyncingDataLabel,
+        operationTitle = localizedStrings.InitiateManualSyncDescAlt,
         logs = serverManagementViewModel.dataSyncLogs,
         onCancel = {
             serverManagementViewModel.cancelServerConnectionAndSync()

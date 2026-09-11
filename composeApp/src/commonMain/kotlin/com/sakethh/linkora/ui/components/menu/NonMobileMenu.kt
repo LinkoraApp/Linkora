@@ -27,15 +27,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ComposableContent
 import com.sakethh.linkora.domain.model.Folder
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.CoilImage
 import com.sakethh.linkora.ui.components.HorizontalInfoCard
 import com.sakethh.linkora.ui.components.link.TagsRow
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
-import com.sakethh.linkora.utils.rememberLocalizedString
 
 @Composable
 fun NonMobileMenu(
@@ -45,6 +44,7 @@ fun NonMobileMenu(
     currentFolder: Folder?,
     commonMenuContent: ComposableContent,
 ) {
+    val localizedStrings = LocalizedStrings.current
     val menuBtmSheetFor = remember {
         menuBtmSheetParam.menuBtmSheetFor
     }
@@ -52,20 +52,21 @@ fun NonMobileMenu(
         if (menuBtmSheetFor in menuBtmSheetLinkEntries()) {
             Column(
                 modifier =
-                Modifier.fillMaxWidth(0.5f)
-                    .padding(start = 15.dp, bottom = 15.dp)
-                    .wrapContentHeight()
-                    .verticalScroll(rememberScrollState()),
+                    Modifier.fillMaxWidth(0.5f)
+                        .padding(start = 15.dp, bottom = 15.dp)
+                        .wrapContentHeight()
+                        .verticalScroll(rememberScrollState()),
             ) {
                 CoilImage(
                     modifier =
-                    Modifier.animateContentSize()
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(15.dp))
-                        .height(200.dp),
+                        Modifier.animateContentSize()
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(15.dp))
+                            .height(200.dp),
                     imgURL = currentLinkTagsPair.link.imgURL,
                     preferences = preferences,
-                    userAgent = currentLinkTagsPair.link.userAgent ?: preferences.primaryJsoupUserAgent,
+                    userAgent = currentLinkTagsPair.link.userAgent
+                        ?: preferences.primaryJsoupUserAgent,
                 )
                 Spacer(Modifier.height(10.dp))
                 Text(
@@ -87,16 +88,17 @@ fun NonMobileMenu(
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary,
                     modifier =
-                    Modifier.clip(RoundedCornerShape(5.dp))
-                        .background(MaterialTheme.colorScheme.primary.copy(0.1f))
-                        .padding(5.dp),
+                        Modifier.clip(RoundedCornerShape(5.dp))
+                            .background(MaterialTheme.colorScheme.primary.copy(0.1f))
+                            .padding(5.dp),
                 )
                 HorizontalDivider(
-                    modifier = Modifier.fillMaxWidth().padding(end = 5.dp, top = 15.dp, bottom = 12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(end = 5.dp, top = 15.dp, bottom = 12.dp),
                 )
                 if (currentLinkTagsPair.link.note.isNotBlank()) {
                     Text(
-                        text = Localization.Key.SavedNote.rememberLocalizedString(),
+                        text = localizedStrings.SavedNote,
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.primary,
                     )
@@ -107,7 +109,7 @@ fun NonMobileMenu(
                     )
                 } else {
                     HorizontalInfoCard(
-                        info = Localization.Key.NoNoteAdded.rememberLocalizedString(),
+                        info = localizedStrings.NoNoteAdded,
                         paddingValues = PaddingValues(top = 2.dp),
                     )
                 }
@@ -115,7 +117,8 @@ fun NonMobileMenu(
         } else {
             Column(
                 modifier =
-                Modifier.fillMaxWidth(0.5f).padding(start = 15.dp, bottom = 15.dp).wrapContentHeight(),
+                    Modifier.fillMaxWidth(0.5f).padding(start = 15.dp, bottom = 15.dp)
+                        .wrapContentHeight(),
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Folder,
@@ -129,11 +132,12 @@ fun NonMobileMenu(
                     fontSize = 18.sp,
                 )
                 HorizontalDivider(
-                    modifier = Modifier.fillMaxWidth().padding(end = 5.dp, top = 15.dp, bottom = 12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(end = 5.dp, top = 15.dp, bottom = 12.dp),
                 )
                 if (currentFolder.note.isNotBlank()) {
                     Text(
-                        text = Localization.Key.SavedNote.rememberLocalizedString(),
+                        text = localizedStrings.SavedNote,
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.primary,
                     )
@@ -144,7 +148,7 @@ fun NonMobileMenu(
                     )
                 } else {
                     HorizontalInfoCard(
-                        info = Localization.Key.NoNoteAdded.rememberLocalizedString(),
+                        info = localizedStrings.NoNoteAdded,
                         paddingValues = PaddingValues(top = 2.dp),
                     )
                 }

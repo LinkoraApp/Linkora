@@ -2,7 +2,6 @@ package com.sakethh.linkora.data.local.repository
 
 import com.fleeksoft.ksoup.Ksoup
 import com.fleeksoft.ksoup.network.parseGetRequest
-import com.sakethh.linkora.Localization
 import com.sakethh.linkora.data.local.dao.FoldersDao
 import com.sakethh.linkora.data.local.dao.LinksDao
 import com.sakethh.linkora.data.local.dao.TagsDao
@@ -37,7 +36,6 @@ import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Sorting
 import com.sakethh.linkora.utils.canPushToServer
 import com.sakethh.linkora.utils.defaultFolderIds
-import com.sakethh.linkora.utils.getLocalizedString
 import com.sakethh.linkora.utils.getSystemEpochSeconds
 import com.sakethh.linkora.utils.host
 import com.sakethh.linkora.utils.ifNot
@@ -169,23 +167,22 @@ class LocalLinksRepoImpl(
             if (linkSaveConfig.skipSavingIfExists) {
                 when (val linkType = link.linkType) {
                     LinkType.FOLDER_LINK -> {
-                        require(
-                            link.idOfLinkedFolder != null && !linksDao.doesLinkExist(
+                        if (!(link.idOfLinkedFolder != null && !linksDao.doesLinkExist(
                                 folderId = link.idOfLinkedFolder,
                                 url = link.url,
-                            ),
+                            ))
                         ) {
-                            Localization.Key.LinkExistsInSelectedFolderMsg.getLocalizedString()
+                            throw Link.LinkExistsInSelectedFolder()
                         }
                     }
 
                     else -> {
-                        require(!linksDao.doesLinkExist(linkType = linkType, url = link.url)) {
-                            when (linkType) {
-                                LinkType.SAVED_LINK -> Localization.Key.LinkExistsInSavedLinksMsg.getLocalizedString()
-                                LinkType.HISTORY_LINK -> Localization.Key.LinkExistsInHistoryMsg.getLocalizedString()
-                                LinkType.IMPORTANT_LINK -> Localization.Key.LinkExistsInImportantLinksMsg.getLocalizedString()
-                                LinkType.ARCHIVE_LINK -> Localization.Key.LinkExistsInArchivedLinksMsg.getLocalizedString()
+                        if (linksDao.doesLinkExist(linkType = linkType, url = link.url)) {
+                            throw when (linkType) {
+                                LinkType.SAVED_LINK -> Link.LinkExistsInSavedLinks()
+                                LinkType.HISTORY_LINK -> Link.LinkExistsInHistory()
+                                LinkType.IMPORTANT_LINK -> Link.LinkExistsInImportantLinks()
+                                LinkType.ARCHIVE_LINK -> Link.LinkExistsInArchivedLinks()
                             }
                         }
                     }
@@ -265,7 +262,7 @@ class LocalLinksRepoImpl(
     ): Flow<Result<List<Link>>> = when (sortOption) {
         Sorting.A_TO_Z,
         Sorting.Z_TO_A,
-        -> linksDao.getLinksSortedByTitle(
+            -> linksDao.getLinksSortedByTitle(
             linkType = linkType.name,
             lastSeenTitle = lastSeenTitle?.takeIf { it.isNotEmpty() },
             lastSeenId = lastSeenId,
@@ -290,7 +287,7 @@ class LocalLinksRepoImpl(
     ): Flow<Result<List<Link>>> = when (sortOption) {
         Sorting.A_TO_Z,
         Sorting.Z_TO_A,
-        -> linksDao.getLinksSortedByTitle(
+            -> linksDao.getLinksSortedByTitle(
             tagId = tagId,
             lastSeenTitle = lastSeenTitle?.takeIf { it.isNotEmpty() },
             lastSeenId = lastSeenId,
@@ -315,7 +312,7 @@ class LocalLinksRepoImpl(
     ): Flow<Result<List<Link>>> = when (sortOption) {
         Sorting.A_TO_Z,
         Sorting.Z_TO_A,
-        -> linksDao.getLinksSortedByTitle(
+            -> linksDao.getLinksSortedByTitle(
             linkType = linkType.name,
             lastSeenTitle = lastSeenTitle?.takeIf { it.isNotEmpty() },
             lastSeenId = lastSeenId,
@@ -387,11 +384,11 @@ class LocalLinksRepoImpl(
         val rawHTML = withContext(PlatformIODispatcher) {
             Ksoup.parseGetRequest(
                 (
-                    "http" + linkUrl.substringAfter("http").substringBefore(" ")
-                        .trim()
-                    ).also { linkUrl ->
-                    linkoraLog("scrapeLinkData for $linkUrl")
-                },
+                        "http" + linkUrl.substringAfter("http").substringBefore(" ")
+                            .trim()
+                        ).also { linkUrl ->
+                        linkoraLog("scrapeLinkData for $linkUrl")
+                    },
             ) {
                 this.userAgent(userAgent)
                 this.header("Accept", "text/html")
@@ -444,8 +441,8 @@ class LocalLinksRepoImpl(
     }
 
     override suspend fun deleteLinksOfFolder(folderId: Long): Flow<Result<Unit>> = wrappedResultFlow {
-        linksDao.deleteLinksOfFolder(folderId)
-    }
+            linksDao.deleteLinksOfFolder(folderId)
+        }
 
     override suspend fun deleteALinkNote(linkId: Long): Flow<Result<Unit>> {
         val remoteId = getRemoteIdOfLink(linkId)
@@ -1031,8 +1028,8 @@ class LocalLinksRepoImpl(
     }
 
     override suspend fun deleteLinksLocally(linksIds: List<Long>): Flow<Result<Unit>> = wrappedResultFlow {
-        linksDao.deleteLinks(linksIds)
-    }
+            linksDao.deleteLinks(linksIds)
+        }
 
     override fun getAllLinks(
         applyLinkFilters: Boolean,
@@ -1044,7 +1041,7 @@ class LocalLinksRepoImpl(
     ): Flow<Result<List<Link>>> = when (sortOption) {
         Sorting.A_TO_Z,
         Sorting.Z_TO_A,
-        -> linksDao.getAllLinksSortedByTitle(
+            -> linksDao.getAllLinksSortedByTitle(
             lastSeenId = lastSeenId,
             lastSeenTitle = lastSeenName?.takeIf { it.isNotEmpty() },
             pageSize = pageSize,
