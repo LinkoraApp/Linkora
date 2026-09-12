@@ -689,6 +689,7 @@ class CollectionsScreenVM(
                         is Link.LinkExistsInImportantLinks -> localizedStrings.LinkExistsInImportantLinksMsg
                         is Link.LinkExistsInArchivedLinks -> localizedStrings.LinkExistsInArchivedLinksMsg
                         is Link.LinkExistsInHistory -> localizedStrings.LinkExistsInHistoryMsg
+                        is Link.Invalid -> localizedStrings.InvalidLink
                         else -> localizedStrings.LinkExistsInSelectedFolderMsg
                     }
                     UIEvent.pushUIEvent(UIEvent.Type.ShowSnackbar(exceptionMsg))
