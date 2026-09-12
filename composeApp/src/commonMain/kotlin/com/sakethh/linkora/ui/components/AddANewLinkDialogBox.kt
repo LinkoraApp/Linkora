@@ -901,7 +901,8 @@ private fun BottomPartOfAddANewLinkDialogBox(
                         SelectableFolderUIComponent(
                             onClick = {
                                 isDropDownMenuIconClicked.value = false
-                                selectedFolderForSavingTheLink.value = defaultSavedLinksFolder(localizedStrings)
+                                selectedFolderForSavingTheLink.value =
+                                    defaultSavedLinksFolder(localizedStrings)
                             },
                             folderName = localizedStrings.SavedLinks,
                             imageVector = Icons.Outlined.Link,
@@ -913,7 +914,8 @@ private fun BottomPartOfAddANewLinkDialogBox(
                         SelectableFolderUIComponent(
                             onClick = {
                                 isDropDownMenuIconClicked.value = false
-                                selectedFolderForSavingTheLink.value = defaultImpLinksFolder(localizedStrings)
+                                selectedFolderForSavingTheLink.value =
+                                    defaultImpLinksFolder(localizedStrings)
                             },
                             folderName = localizedStrings.ImportantLinks,
                             imageVector = Icons.Outlined.StarOutline,
@@ -1366,7 +1368,8 @@ private fun BottomPartOfAddANewLinkDialogBox(
                                         start = 15.dp,
                                     )
                                     .fillMaxWidth()
-                                    .pressScaleEffect(),
+                                    .pressScaleEffect()
+                                    .highlightOnFocused(shape = ButtonDefaults.shape),
                             onClick = {
                                 addTheFolderInRoot.value = false
                                 showNewFolderDialog.value = true
@@ -1386,7 +1389,8 @@ private fun BottomPartOfAddANewLinkDialogBox(
                             modifier =
                                 Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                                     .fillMaxWidth()
-                                    .padding(start = 15.dp, end = 15.dp),
+                                    .padding(start = 15.dp, end = 15.dp)
+                                    .highlightOnFocused(shape = ButtonDefaults.shape),
                             onClick = {
                                 isDropDownMenuIconClicked.value = false
                                 AddANewLinkDialogBox.subFoldersList.clear()
@@ -1418,7 +1422,8 @@ private fun BottomPartOfAddANewLinkDialogBox(
                                         bottom = 15.dp,
                                     )
                                     .fillMaxWidth()
-                                    .pressScaleEffect(),
+                                    .pressScaleEffect()
+                                    .highlightOnFocused(shape = ButtonDefaults.shape),
                             onClick = {
                                 addTheFolderInRoot.value = false
                                 showNewFolderDialog.value = true
@@ -1504,6 +1509,7 @@ private fun FolderSelectorComponent(
                     )
                 },
     ) {
+        Spacer(modifier = Modifier.height(15.dp))
         Row(
             modifier = Modifier.fillMaxWidth().wrapContentHeight(),
             verticalAlignment = Alignment.CenterVertically,
@@ -1583,8 +1589,10 @@ private fun FolderSelectorComponent(
             }
         }
 
+        Spacer(modifier = Modifier.height(15.dp))
+
         HorizontalDivider(
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 10.dp),
+            modifier = Modifier.fillMaxWidth(),
             thickness = 1.dp,
             color = MaterialTheme.colorScheme.outline.copy(0.1f),
         )
