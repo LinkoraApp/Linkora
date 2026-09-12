@@ -30,13 +30,13 @@ import com.sakethh.linkora.platform.PermissionManager
 import com.sakethh.linkora.ui.domain.AppIconCode
 import com.sakethh.linkora.ui.domain.model.LinkComponentParam
 import com.sakethh.linkora.ui.domain.model.LinkPref
-import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.onboarding.OnboardingSlide
 import com.sakethh.linkora.ui.screens.onboarding.Slide1
 import com.sakethh.linkora.ui.screens.onboarding.Slide2
 import com.sakethh.linkora.ui.screens.onboarding.Slide3
 import com.sakethh.linkora.ui.screens.onboarding.Slide4
 import com.sakethh.linkora.ui.utils.UIEvent
+import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.openUriOrNotify
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -249,19 +249,6 @@ open class SettingsScreenViewModel(
             .invokeOnCompletion {
                 onCompletion()
             }
-    }
-
-    fun currInitialRoute(init: (String) -> Unit) {
-        viewModelScope.launch {
-            (
-                    preferencesRepository.readPreferenceValue(
-                        preferenceKey = AppPreferences.INITIAL_ROUTE,
-                    ) ?: Navigation.Root.HomeScreen.toString()
-                    )
-                .let {
-                    init(it)
-                }
-        }
     }
 
     fun sampleLinks(

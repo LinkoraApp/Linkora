@@ -7,7 +7,6 @@ import com.sakethh.linkora.ui.domain.AppIconCode
 import com.sakethh.linkora.ui.domain.Font
 import com.sakethh.linkora.ui.domain.Layout
 import com.sakethh.linkora.ui.domain.SortingType
-import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.booleanPreferencesKey
 import com.sakethh.linkora.utils.intPreferencesKey
@@ -39,7 +38,7 @@ data class AppPreferences(
     val skipSavingExistingLink: Boolean = true,
     val useProxy: Boolean = hostOS == HostOS.Web,
     val proxyUrl: String = Constants.PROXY_SERVER_URL,
-    val startDestination: String = Navigation.Root.HomeScreen.toString(),
+    val initialRouteId: Int = Constants.HOME_SCREEN_ROUTE_ID,
     val serverBaseUrl: String = "",
     val serverSecurityToken: String = "",
     val serverSyncType: SyncType = SyncType.TwoWay,
@@ -56,7 +55,7 @@ data class AppPreferences(
     // OLDER LINKORA VERSIONS STORED DATA AS STRINGS (JSON/HTML/BOTH instead of 0/1/1)
     // CHANGING THIS TO INT/LONG WILL BREAK READING OF EXISTING PREFERENCES
     // SAVED BY PREVIOUS VERSIONS
-    val snapshotExportFormatID: String = Constants.SNAPSHOT_JSON_FORMAT,
+    val snapshotExportFormatID: String = Constants.SNAPSHOT_JSON_FORMAT_ID.toString(),
     val skipCertCheckForSync: Boolean = false,
     val currentExportLocation: String = "",
     val currentBackupLocation: String = "",
@@ -119,7 +118,7 @@ data class AppPreferences(
             booleanPreferencesKey("FADED_EDGE_VISIBILITY_FOR_NON_LIST_VIEWS")
         val FORCE_SAVE_WITHOUT_FETCHING_META_DATA =
             booleanPreferencesKey("FORCE_SAVE_WITHOUT_FETCHING_META_DATA")
-        val INITIAL_ROUTE = stringPreferencesKey("INITIAL_ROUTE")
+        val INITIAL_ROUTE_ID = intPreferencesKey("INITIAL_ROUTE_ID")
         val SERVER_URL = stringPreferencesKey("SERVER_URL")
         val SERVER_SYNC_TYPE = stringPreferencesKey("SERVER_SYNC_TYPE")
         val SERVER_AUTH_TOKEN = stringPreferencesKey("SERVER_AUTH_TOKEN")

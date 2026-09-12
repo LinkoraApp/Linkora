@@ -48,6 +48,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSerializable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,8 +76,9 @@ import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectio
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.highlightOnFocused
+import com.sakethh.linkora.utils.initialRoutePairs
+import com.sakethh.linkora.utils.toInitialRoutePair
 import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import org.jetbrains.compose.resources.painterResource
 
@@ -117,12 +119,8 @@ fun GeneralSettingsScreen() {
     val fontsEntries = retain {
         Font.entries.toPersistentList()
     }
-    val initialRouteEntries = retain {
-        persistentListOf(
-            Navigation.Root.HomeScreen,
-            Navigation.Root.SearchScreen,
-            Navigation.Root.CollectionsScreen,
-        )
+    val initialRouteEntries = retain(localizedStrings) {
+        initialRoutePairs(localizedStrings)
     }
     SettingsSectionScaffold(
         topAppBarText = localizedStrings.General,
@@ -409,33 +407,32 @@ fun GeneralSettingsScreen() {
         )
     }
     if (showInitialNavigationChangerDialogBox) {
-        val currentlySelectedRoute = rememberSaveable {
-            mutableStateOf(preferences.startDestination)
+        var selectedRoute by rememberSerializable(preferences.initialRouteId) {
+            mutableStateOf(preferences.initialRouteId.toInitialRoutePair(localizedStrings))
         }
-        LaunchedEffect(Unit) {
-            settingsScreenViewModel.currInitialRoute {
-                currentlySelectedRoute.value = it
-            }
-        }
+
         SwitchDialogBox(
             title = localizedStrings.SelectTheInitialScreen,
             entries = initialRouteEntries,
             selected = {
-                currentlySelectedRoute.value == it.toString()
+                selectedRoute == it
             },
             onEntryClick = {
-                currentlySelectedRoute.value = it.toString()
+                selectedRoute = it
             },
             onDismissRequest = {
                 showInitialNavigationChangerDialogBox = false
             },
             onConfirm = {
                 settingsScreenViewModel.changeSettingPreferenceValue(
-                    AppPreferences.INITIAL_ROUTE,
-                    currentlySelectedRoute.value,
+                    AppPreferences.INITIAL_ROUTE_ID,
+                    selectedRoute.second,
                 )
                 showInitialNavigationChangerDialogBox = false
             },
+            entryLabel = {
+                it.first
+            }
         )
     }
     if (showFontFamilySwitcherDialogBox) {

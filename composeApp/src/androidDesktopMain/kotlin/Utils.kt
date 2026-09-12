@@ -130,9 +130,9 @@ suspend fun readAllPreferences(
     prefs[dsBooleanKey(AppPreferences.SKIP_SAVING_EXISTING_LINK.key)] ?: true,
     useProxy = prefs[dsBooleanKey(AppPreferences.USE_PROXY.key)] ?: false,
     proxyUrl = prefs[dsStringKey(AppPreferences.PROXY_URL.key)] ?: Constants.PROXY_SERVER_URL,
-    startDestination =
-    prefs[dsStringKey(AppPreferences.INITIAL_ROUTE.key)]
-        ?: Navigation.Root.HomeScreen.toString(),
+    initialRouteId =
+    prefs[dsIntKey(AppPreferences.INITIAL_ROUTE_ID.key)]
+        ?: Constants.HOME_SCREEN_ROUTE_ID,
     serverBaseUrl = prefs[dsStringKey(AppPreferences.SERVER_URL.key)] ?: "",
     serverSecurityToken = prefs[dsStringKey(AppPreferences.SERVER_AUTH_TOKEN.key)] ?: "",
     serverSyncType =
@@ -156,7 +156,7 @@ suspend fun readAllPreferences(
     areSnapshotsEnabled = prefs[dsBooleanKey(AppPreferences.USE_SNAPSHOTS.key)] ?: false,
     snapshotExportFormatID =
     prefs[dsStringKey(AppPreferences.SNAPSHOTS_EXPORT_TYPE.key)]
-        ?: Constants.SNAPSHOT_JSON_FORMAT,
+        ?: Constants.SNAPSHOT_JSON_FORMAT_ID.toString(),
     skipCertCheckForSync =
     prefs[dsBooleanKey(AppPreferences.SKIP_CERT_CHECK_FOR_SYNC_SERVER.key)] ?: false,
     currentExportLocation =

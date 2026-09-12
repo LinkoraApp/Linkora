@@ -65,6 +65,8 @@ import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.isSuccess
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -516,14 +518,19 @@ fun Navigation.Root.asLocalizedString(): String {
     }
 }
 
-fun String.asNavigationString(localizedStrings: LocalizedStrings): String = when (this) {
-    localizedStrings.Home -> Navigation.Root.HomeScreen
-    localizedStrings.Search -> Navigation.Root.SearchScreen
-    else -> Navigation.Root.CollectionsScreen
-}.toString()
+fun initialRoutePairs(localizedStrings: LocalizedStrings): PersistentList<Pair<String, Int>> = persistentListOf(
+        localizedStrings.Home to Constants.HOME_SCREEN_ROUTE_ID,
+        localizedStrings.Search to Constants.SEARCH_SCREEN_ROUTE_ID,
+        localizedStrings.Collections to Constants.COLLECTIONS_SCREEN_ROUTE_ID
+    )
 
-fun String.toLocalizedString(localizedStrings: LocalizedStrings): String = when (this) {
-    localizedStrings.Home -> Navigation.Root.HomeScreen
-    localizedStrings.Search -> Navigation.Root.SearchScreen
-    else -> Navigation.Root.CollectionsScreen
-}.toString()
+fun Int.toInitialRoutePair(localizedStrings: LocalizedStrings): Pair<String, Int> {
+    require(this in 0..2) {
+        "$this isn't valid for toInitialRoutePair"
+    }
+    return when (this) {
+        Constants.HOME_SCREEN_ROUTE_ID -> localizedStrings.Home to Constants.HOME_SCREEN_ROUTE_ID
+        Constants.SEARCH_SCREEN_ROUTE_ID -> localizedStrings.Search to Constants.SEARCH_SCREEN_ROUTE_ID
+        else -> localizedStrings.Collections to Constants.COLLECTIONS_SCREEN_ROUTE_ID
+    }
+}

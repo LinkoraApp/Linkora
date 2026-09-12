@@ -70,6 +70,10 @@ object Constants {
 
     const val SNAPSHOT_HTML_FORMAT = "HTML"
     const val SNAPSHOT_JSON_FORMAT = "JSON"
+
+    const val HOME_SCREEN_ROUTE_ID = 0
+    const val SEARCH_SCREEN_ROUTE_ID = 1
+    const val COLLECTIONS_SCREEN_ROUTE_ID = 2
 }
 
 object LinkType {

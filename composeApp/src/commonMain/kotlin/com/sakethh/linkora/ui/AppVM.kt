@@ -48,6 +48,7 @@ import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM.Companion.
 import com.sakethh.linkora.ui.screens.settings.section.data.sync.ServerManagementViewModel
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
+import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.canPushToServer
 import com.sakethh.linkora.utils.canReadFromServer
 import com.sakethh.linkora.utils.getRemoteOnlyFailureMsg
@@ -124,17 +125,14 @@ class AppVM(
             Navigation.Root.OnboardingSlidesScreen
         } else {
             onBoardingCompleted.value = true
-            when (preferencesAsFlow.value.startDestination) {
-                Navigation.Root.HomeScreen.toString() -> if (preferencesRepository.readPreferenceValue(
-                        AppPreferences.HOME_SCREEN_VISIBILITY,
-                    ) == false
-                ) {
+            when (preferencesAsFlow.value.initialRouteId) {
+                Constants.HOME_SCREEN_ROUTE_ID -> if (!preferencesAsFlow.value.isHomeScreenEnabled) {
                     Navigation.Root.CollectionsScreen
                 } else {
                     Navigation.Root.HomeScreen
                 }
 
-                Navigation.Root.SearchScreen.toString() -> Navigation.Root.SearchScreen
+                Constants.SEARCH_SCREEN_ROUTE_ID -> Navigation.Root.SearchScreen
 
                 else -> Navigation.Root.CollectionsScreen
             }

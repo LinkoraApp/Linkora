@@ -116,7 +116,7 @@ class PreferencesImpl(
 
                 AppPreferences.PROXY_URL -> currentPref.copy(proxyUrl = value as String)
 
-                AppPreferences.INITIAL_ROUTE -> currentPref.copy(startDestination = value as String)
+                AppPreferences.INITIAL_ROUTE_ID -> currentPref.copy(initialRouteId = value as Int)
 
                 AppPreferences.SERVER_URL -> currentPref.copy(serverBaseUrl = value as String)
 

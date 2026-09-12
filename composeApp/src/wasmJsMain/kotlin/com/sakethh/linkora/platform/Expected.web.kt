@@ -344,9 +344,9 @@ actual object PlatformPreference {
         useProxy =
             localStorage.getItem(AppPreferences.USE_PROXY.key)?.toBooleanStrictOrNull() ?: true,
         proxyUrl = localStorage.getItem(AppPreferences.PROXY_URL.key) ?: Constants.PROXY_SERVER_URL,
-        startDestination =
-            localStorage.getItem(AppPreferences.INITIAL_ROUTE.key)
-                ?: Navigation.Root.HomeScreen.toString(),
+        initialRouteId =
+            localStorage.getItem(AppPreferences.INITIAL_ROUTE_ID.key)?.toIntOrNull()
+                ?: Constants.HOME_SCREEN_ROUTE_ID,
         serverBaseUrl = localStorage.getItem(AppPreferences.SERVER_URL.key) ?: "",
         serverSecurityToken = localStorage.getItem(AppPreferences.SERVER_AUTH_TOKEN.key) ?: "",
         serverSyncType =
