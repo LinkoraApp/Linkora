@@ -1,2 +1,3 @@
 - Improved Android TV support: all components are now focusable, and imports, exports, snapshots, and captures now have TV-specific implementations (#158, #160)
     - Material Files or another file manager is still required to import data into the app (#161)
+- If you use Linkora in a non-English language, download the updated language strings from the language settings screen so dynamic values display correctly.
