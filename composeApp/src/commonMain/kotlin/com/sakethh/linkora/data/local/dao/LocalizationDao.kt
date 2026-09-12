@@ -1,7 +1,6 @@
 package com.sakethh.linkora.data.local.dao
 
 import androidx.room3.Dao
-import androidx.room3.Delete
 import androidx.room3.Insert
 import androidx.room3.MapColumn
 import androidx.room3.OnConflictStrategy
@@ -13,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface LocalizationDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun addLocalizedStrings(translation: List<LocalizedString>)
+    suspend fun addLocalizedStrings(translations: List<LocalizedString>)
 
     @Query("SELECT EXISTS(SELECT * FROM localized_strings WHERE languageCode = :languageCode)")
     suspend fun doesStringsPackForThisLanguageExists(languageCode: String): Boolean

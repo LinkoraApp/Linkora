@@ -61,6 +61,10 @@ class LocalizationRepoImpl(
     override suspend fun addLocalizedStrings(
         localizedStrings: List<LocalizedString>,
     ): Flow<Result<Unit>> = wrappedResultFlow {
+        val languageCode = localizedStrings.first().languageCode
+        if (localizationDao.doesStringsPackForThisLanguageExists(languageCode)) {
+            localizationDao.deleteAllLocalizedStringsForThisLanguage(languageCode)
+        }
         localizationDao.addLocalizedStrings(localizedStrings)
     }
 
