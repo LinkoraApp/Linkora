@@ -1,5 +1,6 @@
 package com.sakethh.linkora.utils
 
+import LocalizedStrings
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -208,9 +209,12 @@ fun String.replaceActual(vararg actuals: String): String {
     while (currIteration < length - 1) {
         val c1 = this[++currIteration]
         if (currIteration + 1 < length && c1 + this[currIteration + 1].toString() == ">{") {
-            ++currIteration // {
+            if (valuesIteration >= actuals.lastIndex) {
+                finalStr.append(c1)
+                continue
+            }
+            currIteration += 2 // {}
             finalStr.append(actuals[++valuesIteration])
-            ++currIteration // }
         } else {
             finalStr.append(c1)
         }
@@ -511,3 +515,15 @@ fun Navigation.Root.asLocalizedString(): String {
         else -> "Something is wrong"
     }
 }
+
+fun String.asNavigationString(localizedStrings: LocalizedStrings): String = when (this) {
+    localizedStrings.Home -> Navigation.Root.HomeScreen
+    localizedStrings.Search -> Navigation.Root.SearchScreen
+    else -> Navigation.Root.CollectionsScreen
+}.toString()
+
+fun String.toLocalizedString(localizedStrings: LocalizedStrings): String = when (this) {
+    localizedStrings.Home -> Navigation.Root.HomeScreen
+    localizedStrings.Search -> Navigation.Root.SearchScreen
+    else -> Navigation.Root.CollectionsScreen
+}.toString()
