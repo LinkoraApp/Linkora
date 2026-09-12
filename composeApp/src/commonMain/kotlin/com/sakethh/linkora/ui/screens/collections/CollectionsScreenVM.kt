@@ -684,7 +684,7 @@ class CollectionsScreenVM(
                     clearSelectedTags()
                 }.onFailure { exception ->
                     onCompletion()
-                    val exceptionMsg = when (exception) {
+                    val exceptionMsg = when (exception as Link.ThrowableLink) {
                         is Link.LinkExistsInSavedLinks -> localizedStrings.LinkExistsInSavedLinksMsg
                         is Link.LinkExistsInImportantLinks -> localizedStrings.LinkExistsInImportantLinksMsg
                         is Link.LinkExistsInArchivedLinks -> localizedStrings.LinkExistsInArchivedLinksMsg
