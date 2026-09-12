@@ -37,7 +37,12 @@ class LinkoraApp : Application() {
             linkoraSdk = LinkoraSDK(
                 platform = currentAndroidPlatform(),
                 nativeUtils = NativeUtils(applicationContext),
-                fileManager = FileManager(applicationContext),
+                fileManager = FileManager(
+                    applicationContext,
+                    localizedStrings = {
+                        DependencyContainer.localizationRepo.localizedStrings.value
+                    }
+                ),
                 permissionManager = PermissionManager(applicationContext),
                 localDatabase = run {
                     val dbFile = applicationContext.getDatabasePath(LocalDatabase.NAME)

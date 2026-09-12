@@ -536,7 +536,7 @@ private fun TopPartOfAddANewLinkDialogBox(
         }
         if (preferences.useWebCaptures) {
             HorizontalInfoCard(
-                info = "Webpage will also be downloaded to the preferred directory after saving the link",
+                info = localizedStrings.WebpageActiveNoticeWhenSavingLink,
             )
         }
         Box(modifier = Modifier.fillMaxWidth().animateContentSize()) {

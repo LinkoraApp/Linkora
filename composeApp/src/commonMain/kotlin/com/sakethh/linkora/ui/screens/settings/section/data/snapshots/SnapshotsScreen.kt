@@ -31,7 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -54,7 +53,6 @@ import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.HorizontalInfoCard
-import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
 import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
@@ -64,6 +62,7 @@ import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.highlightOnFocused
+import com.sakethh.linkora.utils.replaceActual
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -139,7 +138,9 @@ fun SnapshotsScreen() {
                 item {
                     if (platform is Platform.Android.TV) {
                         HorizontalInfoCard(
-                            info = "Snapshots are saved in Documents/Linkora/${ExportLocationType.SNAPSHOT.dirRef}",
+                            info = localizedStrings.SnapshotLocationNoticeOnAndroidTV.replaceActual(
+                                ExportLocationType.SNAPSHOT.dirRef
+                            ),
                             paddingValues = PaddingValues(start = 15.dp, end = 15.dp)
                         )
                     } else {

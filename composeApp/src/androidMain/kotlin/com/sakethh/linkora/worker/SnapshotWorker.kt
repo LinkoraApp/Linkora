@@ -16,6 +16,7 @@ class SnapshotWorker(
     appContext: Context,
     workerParameters: WorkerParameters,
 ) : CoroutineWorker(appContext, workerParameters) {
+    val localizedStrings get() = DependencyContainer.localizationRepo.localizedStrings.value
     override suspend fun doWork(): Result {
         return try {
             val rawExportStringID = inputData.getLong(key = "rawExportStringID", defaultValue = 0)
@@ -34,7 +35,7 @@ class SnapshotWorker(
                 )
                     ?: return Result.failure().also {
                         val failureMsg =
-                            "Couldn't save snapshot as save location can't be retrieved"
+                            localizedStrings.CouldntSaveSnapshotDueToLocationMismatch
                         linkoraLog(failureMsg)
                         UIEvent.pushUIEvent(UIEvent.Type.ShowSnackbar(failureMsg))
                     }

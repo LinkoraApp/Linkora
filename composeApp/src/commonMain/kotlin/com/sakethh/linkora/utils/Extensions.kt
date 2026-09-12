@@ -488,7 +488,7 @@ fun Navigation.Root.asLocalizedString(): String {
         Navigation.Root.SearchScreen -> localizedStrings.Search
         Navigation.Root.CollectionsScreen -> localizedStrings.Collections
         Navigation.Root.SettingsScreen -> localizedStrings.Settings
-        else -> "Something is wrong"
+        else -> localizedStrings.SomethingIsWrong
     }
 }
 

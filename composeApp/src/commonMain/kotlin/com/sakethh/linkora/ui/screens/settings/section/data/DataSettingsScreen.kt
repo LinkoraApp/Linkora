@@ -347,7 +347,9 @@ fun DataSettingsScreen() {
                 item {
                     if (platform is Platform.Android.TV) {
                         HorizontalInfoCard(
-                            info = "Exports are saved in Documents/Linkora/${ExportLocationType.EXPORT.dirRef}",
+                            info = localizedStrings.ExportsLocationNoticeOnAndroidTV.replaceActual(
+                                ExportLocationType.EXPORT.dirRef
+                            ),
                             paddingValues = PaddingValues(start = 15.dp, end = 15.dp)
                         )
                     } else {
@@ -486,7 +488,7 @@ fun DataSettingsScreen() {
                                 onClick = {
                                     navController.navigate(Navigation.Settings.Data.WebPageCapturesScreen)
                                 },
-                                sectionTitle = "Web‑page Captures",
+                                sectionTitle = localizedStrings.WebPageCaptures,
                                 sectionIcon = Icons.Default.Web,
                                 shouldArrowIconAppear = true,
                                 fontSize = 16.sp,
@@ -902,7 +904,7 @@ fun DataSettingsScreen() {
                                                 },
                                             )
                                             Text(
-                                                text = "Use web-capture",
+                                                text = localizedStrings.UseWebCaptures,
                                                 style = MaterialTheme.typography.titleSmall,
                                             )
                                         }

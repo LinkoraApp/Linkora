@@ -245,7 +245,7 @@ fun SearchScreen(
                             },
                             onLinkClick = {
                                 coroutineScope.launch {
-                                    localUriHandler.openUriOrNotify(it.link.url)
+                                    localUriHandler.openUriOrNotify(it.link.url, localizedStrings)
                                 }
                                 searchScreenVM.addANewLinkToHistory(
                                     link =
@@ -338,7 +338,7 @@ fun SearchScreen(
             },
             onLinkClick = {
                 coroutineScope.launch {
-                    localUriHandler.openUriOrNotify(it.link.url)
+                    localUriHandler.openUriOrNotify(it.link.url, localizedStrings)
                 }
                 searchScreenVM.addANewLinkToHistory(
                     link = it.link.copy(linkType = LinkType.HISTORY_LINK, localId = 0),

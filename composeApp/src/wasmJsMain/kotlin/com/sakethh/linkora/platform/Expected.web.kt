@@ -315,9 +315,9 @@ actual object PlatformPreference {
             localStorage.getItem(AppPreferences.LOCALIZATION_SERVER_URL.key)
                 ?: Constants.LOCALIZATION_SERVER_URL,
         preferredAppLanguageName =
-            localStorage.getItem(AppPreferences.APP_LANGUAGE_NAME.key) ?: "English",
+            localStorage.getItem(AppPreferences.APP_LANGUAGE_NAME.key) ?: Constants.DEFAULT_APP_LANGUAGE_NAME,
         preferredAppLanguageCode =
-            localStorage.getItem(AppPreferences.APP_LANGUAGE_CODE.key) ?: "en",
+            localStorage.getItem(AppPreferences.APP_LANGUAGE_CODE.key) ?: Constants.DEFAULT_APP_LANGUAGE_CODE,
         selectedLinkLayout =
             localStorage.getItem(AppPreferences.CURRENTLY_SELECTED_LINK_VIEW.key)
                 ?: Layout.REGULAR_LIST_VIEW.name,

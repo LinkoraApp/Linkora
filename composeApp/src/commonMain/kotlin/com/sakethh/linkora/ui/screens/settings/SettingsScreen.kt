@@ -131,7 +131,7 @@ fun SettingsScreen() {
                                 .highlightOnFocused(shape = IconButtonDefaults.filledShape),
                             onClick = {
                                 coroutineScope.launch {
-                                    uriHandler.openUriOrNotify("https://www.github.com/LinkoraApp")
+                                    uriHandler.openUriOrNotify("https://www.github.com/LinkoraApp", localizedStrings)
                                 }
                             },
                         ) {
@@ -147,7 +147,7 @@ fun SettingsScreen() {
                                 .highlightOnFocused(shape = IconButtonDefaults.filledShape),
                             onClick = {
                                 coroutineScope.launch {
-                                    uriHandler.openUriOrNotify("https://discord.gg/ZDBXNtv8MD")
+                                    uriHandler.openUriOrNotify("https://discord.gg/ZDBXNtv8MD", localizedStrings)
                                 }
                             },
                         ) {
@@ -163,7 +163,7 @@ fun SettingsScreen() {
                                 .highlightOnFocused(shape = IconButtonDefaults.filledShape),
                             onClick = {
                                 coroutineScope.launch {
-                                    uriHandler.openUriOrNotify("https://www.twitter.com/LinkoraApp")
+                                    uriHandler.openUriOrNotify("https://www.twitter.com/LinkoraApp", localizedStrings)
                                 }
                             },
                         ) {
@@ -189,7 +189,7 @@ fun SettingsScreen() {
                     Button(
                         onClick = {
                             coroutineScope.launch {
-                                uriHandler.openUriOrNotify("https://github.com/LinkoraApp/localization-server")
+                                uriHandler.openUriOrNotify("https://github.com/LinkoraApp/localization-server", localizedStrings)
                             }
                         },
                         modifier =
@@ -209,7 +209,7 @@ fun SettingsScreen() {
                     Button(
                         onClick = {
                             coroutineScope.launch {
-                                uriHandler.openUriOrNotify("https://ko-fi.com/sakethpathike")
+                                uriHandler.openUriOrNotify("https://ko-fi.com/sakethpathike", localizedStrings)
                             }
                         },
                         modifier =
@@ -231,6 +231,7 @@ fun SettingsScreen() {
                             coroutineScope.launch {
                                 uriHandler.openUriOrNotify(
                                     "https://play.google.com/store/apps/details?id=com.sakethh.linkora",
+                                    localizedStrings
                                 )
                             }
                         },

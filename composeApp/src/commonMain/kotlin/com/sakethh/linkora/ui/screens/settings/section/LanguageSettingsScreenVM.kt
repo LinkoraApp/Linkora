@@ -14,6 +14,7 @@ import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
+import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.inDoubleQuotes
 import com.sakethh.linkora.utils.replaceActual
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -66,6 +67,7 @@ class LanguageSettingsScreenVM(
             LanguageSettingsState(fetchingStrings = false, fetchingLanguageInfo = false)
     }
 
+    // TODO: NESTED collection
     fun fetchRemoteLanguages() {
         viewModelScope.launch {
             localizationRepoRemote.getLanguagesFromServer().collect {
@@ -73,7 +75,7 @@ class LanguageSettingsScreenVM(
                     localizationRepoLocal
                         .addNewLanguages(
                             it.data.availableLanguages
-                                .filter { it.languageCode != "en" }
+                                .filter { it.languageCode != Constants.DEFAULT_APP_LANGUAGE_CODE }
                                 .map {
                                     LocalizedLanguage(
                                         languageCode = it.languageCode,

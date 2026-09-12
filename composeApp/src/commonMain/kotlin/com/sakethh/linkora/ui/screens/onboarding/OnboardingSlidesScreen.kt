@@ -347,6 +347,7 @@ fun Slide2() {
                             coroutineScope.launch {
                                 localUriHandler.openUriOrNotify(
                                     "https://www.rockstargames.com/reddeadredemption2",
+                                    localizedStrings
                                 )
                             }
                         },
@@ -406,6 +407,7 @@ fun Slide2() {
                             coroutineScope.launch {
                                 localUriHandler.openUriOrNotify(
                                     "https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q",
+                                    localizedStrings
                                 )
                             }
                         },
@@ -566,6 +568,7 @@ fun Slide3() {
                                         coroutineScope.launch {
                                             localUriHandler.openUriOrNotify(
                                                 "https://sakethpathike.github.io/blog/web-capture-in-linkora",
+                                                localizedStrings
                                             )
                                         }
                                     },
@@ -638,6 +641,7 @@ fun Slide3() {
                                         coroutineScope.launch {
                                             localUriHandler.openUriOrNotify(
                                                 "https://github.com/LinkoraApp/sync-server",
+                                                localizedStrings
                                             )
                                         }
                                     },

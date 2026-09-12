@@ -227,7 +227,7 @@ fun AboutScreen() {
                             forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
                         )
                         coroutineScope.launch {
-                            uriHandler.openUriOrNotify(url)
+                            uriHandler.openUriOrNotify(url, localizedStrings)
                         }
                     },
                 )
@@ -257,7 +257,7 @@ fun AboutScreen() {
                             forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
                         )
                         coroutineScope.launch {
-                            uriHandler.openUriOrNotify(url)
+                            uriHandler.openUriOrNotify(url, localizedStrings)
                         }
                     },
                 )
@@ -308,7 +308,7 @@ fun AboutScreen() {
                             forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
                         )
                         coroutineScope.launch {
-                            uriHandler.openUriOrNotify(url)
+                            uriHandler.openUriOrNotify(url, localizedStrings)
                         }
                     },
                 )
@@ -346,7 +346,7 @@ fun AboutScreen() {
                             forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
                         )
                         coroutineScope.launch {
-                            uriHandler.openUriOrNotify(url)
+                            uriHandler.openUriOrNotify(url, localizedStrings)
                         }
                     },
                 )
@@ -385,7 +385,7 @@ fun AboutScreen() {
                             forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
                         )
                         coroutineScope.launch {
-                            uriHandler.openUriOrNotify(url)
+                            uriHandler.openUriOrNotify(url, localizedStrings)
                         }
                     },
                 )

@@ -55,6 +55,7 @@ import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.ui.LocalPlatform
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.VerticalInfoCard
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
@@ -64,6 +65,7 @@ import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.linkora.utils.highlightOnFocused
+import com.sakethh.linkora.utils.replaceActual
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,7 +89,7 @@ fun WebPageCaptureScreen() {
     }
 
     val webCaptureState by dataSettingsScreenVM.webCaptureAllLinksState.collectAsStateWithLifecycle()
-
+    val localizedStrings = LocalizedStrings.current
     SettingsSectionScaffold(
         topAppBarText = Navigation.Settings.Data.WebPageCapturesScreen.toString(),
     ) { paddingValues, topAppBarScrollBehaviour ->
@@ -104,9 +106,9 @@ fun WebPageCaptureScreen() {
                 SettingComponent(
                     SettingComponentParam(
                         isIconNeeded = false,
-                        title = "Use Web-captures",
+                        title = localizedStrings.UseWebCaptures,
                         doesDescriptionExists = true,
-                        description = "Automatically downloads pages as HTML for offline view whenever a new link is saved or refreshed. Works well for text and media, though heavy JS sites may not fully load. Processes entirely on-device, which can be resource-heavy.",
+                        description = localizedStrings.UseWebCapturesDesc,
                         isSwitchNeeded = true,
                         isSwitchEnabled = preferences.useWebCaptures,
                         onSwitchStateChange = {
@@ -131,7 +133,7 @@ fun WebPageCaptureScreen() {
                 )
                 if (preferences.webCapturesLocation.isNotBlank() || platform is Platform.Android.TV) {
                     VerticalInfoCard(
-                        info = "Open any link's menu and select 'Open Capture Folder' to view its saved webpage files.\n\nWeb-page Captures directory: ${if (platform is Platform.Android.TV) "Documents/Linkora/${ExportLocationType.WEB_CAPTURE.dirRef}" else preferences.webCapturesLocation}",
+                        info = localizedStrings.WebCapturesLocationDesc.replaceActual(if (platform is Platform.Android.TV) "Documents/Linkora/${ExportLocationType.WEB_CAPTURE.dirRef}" else preferences.webCapturesLocation),
                         paddingValues = PaddingValues(start = 15.dp, end = 15.dp, top = 15.dp),
                     )
                 }
@@ -140,8 +142,7 @@ fun WebPageCaptureScreen() {
             if (preferences.webCapturesLocation.isBlank() && platform !is Platform.Android.TV) {
                 item {
                     VerticalInfoCard(
-                        info =
-                            "You can enable the webpage captures feature only after selecting a directory.\n\nSelecting the web-page captures directory is a one-time operation. You will not be able to switch directories after you set it.\n\nA new database will be created in the path you choose. Linkora will gain ownership of it even if a database already exists there from previous installs. It will be used to map web-capture folders to their links. This database is portable and not locked to the Linkora app.\n\nDeleting the database files will result in a loss of mapping. This can lead to duplicate folders and other unusual behavior.\n\nIf the selected directory is moved or deleted, web-captures will silently fail. Make sure the selected directory always exists.",
+                        info = localizedStrings.WebCapturesDesc,
                         paddingValues = PaddingValues(start = 15.dp, end = 15.dp, bottom = 15.dp),
                     )
                     TextField(
@@ -205,12 +206,12 @@ fun WebPageCaptureScreen() {
                     ) {
                         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             Text(
-                                text = "Selective Asset Stripping",
+                                text = localizedStrings.SelectiveAssetStrippingLabel,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontSize = 16.sp,
                             )
                             Text(
-                                text = "Choose which components to embed. Unchecking items reduces file sizes and local storage footprint but may alter page rendering.",
+                                text = localizedStrings.SelectiveAssetStrippingDesc,
                                 style = MaterialTheme.typography.titleSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 lineHeight = 20.sp,
@@ -221,7 +222,7 @@ fun WebPageCaptureScreen() {
                             verticalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
                             AssetStripOption(
-                                label = "Include Images",
+                                label = localizedStrings.WebCaptureIncludeImages,
                                 checked = preferences.webCaptureSaveImages,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
@@ -231,7 +232,7 @@ fun WebPageCaptureScreen() {
                                 },
                             )
                             AssetStripOption(
-                                label = "Include Fonts",
+                                label = localizedStrings.WebCaptureIncludeFonts,
                                 checked = preferences.webCaptureSaveFonts,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
@@ -241,7 +242,7 @@ fun WebPageCaptureScreen() {
                                 },
                             )
                             AssetStripOption(
-                                label = "Include CSS Stylesheets",
+                                label = localizedStrings.WebCaptureIncludeCSS,
                                 checked = preferences.webCaptureSaveCss,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
@@ -251,7 +252,7 @@ fun WebPageCaptureScreen() {
                                 },
                             )
                             AssetStripOption(
-                                label = "Include Audio Elements",
+                                label = localizedStrings.WebCaptureIncludeAudio,
                                 checked = preferences.webCaptureSaveAudio,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
@@ -261,7 +262,7 @@ fun WebPageCaptureScreen() {
                                 },
                             )
                             AssetStripOption(
-                                label = "Include Video Elements",
+                                label = localizedStrings.WebCaptureIncludeVideo,
                                 checked = preferences.webCaptureSaveVideo,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
@@ -271,7 +272,7 @@ fun WebPageCaptureScreen() {
                                 },
                             )
                             AssetStripOption(
-                                label = "Include Page Metadata",
+                                label = localizedStrings.WebCaptureIncludeMetadata,
                                 checked = preferences.webCaptureSaveMetadata,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
@@ -281,7 +282,7 @@ fun WebPageCaptureScreen() {
                                 },
                             )
                             AssetStripOption(
-                                label = "Execute JavaScript",
+                                label = localizedStrings.WebCaptureIncludeJS,
                                 checked = preferences.webCaptureExecuteJs,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
@@ -306,7 +307,7 @@ fun WebPageCaptureScreen() {
                             },
                             supportingText = {
                                 Text(
-                                    text = "Separate multiple domains with commas",
+                                    text = localizedStrings.SeparateDomainsDesc,
                                     style = MaterialTheme.typography.titleSmall,
                                 )
                             },
@@ -330,7 +331,7 @@ fun WebPageCaptureScreen() {
                             },
                             label = {
                                 Text(
-                                    text = "Only capture from specific domains",
+                                    text = localizedStrings.CaptureFromSpecificDomains,
                                     style = MaterialTheme.typography.titleSmall,
                                 )
                             },
@@ -350,7 +351,7 @@ fun WebPageCaptureScreen() {
                             },
                             supportingText = {
                                 Text(
-                                    text = "Separate multiple domains with commas",
+                                    text = localizedStrings.SeparateDomainsDesc,
                                     style = MaterialTheme.typography.titleSmall,
                                 )
                             },
@@ -374,7 +375,7 @@ fun WebPageCaptureScreen() {
                             },
                             label = {
                                 Text(
-                                    "Never auto capture from",
+                                    text = localizedStrings.NeverAutoCaptureFrom,
                                     style = MaterialTheme.typography.titleSmall,
                                 )
                             },
@@ -394,9 +395,9 @@ fun WebPageCaptureScreen() {
                     SettingComponent(
                         SettingComponentParam(
                             isIconNeeded = true,
-                            title = "Save as versions",
+                            title = localizedStrings.WebCaptureSaveAsVersionsLabel,
                             doesDescriptionExists = true,
-                            description = "Retain historical page snapshots instead of overwriting the existing file when saving a duplicate link or refreshing.",
+                            description = localizedStrings.WebCaptureSaveAsVersionsDesc,
                             isSwitchNeeded = true,
                             isSwitchEnabled = preferences.webCaptureSaveAsVersions,
                             onSwitchStateChange = {
@@ -416,9 +417,9 @@ fun WebPageCaptureScreen() {
                         SettingComponent(
                             SettingComponentParam(
                                 isIconNeeded = true,
-                                title = "Retain all versions",
+                                title = localizedStrings.WebCaptureRetainAllVersionsLabel,
                                 doesDescriptionExists = false,
-                                description = "Retain historical page snapshots instead of overwriting the existing file when saving a duplicate link or pulling a fresh updates.",
+                                description = localizedStrings.WebCaptureRetainAllVersionsDesc,
                                 isSwitchNeeded = true,
                                 isSwitchEnabled = preferences.webCaptureRetainAllVersions,
                                 onSwitchStateChange = {
@@ -435,7 +436,7 @@ fun WebPageCaptureScreen() {
                     item {
                         SliderOption(
                             modifier = Modifier.padding(start = 15.dp, end = 15.dp),
-                            label = "Max versions per page",
+                            label = localizedStrings.WebCaptureRetainMaxVersionsPerPageLabel,
                             value = preferences.webCaptureMaxVersions.toFloat(),
                             onValueChange = {
                                 dataSettingsScreenVM.changeSettingPreferenceValue(
@@ -452,7 +453,7 @@ fun WebPageCaptureScreen() {
                     if (!preferences.webCaptureRetainAllVersions) {
                         item {
                             Text(
-                                text = "When the maximum version limit per page is reached, older captures will be automatically deleted to make room for new ones.",
+                                text = localizedStrings.WebCaptureRetainMaxVersionsPerPageDesc,
                                 style = MaterialTheme.typography.titleSmall,
                                 fontSize = 14.sp,
                                 lineHeight = 20.sp,
@@ -486,14 +487,14 @@ fun WebPageCaptureScreen() {
                         },
                         label = {
                             Text(
-                                text = "Max concurrent captures",
+                                text = localizedStrings.MaxConcurrentCapturesLabel,
                                 style = MaterialTheme.typography.titleMedium,
                                 textAlign = TextAlign.Start,
                             )
                         },
                         supportingText = {
                             Text(
-                                text = "Higher values capture more pages simultaneously but use more bandwidth and system resources.",
+                                text = localizedStrings.MaxConcurrentCapturesDesc,
                                 style = MaterialTheme.typography.titleSmall,
                             )
                         },
@@ -525,7 +526,7 @@ fun WebPageCaptureScreen() {
                                         verticalArrangement = Arrangement.spacedBy(12.dp),
                                     ) {
                                         Text(
-                                            text = "WorkManager is scheduling the captures...",
+                                            text = localizedStrings.WorkManagerSchedulingCaptures,
                                             style = MaterialTheme.typography.titleSmall,
                                         )
                                     }
@@ -539,7 +540,7 @@ fun WebPageCaptureScreen() {
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
                                 ) {
                                     Text(
-                                        text = "Capturing web pages",
+                                        text = localizedStrings.CapturingWebPages,
                                         style = MaterialTheme.typography.titleMedium,
                                     )
                                     Row(
@@ -566,7 +567,10 @@ fun WebPageCaptureScreen() {
                                         }
                                     }
                                     Text(
-                                        text = "${DataSettingsScreenVM.onGoingWebCaptureState.currentIteration} / ${DataSettingsScreenVM.onGoingWebCaptureState.total} captured",
+                                        text = localizedStrings.CapturedCount.replaceActual(
+                                            DataSettingsScreenVM.onGoingWebCaptureState.currentIteration.toString(),
+                                            DataSettingsScreenVM.onGoingWebCaptureState.total.toString()
+                                        ),
                                         style = MaterialTheme.typography.titleSmall,
                                     )
                                 }
@@ -575,9 +579,9 @@ fun WebPageCaptureScreen() {
                             WorkerState.IDLE -> {
                                 SettingComponent(
                                     SettingComponentParam(
-                                        title = "Capture all the local links' web pages",
+                                        title = localizedStrings.CaptureAllLinksLabel,
                                         doesDescriptionExists = true,
-                                        description = "Will download all the webpages based on your preferences",
+                                        description = localizedStrings.CaptureAllLinksDesc,
                                         isSwitchNeeded = false,
                                         isIconNeeded = true,
                                         icon = Icons.Default.Web,

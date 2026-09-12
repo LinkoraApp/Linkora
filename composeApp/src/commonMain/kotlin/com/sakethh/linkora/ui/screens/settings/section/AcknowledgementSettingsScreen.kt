@@ -104,6 +104,7 @@ private fun AcknowledgeComponent(
     btnText: String,
 ) {
     val localUriHandler = LocalUriHandler.current
+    val localizedStrings = LocalizedStrings.current
     val coroutineScope = rememberCoroutineScope()
     Column(
         modifier =
@@ -136,7 +137,7 @@ private fun AcknowledgeComponent(
         FilledTonalButton(
             onClick = {
                 coroutineScope.launch {
-                    localUriHandler.openUriOrNotify(btnRedirectUrl)
+                    localUriHandler.openUriOrNotify(btnRedirectUrl, localizedStrings)
                 }
             },
             modifier =

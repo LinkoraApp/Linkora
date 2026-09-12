@@ -79,30 +79,25 @@ fun BottomNavOnSelection(
     val currentRoute = currentBackStackEntryState?.destination
     val platform = LocalPlatform.current
     Column(
-        modifier =
-            Modifier.fillMaxWidth()
-                .animateContentSize()
-                .background(NavigationBarDefaults.containerColor)
-                .navigationBarsPadding(),
+        modifier = Modifier.fillMaxWidth().animateContentSize()
+            .background(NavigationBarDefaults.containerColor).navigationBarsPadding(),
     ) {
         HorizontalDivider()
         Spacer(modifier = Modifier.height(5.dp))
         if (progressBarVisible) {
             Text(
-                text =
-                    if (transferActionType == TransferActionType.COPY) {
-                        localizedStrings.Copying
-                    } else {
-                        localizedStrings.Moving
-                    },
+                text = if (transferActionType == TransferActionType.COPY) {
+                    localizedStrings.Copying
+                } else {
+                    localizedStrings.Moving
+                },
                 style = MaterialTheme.typography.titleMedium,
                 fontSize = 14.sp,
-                modifier =
-                    Modifier.padding(
-                        start = 15.dp,
-                        bottom = 10.dp,
-                        top = 5.dp,
-                    ),
+                modifier = Modifier.padding(
+                    start = 15.dp,
+                    bottom = 10.dp,
+                    top = 5.dp,
+                ),
             )
             LinearProgressIndicator(Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp))
             Spacer(Modifier.bottomNavPaddingAcrossPlatforms())
@@ -122,19 +117,23 @@ fun BottomNavOnSelection(
             }
             Column {
                 Text(
-                    text =
-                        localizedStrings.SelectedLinksCount
-                            .replaceActual(
-                                CollectionsScreenVM.selectedLinkTagPairsViaLongClick.size.toString(),
-                            ),
+                    text = (if (CollectionsScreenVM.selectedLinkTagPairsViaLongClick.size == 1) {
+                        localizedStrings.Selected1Link
+                    } else {
+                        localizedStrings.SelectedLinksCount.replaceActual(
+                            CollectionsScreenVM.selectedLinkTagPairsViaLongClick.size.toString(),
+                        )
+                    }),
                     style = MaterialTheme.typography.titleSmall,
                 )
                 Text(
-                    text =
-                        localizedStrings.SelectedFoldersCount
-                            .replaceActual(
-                                CollectionsScreenVM.selectedFoldersViaLongClick.size.toString(),
-                            ),
+                    text = if (CollectionsScreenVM.selectedFoldersViaLongClick.size == 1) {
+                        localizedStrings.Selected1Folder
+                    } else {
+                        localizedStrings.SelectedFoldersCount.replaceActual(
+                            CollectionsScreenVM.selectedFoldersViaLongClick.size.toString(),
+                        )
+                    },
                     style = MaterialTheme.typography.titleSmall,
                 )
             }
@@ -142,18 +141,10 @@ fun BottomNavOnSelection(
         val currentFolder =
             LocalFabController.current.fabState.collectAsStateWithLifecycle().value.currentFolder
         val showPasteButton =
-            transferActionType != TransferActionType.NONE &&
-                    currentFolder != null &&
-                    currentFolder.localId > 0
-        if (
-            !(
-                    CollectionsScreenVM.selectedFoldersViaLongClick.isNotEmpty() &&
-                            currentFolder?.localId in
-                            defaultFolderIds().dropWhile {
-                                it == Constants.ARCHIVE_ID
-                            }
-                    )
-        ) {
+            transferActionType != TransferActionType.NONE && currentFolder != null && currentFolder.localId > 0
+        if (!(CollectionsScreenVM.selectedFoldersViaLongClick.isNotEmpty() && currentFolder?.localId in defaultFolderIds().dropWhile {
+                it == Constants.ARCHIVE_ID
+            })) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -217,14 +208,11 @@ fun BottomNavOnSelection(
                             contentDescription = null,
                         )
                     }
-                    if (
-                        CollectionsScreenVM.selectedLinkTagPairsViaLongClick.any {
+                    if (CollectionsScreenVM.selectedLinkTagPairsViaLongClick.any {
                             it.link.linkType != LinkType.ARCHIVE_LINK
-                        } ||
-                        CollectionsScreenVM.selectedFoldersViaLongClick.any {
+                        } || CollectionsScreenVM.selectedFoldersViaLongClick.any {
                             !it.isArchived
-                        }
-                    ) {
+                        }) {
                         IconButton(
                             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
                             onClick = {
@@ -242,14 +230,11 @@ fun BottomNavOnSelection(
                             )
                         }
                     }
-                    if (
-                        CollectionsScreenVM.selectedFoldersViaLongClick.any {
+                    if (CollectionsScreenVM.selectedFoldersViaLongClick.any {
                             it.isArchived
-                        } ||
-                        CollectionsScreenVM.selectedLinkTagPairsViaLongClick.any {
+                        } || CollectionsScreenVM.selectedLinkTagPairsViaLongClick.any {
                             it.link.linkType == LinkType.ARCHIVE_LINK
-                        }
-                    ) {
+                        }) {
                         IconButton(
                             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
                             onClick = {
@@ -291,22 +276,19 @@ fun BottomNavOnSelection(
                     }
                     if (platform is Platform.Android) {
                         Spacer(
-                            modifier =
-                                Modifier.height(20.dp).width(2.dp)
-                                    .background(MaterialTheme.colorScheme.outline),
+                            modifier = Modifier.height(20.dp).width(2.dp)
+                                .background(MaterialTheme.colorScheme.outline),
                         )
                         IconButton(
                             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
                             onClick = {
-                                LinkoraSDK.getInstance()
-                                    .nativeUtils
-                                    .onShare(
-                                        CollectionsScreenVM.selectedLinkTagPairsViaLongClick.joinToString(
-                                            "\n"
-                                        ) {
-                                            it.link.url
-                                        },
-                                    )
+                                LinkoraSDK.getInstance().nativeUtils.onShare(
+                                    CollectionsScreenVM.selectedLinkTagPairsViaLongClick.joinToString(
+                                        "\n"
+                                    ) {
+                                        it.link.url
+                                    },
+                                )
                             },
                         ) {
                             Icon(
@@ -320,25 +302,20 @@ fun BottomNavOnSelection(
         }
         if (transferActionType != TransferActionType.NONE) {
             Text(
-                text =
-                    if (transferActionType == TransferActionType.COPY) {
-                        localizedStrings.NavigateAndCopyDesc
-                    } else {
-                        localizedStrings.NavigateAndMoveDesc
-                    },
+                text = if (transferActionType == TransferActionType.COPY) {
+                    localizedStrings.NavigateAndCopyDesc
+                } else {
+                    localizedStrings.NavigateAndMoveDesc
+                },
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.padding(start = 15.dp, end = 15.dp),
             )
         }
         val showNavigateToCollectionScreen =
-            selectedAndInRoot.value &&
-                    currentRoute?.hasRoute(Navigation.Root.CollectionsScreen::class) != true
-        if (
-            CollectionsScreenVM.selectedFoldersViaLongClick.isNotEmpty() &&
-            CollectionsScreenVM.selectedFoldersViaLongClick.any {
+            selectedAndInRoot.value && currentRoute?.hasRoute(Navigation.Root.CollectionsScreen::class) != true
+        if (CollectionsScreenVM.selectedFoldersViaLongClick.isNotEmpty() && CollectionsScreenVM.selectedFoldersViaLongClick.any {
                 it.parentFolderId != null
-            }
-        ) {
+            }) {
             Button(
                 onClick = {
                     performAction(
@@ -348,15 +325,13 @@ fun BottomNavOnSelection(
                         ),
                     )
                 },
-                modifier =
-                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .fillMaxWidth()
-                        .padding(
-                            start = 15.dp,
-                            end = 15.dp,
-                            top = 5.dp,
-                            bottom = if (!showNavigateToCollectionScreen) 5.dp else 0.dp,
-                        ).highlightOnFocused(shape = ButtonDefaults.shape),
+                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
+                    .padding(
+                        start = 15.dp,
+                        end = 15.dp,
+                        top = 5.dp,
+                        bottom = if (!showNavigateToCollectionScreen) 5.dp else 0.dp,
+                    ).highlightOnFocused(shape = ButtonDefaults.shape),
             ) {
                 Text(
                     text = localizedStrings.MarkSelectedFoldersAsRoot,
@@ -384,15 +359,13 @@ fun BottomNavOnSelection(
                         restoreState = true
                     }
                 },
-                modifier =
-                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .fillMaxWidth()
-                        .padding(
-                            start = 15.dp,
-                            end = 15.dp,
-                            top = 5.dp,
-                            bottom = 5.dp,
-                        ).highlightOnFocused(shape = ButtonDefaults.shape),
+                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
+                    .padding(
+                        start = 15.dp,
+                        end = 15.dp,
+                        top = 5.dp,
+                        bottom = 5.dp,
+                    ).highlightOnFocused(shape = ButtonDefaults.shape),
             ) {
                 Text(
                     text = localizedStrings.NavigateToCollectionsScreen,

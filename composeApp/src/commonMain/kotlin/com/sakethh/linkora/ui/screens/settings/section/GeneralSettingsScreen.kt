@@ -41,7 +41,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -100,10 +99,11 @@ fun GeneralSettingsScreen() {
 
     // TODO: GET RID OF THIS
     val generalSectionData =
-        retain(preferences) {
+        retain(preferences, localizedStrings) {
             settingsScreenViewModel.generalSection(
                 onAndroidMobile,
                 preferences,
+                localizedStrings
             )
         }
     val isLinkoraTopAppBarEnabled by

@@ -74,6 +74,7 @@ import com.sakethh.linkora.ui.screens.LoadingScreen
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.pressScaleEffect
+import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.highlightOnFocused
 import com.sakethh.linkora.utils.openUriOrNotify
 import kotlinx.coroutines.launch
@@ -122,7 +123,7 @@ fun HomeScreen() {
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
-                        text = homeScreenVM.currentPhaseOfTheDay.value,
+                        text = homeScreenVM.currentPhaseOfTheDay,
                         color = MaterialTheme.colorScheme.secondary,
                         style = MaterialTheme.typography.titleMedium,
                         fontSize = 16.sp,
@@ -188,7 +189,11 @@ fun HomeScreen() {
                         }
                         Spacer(Modifier.width(10.dp))
                         Text(
-                            text = homeScreenVM.selectedPanelData!!.panelName,
+                            text = if (homeScreenVM.selectedPanelData?.localId == Constants.DEFAULT_PANELS_ID) {
+                                localizedStrings.Default
+                            } else {
+                                homeScreenVM.selectedPanelData!!.panelName
+                            },
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.titleLarge,
                             fontSize = 20.sp,
@@ -225,7 +230,13 @@ fun HomeScreen() {
                         modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
                     ) {
                         Text(
-                            text = panelFolder.folderName,
+                            text = if (panelFolder.folderId == Constants.SAVED_LINKS_ID) {
+                                localizedStrings.SavedLinks
+                            } else if (panelFolder.folderId == Constants.IMPORTANT_LINKS_ID) {
+                                localizedStrings.ImportantLinks
+                            } else {
+                                panelFolder.folderName
+                            },
                             style = MaterialTheme.typography.titleLarge,
                             fontSize = 18.sp,
                             modifier = Modifier.padding(15.dp),
@@ -287,7 +298,7 @@ fun HomeScreen() {
                             selectedTags = it.tags,
                         )
                         coroutineScope.launch {
-                            localUriHandler.openUriOrNotify(it.link.url)
+                            localUriHandler.openUriOrNotify(it.link.url, localizedStrings)
                         }
                     },
                     isCurrentlyInDetailsView = {
@@ -380,7 +391,7 @@ fun HomeScreen() {
                         )
                         Spacer(Modifier.width(5.dp))
                         Text(
-                            text = panel.panelName,
+                            text = if (panel.localId == Constants.DEFAULT_PANELS_ID) localizedStrings.Default else panel.panelName,
                             style =
                                 if (homeScreenVM.selectedPanelData!!.localId == panel.localId) {
                                     MaterialTheme.typography.titleLarge

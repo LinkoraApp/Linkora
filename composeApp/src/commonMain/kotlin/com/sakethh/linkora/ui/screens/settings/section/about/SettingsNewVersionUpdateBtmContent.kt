@@ -89,7 +89,7 @@ fun NewVersionUpdateBtmContent(
                             shouldBtmModalSheetBeVisible.value = false
                         }
                     coroutineScope.launch {
-                        uriHandler.openUriOrNotify(urlOfLatestReleasePage)
+                        uriHandler.openUriOrNotify(urlOfLatestReleasePage, localizedStrings)
                     }
                 },
             ) {

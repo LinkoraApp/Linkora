@@ -55,7 +55,7 @@ class HomeScreenVM(
     triggerCollectionOfPanels: Boolean = true,
     private val triggerCollectionOfPanelFolders: Boolean = true,
 ) : ViewModel() {
-    val currentPhaseOfTheDay = mutableStateOf("")
+    var currentPhaseOfTheDay by mutableStateOf("")
 
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
     val localizedStrings get() = localizationRepo.localizedStrings.value
@@ -70,11 +70,11 @@ class HomeScreenVM(
 
     private val _panelFoldersDataFlat =
         MutableStateFlow<
-            Map<
-                Long,
-                PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<FlatChildFolderData>>>,
-                >,
-            >(
+                Map<
+                        Long,
+                        PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<FlatChildFolderData>>>,
+                        >,
+                >(
             value = emptyMap(),
         )
 
@@ -409,24 +409,27 @@ class HomeScreenVM(
 
     init {
         val currentHour = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).hour
+        viewModelScope.launch {
+            localizationRepo.localizedStrings.collectLatest {
+                currentPhaseOfTheDay =
+                    when (currentHour) {
+                        in 0..11 -> {
+                            it.GoodMorning
+                        }
 
-        currentPhaseOfTheDay.value =
-            when (currentHour) {
-                in 0..11 -> {
-                    localizedStrings.GoodMorning
-                }
+                        in 12..15 -> {
+                            it.GoodAfternoon
+                        }
 
-                in 12..15 -> {
-                    localizedStrings.GoodAfternoon
-                }
+                        in 16..23 -> {
+                            it.GoodEvening
+                        }
 
-                in 16..23 -> {
-                    localizedStrings.GoodEvening
-                }
-
-                else -> {
-                    localizedStrings.HeyHi
-                }
+                        else -> {
+                            it.HeyHi
+                        }
+                    }
             }
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.sakethh.linkora.platform
 
+import LocalizedStrings
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -52,6 +53,7 @@ import java.security.cert.X509Certificate
 
 actual class FileManager(
     private val context: Context,
+    private val localizedStrings: () -> LocalizedStrings
 ) {
     private suspend fun writeFileToSelectedDir(
         exportLocation: String,
@@ -82,7 +84,7 @@ actual class FileManager(
         if (isSuccess) {
             onCompletion(exportFileName)
         } else {
-            pushUIEvent(UIEvent.Type.ShowSnackbar("Failed to write file"))
+            pushUIEvent(UIEvent.Type.ShowSnackbar(localizedStrings().FailedToWriteFile))
         }
     }
 
@@ -278,7 +280,8 @@ actual class FileManager(
 
     actual suspend fun importFromJSONObj(): Flow<Result<JSONExportSchema>> = flow {
         val jsonContent =
-            importFile(FileType.JSON) ?: return@flow emit(Result.Failure(Throwable("Importing Failed.")))
+            importFile(FileType.JSON)
+                ?: return@flow emit(Result.Failure(Throwable("Importing Failed.")))
 
         emit(Result.Loading(message = "Reading and deserializing JSON file"))
         val currentSystemEpochSeconds = getSystemEpochSeconds()
@@ -344,7 +347,8 @@ actual class FileManager(
 
     actual suspend fun importFromHTMLString(): Flow<Result<String>> = flow {
         val importContent =
-            importFile(FileType.HTML) ?: return@flow emit(Result.Failure(Throwable("Importing Failed.")))
+            importFile(FileType.HTML)
+                ?: return@flow emit(Result.Failure(Throwable("Importing Failed.")))
 
         emit(Result.Loading(message = "Reading the file"))
         emit(Result.Success(importContent))
@@ -392,7 +396,7 @@ actual class FileManager(
     actual suspend fun openWebCaptureFolder(link: String) {
         val captureFolderUUID =
             DependencyContainer.webCaptureRepo.getFolderNameByLink(link) ?: return pushUIEvent(
-                UIEvent.Type.ShowSnackbar("No saved webpage found for this link.")
+                UIEvent.Type.ShowSnackbar(localizedStrings().NoWebpageFoundForLink)
             )
 
         val isOnTV = with(context) {
@@ -406,7 +410,7 @@ actual class FileManager(
 
             if (!captureFolder.exists()) {
                 pushUIEvent(
-                    UIEvent.Type.ShowSnackbar("No saved webpage found for this link.")
+                    UIEvent.Type.ShowSnackbar(localizedStrings().NoWebpageFoundForLink)
                 )
                 return
             }
@@ -422,7 +426,7 @@ actual class FileManager(
 
             val captureFolderUri = DocumentFile.fromTreeUri(context, rootFolderUri.toUri())
                 ?.findFile(captureFolderUUID)?.uri ?: return pushUIEvent(
-                UIEvent.Type.ShowSnackbar("No saved webpage found for this link.")
+                UIEvent.Type.ShowSnackbar(localizedStrings().NoWebpageFoundForLink)
             )
 
             intent.setDataAndType(captureFolderUri, DocumentsContract.Document.MIME_TYPE_DIR)
@@ -433,10 +437,10 @@ actual class FileManager(
             context.startActivity(intent)
         } catch (_: ActivityNotFoundException) {
             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val clip = ClipData.newPlainText("Folder Name", captureFolderUUID)
+            val clip = ClipData.newPlainText(localizedStrings().FolderName, captureFolderUUID)
             clipboard.setPrimaryClip(clip)
             pushUIEvent(
-                UIEvent.Type.ShowSnackbar("Couldn't open the folder. The folder name has been copied to your clipboard.")
+                UIEvent.Type.ShowSnackbar(localizedStrings().CouldntOpenWebpageFolder_CopiedToClipBoard)
             )
         }
     }

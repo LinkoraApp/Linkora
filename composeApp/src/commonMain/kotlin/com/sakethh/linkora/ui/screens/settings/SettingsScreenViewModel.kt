@@ -1,5 +1,6 @@
 package com.sakethh.linkora.ui.screens.settings
 
+import LocalizedStrings
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoMode
 import androidx.compose.material.icons.filled.Block
@@ -36,7 +37,6 @@ import com.sakethh.linkora.ui.screens.onboarding.Slide2
 import com.sakethh.linkora.ui.screens.onboarding.Slide3
 import com.sakethh.linkora.ui.screens.onboarding.Slide4
 import com.sakethh.linkora.ui.utils.UIEvent
-import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.openUriOrNotify
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -55,6 +55,7 @@ open class SettingsScreenViewModel(
     fun generalSection(
         onAndroidMobile: Boolean,
         preferences: AppPreferences,
+        localizedStrings: LocalizedStrings
     ): List<SettingComponentParam> = buildList {
         this.addAll(
             listOf(
@@ -220,9 +221,9 @@ open class SettingsScreenViewModel(
 
         add(
             SettingComponentParam(
-                title = "Always show 'Open WebCapture Folder' menu item",
+                title = localizedStrings.AlwaysShowOpenCaptureFolderMenuItemLabel,
                 doesDescriptionExists = true,
-                description = "When turned off, the 'Open WebCapture Folder' menu item is shown only when web-captures is enabled.",
+                description = localizedStrings.AlwaysShowOpenCaptureFolderMenuItemDesc,
                 isSwitchNeeded = true,
                 isSwitchEnabled = preferences.alwaysShowOpenWebCaptureFolderInMenu,
                 onSwitchStateChange = {
@@ -274,6 +275,7 @@ open class SettingsScreenViewModel(
                 viewModelScope.launch {
                     localUriHandler.openUriOrNotify(
                         "https://music.youtube.com/watch?v=DbiB1AtCA9k",
+                        localizedStrings
                     )
                 }
             },
@@ -306,6 +308,7 @@ open class SettingsScreenViewModel(
                 viewModelScope.launch {
                     localUriHandler.openUriOrNotify(
                         "https://www.rockstargames.com/reddeadredemption2",
+                        localizedStrings
                     )
                 }
             },
@@ -351,6 +354,7 @@ open class SettingsScreenViewModel(
                 viewModelScope.launch {
                     localUriHandler.openUriOrNotify(
                         "https://store.epicgames.com/en-US/p/a-plague-tale-requiem",
+                        localizedStrings
                     )
                 }
             },
@@ -383,6 +387,7 @@ open class SettingsScreenViewModel(
                 viewModelScope.launch {
                     localUriHandler.openUriOrNotify(
                         "https://www.tombraider.com/products/games/shadow-of-the-tomb-raider",
+                        localizedStrings
                     )
                 }
             },
@@ -418,6 +423,7 @@ open class SettingsScreenViewModel(
                 viewModelScope.launch {
                     localUriHandler.openUriOrNotify(
                         "https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q",
+                        localizedStrings
                     )
                 }
             },
@@ -450,6 +456,7 @@ open class SettingsScreenViewModel(
                 viewModelScope.launch {
                     localUriHandler.openUriOrNotify(
                         "https://music.youtube.com/watch?v=Q5jl_fmMd8M",
+                        localizedStrings
                     )
                 }
             },
@@ -480,6 +487,7 @@ open class SettingsScreenViewModel(
                 viewModelScope.launch {
                     localUriHandler.openUriOrNotify(
                         "https://twitter.com/CatWorkers/status/1819121250226127061",
+                        localizedStrings
                     )
                 }
             },
@@ -509,7 +517,10 @@ open class SettingsScreenViewModel(
             onMoreIconClick = {},
             onLinkClick = {
                 viewModelScope.launch {
-                    localUriHandler.openUriOrNotify("https://www.youtube.com/watch?v=3vlqI5TPVjQ")
+                    localUriHandler.openUriOrNotify(
+                        "https://www.youtube.com/watch?v=3vlqI5TPVjQ",
+                        localizedStrings
+                    )
                 }
             },
             tags = null,
@@ -541,6 +552,7 @@ open class SettingsScreenViewModel(
                 viewModelScope.launch {
                     localUriHandler.openUriOrNotify(
                         "https://music.youtube.com/watch?v=78YNulckDng",
+                        localizedStrings
                     )
                 }
             },
@@ -570,7 +582,10 @@ open class SettingsScreenViewModel(
             onMoreIconClick = {},
             onLinkClick = {
                 viewModelScope.launch {
-                    localUriHandler.openUriOrNotify("https://www.youtube.com/watch?v=66OFYWBrg3o")
+                    localUriHandler.openUriOrNotify(
+                        "https://www.youtube.com/watch?v=66OFYWBrg3o",
+                        localizedStrings
+                    )
                 }
             },
             tags = listOf(Tag(name = "KD"), Tag(name = "Kings Disease")),

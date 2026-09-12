@@ -228,13 +228,13 @@ fun supportsWideDisplay(): Boolean = with(LocalDensity.current) {
     LocalWindowInfo.current.containerSize.width.toDp() >= 840.dp
 }
 
-suspend fun UriHandler.openUriOrNotify(uri: String) {
+suspend fun UriHandler.openUriOrNotify(uri: String, localizedStrings: LocalizedStrings) {
     try {
         openUri(uri)
     } catch (e: Exception) {
         e.printStackTrace()
         UIEvent.pushUIEvent(
-            UIEvent.Type.ShowSnackbar("Couldn't open link, make sure you have a browser installed."),
+            UIEvent.Type.ShowSnackbar(localizedStrings.CouldntOpenLinkInBrowser),
         )
     }
 }

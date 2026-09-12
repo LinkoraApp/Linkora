@@ -314,7 +314,7 @@ fun CollectionDetailPane(
                                         ),
                                     )
                                     coroutineScope.launch {
-                                        localUriHandler.openUriOrNotify(it.link.url)
+                                        localUriHandler.openUriOrNotify(it.link.url, localizedStrings)
                                     }
                                 },
                                 isCurrentlyInDetailsView = {
@@ -576,7 +576,7 @@ fun CollectionDetailPane(
                         ),
                     )
                     coroutineScope.launch {
-                        localUriHandler.openUriOrNotify(it.link.url)
+                        localUriHandler.openUriOrNotify(it.link.url, localizedStrings)
                     }
                 },
                 isCurrentlyInDetailsView = {

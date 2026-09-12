@@ -212,7 +212,7 @@ fun MenuBtmSheet(
                             menuBtmSheetParam.linkTagsPair.link.url
                         )
                     },
-                    elementName = "Open Captured Folder",
+                    elementName = localizedStrings.OpenCapturedFolder,
                     elementImageVector = Icons.Outlined.Web,
                 )
             }

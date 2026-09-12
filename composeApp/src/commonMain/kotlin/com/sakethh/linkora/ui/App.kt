@@ -585,6 +585,7 @@ fun App(modifier: Modifier = Modifier) {
                                 coroutineScope.launch {
                                     localUriHandler.openUriOrNotify(
                                         appVM.selectedLinkTagsForMenuBtmSheet.link.url,
+                                        localizedStrings
                                     )
                                 }
                             },
@@ -932,6 +933,7 @@ fun App(modifier: Modifier = Modifier) {
                                                 coroutineScope.launch {
                                                     localUriHandler.openUriOrNotify(
                                                         "https://forms.gle/75ww25CLQqZuSSuZ6",
+                                                        localizedStrings
                                                     )
                                                 }
                                             }
