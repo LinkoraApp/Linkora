@@ -28,5 +28,7 @@ data class Folder(
     @Ignore @Transient
     var path: List<Folder>? = null
 
-    class BlankFolderName : Throwable()
+    class BlankFolderName : ThrowableFolder()
+
+    open class ThrowableFolder : Throwable()
 }
