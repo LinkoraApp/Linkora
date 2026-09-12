@@ -106,11 +106,10 @@ fun String.host(throwOnException: Boolean = true): String = try {
 }
 
 fun Modifier.fillMaxWidthWithPadding(
-    paddingValues: PaddingValues =
-        PaddingValues(
-            start = 15.dp,
-            end = 15.dp,
-        ),
+    paddingValues: PaddingValues = PaddingValues(
+        start = 15.dp,
+        end = 15.dp,
+    ),
 ): Modifier = this.fillMaxWidth().padding(paddingValues)
 
 @Composable
@@ -128,8 +127,7 @@ fun Modifier.addEdgeToEdgeScaffoldPadding(paddingValues: PaddingValues) = this.p
     top = paddingValues.calculateTopPadding(),
     start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
     end = paddingValues.calculateEndPadding(LayoutDirection.Rtl),
-)
-    .consumeWindowInsets(paddingValues)
+).consumeWindowInsets(paddingValues)
 
 fun String?.isNotNullOrNotBlank(): Boolean = !this.isNullOrBlank()
 
@@ -164,15 +162,14 @@ suspend fun <T> Result<T>.pushSnackbarOnFailure() {
 fun <T> Result.Success<T>.isRemoteSuccessful() = this.remoteExecResult?.isRemoteExecutionSuccessful == true
 
 fun <T> Result.Success<T>.getRemoteOnlyFailureMsg(remoteExecFailedLocalizedLabel: String): String = if (this.remoteExecResult != null) {
-        "\n\n${remoteExecFailedLocalizedLabel}\n" +
-                this.remoteExecResult.e.toString()
+        "\n\n${remoteExecFailedLocalizedLabel}\n" + this.remoteExecResult.e.toString()
     } else {
         ""
     }
 
 suspend fun Exception?.pushSnackbar() {
     if (this != null) {
-        pushUIEvent(UIEvent.Type.ShowSnackbar(this?.message.toString()))
+        pushUIEvent(UIEvent.Type.ShowSnackbar(this.message.toString()))
     }
 }
 
@@ -224,10 +221,9 @@ fun String.replaceActual(vararg actuals: String): String {
     return finalStr.toString()
 }
 
-fun String.isATwitterUrl(): Boolean = this.trim().startsWith("http://twitter.com/") ||
-        this.trim().startsWith("https://twitter.com/") ||
-        this.trim().startsWith("http://x.com/") ||
-        this.trim().startsWith("https://x.com/")
+fun String.isATwitterUrl(): Boolean = this.trim().startsWith("http://twitter.com/") || this.trim()
+    .startsWith("https://twitter.com/") || this.trim().startsWith("http://x.com/") || this.trim()
+    .startsWith("https://x.com/")
 
 suspend fun <T : Any> T.then(init: suspend () -> Unit): T {
     init()
@@ -245,13 +241,11 @@ fun NavHostController.inRootScreen(includeSettingsScreen: Boolean): Boolean? {
         )
     }
     return this.currentBackStackEntryAsState().value?.destination?.let { destination ->
-        rootRoutesList
-            .filter {
-                includeSettingsScreen || it != Navigation.Root.SettingsScreen
-            }
-            .any {
-                destination.hasRoute(it::class)
-            }
+        rootRoutesList.filter {
+            includeSettingsScreen || it != Navigation.Root.SettingsScreen
+        }.any {
+            destination.hasRoute(it::class)
+        }
     }
 }
 
@@ -371,20 +365,15 @@ fun <T> Flow<T>.asStateInWhileSubscribed(
 @JvmName("shuffleLinksFlatChildFolderData")
 fun Flow<Result<List<FlatChildFolderData>>>.shuffleLinks(): Flow<Result<List<FlatChildFolderData>>> = transform {
         when (it) {
-            is Result.Success ->
-                emit(
-                    it.copy(
-                        data =
-                            it.data.filter {
-                                it.itemType != Constants.LINK
-                            } +
-                                    it.data
-                                        .filter {
-                                            it.itemType == Constants.LINK
-                                        }
-                                        .shuffled(),
-                    ),
-                )
+            is Result.Success -> emit(
+                it.copy(
+                    data = it.data.filter {
+                        it.itemType != Constants.LINK
+                    } + it.data.filter {
+                        it.itemType == Constants.LINK
+                    }.shuffled(),
+                ),
+            )
 
             else -> emit(it)
         }
@@ -400,20 +389,15 @@ fun Flow<Result<List<Link>>>.shuffleLinks(): Flow<Result<List<Link>>> = transfor
 @JvmName("shuffleLinksFlatSearchResult")
 fun Flow<Result<List<FlatSearchResult>>>.shuffleLinks(): Flow<Result<List<FlatSearchResult>>> = transform {
         when (it) {
-            is Result.Success ->
-                emit(
-                    it.copy(
-                        data =
-                            it.data.filter {
-                                it.itemType != Constants.LINK
-                            } +
-                                    it.data
-                                        .filter {
-                                            it.itemType == Constants.LINK
-                                        }
-                                        .shuffled(),
-                    ),
-                )
+            is Result.Success -> emit(
+                it.copy(
+                    data = it.data.filter {
+                        it.itemType != Constants.LINK
+                    } + it.data.filter {
+                        it.itemType == Constants.LINK
+                    }.shuffled(),
+                ),
+            )
 
             else -> emit(it)
         }
@@ -443,38 +427,30 @@ fun Modifier.highlightOnFocused(shape: Shape = RectangleShape): Modifier {
         width = if (hasFocus) 2.5.dp else 0.dp,
         color = if (hasFocus) MaterialTheme.colorScheme.primary else Color.Transparent,
         shape
+    ).background(
+        color = if (hasFocus) {
+            MaterialTheme.colorScheme.primaryContainer.copy(0.15f)
+        } else {
+            Color.Transparent
+        },
+        shape
     )
-        .background(
-            color = if (hasFocus) {
-                MaterialTheme.colorScheme.primaryContainer.copy(0.15f)
-            } else {
-                Color.Transparent
-            },
-            shape
-        )
 }
 
 @Composable
 fun ScrollAreaScope.VerticalScrollbar() {
     VerticalScrollbar(
-        modifier =
-            Modifier.align(Alignment.TopEnd)
-                .pointerHoverIcon(PointerIcon.Hand)
-                .fillMaxHeight()
-                .padding(end = 2.5.dp, start = 2.5.dp)
-                .width(8.dp),
+        modifier = Modifier.align(Alignment.TopEnd).pointerHoverIcon(PointerIcon.Hand)
+            .fillMaxHeight().padding(end = 2.5.dp, start = 2.5.dp).width(8.dp),
     ) {
         Thumb(
-            thumbVisibility =
-                ThumbVisibility.HideWhileIdle(
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                    hideDelay = Duration.parse("2s"),
-                ),
-            modifier =
-                Modifier.pointerHoverIcon(PointerIcon.Hand)
-                    .clip(RoundedCornerShape(25.dp))
-                    .background(MaterialTheme.colorScheme.secondary.copy(0.65f)),
+            thumbVisibility = ThumbVisibility.HideWhileIdle(
+                enter = fadeIn(),
+                exit = fadeOut(),
+                hideDelay = Duration.parse("2s"),
+            ),
+            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand).clip(RoundedCornerShape(25.dp))
+                .background(MaterialTheme.colorScheme.secondary.copy(0.65f)),
         )
     }
 }

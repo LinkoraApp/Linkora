@@ -92,13 +92,7 @@ class LocalFoldersRepoImpl(
             },
             localOperation = {
                 if (folder.name.isEmpty()) {
-                    throw Folder.InvalidName(
-                        if (folder.name.isEmpty()) {
-                            "Folder name cannot be blank."
-                        } else {
-                            "\"${folder.name}\" is reserved."
-                        },
-                    )
+                    throw Folder.InvalidName()
                 }
                 newLocalId = foldersDao.insertANewFolder(folder.copy(localId = 0))
                 newLocalId

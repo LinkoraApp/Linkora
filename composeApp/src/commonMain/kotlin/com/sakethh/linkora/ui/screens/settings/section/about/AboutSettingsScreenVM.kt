@@ -74,9 +74,9 @@ class AboutSettingsScreenVM(
                     .onSuccess { success ->
                         onCompletion(success.data)
                     }
-                    .onFailure { failureMsg ->
+                    .onFailure { exception ->
                         onCompletion(null)
-                        this.pushUIEvent(UIEvent.Type.ShowSnackbar(failureMsg.message.toString()))
+                        this.pushUIEvent(UIEvent.Type.ShowSnackbar(exception.message.toString()))
                     }
             }
         }

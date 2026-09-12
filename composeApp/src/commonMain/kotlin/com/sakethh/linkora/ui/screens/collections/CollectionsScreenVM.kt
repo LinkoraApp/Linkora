@@ -66,40 +66,34 @@ class CollectionsScreenVM(
         get() = preferencesRepo.getPreferences().forceShuffleLinks
 
     val preferencesAsFlow = preferencesRepo.preferencesAsFlow
-    var currentCollectionSource by
-    mutableStateOf(
+    var currentCollectionSource by mutableStateOf(
         if (preferencesRepo.getPreferences().selectedCollectionSourceId == 0) {
             localizedStrings.Folders
         } else {
             localizedStrings.Tags
         },
     )
-    val collectionPagerState =
-        PagerState(
-            currentPage = preferencesRepo.getPreferences().selectedCollectionSourceId,
-            pageCount = { 2 },
-        )
+    val collectionPagerState = PagerState(
+        currentPage = preferencesRepo.getPreferences().selectedCollectionSourceId,
+        pageCount = { 2 },
+    )
 
     init {
         viewModelScope.launch {
             snapshotFlow {
                 collectionPagerState.currentPage
-            }
-                .distinctUntilChanged()
-                .debounce(150L)
-                .collectLatest { currentPage ->
-                    currentCollectionSource =
-                        if (currentPage == 0) {
-                            localizedStrings.Folders
-                        } else {
-                            localizedStrings.Tags
-                        }
-
-                    preferencesRepo.changePreferenceValue(
-                        preferenceKey = AppPreferences.COLLECTION_SOURCE_ID,
-                        newValue = currentPage,
-                    )
+            }.distinctUntilChanged().debounce(150L).collectLatest { currentPage ->
+                currentCollectionSource = if (currentPage == 0) {
+                    localizedStrings.Folders
+                } else {
+                    localizedStrings.Tags
                 }
+
+                preferencesRepo.changePreferenceValue(
+                    preferenceKey = AppPreferences.COLLECTION_SOURCE_ID,
+                    newValue = currentPage,
+                )
+            }
         }
     }
 
@@ -132,167 +126,149 @@ class CollectionsScreenVM(
                 },
             ) { query, sortingType ->
                 Pair(query, sortingType)
-            }
-                .cancellable()
-                .collectLatest { (query, sortingType) ->
-                    localFoldersRepo.search(query = query, sortOption = sortingType).collectLatest {
-                        it.onSuccess {
-                            _foldersSearchQueryResult.emit(it.data)
-                        }
+            }.cancellable().collectLatest { (query, sortingType) ->
+                localFoldersRepo.search(query = query, sortOption = sortingType).collectLatest {
+                    it.onSuccess {
+                        _foldersSearchQueryResult.emit(it.data)
                     }
                 }
+            }
         }
     }
 
     fun performAction(addANewLinkDialogBoxAction: AddANewLinkDialogBoxAction) = when (addANewLinkDialogBoxAction) {
-            is AddANewLinkDialogBoxAction.AddANewLink ->
-                addANewLink(
-                    link = addANewLinkDialogBoxAction.link,
-                    selectedTags = addANewLinkDialogBoxAction.selectedTags,
-                    linkSaveConfig = addANewLinkDialogBoxAction.linkSaveConfig,
-                    onCompletion = addANewLinkDialogBoxAction.onCompletion,
-                    pushSnackbarOnSuccess = addANewLinkDialogBoxAction.pushSnackbarOnSuccess,
-                )
+            is AddANewLinkDialogBoxAction.AddANewLink -> addANewLink(
+                link = addANewLinkDialogBoxAction.link,
+                selectedTags = addANewLinkDialogBoxAction.selectedTags,
+                linkSaveConfig = addANewLinkDialogBoxAction.linkSaveConfig,
+                onCompletion = addANewLinkDialogBoxAction.onCompletion,
+                pushSnackbarOnSuccess = addANewLinkDialogBoxAction.pushSnackbarOnSuccess,
+            )
 
             AddANewLinkDialogBoxAction.ClearSelectedTags -> clearSelectedTags()
 
-            is AddANewLinkDialogBoxAction.CreateATag ->
-                createATag(
-                    tagName = addANewLinkDialogBoxAction.tagName,
-                    onCompletion = addANewLinkDialogBoxAction.onCompletion,
-                )
+            is AddANewLinkDialogBoxAction.CreateATag -> createATag(
+                tagName = addANewLinkDialogBoxAction.tagName,
+                onCompletion = addANewLinkDialogBoxAction.onCompletion,
+            )
 
-            is AddANewLinkDialogBoxAction.InsertANewFolder ->
-                insertANewFolder(
-                    folder = addANewLinkDialogBoxAction.folder,
-                    onCompletion = addANewLinkDialogBoxAction.onCompletion,
-                )
+            is AddANewLinkDialogBoxAction.InsertANewFolder -> insertANewFolder(
+                folder = addANewLinkDialogBoxAction.folder,
+                onCompletion = addANewLinkDialogBoxAction.onCompletion,
+            )
 
             is AddANewLinkDialogBoxAction.SelectATag -> selectATag(addANewLinkDialogBoxAction.tag)
 
             is AddANewLinkDialogBoxAction.UnSelectATag -> unSelectATag(addANewLinkDialogBoxAction.tag)
 
-            is AddANewLinkDialogBoxAction.UpdateFoldersSearchQuery ->
-                foldersSearchQuery = addANewLinkDialogBoxAction.string
+            is AddANewLinkDialogBoxAction.UpdateFoldersSearchQuery -> foldersSearchQuery =
+                addANewLinkDialogBoxAction.string
 
-            is AddANewLinkDialogBoxAction.OnFirstVisibleIndexChangeOfTags ->
-                updateStartingIndexForTagsPaginator(
-                    addANewLinkDialogBoxAction.index,
-                )
+            is AddANewLinkDialogBoxAction.OnFirstVisibleIndexChangeOfTags -> updateStartingIndexForTagsPaginator(
+                addANewLinkDialogBoxAction.index,
+            )
 
             AddANewLinkDialogBoxAction.OnRetrieveNextTagsPage -> retrieveNextBatchOfTags()
 
-            is AddANewLinkDialogBoxAction.OnFirstVisibleIndexChangeOfRootFolders ->
-                updateStartingIndexForRegularRootFoldersPaginator(
-                    addANewLinkDialogBoxAction.index,
-                )
+            is AddANewLinkDialogBoxAction.OnFirstVisibleIndexChangeOfRootFolders -> updateStartingIndexForRegularRootFoldersPaginator(
+                addANewLinkDialogBoxAction.index,
+            )
 
-            AddANewLinkDialogBoxAction.OnRetrieveNextRegularRootPage ->
-                retrieveNextBatchOfRegularRootFolders()
+            AddANewLinkDialogBoxAction.OnRetrieveNextRegularRootPage -> retrieveNextBatchOfRegularRootFolders()
         }
 
     fun performAction(collectionsScreenAction: CollectionsScreenAction) = when (collectionsScreenAction) {
-            is CollectionsScreenAction.AddANewLink ->
-                addANewLink(
-                    link = collectionsScreenAction.link,
-                    selectedTags = collectionsScreenAction.selectedTags,
-                    linkSaveConfig = collectionsScreenAction.linkSaveConfig,
-                    onCompletion = collectionsScreenAction.onCompletion,
-                    pushSnackbarOnSuccess = collectionsScreenAction.pushSnackbarOnSuccess,
-                )
+            is CollectionsScreenAction.AddANewLink -> addANewLink(
+                link = collectionsScreenAction.link,
+                selectedTags = collectionsScreenAction.selectedTags,
+                linkSaveConfig = collectionsScreenAction.linkSaveConfig,
+                onCompletion = collectionsScreenAction.onCompletion,
+                pushSnackbarOnSuccess = collectionsScreenAction.pushSnackbarOnSuccess,
+            )
         }
 
-    private val _rootRegularFolders =
-        MutableStateFlow(
-            PaginationState(
-                isRetrieving = true,
-                exception = null,
-                pagesCompleted = false,
-                data = emptyMap<Pair<LastSeenId, LastSeenString>, List<Folder>>(),
-            ),
-        )
-    val rootRegularFolders =
-        _rootRegularFolders.asStateInWhileSubscribed(
-            initialValue =
-                PaginationState(
-                    isRetrieving = true,
-                    exception = null,
-                    pagesCompleted = false,
-                    data = emptyMap(),
-                ),
-        )
+    private val _rootRegularFolders = MutableStateFlow(
+        PaginationState(
+            isRetrieving = true,
+            exception = null,
+            pagesCompleted = false,
+            data = emptyMap<Pair<LastSeenId, LastSeenString>, List<Folder>>(),
+        ),
+    )
+    val rootRegularFolders = _rootRegularFolders.asStateInWhileSubscribed(
+        initialValue = PaginationState(
+            isRetrieving = true,
+            exception = null,
+            pagesCompleted = false,
+            data = emptyMap(),
+        ),
+    )
 
-    private val _allTags =
-        MutableStateFlow(
-            value =
-                PaginationState(
-                    isRetrieving = true,
-                    exception = null,
-                    pagesCompleted = false,
-                    data = emptyMap<Pair<LastSeenId, LastSeenString>, List<Tag>>(),
-                ),
-        )
-    val allTags =
-        _allTags.asStateInWhileSubscribed(
-            initialValue =
-                PaginationState(
-                    isRetrieving = true,
-                    exception = null,
-                    pagesCompleted = false,
-                    data = emptyMap(),
-                ),
-        )
+    private val _allTags = MutableStateFlow(
+        value = PaginationState(
+            isRetrieving = true,
+            exception = null,
+            pagesCompleted = false,
+            data = emptyMap<Pair<LastSeenId, LastSeenString>, List<Tag>>(),
+        ),
+    )
+    val allTags = _allTags.asStateInWhileSubscribed(
+        initialValue = PaginationState(
+            isRetrieving = true,
+            exception = null,
+            pagesCompleted = false,
+            data = emptyMap(),
+        ),
+    )
 
-    private val regularRootFoldersPaginator =
-        Paginator(
-            coroutineScope = viewModelScope,
-            onRetrieve = { lastSeenId, lastSeenString ->
-                localFoldersRepo.getRootFolders(
-                    sortingType,
-                    isArchived = false,
-                    pageSize = Constants.PAGE_SIZE,
-                    lastSeenId = lastSeenId,
-                    lastSeenName = lastSeenString,
-                )
-            },
-            onRetrieved = { currentKey, retrievedData ->
-                _rootRegularFolders.onRetrieved(
-                    currentKey = currentKey,
-                    data = retrievedData,
-                    shouldShuffle = shuffleLinks,
-                    idSelector = { it.localId },
-                    stringSelector = { it.name },
-                )
-            },
-            onError = _rootRegularFolders::onError,
-            onRetrieving = _rootRegularFolders::onRetrieving,
-            onPagesFinished = _rootRegularFolders::onPagesFinished,
-        )
+    private val regularRootFoldersPaginator = Paginator(
+        coroutineScope = viewModelScope,
+        onRetrieve = { lastSeenId, lastSeenString ->
+            localFoldersRepo.getRootFolders(
+                sortingType,
+                isArchived = false,
+                pageSize = Constants.PAGE_SIZE,
+                lastSeenId = lastSeenId,
+                lastSeenName = lastSeenString,
+            )
+        },
+        onRetrieved = { currentKey, retrievedData ->
+            _rootRegularFolders.onRetrieved(
+                currentKey = currentKey,
+                data = retrievedData,
+                shouldShuffle = shuffleLinks,
+                idSelector = { it.localId },
+                stringSelector = { it.name },
+            )
+        },
+        onError = _rootRegularFolders::onError,
+        onRetrieving = _rootRegularFolders::onRetrieving,
+        onPagesFinished = _rootRegularFolders::onPagesFinished,
+    )
 
-    private val tagsPaginator =
-        Paginator(
-            coroutineScope = viewModelScope,
-            onRetrieve = { lastSeenId, lastSeenString ->
-                localTagsRepo.getTags(
-                    sortOption = sortingType,
-                    pageSize = Constants.PAGE_SIZE,
-                    lastSeenId = lastSeenId,
-                    lastSeenName = lastSeenString,
-                )
-            },
-            onRetrieved = { currentKey, retrievedData ->
-                _allTags.onRetrieved(
-                    currentKey = currentKey,
-                    data = retrievedData,
-                    shouldShuffle = shuffleLinks,
-                    idSelector = { it.localId },
-                    stringSelector = { it.name },
-                )
-            },
-            onError = _allTags::onError,
-            onRetrieving = _allTags::onRetrieving,
-            onPagesFinished = _allTags::onPagesFinished,
-        )
+    private val tagsPaginator = Paginator(
+        coroutineScope = viewModelScope,
+        onRetrieve = { lastSeenId, lastSeenString ->
+            localTagsRepo.getTags(
+                sortOption = sortingType,
+                pageSize = Constants.PAGE_SIZE,
+                lastSeenId = lastSeenId,
+                lastSeenName = lastSeenString,
+            )
+        },
+        onRetrieved = { currentKey, retrievedData ->
+            _allTags.onRetrieved(
+                currentKey = currentKey,
+                data = retrievedData,
+                shouldShuffle = shuffleLinks,
+                idSelector = { it.localId },
+                stringSelector = { it.name },
+            )
+        },
+        onError = _allTags::onError,
+        onRetrieving = _allTags::onRetrieving,
+        onPagesFinished = _allTags::onPagesFinished,
+    )
 
     fun retrieveNextBatchOfRegularRootFolders() {
         viewModelScope.launch {
@@ -335,13 +311,11 @@ class CollectionsScreenVM(
         tagName: String,
         onCompletion: () -> Unit,
     ) {
-        viewModelScope
-            .launch {
-                localTagsRepo.createATag(Tag(name = tagName)).collect()
-            }
-            .invokeOnCompletion {
-                onCompletion()
-            }
+        viewModelScope.launch {
+            localTagsRepo.createATag(Tag(name = tagName)).collect()
+        }.invokeOnCompletion {
+            onCompletion()
+        }
     }
 
     private val appPreferencesCombined = preferencesAsFlow.map {
@@ -368,13 +342,12 @@ class CollectionsScreenVM(
         viewModelScope.launch {
             var lastSortingType = sortingType
             appPreferencesCombined.collectLatest { (shuffleLinks, sortingType) ->
-                val isSortingTypeChanged =
-                    if (sortingType == lastSortingType) {
-                        false
-                    } else {
-                        lastSortingType = sortingType
-                        true
-                    }
+                val isSortingTypeChanged = if (sortingType == lastSortingType) {
+                    false
+                } else {
+                    lastSortingType = sortingType
+                    true
+                }
 
                 if (isSortingTypeChanged) {
                     tagsPaginator.cancelAndReset()
@@ -391,27 +364,29 @@ class CollectionsScreenVM(
         folder: Folder,
         onCompletion: () -> Unit,
     ) {
-        viewModelScope
-            .launch {
-                localFoldersRepo.insertANewFolder(folder).collectLatest {
-                    it.onSuccess {
-                        pushUIEvent(
-                            UIEvent.Type.ShowSnackbar(
-                                message =
-                                    localizedStrings.FolderHasBeenCreatedSuccessful.replaceActual(
-                                        folder.name
-                                    ) + it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
-                            ),
-                        )
+        viewModelScope.launch {
+            localFoldersRepo.insertANewFolder(folder).collectLatest {
+                it.onSuccess {
+                    pushUIEvent(
+                        UIEvent.Type.ShowSnackbar(
+                            message = localizedStrings.FolderHasBeenCreatedSuccessful.replaceActual(
+                                folder.name
+                            ) + it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
+                        ),
+                    )
+                }.onFailure { exception ->
+                    val exceptionMsg = if (exception is Folder.InvalidName) {
+                        "Folder name cannot be blank."
+                    } else {
+                        exception.message.toString()
                     }
-                        .onFailure {
-                            pushUIEvent(UIEvent.Type.ShowSnackbar(message = it.message.toString()))
-                        }
+
+                    pushUIEvent(UIEvent.Type.ShowSnackbar(message = exceptionMsg))
                 }
             }
-            .invokeOnCompletion {
-                onCompletion()
-            }
+        }.invokeOnCompletion {
+            onCompletion()
+        }
     }
 
     fun deleteAFolder(
@@ -424,17 +399,14 @@ class CollectionsScreenVM(
                     onCompletion()
                     pushUIEvent(
                         UIEvent.Type.ShowSnackbar(
-                            localizedStrings.DeletedTheFolder.replaceActual(folder.name) +
-                                    it.getRemoteOnlyFailureMsg(
+                            localizedStrings.DeletedTheFolder.replaceActual(folder.name) + it.getRemoteOnlyFailureMsg(
                                 localizedStrings.RemoteExecutionFailed
                             ),
                         ),
                     )
-                }
-                    .onFailure {
-                        onCompletion()
-                    }
-                    .pushSnackbarOnFailure()
+                }.onFailure {
+                    onCompletion()
+                }.pushSnackbarOnFailure()
             }
         }
     }
@@ -443,100 +415,90 @@ class CollectionsScreenVM(
         link: Link,
         onCompletion: () -> Unit,
     ) {
-        viewModelScope
-            .launch {
-                localLinksRepo.deleteALink(link.localId).collectLatest {
-                    it.onSuccess {
-                        localizedStrings.DeletedTheLink.pushLocalizedSnackbar(
-                            append = it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
-                        )
-                    }
-                        .pushSnackbarOnFailure()
-                }
+        viewModelScope.launch {
+            localLinksRepo.deleteALink(link.localId).collectLatest {
+                it.onSuccess {
+                    localizedStrings.DeletedTheLink.pushLocalizedSnackbar(
+                        append = it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
+                    )
+                }.pushSnackbarOnFailure()
             }
-            .invokeOnCompletion {
-                onCompletion()
-            }
+        }.invokeOnCompletion {
+            onCompletion()
+        }
     }
 
     fun deleteTheNote(
         folder: Folder,
         onCompletion: () -> Unit,
     ) {
-        viewModelScope
-            .launch {
-                localFoldersRepo.deleteAFolderNote(folder.localId).collectLatest {
-                    it.onSuccess {
-                        pushUIEvent(
-                            UIEvent.Type.ShowSnackbar(
-                                localizedStrings.DeletedTheNoteOfAFolder.replaceActual(folder.name) +
-                                        it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
+        viewModelScope.launch {
+            localFoldersRepo.deleteAFolderNote(folder.localId).collectLatest {
+                it.onSuccess {
+                    pushUIEvent(
+                        UIEvent.Type.ShowSnackbar(
+                            localizedStrings.DeletedTheNoteOfAFolder.replaceActual(folder.name) + it.getRemoteOnlyFailureMsg(
+                                localizedStrings.RemoteExecutionFailed
                             ),
-                        )
-                    }
-                        .pushSnackbarOnFailure()
-                }
+                        ),
+                    )
+                }.pushSnackbarOnFailure()
             }
-            .invokeOnCompletion {
-                onCompletion()
-            }
+        }.invokeOnCompletion {
+            onCompletion()
+        }
     }
 
     fun deleteTheNote(
         link: Link,
         onCompletion: () -> Unit,
     ) {
-        viewModelScope
-            .launch {
-                localLinksRepo.deleteALinkNote(link.localId).collectLatest {
-                    it.onSuccess {
-                        localizedStrings.DeletedTheNoteOfALink.pushLocalizedSnackbar(
-                            append = it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
-                        )
-                    }
-                        .pushSnackbarOnFailure()
-                }
+        viewModelScope.launch {
+            localLinksRepo.deleteALinkNote(link.localId).collectLatest {
+                it.onSuccess {
+                    localizedStrings.DeletedTheNoteOfALink.pushLocalizedSnackbar(
+                        append = it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
+                    )
+                }.pushSnackbarOnFailure()
             }
-            .invokeOnCompletion {
-                onCompletion()
-            }
+        }.invokeOnCompletion {
+            onCompletion()
+        }
     }
 
     fun archiveAFolder(
         folder: Folder,
         onCompletion: () -> Unit,
     ) {
-        viewModelScope
-            .launch {
-                if (folder.isArchived) {
-                    localFoldersRepo.markFolderAsRegularFolder(folder.localId).collectLatest {
-                        it.onSuccess {
-                            pushUIEvent(
-                                UIEvent.Type.ShowSnackbar(
-                                    localizedStrings.UnArchivedTheFolder.replaceActual(folder.name) +
-                                            it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
+        viewModelScope.launch {
+            if (folder.isArchived) {
+                localFoldersRepo.markFolderAsRegularFolder(folder.localId).collectLatest {
+                    it.onSuccess {
+                        pushUIEvent(
+                            UIEvent.Type.ShowSnackbar(
+                                localizedStrings.UnArchivedTheFolder.replaceActual(folder.name) + it.getRemoteOnlyFailureMsg(
+                                    localizedStrings.RemoteExecutionFailed
                                 ),
-                            )
-                        }
-                            .pushSnackbarOnFailure()
-                    }
-                } else {
-                    localFoldersRepo.markFolderAsArchive(folder.localId).collectLatest {
-                        it.onSuccess {
-                            pushUIEvent(
-                                UIEvent.Type.ShowSnackbar(
-                                    localizedStrings.ArchivedTheFolder.replaceActual(folder.name) +
-                                            it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
+                            ),
+                        )
+                    }.pushSnackbarOnFailure()
+                }
+            } else {
+                localFoldersRepo.markFolderAsArchive(folder.localId).collectLatest {
+                    it.onSuccess {
+                        pushUIEvent(
+                            UIEvent.Type.ShowSnackbar(
+                                localizedStrings.ArchivedTheFolder.replaceActual(folder.name) + it.getRemoteOnlyFailureMsg(
+                                    localizedStrings.RemoteExecutionFailed
                                 ),
-                            )
-                        }
-                            .pushSnackbarOnFailure()
-                    }
+                            ),
+                        )
+                    }.pushSnackbarOnFailure()
                 }
             }
-            .invokeOnCompletion {
-                onCompletion()
-            }
+        }.invokeOnCompletion {
+            onCompletion()
+        }
     }
 
     fun markALinkAsImp(
@@ -544,37 +506,32 @@ class CollectionsScreenVM(
         tagIds: List<Long>?,
         onCompletion: () -> Unit,
     ) {
-        viewModelScope
-            .launch {
-                if (link.linkType == LinkType.IMPORTANT_LINK) {
-                    deleteALink(link, onCompletion = {})
-                    return@launch
-                }
-                localLinksRepo
-                    .addANewLink(
-                        link =
-                            link.copy(
-                                idOfLinkedFolder = Constants.IMPORTANT_LINKS_ID,
-                                localId = 0,
-                                linkType = LinkType.IMPORTANT_LINK,
-                            ),
-                        linkSaveConfig = LinkSaveConfig.forceSaveWithoutRetrieving(),
-                        selectedTagIds = tagIds,
+        viewModelScope.launch {
+            if (link.linkType == LinkType.IMPORTANT_LINK) {
+                deleteALink(link, onCompletion = {})
+                return@launch
+            }
+            localLinksRepo.addANewLink(
+                link = link.copy(
+                    idOfLinkedFolder = Constants.IMPORTANT_LINKS_ID,
+                    localId = 0,
+                    linkType = LinkType.IMPORTANT_LINK,
+                ),
+                linkSaveConfig = LinkSaveConfig.forceSaveWithoutRetrieving(),
+                selectedTagIds = tagIds,
+            ).collectLatest {
+                it.onSuccess {
+                    pushUIEvent(
+                        UIEvent.Type.ShowSnackbar(
+                            localizedStrings.AddedCopyToImpLinks,
+                        ),
                     )
-                    .collectLatest {
-                        it.onSuccess {
-                            pushUIEvent(
-                                UIEvent.Type.ShowSnackbar(
-                                    localizedStrings.AddedCopyToImpLinks,
-                                ),
-                            )
-                        }
-                        it.pushSnackbarOnFailure()
-                    }
+                }
+                it.pushSnackbarOnFailure()
             }
-            .invokeOnCompletion {
-                onCompletion()
-            }
+        }.invokeOnCompletion {
+            onCompletion()
+        }
     }
 
     fun refreshLinkMetadata(
@@ -582,109 +539,94 @@ class CollectionsScreenVM(
         link: Link,
         onCompletion: () -> Unit,
     ) {
-        viewModelScope
-            .launch {
-                localLinksRepo.refreshLinkMetadata(
-                    link,
-                    refreshLinkType,
-                    preferencesAsFlow.value.useWebCaptures,
-                ).collectLatest {
-                    it.onSuccess {
-                        pushUIEvent(
-                            UIEvent.Type.ShowSnackbar(
-                                message =
-                                    localizedStrings.LinkRefreshedSuccessfully +
-                                            it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
+        viewModelScope.launch {
+            localLinksRepo.refreshLinkMetadata(
+                link,
+                refreshLinkType,
+                preferencesAsFlow.value.useWebCaptures,
+            ).collectLatest {
+                it.onSuccess {
+                    pushUIEvent(
+                        UIEvent.Type.ShowSnackbar(
+                            message = localizedStrings.LinkRefreshedSuccessfully + it.getRemoteOnlyFailureMsg(
+                                localizedStrings.RemoteExecutionFailed
                             ),
-                        )
-                    }
-                        .pushSnackbarOnFailure()
-                }
+                        ),
+                    )
+                }.pushSnackbarOnFailure()
             }
-            .invokeOnCompletion {
-                onCompletion()
-            }
+        }.invokeOnCompletion {
+            onCompletion()
+        }
     }
 
     fun archiveALink(
         link: Link,
         onCompletion: () -> Unit,
     ) {
-        viewModelScope
-            .launch {
-                if (link.linkType == LinkType.ARCHIVE_LINK) {
-                    // we can also revert to the same folder from where it was originally archived, but this
-                    // should be fine
-                    localLinksRepo
-                        .updateALink(
-                            link =
-                                link.copy(
-                                    linkType = LinkType.SAVED_LINK,
-                                    idOfLinkedFolder = null,
+        viewModelScope.launch {
+            if (link.linkType == LinkType.ARCHIVE_LINK) {
+                // we can also revert to the same folder from where it was originally archived, but this
+                // should be fine
+                localLinksRepo.updateALink(
+                    link = link.copy(
+                        linkType = LinkType.SAVED_LINK,
+                        idOfLinkedFolder = null,
+                    ),
+                    updatedLinkTagsPair = null,
+                ).collectLatest {
+                    it.onSuccess {
+                        pushUIEvent(
+                            UIEvent.Type.ShowSnackbar(
+                                message = localizedStrings.UnArchived + it.getRemoteOnlyFailureMsg(
+                                    localizedStrings.RemoteExecutionFailed
                                 ),
-                            updatedLinkTagsPair = null,
+                            ),
                         )
-                        .collectLatest {
-                            it.onSuccess {
-                                pushUIEvent(
-                                    UIEvent.Type.ShowSnackbar(
-                                        message =
-                                            localizedStrings.UnArchived +
-                                                    it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
-                                    ),
-                                )
-                            }
-                            it.pushSnackbarOnFailure()
-                        }
-                } else {
-                    localLinksRepo.archiveALink(link.localId).collectLatest {
-                        it.onSuccess {
-                            localizedStrings.ArchivedTheLink.pushLocalizedSnackbar(
-                                append = it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
-                            )
-                        }
-                            .pushSnackbarOnFailure()
                     }
+                    it.pushSnackbarOnFailure()
+                }
+            } else {
+                localLinksRepo.archiveALink(link.localId).collectLatest {
+                    it.onSuccess {
+                        localizedStrings.ArchivedTheLink.pushLocalizedSnackbar(
+                            append = it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
+                        )
+                    }.pushSnackbarOnFailure()
                 }
             }
-            .invokeOnCompletion {
-                onCompletion()
-            }
+        }.invokeOnCompletion {
+            onCompletion()
+        }
     }
 
     fun updateLink(
         updatedLinkTagsPair: LinkTagsPair,
         onCompletion: () -> Unit,
     ) {
-        viewModelScope
-            .launch {
-                localLinksRepo
-                    .updateALink(
-                        link = updatedLinkTagsPair.link,
-                        updatedLinkTagsPair = updatedLinkTagsPair,
-                    )
-                    .collectLatest {
-                        it.pushSnackbarOnFailure()
-                    }
+        viewModelScope.launch {
+            localLinksRepo.updateALink(
+                link = updatedLinkTagsPair.link,
+                updatedLinkTagsPair = updatedLinkTagsPair,
+            ).collectLatest {
+                it.pushSnackbarOnFailure()
             }
-            .invokeOnCompletion {
-                onCompletion()
-            }
+        }.invokeOnCompletion {
+            onCompletion()
+        }
     }
 
     fun updateFolder(
         newFolderData: Folder,
         onCompletion: () -> Unit,
     ) {
-        viewModelScope
-            .launch {
-                localFoldersRepo.updateFolder(newFolderData).collectLatest {
-                    it.pushSnackbarOnFailure()
-                }
+        viewModelScope.launch {
+            localFoldersRepo.updateFolder(newFolderData).collectLatest {
+                it.pushSnackbarOnFailure()
             }
-            .invokeOnCompletion {
-                onCompletion()
-            }
+        }.invokeOnCompletion {
+            onCompletion()
+        }
     }
 
     fun clearSelectedTags() {
@@ -695,13 +637,11 @@ class CollectionsScreenVM(
         tagId: Long,
         onCompletion: () -> Unit,
     ) {
-        viewModelScope
-            .launch {
-                localTagsRepo.deleteATag(tagId).collect()
-            }
-            .invokeOnCompletion {
-                onCompletion()
-            }
+        viewModelScope.launch {
+            localTagsRepo.deleteATag(tagId).collect()
+        }.invokeOnCompletion {
+            onCompletion()
+        }
     }
 
     fun renameATag(
@@ -709,18 +649,14 @@ class CollectionsScreenVM(
         newName: String,
         onCompletion: () -> Unit,
     ) {
-        viewModelScope
-            .launch {
-                localTagsRepo
-                    .renameATag(
-                        localTagId = localId,
-                        newName = newName,
-                    )
-                    .collect()
-            }
-            .invokeOnCompletion {
-                onCompletion()
-            }
+        viewModelScope.launch {
+            localTagsRepo.renameATag(
+                localTagId = localId,
+                newName = newName,
+            ).collect()
+        }.invokeOnCompletion {
+            onCompletion()
+        }
     }
 
     fun addANewLink(
@@ -731,31 +667,34 @@ class CollectionsScreenVM(
         pushSnackbarOnSuccess: Boolean = true,
     ) {
         viewModelScope.launch {
-            localLinksRepo
-                .addANewLink(
-                    link = link,
-                    selectedTagIds =
-                        selectedTags?.map {
-                            it.localId
-                        },
-                    linkSaveConfig = linkSaveConfig,
-                )
-                .collectLatest {
-                    it.onSuccess {
-                        onCompletion()
-                        if (pushSnackbarOnSuccess) {
-                            localizedStrings.SavedTheLink.pushLocalizedSnackbar(
-                                append = it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
-                            )
-                        }
-                        clearSelectedTags()
+            localLinksRepo.addANewLink(
+                link = link,
+                selectedTagIds = selectedTags?.map {
+                    it.localId
+                },
+                linkSaveConfig = linkSaveConfig,
+            ).collectLatest {
+                it.onSuccess {
+                    onCompletion()
+                    if (pushSnackbarOnSuccess) {
+                        localizedStrings.SavedTheLink.pushLocalizedSnackbar(
+                            append = it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
+                        )
                     }
-                        .onFailure {
-                            onCompletion()
-                            UIEvent.pushUIEvent(UIEvent.Type.ShowSnackbar(it.message.toString()))
-                            clearSelectedTags()
-                        }
+                    clearSelectedTags()
+                }.onFailure { exception ->
+                    onCompletion()
+                    val exceptionMsg = when (exception) {
+                        is Link.LinkExistsInSavedLinks -> localizedStrings.LinkExistsInSavedLinksMsg
+                        is Link.LinkExistsInImportantLinks -> localizedStrings.LinkExistsInImportantLinksMsg
+                        is Link.LinkExistsInArchivedLinks -> localizedStrings.LinkExistsInArchivedLinksMsg
+                        is Link.LinkExistsInHistory -> localizedStrings.LinkExistsInHistoryMsg
+                        else -> localizedStrings.LinkExistsInSelectedFolderMsg
+                    }
+                    UIEvent.pushUIEvent(UIEvent.Type.ShowSnackbar(exceptionMsg))
+                    clearSelectedTags()
                 }
+            }
         }
     }
 }

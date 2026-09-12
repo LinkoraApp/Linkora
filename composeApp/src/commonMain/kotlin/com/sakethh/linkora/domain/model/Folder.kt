@@ -28,11 +28,5 @@ data class Folder(
     @Ignore @Transient
     var path: List<Folder>? = null
 
-    class FolderAlreadyExists(
-        message: String,
-    ) : Throwable(message)
-
-    class InvalidName(
-        message: String,
-    ) : Throwable(message)
+    class InvalidName : Exception()
 }
