@@ -179,25 +179,23 @@ fun Throwable?.pushSnackbar(coroutineScope: CoroutineScope) {
     }
 }
 
-fun Throwable.asException() = Exception(this)
-
 fun <T> Flow<Result<T>>.catchAsThrowableAndEmitFailure(
     init: suspend () -> Unit = {},
 ): Flow<Result<T>> = this.catch {
     init()
     it.printStackTrace()
-    emit(Result.Failure(it.asException()))
+    emit(Result.Failure(it))
 }
 
 fun <T> Flow<Result<T>>.catchAsExceptionAndEmitFailure(): Flow<Result<T>> = this.catch {
     try {
         it as Exception
         it.printStackTrace()
-        emit(Result.Failure(it.asException()))
+        emit(Result.Failure(it))
     } catch (e: Exception) {
         e.printStackTrace()
         it.printStackTrace()
-        emit(Result.Failure(it.asException()))
+        emit(Result.Failure(it))
     }
 }
 
@@ -252,7 +250,7 @@ fun NavHostController.inRootScreen(includeSettingsScreen: Boolean): Boolean? {
 fun String.inDoubleQuotes(): String = "\"$this\""
 
 suspend inline fun <reified IncomingBody> HttpResponse.handleResponseBody(): Result<IncomingBody> = if (this.status.isSuccess().not()) {
-        Result.Failure(Exception(this.status.value.toString() + " " + this.status.description))
+        Result.Failure(Throwable(this.status.value.toString() + " " + this.status.description))
     } else {
         Result.Success(this.body<IncomingBody>())
     }
@@ -322,7 +320,7 @@ fun <T> MutableStateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, L
     return nextKeyId to nextKeyString
 }
 
-fun <T> MutableStateFlow<PaginationState<T>>.onError(e: Exception) {
+fun <T> MutableStateFlow<PaginationState<T>>.onError(e: Throwable) {
     update { currentState ->
         currentState.copy(
             isRetrieving = false,

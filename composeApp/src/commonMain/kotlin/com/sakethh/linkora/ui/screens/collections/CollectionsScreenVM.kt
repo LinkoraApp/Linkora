@@ -375,8 +375,8 @@ class CollectionsScreenVM(
                         ),
                     )
                 }.onFailure { exception ->
-                    val exceptionMsg = if (exception is Folder.InvalidName) {
-                        "Folder name cannot be blank."
+                    val exceptionMsg = if (exception is Folder.BlankFolderName) {
+                        localizedStrings.FolderNameIsBlank
                     } else {
                         exception.message.toString()
                     }

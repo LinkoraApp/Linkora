@@ -5,7 +5,7 @@ sealed interface Result<T> {
         val data: T,
         val remoteExecResult: RemoteExecResult? = null
     ) : Result<T> {
-        data class RemoteExecResult(val isRemoteExecutionSuccessful: Boolean, val e: Exception?)
+        data class RemoteExecResult(val isRemoteExecutionSuccessful: Boolean, val e: Throwable?)
     }
 
     data class Loading<T>(
@@ -13,7 +13,7 @@ sealed interface Result<T> {
     ) : Result<T>
 
     data class Failure<T>(
-        val e: Exception,
+        val e: Throwable,
     ) : Result<T>
 }
 
@@ -28,7 +28,7 @@ suspend fun <T> Result<T>.onSuccess(init: suspend (Result.Success<T>) -> Unit): 
     return this
 }
 
-suspend fun <T> Result<T>.onFailure(init: suspend (e: Exception) -> Unit): Result<T> {
+suspend fun <T> Result<T>.onFailure(init: suspend (e: Throwable) -> Unit): Result<T> {
     if (this is Result.Failure) {
         init(this.e)
     }

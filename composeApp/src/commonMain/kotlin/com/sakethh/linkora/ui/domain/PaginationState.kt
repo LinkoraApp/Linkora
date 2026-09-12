@@ -7,7 +7,7 @@ import com.sakethh.linkora.ui.LastSeenString
 @Stable
 data class PaginationState<T>(
     val isRetrieving: Boolean,
-    val exception: Exception?,
+    val exception: Throwable?,
     val pagesCompleted: Boolean,
     val data: T,
 ) {

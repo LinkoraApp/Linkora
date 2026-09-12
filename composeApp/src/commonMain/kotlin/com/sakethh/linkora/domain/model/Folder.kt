@@ -28,5 +28,5 @@ data class Folder(
     @Ignore @Transient
     var path: List<Folder>? = null
 
-    class InvalidName : Exception()
+    class BlankFolderName : Throwable()
 }

@@ -14,6 +14,7 @@ import com.sakethh.linkora.domain.dto.server.Correlation
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.model.tag.LinkTag
 import com.sakethh.linkora.domain.model.tag.Tag
+import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PendingSyncQueueRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
@@ -36,6 +37,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class LocalLinksRepoImplTest {
@@ -75,10 +77,10 @@ class LocalLinksRepoImplTest {
                 every { serverBaseUrl } returns "https://server.linkora.com"
                 every { serverSecurityToken } returns "mock-auth-token"
                 every { correlation } returns
-                    Correlation(
-                        id = "test-correlation-id",
-                        clientName = "test-client",
-                    )
+                        Correlation(
+                            id = "test-correlation-id",
+                            clientName = "test-client",
+                        )
             }
         coEvery { preferencesRepository.getPreferences() } returns mockPrefs
 
@@ -109,18 +111,6 @@ class LocalLinksRepoImplTest {
         database.close()
     }
 
-    private suspend fun executeAndGetErrorMessage(block: suspend () -> List<Any>): String = try {
-        val results = block()
-        val lastResult = results.lastOrNull()
-        if (lastResult is Result.Failure<*>) {
-            lastResult.e.message.toString()
-        } else {
-            ""
-        }
-    } catch (e: Throwable) {
-        e.message?.takeIf { it.isNotBlank() } ?: e.javaClass.simpleName
-    }
-
     @Test
     fun `adding link with improperly formatted url throws local validation exception`() = runTest {
         val invalidLink =
@@ -138,117 +128,153 @@ class LocalLinksRepoImplTest {
             mockk<LinkSaveConfig>(relaxed = true) {
                 every { forceSaveWithoutRetrievingData } returns true
             }
-
-        val errorMessage = executeAndGetErrorMessage {
-            localLinksRepo.addANewLink(invalidLink, null, config).toList()
+        localLinksRepo.addANewLink(invalidLink, null, config).collect {
+            it.onFailure {
+                assert(it is Link.Invalid)
+            }
         }
-
-        assertTrue(
-            errorMessage.contains("invalid", ignoreCase = true),
-            "Expected 'Invalid' exception for malformed URL, but got: $errorMessage",
-        )
     }
 
     @Test
     fun `adding exact duplicate link when skipSavingIfExists is enabled outputs existence failure`() = runTest {
-        val link =
-            Link(
-                url = "https://duplicate.com",
-                title = "Test",
-                linkType = LinkType.SAVED_LINK,
-                idOfLinkedFolder = null,
-                imgURL = "",
-                note = "",
-                lastModified = 0L,
-                userAgent = "",
-            )
-        val config =
-            mockk<LinkSaveConfig>(relaxed = true) {
-                every { forceSaveWithoutRetrievingData } returns true
-                every { skipSavingIfExists } returns true
+            val link =
+                Link(
+                    url = "https://duplicate.com",
+                    title = "Test",
+                    linkType = LinkType.SAVED_LINK,
+                    idOfLinkedFolder = null,
+                    imgURL = "",
+                    note = "",
+                    lastModified = 0L,
+                    userAgent = "",
+                )
+            val config =
+                mockk<LinkSaveConfig>(relaxed = true) {
+                    every { forceSaveWithoutRetrievingData } returns true
+                    every { skipSavingIfExists } returns true
+                }
+
+            localLinksRepo.addANewLink(link, null, config).collect {
+                it.onFailure {
+                    assert(it is Link.LinkExistsInSavedLinks)
+                }
             }
-
-        localLinksRepo.addANewLink(link, null, config).toList()
-
-        val errorMessage = executeAndGetErrorMessage {
-            localLinksRepo.addANewLink(link, null, config).toList()
         }
-
-        assertTrue(
-            errorMessage.contains(
-                "saved",
-                ignoreCase = true,
-            ) ||
-                errorMessage.contains("collection", ignoreCase = true),
-            "Expected 'saved' or 'collection' duplicate localized string, but got: $errorMessage",
-        )
-    }
 
     @Test
     fun `network failure during remote link creation explicitly captures dto to pending sync queue`() = runTest {
-        coEvery { remoteLinksRepo.addANewLink(any()) } returns
-            flowOf(Result.Failure(Exception("Network Timeout")))
+            coEvery { remoteLinksRepo.addANewLink(any()) } returns
+                    flowOf(Result.Failure(Exception("Network Timeout")))
 
-        val link =
-            Link(
-                url = "https://offline.com",
-                title = "Test",
-                linkType = LinkType.SAVED_LINK,
-                idOfLinkedFolder = null,
-                imgURL = "",
-                note = "",
-                lastModified = 0L,
-                userAgent = "",
-            )
-        val config =
-            mockk<LinkSaveConfig>(relaxed = true) {
-                every { forceSaveWithoutRetrievingData } returns true
+            val link =
+                Link(
+                    url = "https://offline.com",
+                    title = "Test",
+                    linkType = LinkType.SAVED_LINK,
+                    idOfLinkedFolder = null,
+                    imgURL = "",
+                    note = "",
+                    lastModified = 0L,
+                    userAgent = "",
+                )
+            val config =
+                mockk<LinkSaveConfig>(relaxed = true) {
+                    every { forceSaveWithoutRetrievingData } returns true
+                }
+
+            localLinksRepo.addANewLink(link, null, config).toList()
+
+            coVerify(exactly = 1) {
+                pendingSyncQueueRepo.addInQueue(
+                    match { queueItem ->
+                        queueItem.operation == "CREATE_A_NEW_LINK" &&
+                                queueItem.payload.contains("https://offline.com")
+                    },
+                )
             }
-
-        localLinksRepo.addANewLink(link, null, config).toList()
-
-        coVerify(exactly = 1) {
-            pendingSyncQueueRepo.addInQueue(
-                match { queueItem ->
-                    queueItem.operation == "CREATE_A_NEW_LINK" &&
-                        queueItem.payload.contains("https://offline.com")
-                },
-            )
         }
-    }
 
     @Test
     fun `viaSocket flag entirely bypasses remote repo execution during link modifications`() = runTest {
-        val linkId =
-            linksDao.addANewLink(
-                Link(
-                    url = "https://socket.com",
-                    title = "Old",
-                    linkType = LinkType.SAVED_LINK,
-                    idOfLinkedFolder = null,
-                    imgURL = "",
-                    note = "",
-                    lastModified = 0L,
-                    userAgent = "",
-                ),
-            )
+            val linkId =
+                linksDao.addANewLink(
+                    Link(
+                        url = "https://socket.com",
+                        title = "Old",
+                        linkType = LinkType.SAVED_LINK,
+                        idOfLinkedFolder = null,
+                        imgURL = "",
+                        note = "",
+                        lastModified = 0L,
+                        userAgent = "",
+                    ),
+                )
 
-        localLinksRepo.updateLinkTitle(linkId, "New Title", viaSocket = true).toList()
+            localLinksRepo.updateLinkTitle(linkId, "New Title", viaSocket = true).toList()
 
-        val dbLink = linksDao.getLink(linkId)
-        assertEquals("New Title", dbLink.title)
+            val dbLink = linksDao.getLink(linkId)
+            assertEquals("New Title", dbLink.title)
 
-        coVerify(exactly = 0) { remoteLinksRepo.updateLinkTitle(any()) }
-        coVerify(exactly = 0) { pendingSyncQueueRepo.addInQueue(any()) }
-    }
+            coVerify(exactly = 0) { remoteLinksRepo.updateLinkTitle(any()) }
+            coVerify(exactly = 0) { pendingSyncQueueRepo.addInQueue(any()) }
+        }
 
     @Test
     fun `updating a link strictly prunes removed tags and attaches newly selected ones via cross tables`() = runTest {
-        val linkId =
+            val linkId =
+                linksDao.addANewLink(
+                    Link(
+                        url = "https://tags.com",
+                        title = "Tags",
+                        linkType = LinkType.SAVED_LINK,
+                        idOfLinkedFolder = null,
+                        imgURL = "",
+                        note = "",
+                        lastModified = 0L,
+                        userAgent = "",
+                    ),
+                )
+            val tag1 = Tag(localId = 0, name = "Keep", lastModified = 0L)
+            val tag2 = Tag(localId = 0, name = "Remove", lastModified = 0L)
+            val tag3 = Tag(localId = 0, name = "Add", lastModified = 0L)
+
+            val t1Id = tagsDao.createATag(tag1)
+            val t2Id = tagsDao.createATag(tag2)
+            val t3Id = tagsDao.createATag(tag3)
+
+            tagsDao.createLinkTags(
+                listOf(
+                    LinkTag(linkId = linkId, tagId = t1Id),
+                    LinkTag(linkId = linkId, tagId = t2Id),
+                ),
+            )
+
+            val updatedPair =
+                LinkTagsPair(
+                    link = linksDao.getLink(linkId),
+                    tags = listOf(tagsDao.getATag(t1Id), tagsDao.getATag(t3Id)),
+                )
+
+            localLinksRepo.updateALink(linksDao.getLink(linkId), updatedPair, viaSocket = true)
+                .toList()
+
+            val currentTags = tagsDao.getTags(linkId)
+
+            assertEquals(2, currentTags.size)
+            assertTrue(currentTags.any { it.name == "Keep" })
+            assertTrue(currentTags.any { it.name == "Add" })
+            assertTrue(
+                currentTags.none { it.name == "Remove" },
+                "Unselected tag was not cleanly deleted from cross-reference table",
+            )
+        }
+
+    @Test
+    fun `delete duplicate links scans deeply across categories and aggressively purges clones keeping one intact`() = runTest {
             linksDao.addANewLink(
                 Link(
-                    url = "https://tags.com",
-                    title = "Tags",
+                    url = "https://dup.com",
+                    title = "D1",
                     linkType = LinkType.SAVED_LINK,
                     idOfLinkedFolder = null,
                     imgURL = "",
@@ -257,118 +283,70 @@ class LocalLinksRepoImplTest {
                     userAgent = "",
                 ),
             )
-        val tag1 = Tag(localId = 0, name = "Keep", lastModified = 0L)
-        val tag2 = Tag(localId = 0, name = "Remove", lastModified = 0L)
-        val tag3 = Tag(localId = 0, name = "Add", lastModified = 0L)
-
-        val t1Id = tagsDao.createATag(tag1)
-        val t2Id = tagsDao.createATag(tag2)
-        val t3Id = tagsDao.createATag(tag3)
-
-        tagsDao.createLinkTags(
-            listOf(
-                LinkTag(linkId = linkId, tagId = t1Id),
-                LinkTag(linkId = linkId, tagId = t2Id),
-            ),
-        )
-
-        val updatedPair =
-            LinkTagsPair(
-                link = linksDao.getLink(linkId),
-                tags = listOf(tagsDao.getATag(t1Id), tagsDao.getATag(t3Id)),
+            linksDao.addANewLink(
+                Link(
+                    url = "https://dup.com",
+                    title = "D2",
+                    linkType = LinkType.SAVED_LINK,
+                    idOfLinkedFolder = null,
+                    imgURL = "",
+                    note = "",
+                    lastModified = 0L,
+                    userAgent = "",
+                ),
+            )
+            linksDao.addANewLink(
+                Link(
+                    url = "https://unique.com",
+                    title = "U",
+                    linkType = LinkType.SAVED_LINK,
+                    idOfLinkedFolder = null,
+                    imgURL = "",
+                    note = "",
+                    lastModified = 0L,
+                    userAgent = "",
+                ),
             )
 
-        localLinksRepo.updateALink(linksDao.getLink(linkId), updatedPair, viaSocket = true).toList()
+            linksDao.addANewLink(
+                Link(
+                    url = "https://hist.com",
+                    title = "H1",
+                    linkType = LinkType.HISTORY_LINK,
+                    idOfLinkedFolder = null,
+                    imgURL = "",
+                    note = "",
+                    lastModified = 0L,
+                    userAgent = "",
+                ),
+            )
+            linksDao.addANewLink(
+                Link(
+                    url = "https://hist.com",
+                    title = "H2",
+                    linkType = LinkType.HISTORY_LINK,
+                    idOfLinkedFolder = null,
+                    imgURL = "",
+                    note = "",
+                    lastModified = 0L,
+                    userAgent = "",
+                ),
+            )
 
-        val currentTags = tagsDao.getTags(linkId)
+            localLinksRepo.deleteDuplicateLinks(viaSocket = true).toList()
 
-        assertEquals(2, currentTags.size)
-        assertTrue(currentTags.any { it.name == "Keep" })
-        assertTrue(currentTags.any { it.name == "Add" })
-        assertTrue(
-            currentTags.none { it.name == "Remove" },
-            "Unselected tag was not cleanly deleted from cross-reference table",
-        )
-    }
+            val allLinks = linksDao.getAllLinks()
+            val savedLinks = allLinks.filter { it.linkType == LinkType.SAVED_LINK }
+            val historyLinks = allLinks.filter { it.linkType == LinkType.HISTORY_LINK }
 
-    @Test
-    fun `delete duplicate links scans deeply across categories and aggressively purges clones keeping one intact`() = runTest {
-        linksDao.addANewLink(
-            Link(
-                url = "https://dup.com",
-                title = "D1",
-                linkType = LinkType.SAVED_LINK,
-                idOfLinkedFolder = null,
-                imgURL = "",
-                note = "",
-                lastModified = 0L,
-                userAgent = "",
-            ),
-        )
-        linksDao.addANewLink(
-            Link(
-                url = "https://dup.com",
-                title = "D2",
-                linkType = LinkType.SAVED_LINK,
-                idOfLinkedFolder = null,
-                imgURL = "",
-                note = "",
-                lastModified = 0L,
-                userAgent = "",
-            ),
-        )
-        linksDao.addANewLink(
-            Link(
-                url = "https://unique.com",
-                title = "U",
-                linkType = LinkType.SAVED_LINK,
-                idOfLinkedFolder = null,
-                imgURL = "",
-                note = "",
-                lastModified = 0L,
-                userAgent = "",
-            ),
-        )
+            assertEquals(
+                2,
+                savedLinks.size,
+                "Expected exactly 1 duplicate purged and 1 unique retained in SAVED",
+            )
+            assertEquals(1, savedLinks.filter { it.url == "https://dup.com" }.size)
 
-        linksDao.addANewLink(
-            Link(
-                url = "https://hist.com",
-                title = "H1",
-                linkType = LinkType.HISTORY_LINK,
-                idOfLinkedFolder = null,
-                imgURL = "",
-                note = "",
-                lastModified = 0L,
-                userAgent = "",
-            ),
-        )
-        linksDao.addANewLink(
-            Link(
-                url = "https://hist.com",
-                title = "H2",
-                linkType = LinkType.HISTORY_LINK,
-                idOfLinkedFolder = null,
-                imgURL = "",
-                note = "",
-                lastModified = 0L,
-                userAgent = "",
-            ),
-        )
-
-        localLinksRepo.deleteDuplicateLinks(viaSocket = true).toList()
-
-        val allLinks = linksDao.getAllLinks()
-        val savedLinks = allLinks.filter { it.linkType == LinkType.SAVED_LINK }
-        val historyLinks = allLinks.filter { it.linkType == LinkType.HISTORY_LINK }
-
-        assertEquals(
-            2,
-            savedLinks.size,
-            "Expected exactly 1 duplicate purged and 1 unique retained in SAVED",
-        )
-        assertEquals(1, savedLinks.filter { it.url == "https://dup.com" }.size)
-
-        assertEquals(1, historyLinks.size, "Expected exactly 1 duplicate purged in HISTORY")
-        assertEquals(1, historyLinks.filter { it.url == "https://hist.com" }.size)
-    }
+            assertEquals(1, historyLinks.size, "Expected exactly 1 duplicate purged in HISTORY")
+            assertEquals(1, historyLinks.filter { it.url == "https://hist.com" }.size)
+        }
 }

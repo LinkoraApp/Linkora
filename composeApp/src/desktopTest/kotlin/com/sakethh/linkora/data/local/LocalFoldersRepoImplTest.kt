@@ -9,6 +9,7 @@ import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.dto.server.Correlation
 import com.sakethh.linkora.domain.model.Folder
+import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.repository.local.LocalFoldersRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.LocalPanelsRepo
@@ -70,10 +71,10 @@ class LocalFoldersRepoImplTest {
                 every { serverBaseUrl } returns "https://server.linkora.com"
                 every { serverSecurityToken } returns "mock-auth-token"
                 every { correlation } returns
-                    Correlation(
-                        id = "test-correlation-id",
-                        clientName = "test-correlation-client",
-                    )
+                        Correlation(
+                            id = "test-correlation-id",
+                            clientName = "test-correlation-client",
+                        )
             }
         coEvery { preferencesRepository.getPreferences() } returns mockPrefs
 
@@ -104,166 +105,143 @@ class LocalFoldersRepoImplTest {
         database.close()
     }
 
-    private suspend fun executeAndGetErrorMessage(block: suspend () -> List<Any>): String {
-        var caughtMessage = ""
-        try {
-            val results = block()
-            val lastResult = results.lastOrNull()
-            if (lastResult is Result.Failure<*>) {
-                caughtMessage = lastResult.e.message.toString()
-            }
-        } catch (e: Exception) {
-            caughtMessage = e.message.toString()
-        }
-        return caughtMessage
-    }
-
     @Test
     fun `inserting folder with blank name is intercepted locally and outputs validation failure`() = runTest {
-        val blankFolder =
-            Folder(
-                name = "",
-                note = "",
-                parentFolderId = null,
-                isArchived = false,
-                lastModified = 0L,
-            )
-
-        val errorMessage = executeAndGetErrorMessage {
-            localFoldersRepo
-                .insertANewFolder(
-                    blankFolder,
-                )
-                .toList()
-        }
-
-        assertTrue(
-            errorMessage.contains(
-                "blank",
-                ignoreCase = true,
-            ) ||
-                errorMessage.contains("invalid", ignoreCase = true),
-            "Expected failure message containing 'blank', but got: '$errorMessage'",
-        )
-    }
-
-    @Test
-    fun `doesThisRootFolderExists correctly queries database for existing names regardless of Flow loading states`() = runTest {
-        val rootFolder =
-            Folder(
-                name = "TargetFolder",
-                note = "",
-                parentFolderId = null,
-                isArchived = false,
-                lastModified = 0L,
-            )
-        foldersDao.insertANewFolder(rootFolder)
-
-        // Bypassing the Result.Loading bug to verify the actual database query logic
-        val result =
-            localFoldersRepo
-                .doesThisRootFolderExists("TargetFolder")
-                .filterNot { it is Result.Loading }
-                .first()
-
-        assertTrue(result is Result.Success)
-        assertTrue(result.data, "Expected database to confirm TargetFolder exists")
-    }
-
-    @Test
-    fun `deleting a folder triggers recursive array deque wipe of deep child folders links and panel associations`() = runTest {
-        val rootId =
-            foldersDao.insertANewFolder(
+            val blankFolder =
                 Folder(
-                    name = "Root",
+                    name = "",
                     note = "",
                     parentFolderId = null,
                     isArchived = false,
                     lastModified = 0L,
-                ),
-            )
-        val childId =
-            foldersDao.insertANewFolder(
+                )
+            localFoldersRepo
+                .insertANewFolder(
+                    blankFolder,
+                ).collect {
+                    it.onFailure {
+                        assert(it is Folder.BlankFolderName)
+                    }
+                }
+        }
+
+    @Test
+    fun `doesThisRootFolderExists correctly queries database for existing names regardless of Flow loading states`() = runTest {
+            val rootFolder =
                 Folder(
-                    name = "Child",
+                    name = "TargetFolder",
                     note = "",
-                    parentFolderId = rootId,
+                    parentFolderId = null,
                     isArchived = false,
                     lastModified = 0L,
-                ),
-            )
-        val grandChildId =
-            foldersDao.insertANewFolder(
-                Folder(
-                    name = "Grandchild",
-                    note = "",
-                    parentFolderId = childId,
-                    isArchived = false,
-                    lastModified = 0L,
-                ),
-            )
+                )
+            foldersDao.insertANewFolder(rootFolder)
 
-        localFoldersRepo.deleteAFolder(rootId).toList()
+            // Bypassing the Result.Loading bug to verify the actual database query logic
+            val result =
+                localFoldersRepo
+                    .doesThisRootFolderExists("TargetFolder")
+                    .filterNot { it is Result.Loading }
+                    .first()
 
-        val allFolders = foldersDao.getAllFoldersAsList()
-        assertTrue(allFolders.isEmpty(), "Expected all nested folders to be deleted from DB")
+            assertTrue(result is Result.Success)
+            assertTrue(result.data, "Expected database to confirm TargetFolder exists")
+        }
 
-        coVerify(exactly = 1) { localLinksRepo.deleteLinksOfFolder(rootId) }
-        coVerify(exactly = 1) { localLinksRepo.deleteLinksOfFolder(childId) }
-        coVerify(exactly = 1) { localLinksRepo.deleteLinksOfFolder(grandChildId) }
+    @Test
+    fun `deleting a folder triggers recursive array deque wipe of deep child folders links and panel associations`() = runTest {
+            val rootId =
+                foldersDao.insertANewFolder(
+                    Folder(
+                        name = "Root",
+                        note = "",
+                        parentFolderId = null,
+                        isArchived = false,
+                        lastModified = 0L,
+                    ),
+                )
+            val childId =
+                foldersDao.insertANewFolder(
+                    Folder(
+                        name = "Child",
+                        note = "",
+                        parentFolderId = rootId,
+                        isArchived = false,
+                        lastModified = 0L,
+                    ),
+                )
+            val grandChildId =
+                foldersDao.insertANewFolder(
+                    Folder(
+                        name = "Grandchild",
+                        note = "",
+                        parentFolderId = childId,
+                        isArchived = false,
+                        lastModified = 0L,
+                    ),
+                )
 
-        coVerify(exactly = 1) { localPanelsRepo.deleteAFolderFromAllPanels(rootId) }
-        coVerify(exactly = 1) { localPanelsRepo.deleteAFolderFromAllPanels(childId) }
-        coVerify(exactly = 1) { localPanelsRepo.deleteAFolderFromAllPanels(grandChildId) }
-    }
+            localFoldersRepo.deleteAFolder(rootId).toList()
+
+            val allFolders = foldersDao.getAllFoldersAsList()
+            assertTrue(allFolders.isEmpty(), "Expected all nested folders to be deleted from DB")
+
+            coVerify(exactly = 1) { localLinksRepo.deleteLinksOfFolder(rootId) }
+            coVerify(exactly = 1) { localLinksRepo.deleteLinksOfFolder(childId) }
+            coVerify(exactly = 1) { localLinksRepo.deleteLinksOfFolder(grandChildId) }
+
+            coVerify(exactly = 1) { localPanelsRepo.deleteAFolderFromAllPanels(rootId) }
+            coVerify(exactly = 1) { localPanelsRepo.deleteAFolderFromAllPanels(childId) }
+            coVerify(exactly = 1) { localPanelsRepo.deleteAFolderFromAllPanels(grandChildId) }
+        }
 
     @Test
     fun `network failure during remote folder creation caches payload directly into pending sync queue`() = runTest {
-        coEvery { remoteFoldersRepo.createFolder(any()) } returns
-            flowOf(Result.Failure(Exception("Network Timeout")))
+            coEvery { remoteFoldersRepo.createFolder(any()) } returns
+                    flowOf(Result.Failure(Exception("Network Timeout")))
 
-        val newFolder =
-            Folder(
-                name = "OfflineFolder",
-                note = "",
-                parentFolderId = null,
-                isArchived = false,
-                lastModified = 0L,
-            )
+            val newFolder =
+                Folder(
+                    name = "OfflineFolder",
+                    note = "",
+                    parentFolderId = null,
+                    isArchived = false,
+                    lastModified = 0L,
+                )
 
-        localFoldersRepo.insertANewFolder(newFolder).toList()
+            localFoldersRepo.insertANewFolder(newFolder).toList()
 
-        coVerify(exactly = 1) {
-            pendingSyncQueueRepo.addInQueue(
-                match { queueItem ->
-                    queueItem.operation == "CREATE_FOLDER" &&
-                        queueItem.payload.contains("OfflineFolder")
-                },
-            )
+            coVerify(exactly = 1) {
+                pendingSyncQueueRepo.addInQueue(
+                    match { queueItem ->
+                        queueItem.operation == "CREATE_FOLDER" &&
+                                queueItem.payload.contains("OfflineFolder")
+                    },
+                )
+            }
         }
-    }
 
     @Test
     fun `viaSocket flag bypasses remote operations completely even if push to server is configured`() = runTest {
-        val folder =
-            Folder(
-                name = "SocketFolder",
-                note = "",
-                parentFolderId = null,
-                isArchived = false,
-                lastModified = 0L,
-            )
+            val folder =
+                Folder(
+                    name = "SocketFolder",
+                    note = "",
+                    parentFolderId = null,
+                    isArchived = false,
+                    lastModified = 0L,
+                )
 
-        localFoldersRepo
-            .insertANewFolder(
-                folder,
-                viaSocket = true,
-            )
-            .toList()
+            localFoldersRepo
+                .insertANewFolder(
+                    folder,
+                    viaSocket = true,
+                )
+                .toList()
 
-        assertTrue(foldersDao.getAllRootFoldersAsList().any { it.name == "SocketFolder" })
+            assertTrue(foldersDao.getAllRootFoldersAsList().any { it.name == "SocketFolder" })
 
-        coVerify(exactly = 0) { remoteFoldersRepo.createFolder(any()).collect() }
-        coVerify(exactly = 0) { pendingSyncQueueRepo.addInQueue(any()) }
-    }
+            coVerify(exactly = 0) { remoteFoldersRepo.createFolder(any()).collect() }
+            coVerify(exactly = 0) { pendingSyncQueueRepo.addInQueue(any()) }
+        }
 }

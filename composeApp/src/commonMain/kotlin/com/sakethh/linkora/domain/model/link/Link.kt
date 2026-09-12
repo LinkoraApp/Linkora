@@ -50,10 +50,10 @@ data class Link(
     @Transient
     var path: List<Folder>? = null
 
-    class Invalid : Exception()
-    class LinkExistsInSelectedFolder : Exception()
-    class LinkExistsInSavedLinks : Exception()
-    class LinkExistsInHistory : Exception()
-    class LinkExistsInImportantLinks : Exception()
-    class LinkExistsInArchivedLinks : Exception()
+    class Invalid : Throwable()
+    class LinkExistsInSelectedFolder : Throwable()
+    class LinkExistsInSavedLinks : Throwable()
+    class LinkExistsInHistory : Throwable()
+    class LinkExistsInImportantLinks : Throwable()
+    class LinkExistsInArchivedLinks : Throwable()
 }

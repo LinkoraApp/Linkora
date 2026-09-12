@@ -278,7 +278,7 @@ actual class FileManager(
 
     actual suspend fun importFromJSONObj(): Flow<Result<JSONExportSchema>> = flow {
         val jsonContent =
-            importFile(FileType.JSON) ?: return@flow emit(Result.Failure(Exception("Importing Failed.")))
+            importFile(FileType.JSON) ?: return@flow emit(Result.Failure(Throwable("Importing Failed.")))
 
         emit(Result.Loading(message = "Reading and deserializing JSON file"))
         val currentSystemEpochSeconds = getSystemEpochSeconds()
@@ -344,7 +344,7 @@ actual class FileManager(
 
     actual suspend fun importFromHTMLString(): Flow<Result<String>> = flow {
         val importContent =
-            importFile(FileType.HTML) ?: return@flow emit(Result.Failure(Exception("Importing Failed.")))
+            importFile(FileType.HTML) ?: return@flow emit(Result.Failure(Throwable("Importing Failed.")))
 
         emit(Result.Loading(message = "Reading the file"))
         emit(Result.Success(importContent))

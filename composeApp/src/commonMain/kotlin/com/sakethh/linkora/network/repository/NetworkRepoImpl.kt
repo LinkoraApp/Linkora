@@ -26,7 +26,7 @@ class NetworkRepoImpl(
         if (request.status.isSuccess()) {
             emit(Result.Success(request))
         } else {
-            emit(Result.Failure(Exception("${request.status.value} ${request.status.description}")))
+            emit(Result.Failure(Throwable("${request.status.value} ${request.status.description}")))
         }
     }
         .catchAsExceptionAndEmitFailure()

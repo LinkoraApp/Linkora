@@ -195,7 +195,7 @@ actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
 
     actual suspend fun importFromJSONObj(): Flow<Result<JSONExportSchema>> = flow {
         val importFile =
-            getFile(FileType.JSON) ?: return@flow emit(Result.Failure(Exception("Importing Failed.")))
+            getFile(FileType.JSON) ?: return@flow emit(Result.Failure(Throwable("Importing Failed.")))
 
         getJsonObj(importFile, importFile.name)
     }
@@ -287,12 +287,12 @@ actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
                 }
             emit(Result.Success(jsonObj))
         } catch (e: Exception) {
-            emit(Result.Failure(Exception(e.message ?: "Import failed")))
+            emit(Result.Failure(Throwable(e.message ?: "Import failed")))
         }
     }
 
     actual suspend fun importFromHTMLString(): Flow<Result<String>> = flow {
-        val file = getFile(FileType.HTML) ?: return@flow emit(Result.Failure(Exception("Importing Failed.")))
+        val file = getFile(FileType.HTML) ?: return@flow emit(Result.Failure(Throwable("Importing Failed.")))
         getHtmlStr(file)
     }
 
@@ -304,7 +304,7 @@ actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
             emit(Result.Loading(message = "Read the file $fileName"))
             emit(Result.Success(htmlStr))
         } catch (e: Exception) {
-            emit(Result.Failure(Exception(e.message ?: "Import failed")))
+            emit(Result.Failure(Throwable(e.message ?: "Import failed")))
         }
     }
 
@@ -312,7 +312,7 @@ actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
             val importFile =
                 getFile(fileType = FileType.JSON, fileLocation = fileLocation)
                     ?: return@flow emit(
-                        Result.Failure(Exception("Importing Failed.")),
+                        Result.Failure(Throwable("Importing Failed.")),
                     )
 
             getJsonObj(importFile, importFile.name)
@@ -322,7 +322,7 @@ actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
         val file =
             getFile(fileType = FileType.HTML, fileLocation = fileLocation)
                 ?: return@flow emit(
-                    Result.Failure(Exception("Importing Failed.")),
+                    Result.Failure(Throwable("Importing Failed.")),
                 )
         getHtmlStr(file)
     }

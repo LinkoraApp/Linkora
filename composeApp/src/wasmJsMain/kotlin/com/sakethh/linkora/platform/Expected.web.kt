@@ -160,7 +160,7 @@ actual class NativeUtils {
         actual suspend fun saveHTMLPage(
             nativeFolderPath: String,
             url: String,
-        ): Result<Boolean> = Result.Failure(Exception())
+        ): Result<Boolean> = Result.Failure(Throwable())
 
         actual suspend fun onCaptureAllWebPages(
             preferences: AppPreferences,

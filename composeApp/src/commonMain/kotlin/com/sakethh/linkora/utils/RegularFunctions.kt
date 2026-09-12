@@ -177,11 +177,10 @@ fun <LocalType, RemoteType> performLocalOperationWithRemoteSyncFlow(
         }
     }
     emit(Result.Success(data = localResult, remoteExecResult = remoteExecResult))
+}.catch {
+    it.printStackTrace()
+    emit(Result.Failure(e = it))
 }
-    .catch {
-        it.printStackTrace()
-        emit(Result.Failure(e = Exception(it)))
-    }
 
 fun defaultFolderIds(): List<Long> = listOf(
     Constants.SAVED_LINKS_ID,
