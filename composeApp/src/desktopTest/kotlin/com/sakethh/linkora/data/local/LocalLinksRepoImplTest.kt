@@ -113,7 +113,7 @@ class LocalLinksRepoImplTest {
         val results = block()
         val lastResult = results.lastOrNull()
         if (lastResult is Result.Failure<*>) {
-            lastResult.message
+            lastResult.e.message.toString()
         } else {
             ""
         }
@@ -187,7 +187,7 @@ class LocalLinksRepoImplTest {
     @Test
     fun `network failure during remote link creation explicitly captures dto to pending sync queue`() = runTest {
         coEvery { remoteLinksRepo.addANewLink(any()) } returns
-            flowOf(Result.Failure("Network Timeout"))
+            flowOf(Result.Failure(Exception("Network Timeout")))
 
         val link =
             Link(

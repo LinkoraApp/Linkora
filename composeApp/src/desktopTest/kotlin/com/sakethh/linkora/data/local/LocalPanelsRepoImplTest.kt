@@ -94,7 +94,7 @@ class LocalPanelsRepoImplTest {
         val results = block()
         val lastResult = results.lastOrNull()
         if (lastResult is Result.Failure<*>) {
-            lastResult.message
+            lastResult.e.message.toString()
         } else {
             ""
         }
@@ -134,7 +134,7 @@ class LocalPanelsRepoImplTest {
     @Test
     fun `network failure during remote panel creation explicitly captures dto to pending sync queue`() = runTest {
         coEvery { remotePanelsRepo.addANewPanel(any()) } returns
-            flowOf(Result.Failure("Network Timeout"))
+            flowOf(Result.Failure(Exception("Network Timeout")))
 
         val panel = Panel(localId = 0, panelName = "QueuedPanel", lastModified = 0L)
 

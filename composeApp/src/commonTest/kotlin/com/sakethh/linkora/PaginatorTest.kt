@@ -229,7 +229,7 @@ class PaginatorTest {
                             if (callCount == 1) {
                                 Result.Success(List(Constants.PAGE_SIZE) { "item $it" })
                             } else {
-                                Result.Failure("Network error")
+                                Result.Failure(Exception("Network error"))
                             },
                         )
                     }

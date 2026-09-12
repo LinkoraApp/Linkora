@@ -110,7 +110,7 @@ class LocalFoldersRepoImplTest {
             val results = block()
             val lastResult = results.lastOrNull()
             if (lastResult is Result.Failure<*>) {
-                caughtMessage = lastResult.message
+                caughtMessage = lastResult.e.message.toString()
             }
         } catch (e: Exception) {
             caughtMessage = e.message.toString()
@@ -220,7 +220,7 @@ class LocalFoldersRepoImplTest {
     @Test
     fun `network failure during remote folder creation caches payload directly into pending sync queue`() = runTest {
         coEvery { remoteFoldersRepo.createFolder(any()) } returns
-            flowOf(Result.Failure("Network Timeout"))
+            flowOf(Result.Failure(Exception("Network Timeout")))
 
         val newFolder =
             Folder(

@@ -126,7 +126,7 @@ class LocalMultiActionRepoImplTest {
     private suspend fun executeAndGetErrorMessage(block: suspend () -> Any): String = try {
         val result = block()
         if (result is Result.Failure<*>) {
-            result.message
+            result.e.message.toString()
         } else {
             ""
         }
@@ -137,7 +137,7 @@ class LocalMultiActionRepoImplTest {
     @Test
     fun `network failure during archive multiple items captures payload to pending sync queue`() = runTest {
         coEvery { remoteMultiActionRepo.archiveMultipleItems(any()) } returns
-            flowOf(Result.Failure("Network Timeout"))
+            flowOf(Result.Failure(Exception("Network Timeout")))
 
         val linkId =
             linksDao.addANewLink(

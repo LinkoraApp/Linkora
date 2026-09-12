@@ -94,7 +94,7 @@ class LocalTagsRepoImplTest {
         val results = block()
         val lastResult = results.lastOrNull()
         if (lastResult is Result.Failure<*>) {
-            lastResult.message
+            lastResult.e.message.toString()
         } else {
             ""
         }
@@ -132,7 +132,7 @@ class LocalTagsRepoImplTest {
     @Test
     fun `network failure during remote tag creation explicitly captures dto to pending sync queue`() = runTest {
         coEvery { remoteTagsRepo.createATag(any()) } returns
-            flowOf(Result.Failure("Network Timeout"))
+            flowOf(Result.Failure(Exception("Network Timeout")))
 
         val newTag = Tag(localId = 0, name = "OfflineTag", lastModified = 0L)
 
