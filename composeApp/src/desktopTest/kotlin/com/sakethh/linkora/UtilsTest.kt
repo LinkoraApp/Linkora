@@ -3,6 +3,7 @@ package com.sakethh.linkora
 import com.sakethh.linkora.data.local.repository.LocalLinksRepoImpl
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.model.ScrapedLinkInfo
+import com.sakethh.linkora.utils.replaceActual
 import io.ktor.http.ContentType
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.ApplicationEngine
@@ -146,5 +147,92 @@ class UtilsTest {
         }
 
         retrievalJobs.joinAll()
+    }
+
+    data class LocalizedTestItem(
+        val rawStr: String,
+        val actuals: Array<String>,
+        val expected: String,
+    )
+
+    @Test
+    fun `replaceActual substitutes placeholders in order`() {
+        listOf(
+            LocalizedTestItem(
+                rawStr = "Selected >{} links",
+                actuals = arrayOf("9"),
+                expected = "Selected 9 links"
+            ),
+            LocalizedTestItem(
+                rawStr = "Create A New Folder In >{}",
+                actuals = arrayOf("ParentFolder"),
+                expected = "Create A New Folder In ParentFolder"
+            ),
+            LocalizedTestItem(
+                rawStr = "The folder >{} has been successfully created.",
+                actuals = arrayOf("ChildFolder"),
+                expected = "The folder ChildFolder has been successfully created."
+            ),
+            LocalizedTestItem(
+                rawStr = "Downloaded Language Strings for the >{}.",
+                actuals = arrayOf("LanguageTemp"),
+                expected = "Downloaded Language Strings for the LanguageTemp."
+            ),
+            LocalizedTestItem(
+                rawStr = ">{} of >{} links refreshed.",
+                actuals = arrayOf("94", "100"),
+                expected = "94 of 100 links refreshed."
+            ),
+            LocalizedTestItem(
+                rawStr = ">{} files are not supported for importing, pick valid >{} file.",
+                actuals = arrayOf("JSON", "HTML"),
+                expected = "JSON files are not supported for importing, pick valid HTML file."
+            ),
+            LocalizedTestItem(
+                rawStr = ">{}/>{} strings localized",
+                actuals = arrayOf("20", "25"),
+                expected = "20/25 strings localized"
+            ),
+            LocalizedTestItem(
+                rawStr = ">{}/>{} strings localized",
+                actuals = arrayOf("20", "25"),
+                expected = "20/25 strings localized"
+            ),
+            LocalizedTestItem(
+                rawStr = ">{}>{}",
+                actuals = arrayOf("a", "b"),
+                expected = "ab"
+            ),
+            LocalizedTestItem(
+                rawStr = "No placeholders here",
+                actuals = arrayOf("ignored"),
+                expected = "No placeholders here"
+            ),
+            LocalizedTestItem(
+                rawStr = ">{} and >{}",
+                actuals = arrayOf("first"),
+                expected = "first and >{}"
+            ),
+            LocalizedTestItem(
+                rawStr = ">{} and >{} and >{}",
+                actuals = arrayOf("first", "second"),
+                expected = "first and second and >{}"
+            ),
+            LocalizedTestItem(
+                rawStr = "",
+                actuals = arrayOf("x"),
+                expected = ""
+            ),
+            LocalizedTestItem(
+                rawStr = ">{}",
+                actuals = arrayOf(),
+                expected = ">{}"
+            )
+        ).forEach { (rawStr, actuals, expected) ->
+            assertEquals(
+                rawStr.replaceActual(*actuals),
+                expected
+            )
+        }
     }
 }
