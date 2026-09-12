@@ -139,6 +139,12 @@ class LanguageSettingsScreenVM(
                                     ),
                             ),
                         )
+                        if (language.languageCode == preferencesAsFlow.value.preferredAppLanguageCode) {
+                            loadLocalizedStrings(
+                                languageCode = Constants.DEFAULT_APP_LANGUAGE_CODE,
+                                languageName = Constants.DEFAULT_APP_LANGUAGE_NAME
+                            )
+                        }
                     }
                     it.onFailure {
                         pushUIEvent(UIEvent.Type.ShowSnackbar(it.message.toString()))
