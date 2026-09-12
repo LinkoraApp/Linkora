@@ -202,16 +202,21 @@ fun <T> Flow<Result<T>>.catchAsExceptionAndEmitFailure(): Flow<Result<T>> = this
 fun String.replaceActual(vararg actuals: String): String {
     val finalStr = StringBuilder()
     var currIteration = -1
-    var valuesIteration = -1
     while (currIteration < length - 1) {
         val c1 = this[++currIteration]
-        if (currIteration + 1 < length && c1 + this[currIteration + 1].toString() == ">{") {
-            if (valuesIteration >= actuals.lastIndex) {
-                finalStr.append(c1)
-                continue
+        if (currIteration + 1 < length && c1 == '>' && this[currIteration + 1] == '{') {
+            val closeTagIndex = indexOf('}', startIndex = currIteration)
+            if (closeTagIndex != -1) {
+                val valueIndex =
+                    this.substring(startIndex = currIteration + 2, endIndex = closeTagIndex)
+                        .toIntOrNull()
+                if (valueIndex != null && valueIndex >= 0 && valueIndex <= actuals.lastIndex) {
+                    finalStr.append(actuals[valueIndex])
+                    currIteration = closeTagIndex
+                    continue
+                }
             }
-            currIteration += 2 // {}
-            finalStr.append(actuals[++valuesIteration])
+            finalStr.append(c1)
         } else {
             finalStr.append(c1)
         }

@@ -159,47 +159,42 @@ class UtilsTest {
     fun `replaceActual substitutes placeholders in order`() {
         listOf(
             LocalizedTestItem(
-                rawStr = "Selected >{} links",
+                rawStr = "Selected >{0} links",
                 actuals = arrayOf("9"),
                 expected = "Selected 9 links"
             ),
             LocalizedTestItem(
-                rawStr = "Create A New Folder In >{}",
+                rawStr = "Create A New Folder In >{0}",
                 actuals = arrayOf("ParentFolder"),
                 expected = "Create A New Folder In ParentFolder"
             ),
             LocalizedTestItem(
-                rawStr = "The folder >{} has been successfully created.",
+                rawStr = "The folder >{0} has been successfully created.",
                 actuals = arrayOf("ChildFolder"),
                 expected = "The folder ChildFolder has been successfully created."
             ),
             LocalizedTestItem(
-                rawStr = "Downloaded Language Strings for the >{}.",
+                rawStr = "Downloaded Language Strings for the >{0}.",
                 actuals = arrayOf("LanguageTemp"),
                 expected = "Downloaded Language Strings for the LanguageTemp."
             ),
             LocalizedTestItem(
-                rawStr = ">{} of >{} links refreshed.",
+                rawStr = ">{0} of >{1} links refreshed.",
                 actuals = arrayOf("94", "100"),
                 expected = "94 of 100 links refreshed."
             ),
             LocalizedTestItem(
-                rawStr = ">{} files are not supported for importing, pick valid >{} file.",
+                rawStr = ">{0} files are not supported for importing, pick valid >{1} file.",
                 actuals = arrayOf("JSON", "HTML"),
                 expected = "JSON files are not supported for importing, pick valid HTML file."
             ),
             LocalizedTestItem(
-                rawStr = ">{}/>{} strings localized",
+                rawStr = ">{0}/>{1} strings localized",
                 actuals = arrayOf("20", "25"),
                 expected = "20/25 strings localized"
             ),
             LocalizedTestItem(
-                rawStr = ">{}/>{} strings localized",
-                actuals = arrayOf("20", "25"),
-                expected = "20/25 strings localized"
-            ),
-            LocalizedTestItem(
-                rawStr = ">{}>{}",
+                rawStr = ">{0}>{1}",
                 actuals = arrayOf("a", "b"),
                 expected = "ab"
             ),
@@ -209,14 +204,14 @@ class UtilsTest {
                 expected = "No placeholders here"
             ),
             LocalizedTestItem(
-                rawStr = ">{} and >{}",
+                rawStr = ">{0} and >{1}",
                 actuals = arrayOf("first"),
-                expected = "first and >{}"
+                expected = "first and >{1}"
             ),
             LocalizedTestItem(
-                rawStr = ">{} and >{} and >{}",
+                rawStr = ">{0} and >{1} and >{2}",
                 actuals = arrayOf("first", "second"),
-                expected = "first and second and >{}"
+                expected = "first and second and >{2}"
             ),
             LocalizedTestItem(
                 rawStr = "",
@@ -224,14 +219,104 @@ class UtilsTest {
                 expected = ""
             ),
             LocalizedTestItem(
-                rawStr = ">{}",
+                rawStr = ">{0}",
                 actuals = arrayOf(),
+                expected = ">{0}"
+            ),
+            LocalizedTestItem(
+                rawStr = ">{1} and >{0}",
+                actuals = arrayOf("a", "b"),
+                expected = "b and a"
+            ),
+            LocalizedTestItem(
+                rawStr = ">{1} of >{0} links refreshed.",
+                actuals = arrayOf("94", "100"),
+                expected = "100 of 94 links refreshed."
+            ),
+            LocalizedTestItem(
+                rawStr = ">{0} and >{0}",
+                actuals = arrayOf("x", "y"),
+                expected = "x and x"
+            ),
+            LocalizedTestItem(
+                rawStr = ">{0} and >{0}",
+                actuals = arrayOf("x"),
+                expected = "x and x"
+            ),
+            LocalizedTestItem(
+                rawStr = ">{2} >{0} >{1}",
+                actuals = arrayOf("a", "b", "c"),
+                expected = "c a b"
+            ),
+            LocalizedTestItem(
+                rawStr = ">{10}",
+                actuals = arrayOf("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "ten"),
+                expected = "ten"
+            ),
+            LocalizedTestItem(
+                rawStr = ">{10}  >{11}",
+                actuals = arrayOf("1"),
+                expected = ">{10}  >{11}"
+            ),
+            LocalizedTestItem(
+                rawStr = ">{0",
+                actuals = arrayOf("a"),
+                expected = ">{0"
+            ),
+            LocalizedTestItem(
+                rawStr = ">",
+                actuals = arrayOf("a"),
+                expected = ">"
+            ),
+            LocalizedTestItem(
+                rawStr = ">{}",
+                actuals = arrayOf("a"),
                 expected = ">{}"
-            )
+            ),
+            LocalizedTestItem(
+                rawStr = ">{a}",
+                actuals = arrayOf("a"),
+                expected = ">{a}"
+            ),
+            LocalizedTestItem(
+                rawStr = ">{-1}",
+                actuals = arrayOf("a"),
+                expected = ">{-1}"
+            ),
+            LocalizedTestItem(
+                rawStr = ">{ 1 }",
+                actuals = arrayOf("a", "b"),
+                expected = ">{ 1 }"
+            ),
+            LocalizedTestItem(
+                rawStr = ">{0}}>{1}",
+                actuals = arrayOf("a", "b"),
+                expected = "a}b"
+            ),
+            LocalizedTestItem(
+                rawStr = "Result: >{0}",
+                actuals = arrayOf(">{0}"),
+                expected = "Result: >{0}"
+            ),
+            LocalizedTestItem(
+                rawStr = ">{01}",
+                actuals = arrayOf("a", "b"),
+                expected = "b"
+            ),
+            LocalizedTestItem(
+                rawStr = ">{+1}",
+                actuals = arrayOf("a", "b"),
+                expected = "b"
+            ),
+            LocalizedTestItem(
+                rawStr = ">{1} 件のリンクのうち >{0} 件を更新しました。",
+                actuals = arrayOf("94", "100"),
+                expected = "100 件のリンクのうち 94 件を更新しました。"
+            ),
         ).forEach { (rawStr, actuals, expected) ->
             assertEquals(
-                rawStr.replaceActual(*actuals),
-                expected
+                expected,
+                rawStr.replaceActual(*actuals)
             )
         }
     }

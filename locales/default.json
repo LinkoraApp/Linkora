@@ -301,7 +301,7 @@
   },
   {
     "key": "SelectedLinksCount",
-    "defaultValue": "Selected >{} links"
+    "defaultValue": "Selected >{0} links"
   },
   {
     "key": "Selected1Link",
@@ -309,7 +309,7 @@
   },
   {
     "key": "SelectedFoldersCount",
-    "defaultValue": "Selected >{} folders"
+    "defaultValue": "Selected >{0} folders"
   },
   {
     "key": "Selected1Folder",
@@ -381,7 +381,7 @@
   },
   {
     "key": "CreateANewFolderIn",
-    "defaultValue": "Create A New Folder In >{}"
+    "defaultValue": "Create A New Folder In >{0}"
   },
   {
     "key": "Create",
@@ -405,7 +405,7 @@
   },
   {
     "key": "AddANewLinkIn",
-    "defaultValue": "Add a new link in >{}"
+    "defaultValue": "Add a new link in >{0}"
   },
   {
     "key": "LinkAddress",
@@ -861,7 +861,7 @@
   },
   {
     "key": "FolderHasBeenCreatedSuccessful",
-    "defaultValue": "The folder >{} has been successfully created."
+    "defaultValue": "The folder >{0} has been successfully created."
   },
   {
     "key": "RemoteExecutionFailed",
@@ -873,11 +873,11 @@
   },
   {
     "key": "DeletedTheStringsPack",
-    "defaultValue": "Deleted the >{} strings pack."
+    "defaultValue": "Deleted the >{0} strings pack."
   },
   {
     "key": "DownloadedLanguageStrings",
-    "defaultValue": "Downloaded Language Strings for the >{}."
+    "defaultValue": "Downloaded Language Strings for the >{0}."
   },
   {
     "key": "Linkora",
@@ -885,7 +885,7 @@
   },
   {
     "key": "LinkoraIsConnectedToAServer",
-    "defaultValue": "Linkora is connected to the server; syncing is based on >{}."
+    "defaultValue": "Linkora is connected to the server; syncing is based on >{0}."
   },
   {
     "key": "CopiedLinkToClipboard",
@@ -897,7 +897,7 @@
   },
   {
     "key": "DownloadingStrings",
-    "defaultValue": "Downloading Strings for >{}"
+    "defaultValue": "Downloading Strings for >{0}"
   },
   {
     "key": "CopiedTitleToTheClipboard",
@@ -969,11 +969,11 @@
   },
   {
     "key": "DeletedTheFolder",
-    "defaultValue": "Folder >{}, all internal folders, and associated links have been successfully deleted."
+    "defaultValue": "Folder >{0}, all internal folders, and associated links have been successfully deleted."
   },
   {
     "key": "DeletedTheNoteOfAFolder",
-    "defaultValue": "Successfully deleted the note of the >{}."
+    "defaultValue": "Successfully deleted the note of the >{0}."
   },
   {
     "key": "DeletedTheNoteOfALink",
@@ -1021,11 +1021,11 @@
   },
   {
     "key": "ArchivedTheFolder",
-    "defaultValue": "The folder >{} has been archived."
+    "defaultValue": "The folder >{0} has been archived."
   },
   {
     "key": "UnArchivedTheFolder",
-    "defaultValue": "The folder >{} has been unarchived."
+    "defaultValue": "The folder >{0} has been unarchived."
   },
   {
     "key": "ArchivedTheLink",
@@ -1041,7 +1041,7 @@
   },
   {
     "key": "RenameFolder",
-    "defaultValue": "Rename Folder >{}"
+    "defaultValue": "Rename Folder >{0}"
   },
   {
     "key": "ChangeLinkData",
@@ -1213,7 +1213,7 @@
   },
   {
     "key": "AreYouSureWantToDeleteThePanel",
-    "defaultValue": "Are you sure want to delete the panel named >{}?"
+    "defaultValue": "Are you sure want to delete the panel named >{0}?"
   },
   {
     "key": "NewNameForPanel",
@@ -1225,7 +1225,7 @@
   },
   {
     "key": "EditPanelName",
-    "defaultValue": "Edit >{} Panel Name"
+    "defaultValue": "Edit >{0} Panel Name"
   },
   {
     "key": "RedirectToLatestReleasePage",
@@ -1241,7 +1241,7 @@
   },
   {
     "key": "LatestVersionAvailableDesc",
-    "defaultValue": "a new >{} build has been released"
+    "defaultValue": "a new >{0} build has been released"
   },
   {
     "key": "TrackRecentChangesAndUpdatesToLinkora",
@@ -1393,7 +1393,7 @@
   },
   {
     "key": "NoOfLinksRefreshed",
-    "defaultValue": ">{} of >{} links refreshed."
+    "defaultValue": ">{0} of >{1} links refreshed."
   },
   {
     "key": "TopDecoratorSetting",
@@ -1409,7 +1409,7 @@
   },
   {
     "key": "PanelCreatedSuccessfully",
-    "defaultValue": "Panel created successfully with the name: >{}"
+    "defaultValue": "Panel created successfully with the name: >{0}"
   },
   {
     "key": "DeletedPanelSuccessfully",
@@ -1417,7 +1417,7 @@
   },
   {
     "key": "UpdatedThePanelNameSuccessfully",
-    "defaultValue": "Panel name updated to: >{}."
+    "defaultValue": "Panel name updated to: >{0}."
   },
   {
     "key": "ImportingDataFromTheSever",
@@ -1493,11 +1493,11 @@
   },
   {
     "key": "SelectAValidFile",
-    "defaultValue": "Select a valid >{} File"
+    "defaultValue": "Select a valid >{0} File"
   },
   {
     "key": "FileTypeNotSupportedOnDesktopImport",
-    "defaultValue": ">{} files are not supported for importing, pick valid >{} file."
+    "defaultValue": ">{0} files are not supported for importing, pick valid >{1} file."
   },
   {
     "key": "NoFoldersInThePanel",
@@ -1517,7 +1517,7 @@
   },
   {
     "key": "StringsLocalizedStatus",
-    "defaultValue": ">{}/>{} strings localized"
+    "defaultValue": ">{0}/>{1} strings localized"
   },
   {
     "key": "EnableNotifications",
@@ -1549,7 +1549,7 @@
   },
   {
     "key": "StartingImportingProcess",
-    "defaultValue": "Starting data import from JSON file: >{}"
+    "defaultValue": "Starting data import from JSON file: >{0}"
   },
   {
     "key": "DataSynchronizationCompletedSuccessfully",
@@ -1649,7 +1649,7 @@
   },
   {
     "key": "ServerCertificateAlreadyImported",
-    "defaultValue": "A certificate has already been imported. If you're unsure whether it matches the server-generated certificate, you can import the updated certificate to replace the existing one.\n\n>{}"
+    "defaultValue": "A certificate has already been imported. If you're unsure whether it matches the server-generated certificate, you can import the updated certificate to replace the existing one.\n\n>{0}"
   },
   {
     "key": "ImportServerCertificateDescription",
@@ -1657,7 +1657,7 @@
   },
   {
     "key": "ImportedServerCertificate",
-    "defaultValue": "Import Successful, Info:\n>{}"
+    "defaultValue": "Import Successful, Info:\n>{0}"
   },
   {
     "key": "ProcessingCertificate",
@@ -1765,7 +1765,7 @@
   },
   {
     "key": "AutoSavingTheLinkNotifyDesc",
-    "defaultValue": "Retrieving metadata to save the link: >{}"
+    "defaultValue": "Retrieving metadata to save the link: >{0}"
   },
   {
     "key": "AutoSavedTheLinkSuccessfully",
@@ -1929,11 +1929,11 @@
   },
   {
     "key": "ExportsLocationNoticeOnAndroidTV",
-    "defaultValue": "Exports are saved in Documents/Linkora/>{}"
+    "defaultValue": "Exports are saved in Documents/Linkora/>{0}"
   },
   {
     "key": "SnapshotLocationNoticeOnAndroidTV",
-    "defaultValue": "Snapshots are saved in Documents/Linkora/>{}"
+    "defaultValue": "Snapshots are saved in Documents/Linkora/>{0}"
   },
   {
     "key": "WebPageCaptures",
@@ -1949,7 +1949,7 @@
   },
   {
     "key": "WebCapturesLocationDesc",
-    "defaultValue": "Open any link's menu and select 'Open Capture Folder' to view its saved webpage files.\n\nWeb-page Captures directory: >{}"
+    "defaultValue": "Open any link's menu and select 'Open Capture Folder' to view its saved webpage files.\n\nWeb-page Captures directory: >{0}"
   },
   {
     "key": "WebCapturesDesc",
@@ -2045,7 +2045,7 @@
   },
   {
     "key": "CapturedCount",
-    "defaultValue": ">{} / >{} captured"
+    "defaultValue": ">{0} / >{1} captured"
   },
   {
     "key": "CaptureAllLinksLabel",
