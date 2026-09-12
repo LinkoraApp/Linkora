@@ -6,8 +6,7 @@ folder hierarchy with tags, Linkora handles it all with optional self-hosted syn
 
 A browser extension is available for saving web links directly to Linkora via the sync-server.
 
-> Linkora on web is currently
-> experimental. [linkora-app.netlify.app](https://linkora-app.netlify.app) is the only site
+> [linkora-app.netlify.app](https://linkora-app.netlify.app) is the only site
 > maintained
 > by me. Anything else is unrelated.
 
