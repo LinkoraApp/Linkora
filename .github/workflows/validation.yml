@@ -62,7 +62,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: Build Android Debug
-        run: ./gradlew :composeApp:assembleDebug
+        run: ./gradlew :androidApp:assembleDebug
 
   desktop-unix:
     name: Build Desktop
@@ -87,7 +87,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: Build Desktop
-        run: ./gradlew :composeApp:packageUberJarForCurrentOS
+        run: ./gradlew :desktopApp:packageUberJarForCurrentOS
 
   web:
     name: Build Web
@@ -112,7 +112,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: Build Web
-        run: ./gradlew :composeApp:wasmJsBrowserDistribution
+        run: ./gradlew :webApp:wasmJsBrowserDistribution
 
   tests:
     name: Run all tests
@@ -160,4 +160,4 @@ jobs:
 
       - name: Build Desktop
         shell: cmd
-        run: .\gradlew.bat :composeApp:packageUberJarForCurrentOS
+        run: .\gradlew.bat :desktopApp:packageUberJarForCurrentOS

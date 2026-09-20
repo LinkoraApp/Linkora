@@ -6,7 +6,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     kotlin("multiplatform")
     alias(libs.plugins.ksp)
-    id("com.android.library")
+    alias(libs.plugins.androidKMPLibrary)
     id("androidx.room3")
 }
 
@@ -15,14 +15,13 @@ room3 {
 }
 
 kotlin {
-
-    jvm("desktop") {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_21)
+    android {
+        compileSdk {
+            namespace = "com.sakethh.linkora.web_capture"
+            version = release(37)
         }
     }
-
-    androidTarget {
+    jvm("desktop") {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_21)
         }
@@ -49,34 +48,37 @@ kotlin {
             }
         }
     }
-}
 
-android {
-    namespace = "com.sakethh.linkora.web_capture"
-    compileSdk =
-        libs.versions.android.compileSdk
-            .get()
-            .toInt()
-
-    defaultConfig {
-        minSdk =
-            libs.versions.android.minSdk
+    /*android {
+        namespace = "com.sakethh.linkora.web_capture"
+        compileSdk =
+            libs.versions.android.compileSdk
                 .get()
                 .toInt()
-    }
-    buildTypes {
-        release {
-            isMinifyEnabled = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
-            )
+
+        defaultConfig {
+            minSdk =
+                libs.versions.android.minSdk
+                    .get()
+                    .toInt()
+        }
+        buildTypes {
+            release {
+                isMinifyEnabled = true
+                proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro",
+                )
+            }
         }
     }
-}
 
+    dependencies {
+        add("kspDesktop", libs.androidx.room3.compiler)
+    }*/
+}
 dependencies {
-    add("kspAndroid", libs.androidx.room3.compiler)
     add("kspDesktop", libs.androidx.room3.compiler)
     add("kspWasmJs", libs.androidx.room3.compiler)
+    add("kspAndroid", libs.androidx.room3.compiler)
 }

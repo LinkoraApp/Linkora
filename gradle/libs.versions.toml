@@ -1,6 +1,6 @@
 [versions]
-agp = "8.13.2"
-android-compileSdk = "36"
+agp = "9.4.1"
+android-compileSdk = "37"
 android-minSdk = "24"
 android-targetSdk = "36"
 androidx-activityCompose = "1.9.3"
@@ -36,7 +36,7 @@ lifecycleViewmodelCompose = "2.8.2"
 material3Version = "1.11.0-alpha01"
 mockk = "1.14.9"
 navigationCompose = "2.9.0"
-ksp = "2.2.20-2.0.4"
+ksp = "2.3.6"
 room = "3.0.1"
 sqlite = "2.7.0"
 sqliteAsync = "2.7.0"
@@ -49,6 +49,16 @@ assertk = "0.28.1"
 composeHotReload = "1.0.0"
 adaptive = "1.2.0"
 jetbrainsKotlinJvm = "2.3.10"
+androidBuiltInKotlin = "9.4.1"
+kotlinStdlib = "2.3.10"
+runner = "1.7.0"
+core = "1.7.0"
+uiDesktop = "1.7.0"
+material3Desktop = "1.3.2"
+navigationComposeJvmstubs = "2.10.1"
+room3RuntimeJvm = "3.0.3"
+lifecycleRuntimeComposeDesktop = "2.11.0"
+coreKtx = "1.19.0"
 
 [libraries]
 androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastorePreferencesCore" }
@@ -73,7 +83,6 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 androidx-material = { group = "com.google.android.material", name = "material", version.ref = "androidx-material" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidx-constraintlayout" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
-androidx-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version.ref = "kotlinxBrowser" }
 kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
@@ -96,6 +105,8 @@ ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktorSer
 lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-multiplatform" }
+compose-uiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose-multiplatform" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 androidx-documentfile = { group = "androidx.documentfile", name = "documentfile", version.ref = "documentfile" }
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }
@@ -108,9 +119,15 @@ adaptive-core = { module = "org.jetbrains.compose.material3.adaptive:adaptive", 
 adaptive-layout = { module = "org.jetbrains.compose.material3.adaptive:adaptive-layout", version.ref = "adaptive" }
 adaptive-navigation = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation", version.ref = "adaptive" }
 ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlinStdlib" }
+androidx-runner = { group = "androidx.test", name = "runner", version.ref = "runner" }
+androidx-core = { group = "androidx.test", name = "core", version.ref = "core" }
+androidx-ui-desktop = { group = "androidx.compose.ui", name = "ui-desktop", version.ref = "uiDesktop" }
+androidx-material3-desktop = { group = "androidx.compose.material3", name = "material3-desktop", version.ref = "material3Desktop" }
+core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
-androidLibrary = { id = "com.android.library", version.ref = "agp" }
+androidKMPLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
@@ -118,3 +135,5 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 stability-analyzer = { id = "com.github.skydoves.compose.stability.analyzer", version = "0.6.5" }
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
+android-lint = { id = "com.android.lint", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

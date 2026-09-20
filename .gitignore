@@ -30,4 +30,3 @@ captures
 /shelf/
 /workspace.xml
 .gitignore
-composeApp/worker/node_modules

@@ -12,7 +12,7 @@
   resolved "https://registry.yarnpkg.com/@sqlite.org/sqlite-wasm/-/sqlite-wasm-3.50.1-build1.tgz#67dd9944b0e37ddb0ef2c8b195baa74ece838e44"
   integrity sha512-yH4M/SHN98NibniIwTVk6rwTJjy7n39l7zwWY3u+qsfZBGTi4lC1uEl2NDvIlkzsFtfCBvHBJJFJ1iuU3UzzEQ==
 
-"sqlite-wasm-worker@file:../../composeApp/worker":
+"sqlite-wasm-worker@file:../../webApp/worker":
   version "0.0.0"
   dependencies:
     "@sqlite.org/sqlite-wasm" "^3.50.1-build1"

@@ -2,17 +2,19 @@ plugins {
     // this is necessary to avoid the plugins to be loaded multiple times
     // in each subproject's classloader
     alias(libs.plugins.androidApplication) apply false
-    alias(libs.plugins.androidLibrary) apply false
+    alias(libs.plugins.androidKMPLibrary) apply false
     alias(libs.plugins.composeMultiplatform) apply false
     alias(libs.plugins.composeCompiler) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.composeHotReload) apply false
     id("com.mikepenz.aboutlibraries.plugin") version "13.1.0" apply false
     alias(libs.plugins.stability.analyzer) apply false
-    id("androidx.room3") version "3.0.0-alpha01" apply false
+    id("androidx.room3") version "3.0.1" apply false
     alias(libs.plugins.jetbrains.kotlin.jvm) apply false
     id("com.diffplug.spotless") version "8.8.0"
     id("org.jetbrains.kotlinx.atomicfu") version "0.33.0"
+    alias(libs.plugins.android.lint) apply false
+    alias(libs.plugins.kotlin.android) apply false
 }
 
 tasks.register("installGitHooks") {
@@ -20,12 +22,11 @@ tasks.register("installGitHooks") {
     onlyIf {
         val currentPath =
             try {
-                Runtime
-                    .getRuntime()
-                    .exec("git config core.hooksPath")
-                    .inputStream
-                    .bufferedReader()
-                    .readText()
+                providers
+                    .exec {
+                        commandLine("git", "config", "core.hooksPath")
+                    }.standardOutput.asText
+                    .get()
                     .trim()
             } catch (e: Exception) {
                 ""
@@ -34,7 +35,11 @@ tasks.register("installGitHooks") {
     }
 
     doLast {
-        exec { commandLine("git", "config", "core.hooksPath", ".githooks") }
+        providers
+            .exec {
+                commandLine("git", "config", "core.hooksPath", ".githooks")
+            }.result
+            .get()
         file(".githooks").listFiles()?.forEach { it.setExecutable(true) }
         println("Git hooks installed successfully.")
     }

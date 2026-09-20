@@ -26,25 +26,25 @@ jobs:
 
       - name: Package Windows x64
         shell: pwsh
-        run: .\gradlew.bat :composeApp:packageMsi :composeApp:packageExe
+        run: .\gradlew.bat :desktopApp:packageMsi :desktopApp:packageExe
 
       - name: Rename Windows x64 artifacts
         shell: pwsh
         run: |
-          Get-ChildItem composeApp/build/compose/binaries/main/exe/*.exe | ForEach-Object {
+          Get-ChildItem desktopApp/build/compose/binaries/main/exe/*.exe | ForEach-Object {
             Rename-Item $_.FullName -NewName "$($_.BaseName)-windows-x64$($_.Extension)"
           }
-          Get-ChildItem composeApp/build/compose/binaries/main/msi/*.msi | ForEach-Object {
+          Get-ChildItem desktopApp/build/compose/binaries/main/msi/*.msi | ForEach-Object {
             Rename-Item $_.FullName -NewName "$($_.BaseName)-windows-x64$($_.Extension)"
           }
 
       - name: Verify Windows x64 artifacts
         shell: pwsh
         run: |
-          if (!(Get-ChildItem composeApp/build/compose/binaries/main/exe/*-windows-x64.exe)) {
+          if (!(Get-ChildItem desktopApp/build/compose/binaries/main/exe/*-windows-x64.exe)) {
             throw "Windows x64 EXE missing"
           }
-          if (!(Get-ChildItem composeApp/build/compose/binaries/main/msi/*-windows-x64.msi)) {
+          if (!(Get-ChildItem desktopApp/build/compose/binaries/main/msi/*-windows-x64.msi)) {
             throw "Windows x64 MSI missing"
           }
 
@@ -53,8 +53,8 @@ jobs:
           tag_name: ${{ inputs.tag }}
           draft: true
           files: |
-            composeApp/build/compose/binaries/main/exe/*-windows-x64.exe
-            composeApp/build/compose/binaries/main/msi/*-windows-x64.msi
+            desktopApp/build/compose/binaries/main/exe/*-windows-x64.exe
+            desktopApp/build/compose/binaries/main/msi/*-windows-x64.msi
 
   package-windows-arm64:
     name: Package Windows ARM64
@@ -72,25 +72,25 @@ jobs:
 
       - name: Package Windows ARM64
         shell: pwsh
-        run: .\gradlew.bat :composeApp:packageMsi :composeApp:packageExe
+        run: .\gradlew.bat :desktopApp:packageMsi :desktopApp:packageExe
 
       - name: Rename Windows ARM64 artifacts
         shell: pwsh
         run: |
-          Get-ChildItem composeApp/build/compose/binaries/main/exe/*.exe | ForEach-Object {
+          Get-ChildItem desktopApp/build/compose/binaries/main/exe/*.exe | ForEach-Object {
             Rename-Item $_.FullName -NewName "$($_.BaseName)-windows-arm64$($_.Extension)"
           }
-          Get-ChildItem composeApp/build/compose/binaries/main/msi/*.msi | ForEach-Object {
+          Get-ChildItem desktopApp/build/compose/binaries/main/msi/*.msi | ForEach-Object {
             Rename-Item $_.FullName -NewName "$($_.BaseName)-windows-arm64$($_.Extension)"
           }
 
       - name: Verify Windows ARM64 artifacts
         shell: pwsh
         run: |
-          if (!(Get-ChildItem composeApp/build/compose/binaries/main/exe/*-windows-arm64.exe)) {
+          if (!(Get-ChildItem desktopApp/build/compose/binaries/main/exe/*-windows-arm64.exe)) {
             throw "Windows ARM64 EXE missing"
           }
-          if (!(Get-ChildItem composeApp/build/compose/binaries/main/msi/*-windows-arm64.msi)) {
+          if (!(Get-ChildItem desktopApp/build/compose/binaries/main/msi/*-windows-arm64.msi)) {
             throw "Windows ARM64 MSI missing"
           }
 
@@ -99,8 +99,8 @@ jobs:
           tag_name: ${{ inputs.tag }}
           draft: true
           files: |
-            composeApp/build/compose/binaries/main/exe/*-windows-arm64.exe
-            composeApp/build/compose/binaries/main/msi/*-windows-arm64.msi
+            desktopApp/build/compose/binaries/main/exe/*-windows-arm64.exe
+            desktopApp/build/compose/binaries/main/msi/*-windows-arm64.msi
 
   build-linux:
     name: Build Linux Desktop
@@ -120,12 +120,12 @@ jobs:
           cache: gradle
 
       - name: Build Linux packages
-        run: ./gradlew :composeApp:packageDeb :composeApp:packageUberJarForCurrentOS
+        run: ./gradlew :desktopApp:packageDeb :desktopApp:packageUberJarForCurrentOS
 
       - name: Build AppImage
         run: |
           mkdir -p AppDir/usr/bin
-          cp composeApp/build/compose/jars/Linkora-linux-x64-*.jar AppDir/usr/bin/
+          cp desktopApp/build/compose/jars/Linkora-linux-x64-*.jar AppDir/usr/bin/
 
           cat << 'EOF' > AppDir/AppRun
           #!/bin/bash
@@ -153,7 +153,7 @@ jobs:
 
       - name: Verify Linux DEB
         run: |
-          deb=$(ls composeApp/build/compose/binaries/main/deb/*.deb | head -n 1)
+          deb=$(ls desktopApp/build/compose/binaries/main/deb/*.deb | head -n 1)
           test -n "$deb"
 
       - name: Verify AppImage
@@ -165,7 +165,7 @@ jobs:
       - name: Bundle Linux portable jar
         run: |
           mkdir -p linkora-linux-portable
-          jar=$(ls composeApp/build/compose/jars/Linkora-linux-x64-*.jar | head -n 1)
+          jar=$(ls desktopApp/build/compose/jars/Linkora-linux-x64-*.jar | head -n 1)
           cp "$jar" linkora-linux-portable/
           printf 'run from the extracted directory:\njava -jar %s\n' "$(basename "$jar")" > linkora-linux-portable/README.txt
           (cd linkora-linux-portable && zip -r "$GITHUB_WORKSPACE/Linkora-linux-x64-portable.zip" .)
@@ -175,7 +175,7 @@ jobs:
           tag_name: ${{ inputs.tag }}
           draft: true
           files: |
-            composeApp/build/compose/binaries/main/deb/*.deb
+            desktopApp/build/compose/binaries/main/deb/*.deb
             Linkora-linux-x64-portable.zip
             Linkora.AppImage
             Linkora.AppImage.zsync
@@ -214,17 +214,17 @@ jobs:
           KEY_ALIAS: ${{ secrets.PREVIEW_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.PREVIEW_KEY_PASSWORD }}
         run: |
-          ./gradlew :composeApp:assemblePreview \
+          ./gradlew :androidApp:assemblePreview \
           -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/preview_keystore.jks \
           -Pandroid.injected.signing.store.password="$STORE_PASSWORD" \
           -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
           -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
 
           mkdir -p preview-apks
-          mv composeApp/build/outputs/apk/preview/*-arm64-v8a-preview.apk preview-apks/Linkora-arm64-v8a-preview.apk
-          mv composeApp/build/outputs/apk/preview/*-armeabi-v7a-preview.apk preview-apks/Linkora-armeabi-v7a-preview.apk
-          mv composeApp/build/outputs/apk/preview/*-x86_64-preview.apk preview-apks/Linkora-x86_64-preview.apk
-          mv composeApp/build/outputs/apk/preview/*-universal-preview.apk preview-apks/Linkora-universal-preview.apk
+          mv androidApp/build/outputs/apk/preview/*-arm64-v8a-preview.apk preview-apks/Linkora-arm64-v8a-preview.apk
+          mv androidApp/build/outputs/apk/preview/*-armeabi-v7a-preview.apk preview-apks/Linkora-armeabi-v7a-preview.apk
+          mv androidApp/build/outputs/apk/preview/*-x86_64-preview.apk preview-apks/Linkora-x86_64-preview.apk
+          mv androidApp/build/outputs/apk/preview/*-universal-preview.apk preview-apks/Linkora-universal-preview.apk
 
       - name: Build and Sign Release APKs
         env:
@@ -232,17 +232,17 @@ jobs:
           KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: |
-          ./gradlew :composeApp:assembleRelease \
+          ./gradlew :androidApp:assembleRelease \
           -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/release_keystore.jks \
           -Pandroid.injected.signing.store.password="$STORE_PASSWORD" \
           -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
           -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
 
           mkdir -p release-apks
-          mv composeApp/build/outputs/apk/release/*-arm64-v8a-release.apk release-apks/Linkora-arm64-v8a-release.apk
-          mv composeApp/build/outputs/apk/release/*-armeabi-v7a-release.apk release-apks/Linkora-armeabi-v7a-release.apk
-          mv composeApp/build/outputs/apk/release/*-x86_64-release.apk release-apks/Linkora-x86_64-release.apk
-          mv composeApp/build/outputs/apk/release/*-universal-release.apk release-apks/Linkora-universal-release.apk
+          mv androidApp/build/outputs/apk/release/*-arm64-v8a-release.apk release-apks/Linkora-arm64-v8a-release.apk
+          mv androidApp/build/outputs/apk/release/*-armeabi-v7a-release.apk release-apks/Linkora-armeabi-v7a-release.apk
+          mv androidApp/build/outputs/apk/release/*-x86_64-release.apk release-apks/Linkora-x86_64-release.apk
+          mv androidApp/build/outputs/apk/release/*-universal-release.apk release-apks/Linkora-universal-release.apk
 
       - name: Upload Android Artifacts to Release
         uses: softprops/action-gh-release@v2
@@ -273,14 +273,14 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build WasmJs Distribution
-        run: ./gradlew :composeApp:wasmJsBrowserDistribution
+        run: ./gradlew :webApp:wasmJsBrowserDistribution
 
       - name: Remove unused generated Compose resources
-        run: rm -rf "composeApp/build/dist/wasmJs/productionExecutable/composeResources/com.composables.composeunstyled_platformtheme.generated.resources"
+        run: rm -rf "webApp/build/dist/wasmJs/productionExecutable/composeResources/com.composables.composeunstyled_platformtheme.generated.resources"
 
       - name: Build WasmJs Extension Zip
         run: |
-          cd composeApp/build/dist/wasmJs/productionExecutable
+          cd webApp/build/dist/wasmJs/productionExecutable
           zip -r $GITHUB_WORKSPACE/Linkora-web-wasm.zip .
 
       - name: Upload Web Artifact to Release
@@ -297,6 +297,6 @@ jobs:
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         run: |
           npx netlify-cli deploy \
-          --dir=composeApp/build/dist/wasmJs/productionExecutable \
+          --dir=webApp/build/dist/wasmJs/productionExecutable \
           --prod \
           --message "Production deploy for tag ${{ inputs.tag }}"
