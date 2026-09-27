@@ -20,17 +20,14 @@ builds will be significantly faster.
 
 Linkora is a multi-module KMP project.
 
-* `composeApp/`: The main application module, separated by target source sets.
-    * `src/commonMain`: The core of the app.
-    * `src/androidMain`: Android-specific implementations, services (like `AutoSaveLinkService`),
-      and `actual` declarations.
-    * `src/desktopMain`: JVM/Desktop specific implementations.
-    * `src/wasmJsMain`: Web target implementations.
-    * `worker`: JavaScript Web Worker implementation required for the Wasm target functionality.
-* `web-capture/`: The _core implementation_ of the web-capture feature. This module originally had a
+* `androidApp`, `desktopApp`, `webApp`: entry points and platform-specific code that doesn't
+  implement `expect`.
+* `shared/src`: common code, `actual` implementations in platform-specific source sets, and
+  intermediate source sets grouping platforms with the same implementation.
+* `web-capture/`: _core implementation_ of the web-capture feature. This module originally had a
   Rust implementation for handling a monolithic lib while dealing with asynchronous stuff and JNI
   bindings. Now, it just acts as another abstraction that should not exist. This module will be
-  removed, and the project will remain as a single-module project.
+  removed.
 
 ## Build Commands
 
@@ -76,7 +73,7 @@ type extended, then use extension functions.
 ### Custom UI Components
 
 Before building a new UI element, check
-`composeApp/src/commonMain/kotlin/com/sakethh/linkora/ui/components/`. If you need a dialog, button,
+`shared/src/commonMain/kotlin/com/sakethh/linkora/ui/components/`. If you need a dialog, button,
 or settings row, a pre-built component likely already exists. Do not reinvent the wheel. If a
 component does not exist and is required, feel free to add it.
 
@@ -187,7 +184,7 @@ implementations to see how it operates under the hood.
 Linkora does not use a DI framework like Hilt or Koin. It relies on a custom, manual dependency
 container. If you create a new Repository, or anything that needs instances across the codebase, you
 must wire it up manually. Read through `DependencyContainer.kt` and `LinkoraSDK.kt` in
-`composeApp/src/commonMain/kotlin/com/sakethh/linkora/di` to understand how dependencies are
+`shared/src/commonMain/kotlin/com/sakethh/linkora/di` to understand how dependencies are
 provided.
 
 All instances must be passed externally via constructor and not hardcoded within a class. As of now,
@@ -195,11 +192,15 @@ all instances are initialized lazily as static singletons. There is not yet a ca
 instance is required for certain cases. If that comes up, this dependency container will be used to
 return new instances on calls instead of the static instances.
 
-### Platform-Specific APIs (Expect/Actual)
+### Platform-specific implementations
 
-For OS-level features (File Management, Permissions, Native Utilities), use KMP's `expect` /
-`actual` pattern. Check `Expected.kt` in `commonMain` and the respective `actual` implementations in
-`androidMain`, `desktopMain`, or `wasmJsMain` before implementing new platform-specific behavior.
+For OS-level features (File Management, Permissions, Native Utilities), use KMP's `expect`/`actual`
+pattern.
+
+Only `actual` implementations go in `shared/src/<platform>` folders. Anything else, like core
+implementations or code that doesn't implement `expect`, must live in common code
+(`shared/src/commonMain`) or platform-specific code in the respective entry point modules
+(`androidApp`, `desktopApp`, `webApp`).
 
 ### Background Processing (Android)
 
@@ -232,8 +233,10 @@ application).
 ### Localization (i18n)
 
 Linkora uses a custom localization system. If you add new text to the UI, it must be routed through
-this system and not hardcoded as plain strings in the Compose files. Do not touch
-`locales/default_en.json`; that is for the server, generated manually, and should not be modified.
+this system and not hardcoded as plain strings. All of your default strings
+(in English language) must be added into `locales/default.json`. During build time,
+`LocalizedStrings` and `LocalizationKey` are generated based on the JSON and must NOT be checked
+into source.
 
 ### Import / Export
 
@@ -268,24 +271,24 @@ it triggers the remote sync-server.**
       subscribes based on what is visible on the screen.
     * Read the file to see exactly how it is implemented.
 * If you go through any `Local****Repo`, you will find functions that have a param `viaSocket`.
-    * The sole reason this exists is that these functions are called when an operation is
-      initiated by the user and also when an event that is sent via websocket needs the same
-      functionality as whatever a function is doing.
-    * Since an operation is done via web-socket, it must not be sent back to the sync-server.
-      That's also the reason `performLocalOperationWithRemoteSyncFlow` has
+    * The sole reason this exists is that these functions are called when an operation is initiated
+      by the user and also when an event that is sent via websocket needs the same functionality as
+      whatever a function is doing.
+    * Since an operation is done via web-socket, it must not be sent back to the sync-server. That's
+      also the reason `performLocalOperationWithRemoteSyncFlow` has
       `performRemoteOperation = !viaSocket` in all implementations.
     * This helps to not make a loop of calls from local to remote when receiving something via
       websocket.
-* Do not stick to MVVM/MVI/Clean implementations just because you consider it as your favorite
-  style to do things, or you have read it is the best way to do it.
+* Do not stick to MVVM/MVI/Clean implementations just because you consider it as your favorite style
+  to do things, or you have read it is the best way to do it.
     * This codebase isn't based on strict MVVM nor MVI. It is a hybrid based on both
       implementations, so use whatever makes sense practically and keep it simple.
     * If you think MVVM makes sense for whatever you are implementing, use it. If you see that a
       state and action-driven implementation makes sense, use MVI. If you think a hybrid model of
       these two makes sense, use it.
 * For reusable composables, do not attach them to any specific viewmodel; hoist them via
-  `performAction(SomeAction) -> <WhatEver>` and the actual implementation must be done on the
-  caller side.
+  `performAction(SomeAction) -> <WhatEver>` and the actual implementation must be done on the caller
+  side.
 
 The above information should give you a clear idea on how things work, if you think anything is
 missing here, feel free to mail me at sakethh@proton.me or DM on Discord (@sakethpathike).
