@@ -255,7 +255,7 @@ fun App(modifier: Modifier = Modifier) {
                         currentRoute?.hasRoute<Navigation.Root.SettingsScreen>() == false &&
                                 !currentRoute.hasRoute<Navigation.Home.PanelsManagerScreen>() &&
                                 currentFABContext.fabContext != FABContext.HIDE &&
-                                !CollectionsScreenVM.isSelectionEnabled.value,
+                                !showLoadingProgressBarOnTransferAction,
                 ) {
                     AnimatedContent(
                         targetState = currentFABContext.fabContext,
