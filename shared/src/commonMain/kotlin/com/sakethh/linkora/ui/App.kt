@@ -643,6 +643,11 @@ fun App(modifier: Modifier = Modifier) {
                                     },
                                 )
                             },
+                            onCaptureWebpage = { url ->
+                                appVM.downloadWebpage(
+                                    link = url
+                                )
+                            }
                         ),
                 )
             }
@@ -881,11 +886,7 @@ fun App(modifier: Modifier = Modifier) {
                 rememberModalBottomSheetState(
                     skipPartiallyExpanded = true,
                     confirmValueChange = { sheetValue ->
-                        if (sheetValue == SheetValue.Hidden) {
-                            !preferences.showSyncServerSurveyNotice
-                        } else {
-                            true
-                        }
+                        sheetValue != SheetValue.Hidden || !preferences.showSyncServerSurveyNotice
                     },
                 )
             var showSyncServerNotice by rememberSaveable {

@@ -2102,5 +2102,9 @@
   {
     "key": "FinishOrCancelTransferToNavigateBack",
     "defaultValue": "Finish or cancel the transfer to navigate back"
+  },
+  {
+    "key": "CaptureWebpage",
+    "defaultValue": "Capture webpage"
   }
 ]

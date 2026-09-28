@@ -218,24 +218,6 @@ open class SettingsScreenViewModel(
                 icon = Icons.Rounded.Home,
             ),
         )
-
-        add(
-            SettingComponentParam(
-                title = localizedStrings.AlwaysShowOpenCaptureFolderMenuItemLabel,
-                doesDescriptionExists = true,
-                description = localizedStrings.AlwaysShowOpenCaptureFolderMenuItemDesc,
-                isSwitchNeeded = true,
-                isSwitchEnabled = preferences.alwaysShowOpenWebCaptureFolderInMenu,
-                onSwitchStateChange = {
-                    changeSettingPreferenceValue(
-                        preferenceKey = AppPreferences.ALWAYS_SHOW_OPEN_WEB_CAPTURE_FOLDER_IN_MENU,
-                        newValue = it,
-                    )
-                },
-                isIconNeeded = true,
-                icon = Icons.Rounded.Menu,
-            ),
-        )
     }
 
     fun <T> changeSettingPreferenceValue(

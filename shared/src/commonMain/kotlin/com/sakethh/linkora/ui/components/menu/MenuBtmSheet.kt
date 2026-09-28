@@ -16,13 +16,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.automirrored.outlined.TextSnippet
 import androidx.compose.material.icons.filled.CopyAll
-import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DeleteForever
+import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FolderDelete
 import androidx.compose.material.icons.outlined.Refresh
@@ -53,6 +54,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
@@ -124,7 +126,7 @@ fun MenuBtmSheet(
                     hideContent()
                 },
                 text = localizedStrings.Open,
-                icon = Icons.Default.OpenInNew,
+                icon = Icons.AutoMirrored.Filled.OpenInNew,
             )
             val lastItemShape = retain {
                 RoundedCornerShape(
@@ -204,7 +206,17 @@ fun MenuBtmSheet(
                 elementName = localizedStrings.Edit,
                 elementImageVector = Icons.Outlined.Edit,
             )
-            if (menuBtmSheetParam.menuBtmSheetFor is MenuBtmSheetType.Link && menuBtmSheetParam.linkTagsPair?.link != null && (preferences.alwaysShowOpenWebCaptureFolderInMenu || preferences.useWebCaptures)) {
+
+            if (menuBtmSheetParam.menuBtmSheetFor is MenuBtmSheetType.Link && menuBtmSheetParam.linkTagsPair?.link != null && preferences.webCapturesLocation.isNotBlank()) {
+                IndividualMenuComponent(
+                    onClick = {
+                        hideContent()
+                        menuBtmSheetParam.onCaptureWebpage(menuBtmSheetParam.linkTagsPair.link.url)
+                    },
+                    elementName = localizedStrings.CaptureWebpage,
+                    elementImageVector = Icons.Outlined.Download,
+                )
+
                 IndividualMenuComponent(
                     onClick = {
                         hideContent()
@@ -216,6 +228,7 @@ fun MenuBtmSheet(
                     elementImageVector = Icons.Outlined.Web,
                 )
             }
+
             if (menuBtmSheetLinkEntries().contains(menuBtmSheetParam.menuBtmSheetFor)) {
                 Row(
                     modifier = Modifier.highlightOnFocused()

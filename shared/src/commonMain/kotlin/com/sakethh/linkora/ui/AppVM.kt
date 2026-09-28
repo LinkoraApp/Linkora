@@ -85,7 +85,7 @@ class AppVM(
     private val snapshotRepo: SnapshotRepo,
     private val localizationRepo: LocalizationRepo.Local,
     nativeUtils: NativeUtils,
-    webCapture: NativeUtils.WebCapture,
+    private val webCapture: NativeUtils.WebCapture,
 ) : ServerManagementViewModel(
     networkRepo = networkRepo,
     preferencesRepository = preferencesRepository,
@@ -311,6 +311,12 @@ class AppVM(
     fun openWebCaptureFolder(link: String) {
         viewModelScope.launch {
             fileManager.openWebCaptureFolder(link)
+        }
+    }
+
+    fun downloadWebpage(link: String) {
+        viewModelScope.launch {
+            webCapture.saveHTMLPage(preferencesAsFlow.value.webCapturesLocation, link)
         }
     }
 
