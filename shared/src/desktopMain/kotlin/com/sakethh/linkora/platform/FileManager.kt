@@ -21,9 +21,13 @@ import com.sakethh.linkora.utils.replaceActual
 import getCertificateInfo
 import getFileNameWithTimestamp
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.internal.ChannelFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.awt.Desktop
@@ -193,135 +197,137 @@ actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
         null
     }
 
-    actual suspend fun importFromJSONObj(): Flow<Result<JSONExportSchema>> = flow {
+    actual suspend fun importFromJSONObj(): Flow<Result<JSONExportSchema>> = channelFlow {
         val importFile =
-            getFile(FileType.JSON) ?: return@flow emit(Result.Failure(Throwable("Importing Failed.")))
+            getFile(FileType.JSON)
+                ?: return@channelFlow send(Result.Failure(Throwable("Importing Failed.")))
 
         getJsonObj(importFile, importFile.name)
+    }.catch { throwable ->
+        throwable.printStackTrace()
+        emit(Result.Failure(Throwable(throwable.message ?: "Import failed")))
     }
 
-    private suspend fun FlowCollector<Result<JSONExportSchema>>.getJsonObj(
+    private suspend fun ProducerScope<Result<JSONExportSchema>>.getJsonObj(
         file: File,
         fileName: String,
     ) = withContext(Dispatchers.IO) {
-        try {
-            emit(Result.Loading(message = "Starting data import from JSON file: $fileName"))
 
-            val currentSystemEpochSeconds = getSystemEpochSeconds()
+        send(Result.Loading(message = "Starting data import from JSON file: $fileName"))
 
-            val jsonContent = file.readText()
+        val currentSystemEpochSeconds = getSystemEpochSeconds()
 
-            val basedOnNewExportSchema =
-                jsonContent.substringAfter("\"").substringBefore("\"") == "schemaVersion"
+        val jsonContent = file.readText()
 
-            emit(
-                Result.Loading(
-                    message =
-                        if (!basedOnNewExportSchema) {
-                            "This JSON file is based on the legacy export schema."
-                        } else {
-                            "This JSON file is based on schema version."
-                        },
-                ),
-            )
+        val basedOnNewExportSchema =
+            jsonContent.substringAfter("\"").substringBefore("\"") == "schemaVersion"
 
-            emit(Result.Loading(message = "Reading and deserializing JSON file: $fileName"))
+        send(
+            Result.Loading(
+                message =
+                    if (!basedOnNewExportSchema) {
+                        "This JSON file is based on the legacy export schema."
+                    } else {
+                        "This JSON file is based on schema version."
+                    },
+            ),
+        )
 
-            val jsonObj =
-                if (!basedOnNewExportSchema) {
-                    Json.decodeFromString<LegacyExportSchema>(jsonContent)
-                        .asJSONExportSchema(
-                            DependencyContainer.preferencesRepo.getPreferences().primaryJsoupUserAgent,
-                        )
-                } else {
-                    Utils.json.decodeFromString<JSONExportSchema>(jsonContent).run {
-                        JSONExportSchema(
-                            schemaVersion = schemaVersion,
-                            links =
-                                links.map {
-                                    it.copy(
-                                        remoteId = null,
-                                        lastModified = currentSystemEpochSeconds
-                                    )
-                                },
-                            folders =
-                                folders.map {
-                                    it.copy(
-                                        remoteId = null,
-                                        lastModified = currentSystemEpochSeconds
-                                    )
-                                },
-                            panels =
-                                PanelForJSONExportSchema(
-                                    panels =
-                                        panels.panels.map {
-                                            it.copy(
-                                                remoteId = null,
-                                                lastModified = currentSystemEpochSeconds,
-                                            )
-                                        },
-                                    panelFolders =
-                                        panels.panelFolders.map {
-                                            it.copy(
-                                                remoteId = null,
-                                                lastModified = currentSystemEpochSeconds,
-                                            )
-                                        },
-                                ),
-                            tags =
-                                tags.map {
-                                    it.copy(
-                                        remoteId = null,
-                                        lastModified = currentSystemEpochSeconds,
-                                    )
-                                },
-                            linkTags =
-                                linkTags.map {
-                                    it.copy(
-                                        remoteId = null,
-                                        lastModified = currentSystemEpochSeconds,
-                                    )
-                                },
-                        )
-                    }
+        send(Result.Loading(message = "Reading and deserializing JSON file: $fileName"))
+
+        val jsonObj =
+            if (!basedOnNewExportSchema) {
+                Json.decodeFromString<LegacyExportSchema>(jsonContent)
+                    .asJSONExportSchema(
+                        DependencyContainer.preferencesRepo.getPreferences().primaryJsoupUserAgent,
+                    )
+            } else {
+                Utils.json.decodeFromString<JSONExportSchema>(jsonContent).run {
+                    JSONExportSchema(
+                        schemaVersion = schemaVersion,
+                        links =
+                            links.map {
+                                it.copy(
+                                    remoteId = null,
+                                    lastModified = currentSystemEpochSeconds
+                                )
+                            },
+                        folders =
+                            folders.map {
+                                it.copy(
+                                    remoteId = null,
+                                    lastModified = currentSystemEpochSeconds
+                                )
+                            },
+                        panels =
+                            PanelForJSONExportSchema(
+                                panels =
+                                    panels.panels.map {
+                                        it.copy(
+                                            remoteId = null,
+                                            lastModified = currentSystemEpochSeconds,
+                                        )
+                                    },
+                                panelFolders =
+                                    panels.panelFolders.map {
+                                        it.copy(
+                                            remoteId = null,
+                                            lastModified = currentSystemEpochSeconds,
+                                        )
+                                    },
+                            ),
+                        tags =
+                            tags.map {
+                                it.copy(
+                                    remoteId = null,
+                                    lastModified = currentSystemEpochSeconds,
+                                )
+                            },
+                        linkTags =
+                            linkTags.map {
+                                it.copy(
+                                    remoteId = null,
+                                    lastModified = currentSystemEpochSeconds,
+                                )
+                            },
+                    )
                 }
-            emit(Result.Success(jsonObj))
-        } catch (e: Exception) {
-            emit(Result.Failure(Throwable(e.message ?: "Import failed")))
-        }
+            }
+        send(Result.Success(jsonObj))
     }
 
-    actual suspend fun importFromHTMLString(): Flow<Result<String>> = flow {
-        val file = getFile(FileType.HTML) ?: return@flow emit(Result.Failure(Throwable("Importing Failed.")))
+    actual suspend fun importFromHTMLString(): Flow<Result<String>> = channelFlow {
+        val file = getFile(FileType.HTML)
+            ?: return@channelFlow send(Result.Failure(Throwable("Importing Failed.")))
         getHtmlStr(file)
+    }.catch { throwable ->
+        throwable.printStackTrace()
+        emit(Result.Failure(Throwable(throwable.message ?: "Import failed")))
     }
 
-    private suspend fun FlowCollector<Result<String>>.getHtmlStr(file: File) {
-        try {
-            val fileName = file.name
-            emit(Result.Loading(message = "Reading the file $fileName"))
-            val htmlStr = file.readText()
-            emit(Result.Loading(message = "Read the file $fileName"))
-            emit(Result.Success(htmlStr))
-        } catch (e: Exception) {
-            emit(Result.Failure(Throwable(e.message ?: "Import failed")))
-        }
+    private suspend fun ProducerScope<Result<String>>.getHtmlStr(file: File) {
+        val fileName = file.name
+        send(Result.Loading(message = "Reading the file $fileName"))
+        val htmlStr = file.readText()
+        send(Result.Loading(message = "Read the file $fileName"))
+        send(Result.Success(htmlStr))
     }
 
-    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> = flow {
+    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> =
+        channelFlow {
             val importFile =
                 getFile(fileType = FileType.JSON, fileLocation = fileLocation)
-                    ?: return@flow emit(
+                    ?: return@channelFlow send(
                         Result.Failure(Throwable("Importing Failed.")),
                     )
 
             getJsonObj(importFile, importFile.name)
         }
 
-    actual suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>> = flow {
+    actual suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>> = channelFlow {
         val file =
             getFile(fileType = FileType.HTML, fileLocation = fileLocation)
-                ?: return@flow emit(
+                ?: return@channelFlow send(
                     Result.Failure(Throwable("Importing Failed.")),
                 )
         getHtmlStr(file)

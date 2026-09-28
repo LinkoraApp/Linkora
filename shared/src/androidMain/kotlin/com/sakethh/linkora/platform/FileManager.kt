@@ -39,6 +39,7 @@ import getCertificateInfo
 import getFileNameWithTimestamp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -341,6 +342,8 @@ actual class FileManager(
             }
         }
         emit(Result.Success(jsonObj))
+    }.catch {
+        emit(Result.Failure(it))
     }
 
     actual suspend fun importFromHTMLString(): Flow<Result<String>> = flow {
@@ -350,6 +353,8 @@ actual class FileManager(
 
         emit(Result.Loading(message = "Reading the file"))
         emit(Result.Success(importContent))
+    }.catch {
+        emit(Result.Failure(it))
     }
 
     actual suspend fun getSyncServerCertificate(
