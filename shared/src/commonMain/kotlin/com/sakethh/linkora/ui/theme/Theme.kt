@@ -96,9 +96,8 @@ fun LinkoraTheme(
     )
 }
 
-
 @Composable
-fun PreviewTheme(composableContent: ComposableContent) {
+fun PreviewTheme(platform: Platform, composableContent: ComposableContent) {
     LinkoraTheme(
         colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme(),
         preferredFont = Font.POPPINS
@@ -108,10 +107,11 @@ fun PreviewTheme(composableContent: ComposableContent) {
                 LocalizedStrings(emptyMap())
             },
             LocalNavController provides rememberNavController(),
-            LocalPlatform provides Platform.Android.Mobile,
+            LocalPlatform provides platform,
             LocalFabController provides retain {
                 FabStateController()
-            }) {
+            }
+        ) {
             composableContent()
         }
     }
