@@ -247,6 +247,7 @@ dependencies {
     add("kspWasmJs", libs.androidx.room3.compiler)
     add("kspAndroid", libs.androidx.room3.compiler)
     add("kspDesktop", libs.androidx.room3.compiler)
+    androidRuntimeClasspath(libs.compose.uiTooling)
 }
 
 allprojects {
