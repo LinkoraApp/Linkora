@@ -13,7 +13,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.net.URI
-import kotlin.compareTo
 
 fun String.isAllowedByWebCapturePolicies(
     whitelist: List<String>,
@@ -42,27 +41,31 @@ suspend fun DocumentFile.prepareWebCaptureFolder(
     maxVersions: Int,
 ): DocumentFile? {
     return withContext(Dispatchers.IO) {
-        val linkWebCaptureFolder = this@prepareWebCaptureFolder.findFile(folderUuid)
+        val existingFolder = this@prepareWebCaptureFolder.findFile(folderUuid)
+
         if (!saveAsVersions) {
-            if (linkWebCaptureFolder != null && linkWebCaptureFolder.exists()) {
-                linkWebCaptureFolder.delete()
+            if (existingFolder != null && existingFolder.exists()) {
+                existingFolder.listFiles().forEach { it.delete() }
+                return@withContext existingFolder
             }
-            return@withContext linkWebCaptureFolder?.createDirectory(folderUuid)
+            return@withContext this@prepareWebCaptureFolder.createDirectory(folderUuid)
         } else {
-            if (linkWebCaptureFolder == null || !linkWebCaptureFolder.exists()) {
-                linkWebCaptureFolder?.createDirectory(folderUuid)
+            val targetFolder = if (existingFolder == null || !existingFolder.exists()) {
+                this@prepareWebCaptureFolder.createDirectory(folderUuid)
+            } else {
+                existingFolder
             }
-            if (!retainAllVersions) {
-                val existingFiles = linkWebCaptureFolder?.listFiles()
-                    ?.filter { it.isFile }
-                    ?.sortedBy { it.lastModified() }
-                    .orEmpty()
+
+            if (!retainAllVersions && targetFolder != null) {
+                val existingFiles = targetFolder.listFiles()
+                    .filter { it.isFile }
+                    .sortedBy { it.lastModified() }
                 if (existingFiles.size >= maxVersions) {
                     existingFiles.take(existingFiles.size - maxVersions + 1)
                         .forEach { it.delete() }
                 }
             }
-            return@withContext linkWebCaptureFolder
+            return@withContext targetFolder
         }
     }
 }

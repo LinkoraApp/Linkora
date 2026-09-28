@@ -260,6 +260,7 @@ actual class NativeUtils(
             "${WebCaptureDatabase.NAME}.db-wal",
             "${WebCaptureDatabase.NAME}.db-shm",
             "${WebCaptureDatabase.NAME}.db.lck",
+            "${WebCaptureDatabase.NAME}.db-journal",
         )
 
         private suspend fun checkAndFixDBPermissions(
