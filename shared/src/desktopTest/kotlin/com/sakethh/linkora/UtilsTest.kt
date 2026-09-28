@@ -4,6 +4,7 @@ import com.sakethh.linkora.data.local.repository.LocalLinksRepoImpl
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.model.ScrapedLinkInfo
 import com.sakethh.linkora.utils.replaceActual
+import io.ktor.client.HttpClient
 import io.ktor.http.ContentType
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.ApplicationEngine
@@ -91,15 +92,57 @@ class UtilsTest {
                             ContentType.Text.Html,
                         )
                     }
+                    get("/nevergonnagiveyouup") {
+                        call.respondText(
+                            """
+                            <html>
+                                <head>
+                                <title>Never gonna say goodbye</title>
+                                    <meta property="og:title" content="Never gonna run around and desert you">
+                                    <meta property="og:image" content="Never gonna tell a lie and hurt you">
+                                </head>
+                                <body></body>
+                            </html>
+                            """.trimIndent(),
+                            ContentType.Text.Html,
+                        )
+                    }
+                    get("/nevergonnaletyoudown") {
+                        call.respondText(
+                            """
+                            <html>
+                                <head>
+                                <title>Never gonna say goodbye</title>
+                                    <meta property="og:image" content="You know the rules and so do I">
+                                </head>
+                                <body></body>
+                            </html>
+                            """.trimIndent(),
+                            ContentType.Text.Html,
+                        )
+                    }
                 }
             }.start(wait = false).engine
         }
     }
 
+    private val appPreferences = AppPreferences()
+    private val localLinksRepoImpl = LocalLinksRepoImpl(
+        linksDao = mockk(),
+        primaryUserAgent = { appPreferences.primaryJsoupUserAgent },
+        proxyUrl = { appPreferences.proxyUrl },
+        standardClient = HttpClient(),
+        remoteLinksRepo = mockk(),
+        foldersDao = mockk(),
+        pendingSyncQueueRepo = mockk(),
+        preferencesRepository = mockk(),
+        tagsDao = mockk(),
+        webCapture = mockk(),
+    )
+
     @Test
     fun `html parsing should return valid meta info`() = runTest {
         val retrievalJobs = mutableListOf<Job>()
-        val appPreferences = AppPreferences()
 
         listOf(
             "http://127.0.0.1:$masterPort/mockk" to ScrapedLinkInfo(
@@ -118,21 +161,18 @@ class UtilsTest {
                 title = "Modal Soul by Nujabes",
                 imgUrl = "https://images.genius.com/7f62b49d9becfdf686ce707a1e77a841.873x873x1.png",
             ),
+            "http://127.0.0.1:$masterPort/nevergonnagiveyouup" to ScrapedLinkInfo(
+                title = "Never gonna run around and desert you",
+                imgUrl = "Never gonna tell a lie and hurt you",
+            ),
+            "http://127.0.0.1:$masterPort/nevergonnaletyoudown" to ScrapedLinkInfo(
+                title = "Never gonna say goodbye",
+                imgUrl = "You know the rules and so do I",
+            ),
         ).forEach { (linkUrl, expectedInfo) ->
             retrievalJobs.add(
                 launch {
-                    val scrapedInfo = LocalLinksRepoImpl(
-                        linksDao = mockk(),
-                        primaryUserAgent = { appPreferences.primaryJsoupUserAgent },
-                        proxyUrl = { appPreferences.proxyUrl },
-                        standardClient = mockk(),
-                        remoteLinksRepo = mockk(),
-                        foldersDao = mockk(),
-                        pendingSyncQueueRepo = mockk(),
-                        preferencesRepository = mockk(),
-                        tagsDao = mockk(),
-                        webCapture = mockk(),
-                    ).scrapeLinkData(
+                    val scrapedInfo = localLinksRepoImpl.scrapeLinkData(
                         linkUrl = linkUrl,
                         userAgent = "Twitterbot/1.0",
                     )

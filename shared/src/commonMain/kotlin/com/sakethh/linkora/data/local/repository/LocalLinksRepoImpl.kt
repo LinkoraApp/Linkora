@@ -1,7 +1,7 @@
 package com.sakethh.linkora.data.local.repository
 
-import com.fleeksoft.ksoup.Ksoup
-import com.fleeksoft.ksoup.network.parseGetRequest
+import com.fleeksoft.ksoup.parser.Parser
+import com.fleeksoft.ksoup.parser.StreamParser
 import com.sakethh.linkora.data.local.dao.FoldersDao
 import com.sakethh.linkora.data.local.dao.LinksDao
 import com.sakethh.linkora.data.local.dao.TagsDao
@@ -32,7 +32,6 @@ import com.sakethh.linkora.domain.repository.remote.RemoteLinksRepo
 import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.PlatformIODispatcher
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
-import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Sorting
 import com.sakethh.linkora.utils.canPushToServer
 import com.sakethh.linkora.utils.defaultFolderIds
@@ -50,6 +49,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.userAgent
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -250,7 +250,8 @@ class LocalLinksRepoImpl(
         }
     }
 
-    override suspend fun addMultipleLinks(links: List<Link>): List<Long> = linksDao.addMultipleLinks(links)
+    override suspend fun addMultipleLinks(links: List<Link>): List<Long> =
+        linksDao.addMultipleLinks(links)
 
     override suspend fun getLinks(
         linkType: LinkType,
@@ -333,7 +334,8 @@ class LocalLinksRepoImpl(
         sortOption: String,
     ): Flow<List<Link>> = linksDao.getSortedLinks(linkType, sortOption)
 
-    override suspend fun getAllLinks(sortOption: String): Flow<Result<List<Link>>> = linksDao.getAllLinks(sortOption).mapToResultFlow()
+    override suspend fun getAllLinks(sortOption: String): Flow<Result<List<Link>>> =
+        linksDao.getAllLinks(sortOption).mapToResultFlow()
 
     private suspend fun retrieveFromProxy(url: String): ScrapedLinkInfo {
         val proxyResponse = standardClient.get(
@@ -372,7 +374,9 @@ class LocalLinksRepoImpl(
     override suspend fun scrapeLinkData(
         linkUrl: String,
         userAgent: String,
-    ): ScrapedLinkInfo {
+    ): ScrapedLinkInfo = withContext(PlatformIODispatcher) {
+        val streamParser = StreamParser(Parser.htmlParser())
+
         val baseUrl: String
         try {
             baseUrl = linkUrl.host()
@@ -381,66 +385,68 @@ class LocalLinksRepoImpl(
             throw Link.Invalid()
         }
 
-        val rawHTML = withContext(PlatformIODispatcher) {
-            Ksoup.parseGetRequest(
-                (
-                        "http" + linkUrl.substringAfter("http").substringBefore(" ")
-                            .trim()
-                        ).also { linkUrl ->
-                        linkoraLog("scrapeLinkData for $linkUrl")
-                    },
-            ) {
-                this.userAgent(userAgent)
-                this.header("Accept", "text/html")
-                this.header("Accept-Language", "en;q=1.0")
-                this.header("Connection", "keep-alive")
-            }.head()
-        }.toString()
+        val rawHTML = standardClient.get(urlString = linkUrl) {
+            this.userAgent(userAgent)
+            this.header("Accept", "text/html")
+            this.header("Accept-Language", "en;q=1.0")
+            this.header("Connection", "keep-alive")
+        }.bodyAsText()
 
-        val document = Ksoup.parse(rawHTML)
-        val ogImage = document.select("meta[property=og:image]").attr("content")
-        val twitterImage = document.select("meta[name=twitter:image]").attr("content")
-        val favicon = document.select("link[rel=icon]").attr("href")
-        val ogTitle = document.select("meta[property=og:title]").attr("content")
-        val pageTitle = document.title()
+        try {
+            // >The input is not read until a consuming operation is called.
+            streamParser.parse(html = rawHTML, baseUri = baseUrl)
 
-        val imgURL = when {
-            ogImage.isNotNullOrNotBlank() -> {
-                if (ogImage.startsWith("/")) {
-                    "https://$baseUrl$ogImage"
-                } else {
-                    ogImage
+            val head =
+                streamParser.selectNext("head") ?: return@withContext ScrapedLinkInfo.EMPTY
+
+            val ogImage = head.select("meta[property=og:image]").attr("content")
+            val twitterImage = head.select("meta[name=twitter:image]").attr("content")
+            val favicon = head.select("link[rel=icon]").attr("href")
+            val ogTitle = head.select("meta[property=og:title]").attr("content")
+            val pageTitle = head.selectFirst("title")?.text() ?: ""
+
+            val imgURL = when {
+                ogImage.isNotNullOrNotBlank() -> {
+                    if (ogImage.startsWith("/")) {
+                        "https://$baseUrl$ogImage"
+                    } else {
+                        ogImage
+                    }
                 }
-            }
 
-            ogImage.isBlank() && twitterImage.isNotNullOrNotBlank() -> if (twitterImage.startsWith(
-                    "/",
-                )
-            ) {
-                "https://$baseUrl$twitterImage"
-            } else {
-                twitterImage
-            }
-
-            ogImage.isBlank() && twitterImage.isBlank() && favicon.isNotNullOrNotBlank() -> {
-                if (favicon.startsWith("/")) {
-                    "https://$baseUrl$favicon"
+                ogImage.isBlank() && twitterImage.isNotNullOrNotBlank() -> if (twitterImage.startsWith(
+                        "/",
+                    )
+                ) {
+                    "https://$baseUrl$twitterImage"
                 } else {
-                    favicon
+                    twitterImage
                 }
+
+                ogImage.isBlank() && twitterImage.isBlank() && favicon.isNotNullOrNotBlank() -> {
+                    if (favicon.startsWith("/")) {
+                        "https://$baseUrl$favicon"
+                    } else {
+                        favicon
+                    }
+                }
+
+                else -> ""
             }
 
-            else -> ""
-        }
+            val title = when {
+                ogTitle.isNotNullOrNotBlank() -> ogTitle
+                else -> pageTitle
+            }
 
-        val title = when {
-            ogTitle.isNotNullOrNotBlank() -> ogTitle
-            else -> pageTitle
+            return@withContext ScrapedLinkInfo(title, imgURL)
+        } finally {
+            streamParser.close()
         }
-        return ScrapedLinkInfo(title, imgURL)
     }
 
-    override suspend fun deleteLinksOfFolder(folderId: Long): Flow<Result<Unit>> = wrappedResultFlow {
+    override suspend fun deleteLinksOfFolder(folderId: Long): Flow<Result<Unit>> =
+        wrappedResultFlow {
             linksDao.deleteLinksOfFolder(folderId)
         }
 
@@ -695,7 +701,8 @@ class LocalLinksRepoImpl(
         sortOption: String,
     ): Flow<Result<List<Link>>> = linksDao.search(query, sortOption).mapToResultFlow()
 
-    override suspend fun getLinksOfThisFolderAsList(folderID: Long): List<Link> = linksDao.getLinksOfThisFolderAsList(folderID)
+    override suspend fun getLinksOfThisFolderAsList(folderID: Long): List<Link> =
+        linksDao.getLinksOfThisFolderAsList(folderID)
 
     override suspend fun getAllLinks(): List<Link> = linksDao.getAllLinks()
 
@@ -881,9 +888,11 @@ class LocalLinksRepoImpl(
         }
     }
 
-    private suspend fun getRemoteIdOfLink(localLinkId: Long): Long? = linksDao.getRemoteId(localLinkId)
+    private suspend fun getRemoteIdOfLink(localLinkId: Long): Long? =
+        linksDao.getRemoteId(localLinkId)
 
-    override suspend fun getLocalLinkId(remoteID: Long): Long? = linksDao.getLocalIdOfALink(remoteID)
+    override suspend fun getLocalLinkId(remoteID: Long): Long? =
+        linksDao.getLocalIdOfALink(remoteID)
 
     override suspend fun getRemoteLinkId(localId: Long): Long? = linksDao.getRemoteId(localId)
 
@@ -1027,7 +1036,8 @@ class LocalLinksRepoImpl(
         )
     }
 
-    override suspend fun deleteLinksLocally(linksIds: List<Long>): Flow<Result<Unit>> = wrappedResultFlow {
+    override suspend fun deleteLinksLocally(linksIds: List<Long>): Flow<Result<Unit>> =
+        wrappedResultFlow {
             linksDao.deleteLinks(linksIds)
         }
 
