@@ -1,9 +1,5 @@
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 import groovy.json.JsonSlurper
-import org.gradle.internal.os.OperatingSystem
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
@@ -117,22 +113,22 @@ kotlin {
             implementation("com.composables:composeunstyled:1.49.6")
             implementation(project(":web-capture"))
         }
-/*
-        desktopMain.dependencies {
-            implementation(compose.desktop.currentOs)
-            implementation(libs.kotlinx.coroutines.swing)
-            implementation(libs.sqlite.bundled)
-            implementation(libs.ktor.client.java)
-            implementation(libs.androidx.datastore.preferences.core)
-        }
+        /*
+                desktopMain.dependencies {
+                    implementation(compose.desktop.currentOs)
+                    implementation(libs.kotlinx.coroutines.swing)
+                    implementation(libs.sqlite.bundled)
+                    implementation(libs.ktor.client.java)
+                    implementation(libs.androidx.datastore.preferences.core)
+                }
 
-        wasmJsMain.dependencies {
-            implementation(libs.ktor.client.js)
-            implementation(libs.kotlinx.serialization.json)
-            api(libs.androidx.sqlite.web)
-            implementation(npm("sqlite-wasm-worker", layout.projectDirectory.dir("worker").asFile))
-            implementation(libs.kotlinx.browser)
-        }*/
+                wasmJsMain.dependencies {
+                    implementation(libs.ktor.client.js)
+                    implementation(libs.kotlinx.serialization.json)
+                    api(libs.androidx.sqlite.web)
+                    implementation(npm("sqlite-wasm-worker", layout.projectDirectory.dir("worker").asFile))
+                    implementation(libs.kotlinx.browser)
+                }*/
 
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -298,7 +294,8 @@ val localizationGeneration =
             if (!generatedKeysFile.exists()) {
                 generatedKeysFile.createNewFile()
             }
-            val generatedStringsFile = File(localizationBuildDir.get().asFile, "LocalizedStrings.kt")
+            val generatedStringsFile =
+                File(localizationBuildDir.get().asFile, "LocalizedStrings.kt")
             if (!generatedStringsFile.exists()) {
                 generatedStringsFile.createNewFile()
             }
@@ -309,13 +306,7 @@ val localizationGeneration =
             enumBuilder.append("enum class LocalizationKey {")
             classBuilder.append(
                 """
-                import LocalizationKey
-
-                class LocalizedStrings(private val values: Map<String, String>) {
-
-                     private fun raw(key: LocalizationKey, defaultValue: String): String {
-                         return values[key.name] ?: defaultValue
-                     }
+                class LocalizedStrings(values: Map<String, String>) {
 
                      companion object {
                          val Default = LocalizedStrings(mapOf())
@@ -326,7 +317,9 @@ val localizationGeneration =
             localizationItems.forEach { (enumName, defaultValue) ->
                 enumBuilder.append("\n\t$enumName,")
                 val escapedDefaultValue = defaultValue.replace("\n", "\\n").replace("\"", "\\\"")
-                classBuilder.append("\n\n\tval $enumName = raw(LocalizationKey.$enumName, \"$escapedDefaultValue\")")
+                classBuilder.append(
+                    "\n\n\tval $enumName = values[\"$enumName\"].takeUnless { it.isNullOrBlank() } ?: \"$escapedDefaultValue\"",
+                )
             }
 
             enumBuilder.append("\n}")
