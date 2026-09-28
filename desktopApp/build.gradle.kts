@@ -56,11 +56,11 @@ compose.desktop {
             this.packageVersion = "1.0.20"
 
             windows {
-                this.iconFile.set(project.file("src/desktopMain/resources/logo.ico"))
+                this.iconFile.set(project.file("src/main/resources/logo.ico"))
             }
 
             linux {
-                this.iconFile.set(project.file("src/desktopMain/resources/logo.png"))
+                this.iconFile.set(project.file("src/main/resources/logo.png"))
             }
 
             modules("jdk.unsupported")
