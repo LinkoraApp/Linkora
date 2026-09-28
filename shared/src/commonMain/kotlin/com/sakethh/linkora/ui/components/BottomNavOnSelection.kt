@@ -2,7 +2,6 @@ package com.sakethh.linkora.ui.components
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,9 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.DriveFileMove
+import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentPaste
@@ -31,8 +30,10 @@ import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,6 +53,7 @@ import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.LocalizedStrings
+import com.sakethh.linkora.ui.components.menu.QuickActionItem
 import com.sakethh.linkora.ui.domain.AppAction
 import com.sakethh.linkora.ui.domain.TransferActionType
 import com.sakethh.linkora.ui.navigation.Navigation
@@ -59,6 +61,7 @@ import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM
 import com.sakethh.linkora.ui.theme.PreviewTheme
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
+import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.bottomNavPaddingAcrossPlatforms
 import com.sakethh.linkora.utils.defaultFolderIds
@@ -81,6 +84,24 @@ fun BottomNavOnSelection(
     val currentBackStackEntryState by localNavController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntryState?.destination
     val platform = LocalPlatform.current
+    val showUnArchiveBtn by remember {
+        derivedStateOf {
+            CollectionsScreenVM.selectedFoldersViaLongClick.any {
+                it.isArchived
+            } || CollectionsScreenVM.selectedLinkTagPairsViaLongClick.any {
+                it.link.linkType == LinkType.ARCHIVE_LINK
+            }
+        }
+    }
+    val showArchiveBtn by remember {
+        derivedStateOf {
+            CollectionsScreenVM.selectedLinkTagPairsViaLongClick.any {
+                it.link.linkType != LinkType.ARCHIVE_LINK
+            } || CollectionsScreenVM.selectedFoldersViaLongClick.any {
+                !it.isArchived
+            }
+        }
+    }
     Column(
         modifier = Modifier.fillMaxWidth().animateContentSize()
             .background(NavigationBarDefaults.containerColor).navigationBarsPadding(),
@@ -148,76 +169,53 @@ fun BottomNavOnSelection(
         if (!(CollectionsScreenVM.selectedFoldersViaLongClick.isNotEmpty() && currentFolder?.localId in defaultFolderIds().dropWhile {
                 it == Constants.ARCHIVE_ID
             })) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
+            Column(
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                if (transferActionType == TransferActionType.NONE || showPasteButton) {
-                    Text(
-                        text = localizedStrings.MultiActionsLabel,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(start = 15.dp),
-                    )
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.animateContentSize(),
-                ) {
-                    if (showPasteButton) {
-                        IconButton(
-                            onClick = {
-                                if (transferActionType == TransferActionType.COPY) {
-                                    performAction(
-                                        AppAction.CopySelectedItems(
-                                            folderId = currentFolder.localId,
-                                            onStart = showLoadingProgressBarOnTransferAction,
-                                            onCompletion = hideLoadingProgressBarOnTransferAction,
-                                        ),
-                                    )
-                                } else {
-                                    performAction(
-                                        AppAction.MoveSelectedItems(
-                                            folderId = currentFolder.localId,
-                                            onStart = showLoadingProgressBarOnTransferAction,
-                                            onCompletion = hideLoadingProgressBarOnTransferAction,
-                                        ),
-                                    )
-                                }
-                            },
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                .padding(end = 6.5.dp),
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ContentPaste,
-                                contentDescription = null,
-                            )
-                        }
-                        return@Row
-                    }
-                    if (transferActionType != TransferActionType.NONE) {
-                        return@Row
-                    }
-                    IconButton(
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                if (showPasteButton) {
+                    QuickActionItem(
+                        iconSize = 24.dp,
+                        shape = RoundedCornerShape(25.dp),
+                        modifier = Modifier.padding(7.5.dp).fillMaxWidth(),
                         onClick = {
-                            coroutineScope.pushUIEvent(UIEvent.Type.ShowDeleteDialogBox)
+                            if (transferActionType == TransferActionType.COPY) {
+                                performAction(
+                                    AppAction.CopySelectedItems(
+                                        folderId = currentFolder.localId,
+                                        onStart = showLoadingProgressBarOnTransferAction,
+                                        onCompletion = hideLoadingProgressBarOnTransferAction,
+                                    ),
+                                )
+                            } else {
+                                performAction(
+                                    AppAction.MoveSelectedItems(
+                                        folderId = currentFolder.localId,
+                                        onStart = showLoadingProgressBarOnTransferAction,
+                                        onCompletion = hideLoadingProgressBarOnTransferAction,
+                                    ),
+                                )
+                            }
                         },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = null,
-                        )
-                    }
-                    if (CollectionsScreenVM.selectedLinkTagPairsViaLongClick.any {
-                            it.link.linkType != LinkType.ARCHIVE_LINK
-                        } || CollectionsScreenVM.selectedFoldersViaLongClick.any {
-                            !it.isArchived
-                        }) {
-                        IconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                        text = localizedStrings.Paste,
+                        icon = Icons.Default.ContentPaste
+                    )
+                    return@Column
+                }
+                if (transferActionType != TransferActionType.NONE) {
+                    return@Column
+                }
+                Spacer(modifier = Modifier.height(7.5.dp))
+                Row(modifier = Modifier.padding(start = 7.5.dp, end = 7.5.dp).fillMaxWidth()) {
+                    if (showArchiveBtn) {
+                        QuickActionItem(
+                            iconSize = 24.dp,
+                            shape = RoundedCornerShape(
+                                topStart = 25.dp,
+                                bottomStart = 25.dp,
+                                topEnd = if (showUnArchiveBtn || platform is Platform.Android) 5.dp else 25.dp,
+                                bottomEnd = if (showUnArchiveBtn || platform is Platform.Android) 5.dp else 25.dp
+                            ),
+                            modifier = Modifier.weight(1f),
                             onClick = {
                                 performAction(
                                     AppAction.ArchiveSelectedItems(
@@ -226,20 +224,20 @@ fun BottomNavOnSelection(
                                     ),
                                 )
                             },
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Archive,
-                                contentDescription = null,
-                            )
-                        }
+                            text = localizedStrings.Archive,
+                            icon = Icons.Default.Archive
+                        )
                     }
-                    if (CollectionsScreenVM.selectedFoldersViaLongClick.any {
-                            it.isArchived
-                        } || CollectionsScreenVM.selectedLinkTagPairsViaLongClick.any {
-                            it.link.linkType == LinkType.ARCHIVE_LINK
-                        }) {
-                        IconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                    if (showUnArchiveBtn) {
+                        QuickActionItem(
+                            iconSize = 24.dp,
+                            shape = RoundedCornerShape(
+                                topStart = if (showArchiveBtn) 5.dp else 25.dp,
+                                bottomStart = if (showArchiveBtn) 5.dp else 25.dp,
+                                topEnd = if (platform is Platform.Android) 5.dp else 25.dp,
+                                bottomEnd = if (platform is Platform.Android) 5.dp else 25.dp
+                            ),
+                            modifier = Modifier.weight(1f),
                             onClick = {
                                 performAction(
                                     AppAction.MarkSelectedItemsAsRegular(
@@ -248,42 +246,20 @@ fun BottomNavOnSelection(
                                     ),
                                 )
                             },
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Unarchive,
-                                contentDescription = null,
-                            )
-                        }
-                    }
-                    IconButton(
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-                        onClick = {
-                            changeTransferActionType(TransferActionType.COPY)
-                        },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.CopyAll,
-                            contentDescription = null,
-                        )
-                    }
-                    IconButton(
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-                        onClick = {
-                            changeTransferActionType(TransferActionType.MOVE)
-                        },
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.DriveFileMove,
-                            contentDescription = null,
+                            text = localizedStrings.UnArchive,
+                            icon = Icons.Default.Unarchive
                         )
                     }
                     if (platform is Platform.Android) {
-                        Spacer(
-                            modifier = Modifier.height(20.dp).width(2.dp)
-                                .background(MaterialTheme.colorScheme.outline),
-                        )
-                        IconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                        QuickActionItem(
+                            iconSize = 24.dp,
+                            shape = RoundedCornerShape(
+                                topStart = if (showArchiveBtn || showUnArchiveBtn) 5.dp else 25.dp,
+                                bottomStart = if (showArchiveBtn || showUnArchiveBtn) 5.dp else 25.dp,
+                                topEnd = 25.dp,
+                                bottomEnd = 25.dp
+                            ),
+                            modifier = Modifier.weight(1f),
                             onClick = {
                                 LinkoraSDK.getInstance().nativeUtils.onShare(
                                     CollectionsScreenVM.selectedLinkTagPairsViaLongClick.joinToString(
@@ -293,13 +269,57 @@ fun BottomNavOnSelection(
                                     },
                                 )
                             },
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Share,
-                                contentDescription = null,
-                            )
-                        }
+                            text = localizedStrings.Share,
+                            icon = Icons.Default.Share
+                        )
                     }
+                }
+                Row(
+                    modifier = Modifier.padding(7.5.dp)
+                        .fillMaxWidth()
+                ) {
+                    QuickActionItem(
+                        iconSize = 24.dp,
+                        shape = RoundedCornerShape(
+                            topStart = 25.dp,
+                            bottomStart = 25.dp,
+                            topEnd = 5.dp,
+                            bottomEnd = 5.dp
+                        ),
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            changeTransferActionType(TransferActionType.COPY)
+                        },
+                        text = localizedStrings.Copy,
+                        icon = Icons.Default.CopyAll
+                    )
+
+                    QuickActionItem(
+                        iconSize = 24.dp,
+                        shape = RoundedCornerShape(5.dp),
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            coroutineScope.pushUIEvent(UIEvent.Type.ShowDeleteDialogBox)
+                        },
+                        text = localizedStrings.Delete,
+                        icon = Icons.Default.Delete
+                    )
+
+                    QuickActionItem(
+                        iconSize = 24.dp,
+                        shape = RoundedCornerShape(
+                            topStart = 5.dp,
+                            bottomStart = 5.dp,
+                            topEnd = 25.dp,
+                            bottomEnd = 25.dp
+                        ),
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            changeTransferActionType(TransferActionType.MOVE)
+                        },
+                        text = localizedStrings.Move,
+                        icon = Icons.AutoMirrored.Filled.DriveFileMove
+                    )
                 }
             }
         }
@@ -333,8 +353,7 @@ fun BottomNavOnSelection(
                         start = 15.dp,
                         end = 15.dp,
                         top = 5.dp,
-                        bottom = if (!showNavigateToCollectionScreen) 5.dp else 0.dp,
-                    ).highlightOnFocused(shape = ButtonDefaults.shape),
+                    ).highlightOnFocused(shape = ButtonDefaults.shape).pressScaleEffect(),
             ) {
                 Text(
                     text = localizedStrings.MarkSelectedFoldersAsRoot,

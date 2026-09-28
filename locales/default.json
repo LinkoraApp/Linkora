@@ -2090,5 +2090,13 @@
   {
     "key": "CouldntSaveSnapshotDueToLocationMismatch",
     "defaultValue": "Couldn't save snapshot as save location can't be retrieved"
+  },
+  {
+    "key": "Move",
+    "defaultValue": "Move"
+  },
+  {
+    "key": "Paste",
+    "defaultValue": "Paste"
   }
 ]

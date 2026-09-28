@@ -25,9 +25,11 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.ui.LocalPlatform
+import com.sakethh.linkora.ui.utils.pressScaleEffect
 
 @Composable
 fun QuickActionItem(
@@ -36,6 +38,7 @@ fun QuickActionItem(
     onClick: () -> Unit,
     text: String,
     icon: ImageVector,
+    iconSize: Dp = 26.dp
 ) {
     var hasFocus by rememberSaveable {
         mutableStateOf(false)
@@ -46,7 +49,7 @@ fun QuickActionItem(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
         onClick = onClick,
         modifier =
-            modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(start = 2.5.dp, end = 2.5.dp)
+            modifier.pressScaleEffect().pointerHoverIcon(icon = PointerIcon.Hand).padding(start = 2.5.dp, end = 2.5.dp)
                 .onFocusChanged { focusState ->
                     hasFocus = focusState.hasFocus
                 }
@@ -71,7 +74,7 @@ fun QuickActionItem(
                 imageVector = icon,
                 tint = MaterialTheme.colorScheme.onPrimary,
                 contentDescription = null,
-                modifier = Modifier.size(26.dp),
+                modifier = Modifier.size(iconSize),
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
