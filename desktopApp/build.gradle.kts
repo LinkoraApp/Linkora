@@ -29,7 +29,7 @@ dependencies {
     implementation(libs.androidx.room3.runtime)
     implementation(libs.kotlinx.coroutines.swing)
     implementation(libs.sqlite.bundled)
-    implementation(libs.ktor.client.java)
+    implementation(libs.ktor.client.cio)
     implementation(libs.androidx.datastore.preferences.core)
 
     implementation(project(":web-capture"))

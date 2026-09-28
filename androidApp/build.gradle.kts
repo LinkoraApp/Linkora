@@ -114,7 +114,7 @@ dependencies {
     implementation(libs.androidx.work.runtime)
     implementation(libs.sqlite.bundled)
     implementation(libs.androidx.documentfile)
-    implementation(libs.ktor.client.android)
+    implementation(libs.ktor.client.okhttp)
     implementation(libs.androidx.datastore.preferences.core)
     implementation(project(":shared"))
 }
