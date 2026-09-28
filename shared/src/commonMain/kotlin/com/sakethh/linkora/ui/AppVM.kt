@@ -416,7 +416,9 @@ class AppVM(
                 it.onSuccess {
                     pushUIEvent(
                         UIEvent.Type.ShowSnackbar(
-                            localizedStrings.ArchivedSuccessfully + it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
+                            localizedStrings.ArchivedSuccessfully + it.getRemoteOnlyFailureMsg(
+                                localizedStrings.RemoteExecutionFailed
+                            ),
                         ),
                     )
                 }
@@ -441,7 +443,9 @@ class AppVM(
                 it.onSuccess {
                     pushUIEvent(
                         UIEvent.Type.ShowSnackbar(
-                            localizedStrings.DeletedSuccessfully + it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
+                            localizedStrings.DeletedSuccessfully + it.getRemoteOnlyFailureMsg(
+                                localizedStrings.RemoteExecutionFailed
+                            ),
                         ),
                     )
                 }
@@ -462,7 +466,10 @@ class AppVM(
             foldersRepo.markFoldersAsRoot(selectedFoldersViaLongClick.toList().map { it.localId })
                 .collect()
         }.invokeOnCompletion {
-            clearAllSelections()
+            selectedFoldersViaLongClick.clear()
+            if (selectedLinkTagPairsViaLongClick.isEmpty()) {
+                clearAllSelections()
+            }
             onCompletion()
         }
     }
