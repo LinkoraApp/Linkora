@@ -1,0 +1,6 @@
+- Transfer actions now have proper labels with new UI instead of icon buttons
+- Folders/links/tags can be created during multi-selection
+- Transfer isn't marked complete after "Mark as Root folders" if links are selected
+- Download webpages for individual links from the menu sheet
+- Improved webpage CSS processing to use less memory; webpage-folders no longer get deleted if versions aren't saved
+- Titles and images are retrieved by streaming HTML

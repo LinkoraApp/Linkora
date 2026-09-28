@@ -53,7 +53,7 @@ compose.desktop {
 
             packageName = "Linkora"
             this.vendor = "Saketh Pathike"
-            this.packageVersion = "1.0.20"
+            this.packageVersion = "1.0.21"
 
             windows {
                 this.iconFile.set(project.file("src/main/resources/logo.ico"))
