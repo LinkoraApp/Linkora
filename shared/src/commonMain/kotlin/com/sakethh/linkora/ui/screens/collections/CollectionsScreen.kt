@@ -837,7 +837,9 @@ fun CollectionsScreen(
     }
     PlatformSpecificBackHandler {
         if (CollectionsScreenVM.isSelectionEnabled.value) {
-            CollectionsScreenVM.clearAllSelections()
+            coroutineScope.launch {
+                pushUIEvent(UIEvent.Type.ShowSnackbar(localizedStrings.FinishOrCancelTransferToNavigateBack))
+            }
         } else {
             navController.navigateUp()
         }

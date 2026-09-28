@@ -2098,5 +2098,9 @@
   {
     "key": "Paste",
     "defaultValue": "Paste"
+  },
+  {
+    "key": "FinishOrCancelTransferToNavigateBack",
+    "defaultValue": "Finish or cancel the transfer to navigate back"
   }
 ]
