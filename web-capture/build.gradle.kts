@@ -20,7 +20,13 @@ kotlin {
             namespace = "com.sakethh.linkora.web_capture"
             version = release(37)
         }
+
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
     }
+
     jvm("desktop") {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_21)
@@ -48,34 +54,6 @@ kotlin {
             }
         }
     }
-
-    /*android {
-        namespace = "com.sakethh.linkora.web_capture"
-        compileSdk =
-            libs.versions.android.compileSdk
-                .get()
-                .toInt()
-
-        defaultConfig {
-            minSdk =
-                libs.versions.android.minSdk
-                    .get()
-                    .toInt()
-        }
-        buildTypes {
-            release {
-                isMinifyEnabled = true
-                proguardFiles(
-                    getDefaultProguardFile("proguard-android-optimize.txt"),
-                    "proguard-rules.pro",
-                )
-            }
-        }
-    }
-
-    dependencies {
-        add("kspDesktop", libs.androidx.room3.compiler)
-    }*/
 }
 dependencies {
     add("kspDesktop", libs.androidx.room3.compiler)

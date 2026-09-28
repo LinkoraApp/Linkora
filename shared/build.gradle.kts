@@ -30,6 +30,11 @@ kotlin {
 
         // https://youtrack.jetbrains.com/issue/CMP-9547
         androidResources.enable = true
+
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
     }
 
     compilerOptions {
@@ -113,22 +118,6 @@ kotlin {
             implementation("com.composables:composeunstyled:1.49.6")
             implementation(project(":web-capture"))
         }
-        /*
-                desktopMain.dependencies {
-                    implementation(compose.desktop.currentOs)
-                    implementation(libs.kotlinx.coroutines.swing)
-                    implementation(libs.sqlite.bundled)
-                    implementation(libs.ktor.client.java)
-                    implementation(libs.androidx.datastore.preferences.core)
-                }
-
-                wasmJsMain.dependencies {
-                    implementation(libs.ktor.client.js)
-                    implementation(libs.kotlinx.serialization.json)
-                    api(libs.androidx.sqlite.web)
-                    implementation(npm("sqlite-wasm-worker", layout.projectDirectory.dir("worker").asFile))
-                    implementation(libs.kotlinx.browser)
-                }*/
 
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -149,95 +138,10 @@ kotlin {
 compose.resources {
     packageOfResClass = "com.sakethh.linkora.shared.generated.resources"
 }
+
 room3 {
     schemaDirectory("$projectDir/schemas")
 }
-
-/*
-android {
-    namespace = "com.sakethh.linkora"
-
-    compileSdk =
-        libs.versions.android.compileSdk
-            .get()
-            .toInt()
-
-    splits {
-        abi {
-            isEnable = true
-            reset()
-            include("arm64-v8a", "armeabi-v7a", "x86_64")
-            isUniversalApk = true
-        }
-    }
-
-    defaultConfig {
-        applicationId = "com.sakethh.linkora"
-
-        minSdk =
-            libs.versions.android.minSdk
-                .get()
-                .toInt()
-
-        targetSdk =
-            libs.versions.android.targetSdk
-                .get()
-                .toInt()
-
-        versionCode = 55
-        versionName = "0.21.0"
-    }
-
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
-            )
-        }
-
-        debug {
-            applicationIdSuffix = ".debug"
-            versionNameSuffix = "-debug"
-        }
-
-        register("preview") {
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
-            )
-            applicationIdSuffix = ".preview"
-            versionNameSuffix = "-preview"
-            matchingFallbacks += listOf("release", "debug")
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-
-    sourceSets["main"].res.srcDirs(
-        "src/commonMain/resources",
-        "src/androidMain/resources",
-    )
-
-    dependenciesInfo {
-        includeInApk = false
-        includeInBundle = false
-    }
-}
-*/
 
 dependencies {
     add("kspWasmJs", libs.androidx.room3.compiler)
