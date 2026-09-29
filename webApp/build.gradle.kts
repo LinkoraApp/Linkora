@@ -80,10 +80,10 @@ allprojects {
         if (name.contains("wasm", ignoreCase = true)) {
             resolutionStrategy {
                 force(
-                    "org.jetbrains.kotlin:kotlin-stdlib:2.3.10",
-                    "org.jetbrains.kotlin:kotlin-stdlib-wasm-js:2.3.10",
-                    "org.jetbrains.kotlin:kotlin-stdlib-js:2.3.10",
-                    "org.jetbrains.kotlin:kotlin-stdlib-common:2.3.10",
+                    "org.jetbrains.kotlin:kotlin-stdlib:2.4.20",
+                    "org.jetbrains.kotlin:kotlin-stdlib-wasm-js:2.4.20",
+                    "org.jetbrains.kotlin:kotlin-stdlib-js:2.4.20",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:2.4.20",
                 )
             }
         }

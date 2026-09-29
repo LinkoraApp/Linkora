@@ -4,11 +4,11 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 plugins {
-    kotlin("multiplatform") version "2.3.10"
+    kotlin("multiplatform") version "2.4.20"
     alias(libs.plugins.androidKMPLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    kotlin("plugin.serialization") version "2.3.10"
+    kotlin("plugin.serialization") version "2.4.20"
     alias(libs.plugins.ksp)
     id("androidx.room3")
     id("com.mikepenz.aboutlibraries.plugin")
@@ -48,7 +48,14 @@ kotlin {
     }
 
     wasmJs {
-        browser()
+        browser {
+            testTask {
+                useKarma {
+                    useFirefox()
+                }
+            }
+        }
+        binaries.executable()
     }
 
     sourceSets {
@@ -128,7 +135,7 @@ kotlin {
 
         desktopTest.dependencies {
             implementation(libs.mockk)
-            implementation(libs.kotlinx.coroutines.test.v1110)
+            implementation(libs.kotlinx.coroutines.test)
             implementation(libs.ktor.server.core)
             implementation(libs.ktor.server.cio)
             implementation(libs.sqlite.bundled)
@@ -155,10 +162,10 @@ allprojects {
         if (name.contains("wasm", ignoreCase = true)) {
             resolutionStrategy {
                 force(
-                    "org.jetbrains.kotlin:kotlin-stdlib:2.3.10",
-                    "org.jetbrains.kotlin:kotlin-stdlib-wasm-js:2.3.10",
-                    "org.jetbrains.kotlin:kotlin-stdlib-js:2.3.10",
-                    "org.jetbrains.kotlin:kotlin-stdlib-common:2.3.10",
+                    "org.jetbrains.kotlin:kotlin-stdlib:2.4.20",
+                    "org.jetbrains.kotlin:kotlin-stdlib-wasm-js:2.4.20",
+                    "org.jetbrains.kotlin:kotlin-stdlib-js:2.4.20",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:2.4.20",
                 )
             }
         }
@@ -261,4 +268,12 @@ localizationGeneration.dependsOn(localizationVerification)
 tasks.withType<KotlinCompilationTask<*>>().configureEach {
     dependsOn(localizationVerification)
     dependsOn(localizationGeneration)
+}
+
+tasks.named("stabilityCheck") {
+    dependsOn("compileProductionExecutableKotlinWasmJs")
+    dependsOn("compileTestDevelopmentExecutableKotlinWasmJs")
+    dependsOn("compileTestKotlinDesktop")
+    dependsOn("compileTestKotlinWasmJs")
+    dependsOn("compileAndroidMain")
 }

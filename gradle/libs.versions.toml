@@ -13,21 +13,21 @@ androidx-material = "1.12.0"
 androidx-test-junit = "1.2.1"
 atomicfu = "0.33.0"
 coilCompose = "3.0.4"
-coilNetworkKtor3 = "3.4.0"
-compose-multiplatform = "1.10.3"
-datastorePreferencesCore = "1.1.1"
+coilNetworkKtor3 = "3.6.3"
+compose-multiplatform = "1.12.1"
+datastorePreferencesCore = "1.2.1"
 junit = "4.13.2"
-kapture = "1.2.0"
-kotlin = "2.3.10"
-kotlinx-coroutines = "1.9.0"
+kapture = "1.3.0"
+kotlin = "2.4.20"
+kotlinx-coroutines = "1.11.0"
 kotlinxBrowser = "0.5.0"
 kotlinxCoroutinesCoreVersion = "1.11.0"
-kotlinxCoroutinesTest = "1.10.2"
+kotlinxCoroutinesTest = "1.11.0"
 kotlinxCoroutinesTestVersion = "1.11.0"
-kotlinxDatetime = "0.7.1"
-kotlinxSerializationJson = "1.10.0"
+kotlinxDatetime = "0.8.0"
+kotlinxSerializationJson = "1.11.0"
 ksoupVersion = "0.2.6"
-ktorClientJs = "3.4.2"
+ktorClientJs = "3.6.0"
 ktorClientMock = "3.5.0"
 ktorServerCore = "3.5.1"
 ktorServerCio = "3.5.1"
@@ -37,27 +37,23 @@ material3Version = "1.11.0-alpha01"
 mockk = "1.14.9"
 navigationCompose = "2.9.0"
 ksp = "2.3.6"
-room = "3.0.1"
-sqlite = "2.7.0"
-sqliteAsync = "2.7.0"
+room = "3.0.3"
+sqlite = "2.7.1"
+sqliteAsync = "2.7.1"
 statelyConcurrency = "2.1.0"
 uiToolingPreview = "1.12.1"
-workRuntime = "2.10.0"
+workRuntime = "2.12.0"
 documentfile = "1.1.0"
 aboutLibraries = "13.1.0"
 assertk = "0.28.1"
-composeHotReload = "1.0.0"
+composeHotReload = "1.2.0"
 adaptive = "1.2.0"
-jetbrainsKotlinJvm = "2.3.10"
-androidBuiltInKotlin = "9.4.1"
-kotlinStdlib = "2.3.10"
+jetbrainsKotlinJvm = "2.4.20"
+kotlinStdlib = "2.4.20"
 runner = "1.7.0"
 core = "1.7.0"
 uiDesktop = "1.7.0"
 material3Desktop = "1.3.2"
-navigationComposeJvmstubs = "2.10.1"
-room3RuntimeJvm = "3.0.3"
-lifecycleRuntimeComposeDesktop = "2.11.0"
 coreKtx = "1.19.0"
 
 [libraries]
@@ -74,20 +70,11 @@ jetbrains-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-co
 jetbrains-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3Version" }
 kapture = { module = "io.github.sakethpathike:kapture", version.ref = "kapture" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
-kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
-junit = { group = "junit", name = "junit", version.ref = "junit" }
-androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
-androidx-test-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-junit" }
-androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidx-espresso-core" }
-androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
-androidx-material = { group = "com.google.android.material", name = "material", version.ref = "androidx-material" }
-androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidx-constraintlayout" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 androidx-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version.ref = "kotlinxBrowser" }
 kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
-kotlinx-coroutines-test-v1110 = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTestVersion" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 ksoup-network = { module = "com.fleeksoft.ksoup:ksoup-network", version.ref = "ksoupVersion" }
@@ -118,12 +105,8 @@ adaptive-core = { module = "org.jetbrains.compose.material3.adaptive:adaptive", 
 adaptive-layout = { module = "org.jetbrains.compose.material3.adaptive:adaptive-layout", version.ref = "adaptive" }
 adaptive-navigation = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation", version.ref = "adaptive" }
 ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
-kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlinStdlib" }
-androidx-runner = { group = "androidx.test", name = "runner", version.ref = "runner" }
-androidx-core = { group = "androidx.test", name = "core", version.ref = "core" }
-androidx-ui-desktop = { group = "androidx.compose.ui", name = "ui-desktop", version.ref = "uiDesktop" }
-androidx-material3-desktop = { group = "androidx.compose.material3", name = "material3-desktop", version.ref = "material3Desktop" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidKMPLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
@@ -131,7 +114,7 @@ composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose-mu
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-stability-analyzer = { id = "com.github.skydoves.compose.stability.analyzer", version = "0.6.5" }
+stability-analyzer = { id = "com.github.skydoves.compose.stability.analyzer", version = "0.15.0" }
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
 android-lint = { id = "com.android.lint", version.ref = "agp" }
