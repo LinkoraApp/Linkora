@@ -176,7 +176,8 @@ class DataSettingsScreenVM(
         }
     }
 
-    suspend fun isStoragePermissionGranted(): Boolean = permissionManager.isStorageAccessPermitted() is PermissionStatus.Granted
+    suspend fun isStoragePermissionGranted(): Boolean =
+        permissionManager.isStorageAccessPermitted() is PermissionStatus.Granted
 
     fun exportDataToAFile(
         platform: Platform,
@@ -289,10 +290,7 @@ class DataSettingsScreenVM(
     fun refreshAllLinks() {
         AppVM.pauseSnapshots = true
         viewModelScope.launch {
-            launch {
-                permissionManager.permittedToShowNotification()
-            }
-            launch {
+            if (permissionManager.permittedToShowNotification() is PermissionStatus.Granted) {
                 nativeUtils.onRefreshAllLinks(
                     localLinksRepo = linksRepo,
                     preferencesRepository = preferencesRepository,
@@ -314,12 +312,14 @@ class DataSettingsScreenVM(
         viewModelScope.launch {
             if (preferencesAsFlow.value.webCapturesLocation.isBlank() && platform !is Platform.Android.TV) return@launch
 
-            webCapture.onCaptureAllWebPages(
-                preferences = preferencesAsFlow.value,
-                localLinksRepo = linksRepo,
-                webCaptureRepo = webCaptureRepo,
-                webCapture = webCapture,
-            )
+            if (permissionManager.permittedToShowNotification() is PermissionStatus.Granted) {
+                webCapture.onCaptureAllWebPages(
+                    preferences = preferencesAsFlow.value,
+                    localLinksRepo = linksRepo,
+                    webCaptureRepo = webCaptureRepo,
+                    webCapture = webCapture,
+                )
+            }
         }
     }
 

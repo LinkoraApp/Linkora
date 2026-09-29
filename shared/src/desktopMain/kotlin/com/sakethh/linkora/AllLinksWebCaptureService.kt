@@ -12,6 +12,7 @@ import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.ui.screens.settings.section.data.OnGoingWebCaptureState
 import com.sakethh.linkora.utils.getOrCreateFolderUuid
 import getFileNameWithTimestamp
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -107,12 +108,20 @@ object AllLinksWebCaptureService {
                                 ExportLocationType.WEB_CAPTURE,
                             ),
                         )
+
                         withContext(Dispatchers.IO) {
                             captureFile.createNewFile()
-                            androidDesktopWebCapture.saveHTMLPage(
-                                url = link.url,
-                                filePath = captureFile.absolutePath,
-                            )
+                            try {
+                                androidDesktopWebCapture.saveHTMLPage(
+                                    url = link.url,
+                                    filePath = captureFile.absolutePath,
+                                )
+                            } catch (e: CancellationException) {
+                                captureFile.delete()
+                                throw e
+                            } catch (_: Exception) {
+                                captureFile.delete()
+                            }
                         }
 
                         emit(link.localId)

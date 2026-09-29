@@ -46,7 +46,7 @@ object RefreshAllLinksService {
                             localLinksRepo.refreshLinkMetadata(
                                 link,
                                 preferences.selectedLinkRefreshType,
-                                preferences.captureWhenRefreshAllLink,
+                                useWebCapture = false,
                             )
                         }
                         .catch { it.printStackTrace() }

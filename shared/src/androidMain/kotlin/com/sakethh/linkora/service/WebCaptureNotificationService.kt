@@ -34,7 +34,7 @@ class WebCaptureNotificationService(
         val notification =
             NotificationCompat.Builder(context, "1")
                 .setSmallIcon(R.drawable.notification_icon)
-                .setContentTitle("Downloading web captures")
+                .setContentTitle("Capturing web pages")
                 .setContentText(
                     "${webCaptureState.currentIteration} / ${webCaptureState.total} captured",
                 )
@@ -45,11 +45,11 @@ class WebCaptureNotificationService(
                 )
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setSilent(true)
-                /*TODO:.addAction(
-                    R.drawable.ic_stat_name,
+                .addAction(
+                    R.drawable.notification_icon,
                     "Cancel",
                     cancelCapturePendingIntent,
-                )*/
+                )
                 .build()
 
         notificationManager.notify(1, notification)

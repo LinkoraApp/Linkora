@@ -702,6 +702,8 @@ open class SettingsScreenViewModel(
 
     fun initWebCapture(preferences: AppPreferences, onCompletion: () -> Unit) {
         viewModelScope.launch {
+            if (permissionManager.permittedToShowNotification() !is PermissionStatus.Granted) return@launch
+
             // both handle exceptions internally
             awaitAll(
                 async {

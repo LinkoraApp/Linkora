@@ -880,36 +880,7 @@ fun DataSettingsScreen() {
                                             )
                                         }
                                     }
-                                    if (preferences.useWebCaptures) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier.highlightOnFocused()
-                                                .clickable(onClick = {
-                                                    dataSettingsScreenVM.changeSettingPreferenceValue(
-                                                        preferenceKey = AppPreferences.CAPTURE_WHEN_REFRESH_ALL_LINK,
-                                                        newValue = !preferences.captureWhenRefreshAllLink,
-                                                    )
-                                                }, indication = null, interactionSource = null)
-                                                .pointerHoverIcon(
-                                                    PointerIcon.Hand,
-                                                ),
-                                        ) {
-                                            Checkbox(
-                                                checked = preferences.captureWhenRefreshAllLink,
-                                                onCheckedChange = {
-                                                    dataSettingsScreenVM.changeSettingPreferenceValue(
-                                                        preferenceKey = AppPreferences.CAPTURE_WHEN_REFRESH_ALL_LINK,
-                                                        newValue = it,
-                                                    )
-                                                },
-                                            )
-                                            Text(
-                                                text = localizedStrings.UseWebCaptures,
-                                                style = MaterialTheme.typography.titleSmall,
-                                            )
-                                        }
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                    }
+
                                     TextField(
                                         keyboardActions = KeyboardActions(onDone = {
                                             dataSettingsScreenVM.changeSettingPreferenceValue(

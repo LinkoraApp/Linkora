@@ -19,12 +19,14 @@ import com.sakethh.linkora.shared.R
 import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.ui.screens.settings.section.data.OnGoingWebCaptureState
+import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.createPOSIXOwnedFile
 import com.sakethh.linkora.utils.getDefaultFolder
 import com.sakethh.linkora.utils.getOrCreateFolderUuid
 import com.sakethh.linkora.utils.isAllowedByWebCapturePolicies
 import com.sakethh.linkora.utils.onTV
 import com.sakethh.linkora.utils.prepareWebCaptureFolder
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.asFlow
@@ -170,10 +172,16 @@ class AllLinksWebCaptureWorker(
                             ) ?: return@flow
                         }
 
-                        androidDesktopWebCapture.saveHTMLPage(
-                            url = link.url,
-                            filePath = captureFilePOSIXPath,
-                        )
+                        try {
+                            androidDesktopWebCapture.saveHTMLPage(
+                                url = link.url,
+                                filePath = captureFilePOSIXPath,
+                            )
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (_: Exception) {
+                            linkoraLog("processedWebpagesCount = threw")
+                        }
 
                         DependencyContainer.webCaptureRepo.insertAProcessedId(
                             CaptureTrack(
@@ -190,13 +198,16 @@ class AllLinksWebCaptureWorker(
                         cleanup()
                         cancel()
                     }
-                }.catch { it.printStackTrace() }.collect {
+                }.catch {
+                    linkoraLog("AllLinksWebCaptureWorker Crashed")
+                    it.printStackTrace()
+                }.collect {
                     processedCount++
                     DataSettingsScreenVM.onGoingWebCaptureState =
                         DataSettingsScreenVM.onGoingWebCaptureState.copy(currentIteration = processedCount)
                     webCaptureNotificationService.showNotification()
+                    linkoraLog("processedWebpagesCount = $processedCount")
                 }
-
             Result.success()
         } catch (e: Exception) {
             e.printStackTrace()
