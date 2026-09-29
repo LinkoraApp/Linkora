@@ -212,7 +212,6 @@ actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
         file: File,
         fileName: String,
     ) = withContext(Dispatchers.IO) {
-
         send(Result.Loading(message = "Starting data import from JSON file: $fileName"))
 
         val currentSystemEpochSeconds = getSystemEpochSeconds()
@@ -313,8 +312,7 @@ actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
         send(Result.Success(htmlStr))
     }
 
-    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> =
-        channelFlow {
+    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> = channelFlow {
             val importFile =
                 getFile(fileType = FileType.JSON, fileLocation = fileLocation)
                     ?: return@channelFlow send(

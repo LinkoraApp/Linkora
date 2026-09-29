@@ -78,7 +78,7 @@ class RefreshAllLinksWorker(
         linksProcessedChannel = Channel(Channel.BUFFERED)
         linksProcessedChannelJob = launch {
             linksProcessedChannel?.consumeAsFlow()?.cancellable()?.collect { refreshedLinkId ->
-                if (refreshedLinkId == SHUTDOWN_REFRESH_PROCESSING){
+                if (refreshedLinkId == SHUTDOWN_REFRESH_PROCESSING) {
                     linkoraLog("processedLinksCount = SHUTDOWN_REFRESH_PROCESSING")
                     cleanUp()
                     return@collect
@@ -132,9 +132,7 @@ class RefreshAllLinksWorker(
                     ).map { result ->
                         when (result) {
                             is com.sakethh.linkora.domain.Result.Failure -> link.localId
-
                             is com.sakethh.linkora.domain.Result.Loading -> -1
-
                             is com.sakethh.linkora.domain.Result.Success -> link.localId
                         }
                     }

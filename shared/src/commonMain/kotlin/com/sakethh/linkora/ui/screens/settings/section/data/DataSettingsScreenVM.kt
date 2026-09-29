@@ -176,8 +176,7 @@ class DataSettingsScreenVM(
         }
     }
 
-    suspend fun isStoragePermissionGranted(): Boolean =
-        permissionManager.isStorageAccessPermitted() is PermissionStatus.Granted
+    suspend fun isStoragePermissionGranted(): Boolean = permissionManager.isStorageAccessPermitted() is PermissionStatus.Granted
 
     fun exportDataToAFile(
         platform: Platform,

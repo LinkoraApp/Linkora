@@ -250,8 +250,7 @@ class LocalLinksRepoImpl(
         }
     }
 
-    override suspend fun addMultipleLinks(links: List<Link>): List<Long> =
-        linksDao.addMultipleLinks(links)
+    override suspend fun addMultipleLinks(links: List<Link>): List<Long> = linksDao.addMultipleLinks(links)
 
     override suspend fun getLinks(
         linkType: LinkType,
@@ -334,8 +333,7 @@ class LocalLinksRepoImpl(
         sortOption: String,
     ): Flow<List<Link>> = linksDao.getSortedLinks(linkType, sortOption)
 
-    override suspend fun getAllLinks(sortOption: String): Flow<Result<List<Link>>> =
-        linksDao.getAllLinks(sortOption).mapToResultFlow()
+    override suspend fun getAllLinks(sortOption: String): Flow<Result<List<Link>>> = linksDao.getAllLinks(sortOption).mapToResultFlow()
 
     private suspend fun retrieveFromProxy(url: String): ScrapedLinkInfo {
         val proxyResponse = standardClient.get(
@@ -445,8 +443,7 @@ class LocalLinksRepoImpl(
         }
     }
 
-    override suspend fun deleteLinksOfFolder(folderId: Long): Flow<Result<Unit>> =
-        wrappedResultFlow {
+    override suspend fun deleteLinksOfFolder(folderId: Long): Flow<Result<Unit>> = wrappedResultFlow {
             linksDao.deleteLinksOfFolder(folderId)
         }
 
@@ -701,8 +698,7 @@ class LocalLinksRepoImpl(
         sortOption: String,
     ): Flow<Result<List<Link>>> = linksDao.search(query, sortOption).mapToResultFlow()
 
-    override suspend fun getLinksOfThisFolderAsList(folderID: Long): List<Link> =
-        linksDao.getLinksOfThisFolderAsList(folderID)
+    override suspend fun getLinksOfThisFolderAsList(folderID: Long): List<Link> = linksDao.getLinksOfThisFolderAsList(folderID)
 
     override suspend fun getAllLinks(): List<Link> = linksDao.getAllLinks()
 
@@ -888,11 +884,9 @@ class LocalLinksRepoImpl(
         }
     }
 
-    private suspend fun getRemoteIdOfLink(localLinkId: Long): Long? =
-        linksDao.getRemoteId(localLinkId)
+    private suspend fun getRemoteIdOfLink(localLinkId: Long): Long? = linksDao.getRemoteId(localLinkId)
 
-    override suspend fun getLocalLinkId(remoteID: Long): Long? =
-        linksDao.getLocalIdOfALink(remoteID)
+    override suspend fun getLocalLinkId(remoteID: Long): Long? = linksDao.getLocalIdOfALink(remoteID)
 
     override suspend fun getRemoteLinkId(localId: Long): Long? = linksDao.getRemoteId(localId)
 
@@ -1036,8 +1030,7 @@ class LocalLinksRepoImpl(
         )
     }
 
-    override suspend fun deleteLinksLocally(linksIds: List<Long>): Flow<Result<Unit>> =
-        wrappedResultFlow {
+    override suspend fun deleteLinksLocally(linksIds: List<Long>): Flow<Result<Unit>> = wrappedResultFlow {
             linksDao.deleteLinks(linksIds)
         }
 
