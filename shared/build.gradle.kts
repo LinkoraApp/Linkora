@@ -226,6 +226,10 @@ val localizationGeneration =
             )
 
             localizationItems.forEach { (enumName, defaultValue) ->
+                require(!enumName.contains(" ")) {
+                    $$"key (\"$$enumName\") shouldn't have any spaces"
+                }
+
                 enumBuilder.append("\n\t$enumName,")
                 val escapedDefaultValue = defaultValue.replace("\n", "\\n").replace("\"", "\\\"")
                 classBuilder.append(
