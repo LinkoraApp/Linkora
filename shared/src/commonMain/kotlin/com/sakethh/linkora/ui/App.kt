@@ -911,9 +911,7 @@ fun App(modifier: Modifier = Modifier) {
                         )
                         Spacer(modifier = Modifier.height(7.5.dp))
                         Text(
-                            text =
-                                "Hey, you're using the sync server. I'm considering rewriting it in Rust since the current Java setup uses around 300 MB just sitting idle, and Rust gets that down to ~5 MB. " +
-                                        "Your input would help me figure out if it's worth the time.",
+                            text = localizedStrings.RSyncServerSurveyDesc,
                             fontSize = 16.sp,
                             style = MaterialTheme.typography.titleSmall,
                         )
@@ -947,7 +945,7 @@ fun App(modifier: Modifier = Modifier) {
                                     .fillMaxWidth(),
                         ) {
                             Text(
-                                text = "Take the survey",
+                                text = localizedStrings.RSyncServerSurveyTake,
                                 style = MaterialTheme.typography.titleMedium,
                             )
                         }
@@ -974,7 +972,7 @@ fun App(modifier: Modifier = Modifier) {
                                     .fillMaxWidth(),
                         ) {
                             Text(
-                                text = "Not Interested",
+                                text = localizedStrings.NotInterested,
                                 style = MaterialTheme.typography.titleMedium,
                             )
                         }

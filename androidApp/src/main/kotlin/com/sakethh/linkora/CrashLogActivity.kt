@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sakethh.linkora.di.DependencyContainer
+import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.theme.LinkoraTheme
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.AndroidConstants
@@ -54,9 +55,13 @@ class CrashLogActivity : ComponentActivity() {
 
         setContent {
             val localClipboardManager = LocalClipboardManager.current
+            val localizedStrings by retain {
+                // yeah
+                DependencyContainer.localizationRepo.localizedStrings
+            }.collectAsStateWithLifecycle()
             val crashLogs = retain {
                 intent?.getStringExtra(AndroidConstants.CRASH_LOG_KEY)
-                    ?: "Nothing found"
+                    ?: localizedStrings.NothingFound
             }
             val localContext = LocalContext.current
             val context = LocalContext.current
@@ -90,7 +95,7 @@ class CrashLogActivity : ComponentActivity() {
                                 Text(
                                     style = MaterialTheme.typography.titleMedium,
                                     fontSize = 16.sp,
-                                    text = "Copy Crash Log"
+                                    text = localizedStrings.CopyCrashLog
                                 )
                             }
                             Button(
@@ -112,7 +117,7 @@ class CrashLogActivity : ComponentActivity() {
                                     } catch (_: ActivityNotFoundException) {
                                         Toast.makeText(
                                             localContext,
-                                            "No email app found",
+                                            localizedStrings.EmailAppNotFound,
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     }
@@ -124,7 +129,7 @@ class CrashLogActivity : ComponentActivity() {
                                 Text(
                                     style = MaterialTheme.typography.titleMedium,
                                     fontSize = 16.sp,
-                                    text = "Report Crash"
+                                    text = localizedStrings.ReportCrash
                                 )
                             }
                         }
@@ -142,7 +147,7 @@ class CrashLogActivity : ComponentActivity() {
                             Text(
                                 fontSize = 24.sp,
                                 style = MaterialTheme.typography.titleLarge,
-                                text = "Linkora Crashed",
+                                text = localizedStrings.LinkoraCrashed,
                                 modifier = Modifier
                                     .padding(top = 25.dp)
                             )

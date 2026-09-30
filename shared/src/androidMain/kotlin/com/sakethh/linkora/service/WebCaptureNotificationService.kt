@@ -6,8 +6,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
+import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.shared.R
 import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
+import com.sakethh.linkora.utils.replaceActual
 import com.sakethh.linkora.worker.AllLinksWebCaptureWorker
 
 class WebCaptureNotificationService(
@@ -29,14 +31,19 @@ class WebCaptureNotificationService(
         notificationManager.cancelAll()
     }
 
+    private val localizedStrings = DependencyContainer.localizationRepo.localizedStrings
+
     fun showNotification() {
         val webCaptureState = DataSettingsScreenVM.onGoingWebCaptureState
         val notification =
             NotificationCompat.Builder(context, "1")
                 .setSmallIcon(R.drawable.notification_icon)
-                .setContentTitle("Capturing web pages")
+                .setContentTitle(localizedStrings.value.CapturingWebPages)
                 .setContentText(
-                    "${webCaptureState.currentIteration} / ${webCaptureState.total} captured",
+                    localizedStrings.value.CapturedCount.replaceActual(
+                        webCaptureState.currentIteration.toString(),
+                        webCaptureState.total.toString()
+                    )
                 )
                 .setProgress(
                     webCaptureState.total,
@@ -47,7 +54,7 @@ class WebCaptureNotificationService(
                 .setSilent(true)
                 .addAction(
                     R.drawable.notification_icon,
-                    "Cancel",
+                    localizedStrings.value.Cancel,
                     cancelCapturePendingIntent,
                 )
                 .build()

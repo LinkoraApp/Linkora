@@ -35,6 +35,7 @@ class WebCaptureWorker(
 ) : CoroutineWorker(appContext, workerParameters) {
 
     private val androidDesktopWebCapture = AndroidDesktopWebCapture()
+    private val localizedStrings = DependencyContainer.localizationRepo.localizedStrings
 
     companion object {
         const val LINK = "LINK"
@@ -91,7 +92,7 @@ class WebCaptureWorker(
         val captureWorkerId =
             inputData.getString(WORKER_ID) ?: return@coroutineScope Result.failure()
 
-        pushNotification(title = "Capturing...", description = url)
+        pushNotification(title = localizedStrings.value.Capturing, description = url)
 
         val webCaptureRepo = DependencyContainer.webCaptureRepo
 
@@ -174,12 +175,12 @@ class WebCaptureWorker(
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-            pushNotification(title = "Captured Successfully", description = url)
+            pushNotification(title = localizedStrings.value.CaptureSuccess, description = url)
             linkoraLog("Captured Successfully ($url)")
             if (isSuccess) Result.success() else Result.failure()
         } catch (e: Exception) {
             e.printStackTrace()
-            pushNotification(title = "Capturing Failed", description = url)
+            pushNotification(title = localizedStrings.value.CaptureFailed, description = url)
             linkoraLog("Capturing Failed ($url)")
             Result.failure()
         } finally {

@@ -2041,7 +2041,7 @@
   },
   {
     "key": "CapturingWebPages",
-    "defaultValue": "Capturing web pages"
+    "defaultValue": "Capturing web pages..."
   },
   {
     "key": "CapturedCount",
@@ -2106,5 +2106,53 @@
   {
     "key": "CaptureWebpage",
     "defaultValue": "Capture webpage"
+  },
+  {
+    "key": "RSyncServerSurveyDesc",
+    "defaultValue": "Hey, you're using the sync server. I'm considering rewriting it in Rust since the current Java setup uses around 300 MB just sitting idle, and Rust gets that down to ~5 MB.\nYour input would help me figure out if it's worth the time."
+  },
+  {
+    "key": "RSyncServerSurveyTake",
+    "defaultValue": "Take the survey"
+  },
+  {
+    "key": "NotInterested",
+    "defaultValue": "Not Interested"
+  },
+  {
+    "key": "NothingFound",
+    "defaultValue": "Nothing found"
+  },
+  {
+    "key": "CopyCrashLog",
+    "defaultValue": "Copy Crash Log"
+  },
+  {
+    "key": "ReportCrash",
+    "defaultValue": "Report Crash"
+  },
+  {
+    "key": "LinkoraCrashed",
+    "defaultValue": "Linkora Crashed"
+  },
+  {
+    "key": "EmailAppNotFound",
+    "defaultValue": "No email app found"
+  },
+  {
+    "key": "SelectWebCapturesDir",
+    "defaultValue": "Select Web-captures directory"
+  },
+  {
+    "key": "Capturing",
+    "defaultValue": "Capturing..."
+  },
+  {
+    "key": "CaptureFailed",
+    "defaultValue": "Capturing Failed"
+  },
+  {
+    "key": "CaptureSuccess",
+    "defaultValue": "Captured Successfully"
   }
 ]

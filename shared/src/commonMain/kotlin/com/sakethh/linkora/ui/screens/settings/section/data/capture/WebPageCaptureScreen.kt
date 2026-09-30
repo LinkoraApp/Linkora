@@ -174,7 +174,7 @@ fun WebPageCaptureScreen() {
                         readOnly = platform is Platform.Android,
                         label = {
                             Text(
-                                text = "Select Web-captures directory",
+                                text = localizedStrings.SelectWebCapturesDir,
                                 style = MaterialTheme.typography.titleMedium,
                                 textAlign = TextAlign.Start,
                             )
