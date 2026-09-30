@@ -3,6 +3,7 @@ package com.sakethh.linkora.worker
 import AndroidDesktopWebCapture
 import android.content.Context
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.CoroutineWorker
@@ -15,6 +16,7 @@ import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.model.CaptureTrack
 import com.sakethh.linkora.shared.R
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
+import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.createPOSIXOwnedFile
 import com.sakethh.linkora.utils.getDefaultFolder
 import com.sakethh.linkora.utils.getOrCreateFolderUuid
@@ -41,9 +43,24 @@ class WebCaptureWorker(
 
     override suspend fun getForegroundInfo(): ForegroundInfo = ForegroundInfo(
         1,
-        NotificationCompat.Builder(applicationContext, "1").setSmallIcon(R.drawable.notification_icon)
+        NotificationCompat.Builder(applicationContext, "1")
+            .setSmallIcon(R.drawable.notification_icon)
             .build(),
     )
+
+    private fun pushNotification(title: String, description: String) {
+        val notification = NotificationCompat.Builder(applicationContext, "1")
+            .setSmallIcon(R.drawable.notification_icon).setContentTitle(title)
+            .setContentText(description).setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+            .build()
+
+        try {
+            NotificationManagerCompat.from(applicationContext).notify(2, notification)
+        } catch (e: SecurityException) {
+            e.printStackTrace()
+        }
+    }
 
     override suspend fun doWork(): Result = coroutineScope {
         val preferences = DependencyContainer.preferencesRepo.getPreferences()
@@ -73,6 +90,8 @@ class WebCaptureWorker(
         val url = inputData.getString(LINK) ?: return@coroutineScope Result.failure()
         val captureWorkerId =
             inputData.getString(WORKER_ID) ?: return@coroutineScope Result.failure()
+
+        pushNotification(title = "Capturing...", description = url)
 
         val webCaptureRepo = DependencyContainer.webCaptureRepo
 
@@ -155,10 +174,13 @@ class WebCaptureWorker(
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-
+            pushNotification(title = "Captured Successfully", description = url)
+            linkoraLog("Captured Successfully ($url)")
             if (isSuccess) Result.success() else Result.failure()
         } catch (e: Exception) {
             e.printStackTrace()
+            pushNotification(title = "Capturing Failed", description = url)
+            linkoraLog("Capturing Failed ($url)")
             Result.failure()
         } finally {
             if (isActive) {

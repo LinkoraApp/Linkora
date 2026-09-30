@@ -1529,7 +1529,7 @@
   },
   {
     "key": "NotificationPermissionDesc",
-    "defaultValue": "Linkora needs notification permission to display sync progress, link refreshes, and auto-save status."
+    "defaultValue": "Linkora needs notification permission for sync progress, link refreshes, web-capture, and auto-save status."
   },
   {
     "key": "NoPanelsFound",

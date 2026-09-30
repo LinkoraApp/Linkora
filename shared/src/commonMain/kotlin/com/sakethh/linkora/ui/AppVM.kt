@@ -14,7 +14,9 @@ import com.sakethh.linkora.KaptureOptions
 import com.sakethh.linkora.data.local.repository.SnapshotRepoImpl
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.AppPreferences
+import com.sakethh.linkora.domain.HostOS
 import com.sakethh.linkora.domain.LinkType
+import com.sakethh.linkora.domain.PermissionStatus
 import com.sakethh.linkora.domain.PreferenceKey
 import com.sakethh.linkora.domain.SyncServerRoute
 import com.sakethh.linkora.domain.asLinkType
@@ -36,6 +38,7 @@ import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
 import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.PermissionManager
+import com.sakethh.linkora.platform.hostOS
 import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
 import com.sakethh.linkora.ui.domain.AppAction
 import com.sakethh.linkora.ui.domain.TransferActionType
@@ -59,7 +62,6 @@ import com.sakethh.linkora.utils.pushSnackbarOnFailure
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.channelFlow
@@ -69,7 +71,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 
-@OptIn(FlowPreview::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 class AppVM(
     private val density: Density,
     private val remoteSyncRepo: RemoteSyncRepo,
@@ -79,7 +81,7 @@ class AppVM(
     private val foldersRepo: LocalFoldersRepo,
     private val localMultiActionRepo: LocalMultiActionRepo,
     private val localPanelsRepo: LocalPanelsRepo,
-    permissionManager: PermissionManager,
+    private val permissionManager: PermissionManager,
     private val fileManager: FileManager,
     private val dataSyncingNotificationService: NativeUtils.DataSyncingNotificationService,
     private val snapshotRepo: SnapshotRepo,
@@ -316,6 +318,8 @@ class AppVM(
 
     fun downloadWebpage(link: String) {
         viewModelScope.launch {
+            if (hostOS == HostOS.Android && permissionManager.permittedToShowNotification() == PermissionStatus.NeedsRequest) return@launch
+
             webCapture.saveHTMLPage(preferencesAsFlow.value.webCapturesLocation, link)
         }
     }
