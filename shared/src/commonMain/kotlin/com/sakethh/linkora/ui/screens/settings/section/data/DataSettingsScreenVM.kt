@@ -289,13 +289,13 @@ class DataSettingsScreenVM(
     fun refreshAllLinks() {
         AppVM.pauseSnapshots = true
         viewModelScope.launch {
-            if (permissionManager.permittedToShowNotification() is PermissionStatus.Granted) {
-                nativeUtils.onRefreshAllLinks(
-                    localLinksRepo = linksRepo,
-                    preferencesRepository = preferencesRepository,
-                    refreshLinksRepo = refreshLinksRepo,
-                )
-            }
+            if (platform is Platform.Android && permissionManager.permittedToShowNotification() is PermissionStatus.NeedsRequest) return@launch
+
+            nativeUtils.onRefreshAllLinks(
+                localLinksRepo = linksRepo,
+                preferencesRepository = preferencesRepository,
+                refreshLinksRepo = refreshLinksRepo,
+            )
         }.invokeOnCompletion {
             AppVM.pauseSnapshots = false
         }
@@ -310,15 +310,14 @@ class DataSettingsScreenVM(
     fun captureAllWebPages() {
         viewModelScope.launch {
             if (preferencesAsFlow.value.webCapturesLocation.isBlank() && platform !is Platform.Android.TV) return@launch
+            if (platform is Platform.Android && permissionManager.permittedToShowNotification() is PermissionStatus.NeedsRequest) return@launch
 
-            if (permissionManager.permittedToShowNotification() is PermissionStatus.Granted) {
-                webCapture.onCaptureAllWebPages(
-                    preferences = preferencesAsFlow.value,
-                    localLinksRepo = linksRepo,
-                    webCaptureRepo = webCaptureRepo,
-                    webCapture = webCapture,
-                )
-            }
+            webCapture.onCaptureAllWebPages(
+                preferences = preferencesAsFlow.value,
+                localLinksRepo = linksRepo,
+                webCaptureRepo = webCaptureRepo,
+                webCapture = webCapture,
+            )
         }
     }
 
