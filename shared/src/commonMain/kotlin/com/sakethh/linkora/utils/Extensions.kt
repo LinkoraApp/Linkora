@@ -201,24 +201,34 @@ fun <T> Flow<Result<T>>.catchAsExceptionAndEmitFailure(): Flow<Result<T>> = this
 
 fun String.replaceActual(vararg actuals: String): String {
     val finalStr = StringBuilder()
-    var currIteration = -1
-    while (currIteration < length - 1) {
-        val c1 = this[++currIteration]
-        if (currIteration + 1 < length && c1 == '>' && this[currIteration + 1] == '{') {
+    var currIteration = 0
+    while (currIteration < length) {
+        if (currIteration + 1 < length && this[currIteration] == '>' && this[currIteration + 1] == '{') {
             val closeTagIndex = indexOf('}', startIndex = currIteration)
             if (closeTagIndex != -1) {
-                val valueIndex =
+                val indexValue =
                     this.substring(startIndex = currIteration + 2, endIndex = closeTagIndex)
                         .toIntOrNull()
-                if (valueIndex != null && valueIndex >= 0 && valueIndex <= actuals.lastIndex) {
-                    finalStr.append(actuals[valueIndex])
-                    currIteration = closeTagIndex
-                    continue
+
+                if (indexValue != null && indexValue >= 0 && indexValue <= actuals.lastIndex) {
+                    finalStr.append(actuals[indexValue])
+                } else {
+                    finalStr.append(
+                        this,
+                        currIteration,
+                        closeTagIndex + 1
+                    ) // '}' is also appended with the rest of the invalid value
                 }
+                currIteration = closeTagIndex + 1
+            } else {
+                // at this point we don't have the closing tag at all,
+                // so append the rest of the string
+                finalStr.append(this, currIteration, length)
+                currIteration = length
             }
-            finalStr.append(c1)
         } else {
-            finalStr.append(c1)
+            finalStr.append(this[currIteration])
+            ++currIteration
         }
     }
     return finalStr.toString()
