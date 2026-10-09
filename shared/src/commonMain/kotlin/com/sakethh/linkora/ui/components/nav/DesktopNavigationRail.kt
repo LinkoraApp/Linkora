@@ -1,4 +1,4 @@
-package com.sakethh.linkora.ui.components
+package com.sakethh.linkora.ui.components.nav
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column

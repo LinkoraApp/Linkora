@@ -1,4 +1,4 @@
-package com.sakethh.linkora.ui.screens.collections.components
+package com.sakethh.linkora.ui.components.tag
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.PaddingValues
@@ -21,6 +21,7 @@ import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.menu.IndividualMenuComponent
 import com.sakethh.linkora.ui.components.menu.MenuNonImageHeader
+import com.sakethh.linkora.ui.screens.collections.components.ItemDivider
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import kotlinx.coroutines.launch

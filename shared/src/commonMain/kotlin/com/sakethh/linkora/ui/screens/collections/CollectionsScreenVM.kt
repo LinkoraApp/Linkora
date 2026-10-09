@@ -428,7 +428,7 @@ class CollectionsScreenVM(
         }
     }
 
-    fun deleteTheNote(
+    fun deleteFolderNote(
         folder: Folder,
         onCompletion: () -> Unit,
     ) {
@@ -449,7 +449,7 @@ class CollectionsScreenVM(
         }
     }
 
-    fun deleteTheNote(
+    fun deleteLinkNote(
         link: Link,
         onCompletion: () -> Unit,
     ) {

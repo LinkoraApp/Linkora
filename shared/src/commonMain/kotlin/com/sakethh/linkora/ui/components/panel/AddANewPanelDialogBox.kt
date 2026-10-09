@@ -1,4 +1,4 @@
-package com.sakethh.linkora.ui.components
+package com.sakethh.linkora.ui.components.panel
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
@@ -53,7 +53,7 @@ fun AddANewPanelDialogBox(addANewPanelParam: AddANewPanelParam) {
                 )
             },
             onDismissRequest = {
-                if (isInProgress.value.not()) {
+                if (!isInProgress.value) {
                     addANewPanelParam.isDialogBoxVisible.value = false
                 }
             },
@@ -107,7 +107,7 @@ fun AddANewPanelDialogBox(addANewPanelParam: AddANewPanelParam) {
                 }
             },
             dismissButton = {
-                if (isInProgress.value.not()) {
+                if (!isInProgress.value) {
                     OutlinedButton(
                         modifier =
                             Modifier.pointerHoverIcon(icon = PointerIcon.Hand)

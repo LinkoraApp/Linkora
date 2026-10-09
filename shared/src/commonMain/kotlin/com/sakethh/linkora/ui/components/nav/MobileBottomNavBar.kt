@@ -1,4 +1,4 @@
-package com.sakethh.linkora.ui.components
+package com.sakethh.linkora.ui.components.nav
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -23,12 +23,11 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -50,24 +49,18 @@ fun MobileBottomNavBar(
     onDoubleTap: (Navigation.Root) -> Unit,
 ) {
     val localNavController = LocalNavController.current
-    val mobileBottomNavBarVM: MobileBottomNavBarVM =
-        viewModel(
-            initializer = {
-                MobileBottomNavBarVM()
-            },
-        )
+    val mobileBottomNavBarUtils =
+        remember {
+            MobileBottomNavBarUtils()
+        }
     val currentBackStackEntryState by localNavController.currentBackStackEntryAsState()
     val navDestination = currentBackStackEntryState?.destination
     val inCollectionScreen = navDestination?.hasRoute<Navigation.Root.CollectionsScreen>() == true
     AnimatedVisibility(
         visible =
-        (
-            !inCollectionScreen ||
-                (inCollectionScreen && CollectionsScreenVM.inCollectionsListPane)
-            ) &&
-            !supportsWideDisplay() &&
-            inRootScreen == true &&
-            !CollectionsScreenVM.isSelectionEnabled.value,
+            (!inCollectionScreen || (inCollectionScreen && CollectionsScreenVM.inCollectionsListPane)) && !supportsWideDisplay() &&
+                    inRootScreen == true &&
+                    !CollectionsScreenVM.isSelectionEnabled.value,
         exit = slideOutVertically(targetOffsetY = { it }),
         enter = slideInVertically(initialOffsetY = { it }),
     ) {
@@ -77,10 +70,7 @@ fun MobileBottomNavBar(
             }
             NavigationBar {
                 rootRouteList.forEach { navRouteItem ->
-                    if (
-                        !preferences.isHomeScreenEnabled &&
-                        navRouteItem.toString() == Navigation.Root.HomeScreen.toString()
-                    ) {
+                    if (!preferences.isHomeScreenEnabled && navRouteItem.toString() == Navigation.Root.HomeScreen.toString()) {
                         return@forEach
                     }
 
@@ -89,7 +79,7 @@ fun MobileBottomNavBar(
                         modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
                         selected = isSelected,
                         onClick = {
-                            mobileBottomNavBarVM.incrementTapCount(
+                            mobileBottomNavBarUtils.tryDoubleTap(
                                 navRouteItem,
                                 onDoubleTapSucceeded = {
                                     onDoubleTap(navRouteItem)
@@ -108,8 +98,7 @@ fun MobileBottomNavBar(
                         },
                         icon = {
                             Icon(
-                                imageVector =
-                                if (isSelected) {
+                                imageVector = if (isSelected) {
                                     when (navRouteItem) {
                                         Navigation.Root.HomeScreen -> Icons.Filled.Home
                                         Navigation.Root.SearchScreen -> Icons.Filled.Search
@@ -144,16 +133,17 @@ fun MobileBottomNavBar(
     }
 }
 
-class MobileBottomNavBarVM : ViewModel() {
+class MobileBottomNavBarUtils {
 
     private var lastTapTime: Long = 0
     private var lastTappedRoute: Navigation.Root? = null
 
-    fun incrementTapCount(currentRoute: Navigation.Root, onDoubleTapSucceeded: () -> Unit) {
+    fun tryDoubleTap(
+        currentRoute: Navigation.Root,
+        onDoubleTapSucceeded: () -> Unit,
+    ) {
         val currentMilli = Clock.System.now().epochSeconds
-        if (
-            currentMilli - lastTapTime <= Constants.DOUBLE_TAP_DELAY && lastTappedRoute == currentRoute
-        ) {
+        if (currentMilli - lastTapTime <= Constants.DOUBLE_TAP_DELAY && lastTappedRoute == currentRoute) {
             onDoubleTapSucceeded()
             lastTapTime = 0
             lastTappedRoute = null
@@ -163,57 +153,57 @@ class MobileBottomNavBarVM : ViewModel() {
         }
     }
 
-  /* the "HARD" way (the "Rube Goldberg" way); idk why i do this
-      private val searchItemTapTimes = MutableStateFlow(0)
+    /* the "HARD" way (the "Rube Goldberg" way); idk why i do this
+        private val searchItemTapTimes = MutableStateFlow(0)
 
-      var tappedNavRoute: Navigation.Root = Navigation.Root.HomeScreen
+        var tappedNavRoute: Navigation.Root = Navigation.Root.HomeScreen
 
-      fun incrementTapCount(currentRoute: Navigation.Root) {
-          if (searchItemTapTimes.value >= 2) return
+        fun incrementTapCount(currentRoute: Navigation.Root) {
+            if (searchItemTapTimes.value >= 2) return
 
-          tappedNavRoute = currentRoute
-          ++searchItemTapTimes.value
-      }
+            tappedNavRoute = currentRoute
+            ++searchItemTapTimes.value
+        }
 
-      init {
-          viewModelScope.launch {
-              startWatchingForDoubleTap()
-          }
-      }
+        init {
+            viewModelScope.launch {
+                startWatchingForDoubleTap()
+            }
+        }
 
-      private var doubleTapJob: Job? = null
+        private var doubleTapJob: Job? = null
 
-      private fun CoroutineScope.startWatchingForDoubleTap() {
-          doubleTapJob?.cancel()
+        private fun CoroutineScope.startWatchingForDoubleTap() {
+            doubleTapJob?.cancel()
 
-          doubleTapJob = launch {
-              searchItemTapTimes.filter {
-                  it == 1
-              }.collect {
-                  handleSecondTapIfConfirmed()
-                  doubleTapJob?.cancel()
-              }
-          }
-      }
+            doubleTapJob = launch {
+                searchItemTapTimes.filter {
+                    it == 1
+                }.collect {
+                    handleSecondTapIfConfirmed()
+                    doubleTapJob?.cancel()
+                }
+            }
+        }
 
-      private var secondTapJob: Job? = null
-      fun handleSecondTapIfConfirmed() {
-          secondTapJob?.cancel()
+        private var secondTapJob: Job? = null
+        fun handleSecondTapIfConfirmed() {
+            secondTapJob?.cancel()
 
-          secondTapJob = viewModelScope.launch {
-              withTimeoutOrNull(500L) {
-                  searchItemTapTimes.first { it == 2 }
-              }.run {
-                  if (this != null) {
-                      onDoubleTapSucceeded(tappedNavRoute)
-                  }
-              }
-              searchItemTapTimes.value = 0
-          }.also {
-              it.invokeOnCompletion {
-                  viewModelScope.startWatchingForDoubleTap()
-              }
-          }
-      }
-   */
+            secondTapJob = viewModelScope.launch {
+                withTimeoutOrNull(500L) {
+                    searchItemTapTimes.first { it == 2 }
+                }.run {
+                    if (this != null) {
+                        onDoubleTapSucceeded(tappedNavRoute)
+                    }
+                }
+                searchItemTapTimes.value = 0
+            }.also {
+                it.invokeOnCompletion {
+                    viewModelScope.startWatchingForDoubleTap()
+                }
+            }
+        }
+     */
 }

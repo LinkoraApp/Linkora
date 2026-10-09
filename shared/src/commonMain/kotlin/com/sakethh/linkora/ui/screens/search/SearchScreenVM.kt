@@ -244,7 +244,7 @@ class SearchScreenVM(
     }
 
     fun toggleLinkFilter(filter: LinkType) {
-        if (_appliedLinkFilters.contains(filter).not()) {
+        if (!_appliedLinkFilters.contains(filter)) {
             _appliedLinkFilters.add(filter)
         } else {
             _appliedLinkFilters.remove(filter)

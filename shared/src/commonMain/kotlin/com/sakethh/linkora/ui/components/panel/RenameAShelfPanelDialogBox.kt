@@ -1,4 +1,4 @@
-package com.sakethh.linkora.ui.components
+package com.sakethh.linkora.ui.components.panel
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
@@ -39,7 +39,7 @@ fun RenameAShelfPanelDialogBox(
         }
         AlertDialog(
             onDismissRequest = {
-                if (isInProgress.value.not()) {
+                if (!isInProgress.value) {
                     isDialogBoxVisible.value = false
                 }
             },
@@ -99,7 +99,7 @@ fun RenameAShelfPanelDialogBox(
                 )
             },
             dismissButton = {
-                if (isInProgress.value.not()) {
+                if (!isInProgress.value) {
                     OutlinedButton(
                         modifier =
                             Modifier.pointerHoverIcon(icon = PointerIcon.Hand)

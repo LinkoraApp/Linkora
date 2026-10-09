@@ -39,7 +39,6 @@ import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.PermissionManager
 import com.sakethh.linkora.platform.hostOS
-import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
 import com.sakethh.linkora.ui.domain.AppAction
 import com.sakethh.linkora.ui.domain.TransferActionType
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
@@ -342,7 +341,7 @@ class AppVM(
             remoteSyncRepo: RemoteSyncRepo,
             preferences: AppPreferences,
         ) {
-            if (preferences.canReadFromServer().not()) return
+            if (!preferences.canReadFromServer()) return
 
             socketEventJob?.cancel()
             socketEventJob = coroutineScope.launch(
@@ -420,7 +419,9 @@ class AppVM(
             localMultiActionRepo.archiveMultipleItems(
                 linkIds = selectedLinkTagPairsViaLongClick.filter { it.link.linkType != LinkType.ARCHIVE_LINK }
                     .map { it.link.localId },
-                folderIds = selectedFoldersViaLongClick.filter { it.isArchived.not() }
+                folderIds =
+                    selectedFoldersViaLongClick
+                        .filter { !it.isArchived }
                     .map { it.localId },
             ).collectLatest {
                 it.onSuccess {
@@ -503,8 +504,12 @@ class AppVM(
     }
 
     val snackbarHostState = SnackbarHostState()
-    var showRenameDialogBox by mutableStateOf(false)
-    var showDeleteDialogBox by mutableStateOf(false)
+    var showLinkRenameDialogBox by mutableStateOf(false)
+    var showFolderRenameDialogBox by mutableStateOf(false)
+
+    var showLinkDeleteDialogBox by mutableStateOf(false)
+    var showFolderDeleteDialogBox by mutableStateOf(false)
+    var showDeleteAllSelectedItemsDialogBox by mutableStateOf(false)
 
     val menuBtmSheetState = SheetState(
         skipPartiallyExpanded = true,
@@ -544,7 +549,6 @@ class AppVM(
             tags = emptyList(),
         ),
     )
-    var showMenuSheet by mutableStateOf(false)
     var showAddLinkDialog by mutableStateOf(false)
     var showNewFolderDialog by mutableStateOf(false)
     var showSortingBtmSheet by mutableStateOf(false)
@@ -562,11 +566,11 @@ class AppVM(
         },
     )
 
-    var menuBtmSheetFor: MenuBtmSheetType by mutableStateOf(MenuBtmSheetType.Folder.RegularFolder)
-
     var selectedTagForBtmTagSheet by mutableStateOf(Tag(localId = 0, name = ""))
 
     var showMenuForTag by mutableStateOf(false)
+    var showMenuForFolder by mutableStateOf(false)
+    var showMenuForLink by mutableStateOf(false)
 
     var showBtmSheetForNewTagAddition by mutableStateOf(false)
 
@@ -580,22 +584,36 @@ class AppVM(
 
                     is UIEvent.Type.ShowAddANewFolderDialogBox -> showNewFolderDialog = true
 
-                    is UIEvent.Type.ShowAddANewLinkDialogBox -> showAddLinkDialog = true
-
-                    is UIEvent.Type.ShowDeleteDialogBox -> showDeleteDialogBox = true
-
-                    is UIEvent.Type.ShowMenuBtmSheet -> {
-                        menuBtmSheetFor = eventType.menuBtmSheetFor
-                        if (eventType.selectedFolderForMenuBtmSheet != null) {
-                            selectedFolderForMenuBtmSheet = eventType.selectedFolderForMenuBtmSheet
-                        }
-                        if (eventType.selectedLinkForMenuBtmSheet != null) {
-                            selectedLinkTagsForMenuBtmSheet = eventType.selectedLinkForMenuBtmSheet
-                        }
-                        showMenuSheet = true
+                    is UIEvent.Type.ShowAddANewLinkDialogBox -> {
+                        showAddLinkDialog = true
                     }
 
-                    is UIEvent.Type.ShowRenameDialogBox -> showRenameDialogBox = true
+                    is UIEvent.Type.ShowDeleteLinkDialogBox -> {
+                        showLinkDeleteDialogBox = true
+                    }
+
+                    is UIEvent.Type.ShowDeleteFolderDialogBox -> {
+                        showFolderDeleteDialogBox = true
+                    }
+
+                    is UIEvent.Type.ShowDeleteAllSelectedDialogBox -> {
+                        showDeleteAllSelectedItemsDialogBox =
+                            true
+                    }
+
+                    is UIEvent.Type.ShowLinkMenuBtmSheet -> {
+                        selectedLinkTagsForMenuBtmSheet = eventType.selectedLinkTagsPair
+                        showMenuForLink = true
+                    }
+
+                    is UIEvent.Type.ShowFolderMenuBtmSheet -> {
+                        selectedFolderForMenuBtmSheet = eventType.selectedFolder
+                        showMenuForFolder = true
+                    }
+
+                    is UIEvent.Type.ShowRenameLinkDialogBox -> showLinkRenameDialogBox = true
+
+                    is UIEvent.Type.ShowRenameFolderDialogBox -> showFolderRenameDialogBox = true
 
                     is UIEvent.Type.ShowSortingBtmSheet -> {
                         showSortingBtmSheet = true

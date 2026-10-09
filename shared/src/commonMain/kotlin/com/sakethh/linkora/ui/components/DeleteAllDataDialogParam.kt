@@ -1,6 +1,5 @@
 package com.sakethh.linkora.ui.components
 
-import LocalizedStrings
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
@@ -23,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sakethh.linkora.domain.AppPreferences
@@ -31,47 +29,36 @@ import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.canPushToServer
 
-enum class DeleteDialogBoxType {
-    LINK,
-    FOLDER,
-    REMOVE_ENTIRE_DATA,
-    SELECTED_DATA,
-}
-
-data class DeleteFolderOrLinkDialogParam(
+data class DeleteAllDataDialogParam(
     val onDismiss: () -> Unit,
-    val deleteDialogBoxType: DeleteDialogBoxType,
     val onDeleteClick: (onCompletion: () -> Unit, deleteEverythingFromRemote: Boolean) -> Unit,
-    val areFoldersSelectable: Boolean = false,
 )
 
 @Composable
-fun DeleteFolderOrLinkDialog(
+fun DeleteAllDataDialog(
     preferences: AppPreferences,
-    deleteFolderOrLinkDialogParam: DeleteFolderOrLinkDialogParam,
+    deleteAllDataDialogParam: DeleteAllDataDialogParam,
 ) {
     val localizedStrings = LocalizedStrings.current
-    val isDeletionInProgress: MutableState<Boolean> = rememberSaveable {
-        mutableStateOf(false)
-    }
-    val deleteEverythingFromRemote = rememberSaveable {
-        mutableStateOf(false)
-    }
+    val isDeletionInProgress: MutableState<Boolean> = rememberSaveable { mutableStateOf(false) }
+    val deleteEverythingFromRemote = rememberSaveable { mutableStateOf(false) }
+
     AlertDialog(
         modifier = Modifier.animateContentSize(),
         confirmButton = {
-            if (isDeletionInProgress.value.not()) {
+            if (!isDeletionInProgress.value) {
                 Button(
                     modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        Modifier
+                            .pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxWidth()
                             .pressScaleEffect(),
                     onClick = {
                         isDeletionInProgress.value = true
-                        deleteFolderOrLinkDialogParam.onDeleteClick(
+                        deleteAllDataDialogParam.onDeleteClick(
                             {
                                 isDeletionInProgress.value = false
-                                deleteFolderOrLinkDialogParam.onDismiss()
+                                deleteAllDataDialogParam.onDismiss()
                             },
                             deleteEverythingFromRemote.value,
                         )
@@ -86,13 +73,14 @@ fun DeleteFolderOrLinkDialog(
             }
         },
         dismissButton = {
-            if (isDeletionInProgress.value.not()) {
+            if (!isDeletionInProgress.value) {
                 OutlinedButton(
                     modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        Modifier
+                            .pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxWidth()
                             .pressScaleEffect(),
-                    onClick = deleteFolderOrLinkDialogParam.onDismiss,
+                    onClick = deleteAllDataDialogParam.onDismiss,
                 ) {
                     Text(
                         text = localizedStrings.Cancel,
@@ -104,15 +92,7 @@ fun DeleteFolderOrLinkDialog(
         },
         title = {
             Text(
-                text =
-                    if (isDeletionInProgress.value) {
-                        localizedStrings.DeletionInProgress
-                    } else {
-                        deleteFolderOrLinkDialogParam.deleteDialogBoxType.getTitle(
-                            localizedStrings = localizedStrings,
-                            areFoldersSelectable = deleteFolderOrLinkDialogParam.areFoldersSelectable,
-                        )
-                    },
+                text = if (isDeletionInProgress.value) localizedStrings.DeletionInProgress else localizedStrings.AreYouSureDeleteEverything,
                 style = MaterialTheme.typography.titleMedium,
                 fontSize = 22.sp,
                 lineHeight = 27.sp,
@@ -120,15 +100,12 @@ fun DeleteFolderOrLinkDialog(
             )
         },
         text = {
-            if (
-                isDeletionInProgress.value.not() &&
-                preferences.canPushToServer() &&
-                deleteFolderOrLinkDialogParam.deleteDialogBoxType ==
-                DeleteDialogBoxType.REMOVE_ENTIRE_DATA
-            ) {
+            if (!isDeletionInProgress.value && preferences.canPushToServer()) {
                 Row(
                     modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
+                        Modifier
+                            .pointerHoverIcon(icon = PointerIcon.Hand)
+                            .fillMaxWidth()
                             .clickable {
                                 if (!isDeletionInProgress.value) {
                                     deleteEverythingFromRemote.value =
@@ -139,53 +116,19 @@ fun DeleteFolderOrLinkDialog(
                 ) {
                     Checkbox(
                         checked = deleteEverythingFromRemote.value,
-                        onCheckedChange = {
-                            deleteEverythingFromRemote.value = it
-                        },
-                        enabled = isDeletionInProgress.value,
+                        onCheckedChange = { deleteEverythingFromRemote.value = it },
                     )
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
-                        text =
-                            localizedStrings.DeleteEverythingFromRemoteDatabaseLabel,
+                        text = localizedStrings.DeleteEverythingFromRemoteDatabaseLabel,
                         style = MaterialTheme.typography.titleLarge,
                     )
                 }
             }
-            if (
-                isDeletionInProgress.value.not() &&
-                deleteFolderOrLinkDialogParam.deleteDialogBoxType == DeleteDialogBoxType.FOLDER
-            ) {
-                Text(
-                    text = localizedStrings.FolderDeletionLabel,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontSize = 14.sp,
-                    lineHeight = 18.sp,
-                    textAlign = TextAlign.Start,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            } else if (isDeletionInProgress.value) {
+            if (isDeletionInProgress.value) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
         },
-        onDismissRequest = {
-            if (isDeletionInProgress.value.not()) {
-                deleteFolderOrLinkDialogParam.onDismiss()
-            }
-        },
+        onDismissRequest = { if (!isDeletionInProgress.value) deleteAllDataDialogParam.onDismiss() },
     )
 }
-
-private fun DeleteDialogBoxType.getTitle(areFoldersSelectable: Boolean, localizedStrings: LocalizedStrings): String = if (this == DeleteDialogBoxType.LINK && areFoldersSelectable) {
-        localizedStrings.AreYouSureDeleteSelectedLinks
-    } else if (this == DeleteDialogBoxType.LINK) {
-        localizedStrings.AreYouSureDeleteLink
-    } else if (this == DeleteDialogBoxType.FOLDER && areFoldersSelectable) {
-        localizedStrings.AreYouSureDeleteSelectedFolders
-    } else if (this == DeleteDialogBoxType.FOLDER) {
-        localizedStrings.AreYouSureDeleteFolder
-    } else if (this == DeleteDialogBoxType.SELECTED_DATA) {
-        localizedStrings.AreYouSureDeleteSelectedItems
-    } else {
-        localizedStrings.AreYouSureDeleteEverything
-    }

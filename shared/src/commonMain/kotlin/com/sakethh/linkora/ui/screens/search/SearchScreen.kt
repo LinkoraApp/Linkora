@@ -49,13 +49,11 @@ import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.FolderType
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.asLocalizedString
-import com.sakethh.linkora.domain.asMenuBtmSheetType
 import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.CollectionLayoutManager
-import com.sakethh.linkora.ui.components.SortingIconButton
-import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
+import com.sakethh.linkora.ui.components.sorting.SortingIconButton
 import com.sakethh.linkora.ui.domain.CurrentFABContext
 import com.sakethh.linkora.ui.domain.ScreenType
 import com.sakethh.linkora.ui.domain.model.CollectionDetailPaneInfo
@@ -209,15 +207,8 @@ fun SearchScreen(
                             paddingValues = PaddingValues(0.dp),
                             folderMoreIconClick = {
                                 coroutineScope.pushUIEvent(
-                                    UIEvent.Type.ShowMenuBtmSheet(
-                                        menuBtmSheetFor =
-                                            if (it.isArchived) {
-                                                MenuBtmSheetType.Folder.ArchiveFolder
-                                            } else {
-                                                MenuBtmSheetType.Folder.RegularFolder
-                                            },
-                                        selectedLinkForMenuBtmSheet = null,
-                                        selectedFolderForMenuBtmSheet = it,
+                                    UIEvent.Type.ShowFolderMenuBtmSheet(
+                                        selectedFolder = it,
                                     ),
                                 )
                             },
@@ -236,10 +227,8 @@ fun SearchScreen(
                             },
                             linkMoreIconClick = {
                                 coroutineScope.pushUIEvent(
-                                    UIEvent.Type.ShowMenuBtmSheet(
-                                        menuBtmSheetFor = it.link.linkType.asMenuBtmSheetType(),
-                                        selectedLinkForMenuBtmSheet = it,
-                                        selectedFolderForMenuBtmSheet = null,
+                                    UIEvent.Type.ShowLinkMenuBtmSheet(
+                                        it,
                                     ),
                                 )
                             },
@@ -329,10 +318,8 @@ fun SearchScreen(
             onFolderClick = {},
             linkMoreIconClick = {
                 coroutineScope.pushUIEvent(
-                    UIEvent.Type.ShowMenuBtmSheet(
-                        menuBtmSheetFor = MenuBtmSheetType.Link.HistoryLink,
-                        selectedLinkForMenuBtmSheet = it,
-                        selectedFolderForMenuBtmSheet = null,
+                    UIEvent.Type.ShowLinkMenuBtmSheet(
+                        selectedLinkTagsPair = it,
                     ),
                 )
             },

@@ -100,15 +100,13 @@ import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.LocalizedStrings
-import com.sakethh.linkora.ui.components.SortingIconButton
 import com.sakethh.linkora.ui.components.folder.FolderComponent
-import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
+import com.sakethh.linkora.ui.components.sorting.SortingIconButton
 import com.sakethh.linkora.ui.domain.CurrentFABContext
 import com.sakethh.linkora.ui.domain.model.CollectionDetailPaneInfo
 import com.sakethh.linkora.ui.domain.model.CollectionType
 import com.sakethh.linkora.ui.domain.model.FolderComponentParam
 import com.sakethh.linkora.ui.navigation.CollectionNavigation
-import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.DataEmptyScreen
 import com.sakethh.linkora.ui.screens.LoadingScreen
 import com.sakethh.linkora.ui.screens.collections.components.ItemDivider
@@ -540,7 +538,7 @@ fun CollectionsScreen(
                                                         }
                                                     },
                                                     onLongClick = {
-                                                        if (CollectionsScreenVM.isSelectionEnabled.value.not()) {
+                                                        if (!CollectionsScreenVM.isSelectionEnabled.value) {
                                                             CollectionsScreenVM.isSelectionEnabled.value =
                                                                 true
                                                             CollectionsScreenVM.selectedFoldersViaLongClick.add(
@@ -550,10 +548,8 @@ fun CollectionsScreen(
                                                     },
                                                     onMoreIconClick = {
                                                         coroutineScope.pushUIEvent(
-                                                            UIEvent.Type.ShowMenuBtmSheet(
-                                                                menuBtmSheetFor = MenuBtmSheetType.Folder.RegularFolder,
-                                                                selectedLinkForMenuBtmSheet = null,
-                                                                selectedFolderForMenuBtmSheet = folder,
+                                                            UIEvent.Type.ShowFolderMenuBtmSheet(
+                                                                selectedFolder = folder,
                                                             ),
                                                         )
                                                     },

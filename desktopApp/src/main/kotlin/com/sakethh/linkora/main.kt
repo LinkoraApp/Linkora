@@ -192,7 +192,7 @@ private fun ApplicationScope.TopDecorator(
                 }
                 Spacer(
                     Modifier.padding(
-                        start = if (preferences.isServerConfigured().not()) 15.dp else 5.dp
+                        start = if (!preferences.isServerConfigured()) 15.dp else 5.dp,
                     ),
                 )
                 Text(

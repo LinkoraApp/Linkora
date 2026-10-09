@@ -1,4 +1,4 @@
-package com.sakethh.linkora.ui.components
+package com.sakethh.linkora.ui.components.link
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
@@ -55,24 +55,21 @@ import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.ui.LastSeenId
 import com.sakethh.linkora.ui.LastSeenString
 import com.sakethh.linkora.ui.LocalizedStrings
-import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
-import com.sakethh.linkora.ui.components.menu.menuBtmSheetFolderEntries
+import com.sakethh.linkora.ui.components.tag.TagSelectionComponent
 import com.sakethh.linkora.ui.domain.PaginationState
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.ui.utils.rememberDeserializableMutableObject
 import com.sakethh.linkora.utils.highlightOnFocused
-import com.sakethh.linkora.utils.replaceActual
 
 @Stable
-data class RenameFolderOrLinkDialogParam
+data class RenameLinkDialogParam
 @OptIn(ExperimentalMaterial3Api::class)
 constructor(
     val showDialogBox: Boolean,
     val sheetState: SheetState,
     val onHide: () -> Unit,
-    val dialogBoxFor: MenuBtmSheetType = MenuBtmSheetType.Folder.RegularFolder,
     val onSave: (
         newTitle: String,
         newNote: String,
@@ -81,7 +78,6 @@ constructor(
         selectedTags: List<Tag>,
         onCompletion: () -> Unit,
     ) -> Unit,
-    val existingFolderName: String?,
     val existingTitle: String,
     val existingNote: String,
     val existingImageUrl: String,
@@ -94,83 +90,58 @@ constructor(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RenameFolderOrLinkDialog(renameFolderOrLinkDialogParam: RenameFolderOrLinkDialogParam) {
+fun RenameLinkDialog(renameLinkDialogParam: RenameLinkDialogParam) {
     val localizedStrings = LocalizedStrings.current
     val coroutineScope = rememberCoroutineScope()
-    if (renameFolderOrLinkDialogParam.showDialogBox) {
+
+    if (renameLinkDialogParam.showDialogBox) {
         var selectedTags by rememberDeserializableMutableObject {
-            mutableStateOf(renameFolderOrLinkDialogParam.selectedTags)
+            mutableStateOf(renameLinkDialogParam.selectedTags)
         }
-        var newFolderOrTitleName by
-        rememberSaveable(renameFolderOrLinkDialogParam.existingTitle) {
-            mutableStateOf(renameFolderOrLinkDialogParam.existingTitle)
+        var newTitle by rememberSaveable(renameLinkDialogParam.existingTitle) {
+            mutableStateOf(renameLinkDialogParam.existingTitle)
         }
-        var newNote by
-        rememberSaveable(renameFolderOrLinkDialogParam.existingNote) {
-            mutableStateOf(renameFolderOrLinkDialogParam.existingNote)
+        var newNote by rememberSaveable(renameLinkDialogParam.existingNote) {
+            mutableStateOf(renameLinkDialogParam.existingNote)
         }
-        var newImageURL by
-        rememberSaveable(renameFolderOrLinkDialogParam.existingImageUrl) {
-            mutableStateOf(renameFolderOrLinkDialogParam.existingImageUrl)
+        var newImageURL by rememberSaveable(renameLinkDialogParam.existingImageUrl) {
+            mutableStateOf(renameLinkDialogParam.existingImageUrl)
         }
-        var newUrl by
-        rememberSaveable(renameFolderOrLinkDialogParam.existingUrl) {
-            mutableStateOf(renameFolderOrLinkDialogParam.existingUrl)
+        var newUrl by rememberSaveable(renameLinkDialogParam.existingUrl) {
+            mutableStateOf(renameLinkDialogParam.existingUrl)
         }
-        var showProgressBar by rememberSaveable {
-            mutableStateOf(false)
-        }
+        var showProgressBar by rememberSaveable { mutableStateOf(false) }
+
         val content: ComposableContent = {
             Column(
-                Modifier.wrapContentSize()
+                Modifier
+                    .wrapContentSize()
                     .animateContentSize()
                     .padding(
                         bottom = 15.dp,
                         top = if (Platform.Android.onMobile()) 0.dp else 15.dp,
-                    )
-                    .fillMaxWidth()
+                    ).fillMaxWidth()
                     .verticalScroll(rememberScrollState()),
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .padding(
-                                start = 15.dp,
-                                end = 15.dp,
-                            ),
+                    modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp),
                 ) {
                     Text(
-                        text =
-                            if (
-                                menuBtmSheetFolderEntries()
-                                    .contains(renameFolderOrLinkDialogParam.dialogBoxFor) &&
-                                renameFolderOrLinkDialogParam.existingFolderName?.isNotBlank() == true
-                            ) {
-                                localizedStrings.RenameFolder
-                                    .replaceActual(
-                                        renameFolderOrLinkDialogParam.existingFolderName,
-                                    )
-                            } else {
-                                localizedStrings.ChangeLinkData
-                            },
+                        text = localizedStrings.ChangeLinkData,
                         style = MaterialTheme.typography.titleMedium,
                         fontSize = 22.sp,
                         lineHeight = 27.sp,
                         textAlign = TextAlign.Start,
                         modifier = Modifier.fillMaxWidth(if (!Platform.Android.onMobile()) 0.85f else 1f),
                     )
-
                     if (!Platform.Android.onMobile() && !showProgressBar) {
                         IconButton(
                             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-                            onClick = renameFolderOrLinkDialogParam.onHide,
+                            onClick = renameLinkDialogParam.onHide,
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = null,
-                            )
+                            Icon(imageVector = Icons.Default.Close, contentDescription = null)
                         }
                     }
                 }
@@ -178,30 +149,15 @@ fun RenameFolderOrLinkDialog(renameFolderOrLinkDialogParam: RenameFolderOrLinkDi
                 OutlinedTextField(
                     label = {
                         Text(
-                            text =
-                                if (
-                                    menuBtmSheetFolderEntries()
-                                        .contains(renameFolderOrLinkDialogParam.dialogBoxFor)
-                                ) {
-                                    localizedStrings.NewName
-                                } else {
-                                    localizedStrings.NewTitle
-                                },
+                            text = localizedStrings.NewTitle,
                             style = MaterialTheme.typography.titleSmall,
                             fontSize = 12.sp,
                         )
                     },
                     textStyle = MaterialTheme.typography.titleSmall,
-                    value = newFolderOrTitleName,
-                    onValueChange = {
-                        newFolderOrTitleName = it
-                    },
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .padding(
-                                start = 15.dp,
-                                end = 15.dp,
-                            ),
+                    value = newTitle,
+                    onValueChange = { newTitle = it },
+                    modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp),
                     readOnly = showProgressBar,
                 )
                 Spacer(modifier = Modifier.height(5.dp))
@@ -215,67 +171,42 @@ fun RenameFolderOrLinkDialog(renameFolderOrLinkDialogParam: RenameFolderOrLinkDi
                     },
                     textStyle = MaterialTheme.typography.titleSmall,
                     value = newNote,
-                    onValueChange = {
-                        newNote = it
-                    },
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .padding(
-                                start = 15.dp,
-                                end = 15.dp,
-                            ),
+                    onValueChange = { newNote = it },
+                    modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp),
                     readOnly = showProgressBar,
                 )
-                if (renameFolderOrLinkDialogParam.dialogBoxFor is MenuBtmSheetType.Link) {
-                    Spacer(modifier = Modifier.height(5.dp))
-                    OutlinedTextField(
-                        label = {
-                            Text(
-                                text = localizedStrings.NewImgURLLabel,
-                                style = MaterialTheme.typography.titleSmall,
-                                fontSize = 12.sp,
-                            )
-                        },
-                        textStyle = MaterialTheme.typography.titleSmall,
-                        value = newImageURL,
-                        onValueChange = {
-                            newImageURL = it
-                        },
-                        modifier =
-                            Modifier.fillMaxWidth()
-                                .padding(
-                                    start = 15.dp,
-                                    end = 15.dp,
-                                ),
-                        readOnly = showProgressBar,
-                    )
-                    Spacer(modifier = Modifier.height(5.dp))
-                    OutlinedTextField(
-                        label = {
-                            Text(
-                                text = localizedStrings.NewURLLabel,
-                                style = MaterialTheme.typography.titleSmall,
-                                fontSize = 12.sp,
-                            )
-                        },
-                        textStyle = MaterialTheme.typography.titleSmall,
-                        value = newUrl,
-                        onValueChange = {
-                            newUrl = it
-                        },
-                        modifier =
-                            Modifier.fillMaxWidth()
-                                .padding(
-                                    start = 15.dp,
-                                    end = 15.dp,
-                                ),
-                        readOnly = showProgressBar,
-                    )
-                }
+                Spacer(modifier = Modifier.height(5.dp))
+                OutlinedTextField(
+                    label = {
+                        Text(
+                            text = localizedStrings.NewImgURLLabel,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontSize = 12.sp,
+                        )
+                    },
+                    textStyle = MaterialTheme.typography.titleSmall,
+                    value = newImageURL,
+                    onValueChange = { newImageURL = it },
+                    modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp),
+                    readOnly = showProgressBar,
+                )
+                Spacer(modifier = Modifier.height(5.dp))
+                OutlinedTextField(
+                    label = {
+                        Text(
+                            text = localizedStrings.NewURLLabel,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontSize = 12.sp,
+                        )
+                    },
+                    textStyle = MaterialTheme.typography.titleSmall,
+                    value = newUrl,
+                    onValueChange = { newUrl = it },
+                    modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp),
+                    readOnly = showProgressBar,
+                )
 
-                if (
-                    renameFolderOrLinkDialogParam.dialogBoxFor is MenuBtmSheetType.Link && !showProgressBar
-                ) {
+                if (!showProgressBar) {
                     Text(
                         text = localizedStrings.AttachTags,
                         color = MaterialTheme.colorScheme.secondary,
@@ -284,24 +215,22 @@ fun RenameFolderOrLinkDialog(renameFolderOrLinkDialogParam: RenameFolderOrLinkDi
                         modifier = Modifier.padding(start = 15.dp, top = 15.dp, bottom = 10.dp),
                     )
                     TagSelectionComponent(
-                        showCreateNewTagSheet = {
-                            coroutineScope.pushUIEvent(UIEvent.Type.ShowCreateTagBtmSheet)
-                        },
+                        showCreateNewTagSheet = { coroutineScope.pushUIEvent(UIEvent.Type.ShowCreateTagBtmSheet) },
                         paddingValues = PaddingValues(start = 15.dp, end = 15.dp),
-                        allTags = renameFolderOrLinkDialogParam.allTags.value,
+                        allTags = renameLinkDialogParam.allTags.value,
                         selectedTags = selectedTags,
                         onTagClick = { currTag ->
                             if (selectedTags.contains(currTag)) {
-                                selectedTags = selectedTags.filterNot {
-                                    currTag == it
-                                }
+                                selectedTags = selectedTags.filterNot { currTag == it }
                             } else {
                                 selectedTags += currTag
                             }
                         },
-                        onRetrieveNextTagsPage = renameFolderOrLinkDialogParam.onRetrieveNextTagsPage,
+                        onRetrieveNextTagsPage = renameLinkDialogParam.onRetrieveNextTagsPage,
                         onFirstVisibleIndexChange = {
-                            renameFolderOrLinkDialogParam.onFirstVisibleIndexChange(it.toLong())
+                            renameLinkDialogParam.onFirstVisibleIndexChange(
+                                it.toLong(),
+                            )
                         },
                     )
                 }
@@ -309,38 +238,29 @@ fun RenameFolderOrLinkDialog(renameFolderOrLinkDialogParam: RenameFolderOrLinkDi
                 if (showProgressBar) {
                     Spacer(modifier = Modifier.height(10.dp))
                     LinearProgressIndicator(
-                        modifier =
-                            Modifier.fillMaxWidth()
-                                .padding(
-                                    start = 15.dp,
-                                    end = 15.dp,
-                                ),
+                        modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp),
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-
                     return@Column
                 }
                 Spacer(modifier = Modifier.height(10.dp))
                 Button(
                     modifier =
-                        Modifier.padding(
-                            start = 15.dp,
-                            end = 15.dp,
-                        )
+                        Modifier
+                            .padding(start = 15.dp, end = 15.dp)
                             .pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxWidth()
-                            .pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
+                            .pressScaleEffect()
+                            .highlightOnFocused(shape = ButtonDefaults.shape),
                     onClick = {
                         showProgressBar = true
-                        renameFolderOrLinkDialogParam.onSave(
-                            newFolderOrTitleName,
+                        renameLinkDialogParam.onSave(
+                            newTitle,
                             newNote,
                             newImageURL,
                             newUrl,
                             selectedTags,
-                            {
-                                showProgressBar = true
-                            },
+                            { showProgressBar = false },
                         )
                     },
                 ) {
@@ -353,14 +273,13 @@ fun RenameFolderOrLinkDialog(renameFolderOrLinkDialogParam: RenameFolderOrLinkDi
                 Spacer(modifier = Modifier.height(2.dp))
                 OutlinedButton(
                     modifier =
-                        Modifier.padding(
-                            start = 15.dp,
-                            end = 15.dp,
-                        )
+                        Modifier
+                            .padding(start = 15.dp, end = 15.dp)
                             .pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxWidth()
-                            .pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
-                    onClick = renameFolderOrLinkDialogParam.onHide,
+                            .pressScaleEffect()
+                            .highlightOnFocused(shape = ButtonDefaults.shape),
+                    onClick = renameLinkDialogParam.onHide,
                 ) {
                     Text(
                         text = localizedStrings.Cancel,
@@ -370,34 +289,24 @@ fun RenameFolderOrLinkDialog(renameFolderOrLinkDialogParam: RenameFolderOrLinkDi
                 }
             }
         }
+
         if (Platform.Android.onMobile()) {
             ModalBottomSheet(
-                sheetState = renameFolderOrLinkDialogParam.sheetState,
+                sheetState = renameLinkDialogParam.sheetState,
                 modifier = Modifier.imePadding(),
                 properties = ModalBottomSheetProperties(shouldDismissOnBackPress = false),
-                onDismissRequest = {
-                    if (!showProgressBar) {
-                        renameFolderOrLinkDialogParam.onHide()
-                    }
-                },
-            ) {
-                content()
-            }
+                onDismissRequest = { if (!showProgressBar) renameLinkDialogParam.onHide() },
+            ) { content() }
         } else {
             BasicAlertDialog(
                 modifier =
-                    Modifier.wrapContentSize()
+                    Modifier
+                        .wrapContentSize()
                         .clip(RoundedCornerShape(10.dp))
                         .background(AlertDialogDefaults.containerColor),
                 properties = DialogProperties(usePlatformDefaultWidth = false),
-                onDismissRequest = {
-                    if (!showProgressBar) {
-                        renameFolderOrLinkDialogParam.onHide()
-                    }
-                },
-            ) {
-                content()
-            }
+                onDismissRequest = { if (!showProgressBar) renameLinkDialogParam.onHide() },
+            ) { content() }
         }
     }
 }

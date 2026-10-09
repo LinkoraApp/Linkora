@@ -120,7 +120,7 @@ fun SnapshotsScreen() {
                                         dataSettingsScreenVM.isStoragePermissionGranted()
                                 }
                                 .invokeOnCompletion { _ ->
-                                    if (isStorageAccessPermitted.not() && platform is Platform.Android) {
+                                    if (!isStorageAccessPermitted && platform is Platform.Android) {
                                         return@invokeOnCompletion
                                     }
                                     dataSettingsScreenVM.changeSettingPreferenceValue(

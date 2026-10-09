@@ -503,7 +503,7 @@ class LocalLinksRepoImpl(
             canPushToServer = {
                 preferences.canPushToServer()
             },
-            performRemoteOperation = viaSocket.not(),
+            performRemoteOperation = !viaSocket,
             remoteOperation = {
                 require(remoteId != null)
                 remoteLinksRepo.deleteALink(

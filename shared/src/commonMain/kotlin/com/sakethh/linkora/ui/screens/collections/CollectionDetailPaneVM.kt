@@ -408,7 +408,7 @@ class CollectionDetailPaneVM(
     val appliedFiltersForAllLinks = _appliedFiltersForAllLinks
 
     fun toggleAllLinksFilter(filter: LinkType) {
-        if (_appliedFiltersForAllLinks.contains(filter).not()) {
+        if (!_appliedFiltersForAllLinks.contains(filter)) {
             _appliedFiltersForAllLinks.add(filter)
         } else {
             _appliedFiltersForAllLinks.remove(filter)

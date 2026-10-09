@@ -60,7 +60,6 @@ import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.HorizontalInfoCard
 import com.sakethh.linkora.ui.domain.model.ServerConnection
-import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.collections.components.ItemDivider
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
@@ -156,7 +155,7 @@ fun ServerSetupScreen() {
                     },
                     readOnly =
                         serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully &&
-                                serverManagementViewModel.serverSetupState.value.isConnecting.not(),
+                                !serverManagementViewModel.serverSetupState.value.isConnecting,
                 )
             }
 
@@ -176,7 +175,7 @@ fun ServerSetupScreen() {
                     },
                     readOnly =
                         serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully &&
-                                serverManagementViewModel.serverSetupState.value.isConnecting.not(),
+                                !serverManagementViewModel.serverSetupState.value.isConnecting,
                     visualTransformation =
                         if (isSecurityTokenVisible.value) {
                             VisualTransformation.None

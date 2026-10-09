@@ -46,7 +46,6 @@ import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
@@ -99,9 +98,8 @@ import com.sakethh.linkora.platform.PlatformSpecificBackHandler
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.LocalizedStrings
-import com.sakethh.linkora.ui.components.DeleteDialogBoxType
-import com.sakethh.linkora.ui.components.DeleteFolderOrLinkDialog
-import com.sakethh.linkora.ui.components.DeleteFolderOrLinkDialogParam
+import com.sakethh.linkora.ui.components.DeleteAllDataDialog
+import com.sakethh.linkora.ui.components.DeleteAllDataDialogParam
 import com.sakethh.linkora.ui.components.HorizontalInfoCard
 import com.sakethh.linkora.ui.domain.ImportFileSelectionMethod
 import com.sakethh.linkora.ui.navigation.Navigation
@@ -1063,22 +1061,23 @@ fun DataSettingsScreen() {
         operationDesc = localizedStrings.InitiateManualSyncDescAlt,
     )
     if (shouldDeleteEntireDialogBoxAppear.value) {
-        DeleteFolderOrLinkDialog(
+        DeleteAllDataDialog(
             preferences = preferences,
-            deleteFolderOrLinkDialogParam = DeleteFolderOrLinkDialogParam(
-                onDismiss = {
+            deleteAllDataDialogParam =
+                DeleteAllDataDialogParam(
+                    onDismiss = {
                     shouldDeleteEntireDialogBoxAppear.value = false
                 },
-                deleteDialogBoxType = DeleteDialogBoxType.REMOVE_ENTIRE_DATA,
                 onDeleteClick = { onCompletion, deleteEverythingFromRemote ->
                     dataSettingsScreenVM.deleteEntireDatabase(
                         deleteEverythingFromRemote,
                         onCompletion,
                     )
                 },
-            ),
+                )
         )
     }
+
     if (showAlertDialogWithProgress.value) {
         AlertDialog(
             onDismissRequest = {},

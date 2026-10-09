@@ -2,7 +2,6 @@ package com.sakethh.linkora.ui.utils
 
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.tag.Tag
-import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -46,10 +45,12 @@ object UIEvent {
 
         data object ShowAddANewFolderDialogBox : Type
 
-        data class ShowMenuBtmSheet(
-            val menuBtmSheetFor: MenuBtmSheetType,
-            val selectedLinkForMenuBtmSheet: LinkTagsPair?,
-            val selectedFolderForMenuBtmSheet: Folder?,
+        data class ShowLinkMenuBtmSheet(
+            val selectedLinkTagsPair: LinkTagsPair,
+        ) : Type
+
+        data class ShowFolderMenuBtmSheet(
+            val selectedFolder: Folder,
         ) : Type
 
         data class ShowTagMenuBtmSheet(
@@ -60,12 +61,16 @@ object UIEvent {
 
         data object ShowSortingBtmSheet : Type
 
-        data object ShowDeleteDialogBox : Type
+        data object ShowDeleteLinkDialogBox : Type
 
-        data object ShowRenameDialogBox : Type
+        data object ShowDeleteAllSelectedDialogBox : Type
+
+        data object ShowDeleteFolderDialogBox : Type
+
+        data object ShowRenameLinkDialogBox : Type
+
+        data object ShowRenameFolderDialogBox : Type
 
         data object MinimizeTheApp : Type
-
-        data object Nothing : Type
     }
 }

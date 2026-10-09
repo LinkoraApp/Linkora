@@ -1,4 +1,4 @@
-package com.sakethh.linkora.ui.components
+package com.sakethh.linkora.ui.components.nav
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
@@ -299,7 +299,7 @@ fun BottomNavOnSelection(
                         shape = RoundedCornerShape(5.dp),
                         modifier = Modifier.weight(1f),
                         onClick = {
-                            coroutineScope.pushUIEvent(UIEvent.Type.ShowDeleteDialogBox)
+                            coroutineScope.pushUIEvent(UIEvent.Type.ShowDeleteAllSelectedDialogBox)
                         },
                         text = localizedStrings.Delete,
                         icon = Icons.Default.Delete

@@ -60,16 +60,14 @@ import com.sakethh.linkora.domain.LinkSaveConfig
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.asLocalizedString
-import com.sakethh.linkora.domain.asMenuBtmSheetType
 import com.sakethh.linkora.domain.asUnifiedLazyState
 import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.CollectionLayoutManager
 import com.sakethh.linkora.ui.components.PerformAtTheEndOfTheList
-import com.sakethh.linkora.ui.components.SortingIconButton
 import com.sakethh.linkora.ui.components.folder.FolderComponent
-import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
+import com.sakethh.linkora.ui.components.sorting.SortingIconButton
 import com.sakethh.linkora.ui.domain.CurrentFABContext
 import com.sakethh.linkora.ui.domain.FABContext
 import com.sakethh.linkora.ui.domain.ScreenType
@@ -282,10 +280,8 @@ fun CollectionDetailPane(
                                 paddingValues = PaddingValues(0.dp),
                                 linkMoreIconClick = {
                                     coroutineScope.pushUIEvent(
-                                        UIEvent.Type.ShowMenuBtmSheet(
-                                            menuBtmSheetFor = it.link.linkType.asMenuBtmSheetType(),
-                                            selectedLinkForMenuBtmSheet = it,
-                                            selectedFolderForMenuBtmSheet = null,
+                                        UIEvent.Type.ShowLinkMenuBtmSheet(
+                                            selectedLinkTagsPair = it,
                                         ),
                                     )
                                 },
@@ -314,7 +310,10 @@ fun CollectionDetailPane(
                                         ),
                                     )
                                     coroutineScope.launch {
-                                        localUriHandler.openUriOrNotify(it.link.url, localizedStrings)
+                                        localUriHandler.openUriOrNotify(
+                                            it.link.url,
+                                            localizedStrings,
+                                        )
                                     }
                                 },
                                 isCurrentlyInDetailsView = {
@@ -402,7 +401,7 @@ fun CollectionDetailPane(
                                                         onNavigate(collectionDetailPaneInfo)
                                                     },
                                                     onLongClick = {
-                                                        if (CollectionsScreenVM.isSelectionEnabled.value.not()) {
+                                                        if (!CollectionsScreenVM.isSelectionEnabled.value) {
                                                             CollectionsScreenVM.isSelectionEnabled.value =
                                                                 true
                                                             CollectionsScreenVM.selectedFoldersViaLongClick.add(
@@ -412,10 +411,8 @@ fun CollectionDetailPane(
                                                     },
                                                     onMoreIconClick = {
                                                         coroutineScope.pushUIEvent(
-                                                            UIEvent.Type.ShowMenuBtmSheet(
-                                                                menuBtmSheetFor = MenuBtmSheetType.Folder.RegularFolder,
-                                                                selectedLinkForMenuBtmSheet = null,
-                                                                selectedFolderForMenuBtmSheet = rootArchiveFolder,
+                                                            UIEvent.Type.ShowFolderMenuBtmSheet(
+                                                                selectedFolder = rootArchiveFolder,
                                                             ),
                                                         )
                                                     },
@@ -533,19 +530,15 @@ fun CollectionDetailPane(
                 paddingValues = PaddingValues(0.dp),
                 linkMoreIconClick = {
                     coroutineScope.pushUIEvent(
-                        UIEvent.Type.ShowMenuBtmSheet(
-                            menuBtmSheetFor = it.link.linkType.asMenuBtmSheetType(),
-                            selectedLinkForMenuBtmSheet = it,
-                            selectedFolderForMenuBtmSheet = null,
+                        UIEvent.Type.ShowLinkMenuBtmSheet(
+                            selectedLinkTagsPair = it,
                         ),
                     )
                 },
                 folderMoreIconClick = {
                     coroutineScope.pushUIEvent(
-                        UIEvent.Type.ShowMenuBtmSheet(
-                            menuBtmSheetFor = MenuBtmSheetType.Folder.RegularFolder,
-                            selectedLinkForMenuBtmSheet = null,
-                            selectedFolderForMenuBtmSheet = it,
+                        UIEvent.Type.ShowFolderMenuBtmSheet(
+                            selectedFolder = it,
                         ),
                     )
                 },

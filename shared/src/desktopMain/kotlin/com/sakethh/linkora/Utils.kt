@@ -8,7 +8,7 @@ import java.io.File
 val linkoraSpecificFolder =
     System.getProperty("user.home").run {
         val appDataDir = File(this, ".linkora")
-        if (appDataDir.exists().not()) {
+        if (!appDataDir.exists()) {
             appDataDir.mkdirs()
         }
         appDataDir

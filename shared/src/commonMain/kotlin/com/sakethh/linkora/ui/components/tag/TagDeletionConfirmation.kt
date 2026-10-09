@@ -1,4 +1,4 @@
-package com.sakethh.linkora.ui.screens.collections.components
+package com.sakethh.linkora.ui.components.tag
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.fillMaxWidth

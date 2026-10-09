@@ -15,7 +15,6 @@ import com.sakethh.linkora.domain.model.panel.Panel
 import com.sakethh.linkora.domain.model.panel.PanelFolder
 import com.sakethh.linkora.domain.model.tag.LinkTagDTO
 import com.sakethh.linkora.ui.LocalizedStrings
-import com.sakethh.linkora.ui.components.menu.MenuBtmSheetType
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.catchAsThrowableAndEmitFailure
 import kotlinx.coroutines.async
@@ -23,14 +22,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-
-fun LinkType.asMenuBtmSheetType(): MenuBtmSheetType.Link = when (this) {
-    LinkType.SAVED_LINK -> MenuBtmSheetType.Link.SavedLink
-    LinkType.FOLDER_LINK -> MenuBtmSheetType.Link.FolderLink
-    LinkType.HISTORY_LINK -> MenuBtmSheetType.Link.HistoryLink
-    LinkType.IMPORTANT_LINK -> MenuBtmSheetType.Link.ImportantLink
-    LinkType.ARCHIVE_LINK -> MenuBtmSheetType.Link.ArchiveLink
-}
 
 fun <T> Flow<T>.mapToResultFlow(): Flow<Result<T>> = this.map {
     Result.Success(it)

@@ -38,7 +38,7 @@ import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.LocalizedStrings
-import com.sakethh.linkora.ui.components.AddANewLinkDialogBox
+import com.sakethh.linkora.ui.components.link.AddANewLinkDialogBox
 import com.sakethh.linkora.ui.domain.model.AddNewLinkDialogParams
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM
 import com.sakethh.linkora.ui.theme.LinkoraTheme

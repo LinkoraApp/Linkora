@@ -1,4 +1,4 @@
-package com.sakethh.linkora.ui.components
+package com.sakethh.linkora.ui.components.folder
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Column

@@ -1,5 +1,6 @@
 package com.sakethh.linkora.domain.model
 
+import androidx.compose.runtime.Immutable
 import androidx.room3.Entity
 import androidx.room3.Ignore
 import androidx.room3.Index
@@ -16,6 +17,7 @@ import kotlinx.serialization.Transient
     ],
 )
 @Serializable
+@Immutable
 data class Folder(
     val name: String,
     val note: String,

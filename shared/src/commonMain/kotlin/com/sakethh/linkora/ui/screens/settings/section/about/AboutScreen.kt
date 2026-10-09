@@ -46,7 +46,6 @@ import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.dto.github.GitHubReleaseDTOItem
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.ui.LocalizedStrings
-import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.AppVersionLabel
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
@@ -136,7 +135,7 @@ fun AboutScreen() {
                                     }
                                     shouldVersionCheckerDialogAppear.value = false
                                     shouldBtmModalSheetBeVisible.value =
-                                        isOnLatestUpdate.not() &&
+                                        !isOnLatestUpdate &&
                                                 githubReleaseDTO != null
                                 },
                             )

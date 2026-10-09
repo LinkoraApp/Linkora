@@ -44,12 +44,12 @@ import com.sakethh.linkora.domain.model.panel.Panel
 import com.sakethh.linkora.ui.LocalFabController
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalizedStrings
-import com.sakethh.linkora.ui.components.AddANewPanelDialogBox
-import com.sakethh.linkora.ui.components.AddANewPanelParam
-import com.sakethh.linkora.ui.components.DeleteAPanelDialogBox
-import com.sakethh.linkora.ui.components.DeleteAPanelDialogBoxParam
-import com.sakethh.linkora.ui.components.RenameAShelfPanelDialogBox
 import com.sakethh.linkora.ui.components.menu.IndividualMenuComponent
+import com.sakethh.linkora.ui.components.panel.AddANewPanelDialogBox
+import com.sakethh.linkora.ui.components.panel.AddANewPanelParam
+import com.sakethh.linkora.ui.components.panel.DeleteAPanelDialogBox
+import com.sakethh.linkora.ui.components.panel.DeleteAPanelDialogBoxParam
+import com.sakethh.linkora.ui.components.panel.RenameAShelfPanelDialogBox
 import com.sakethh.linkora.ui.domain.CurrentFABContext
 import com.sakethh.linkora.ui.domain.FABContext
 import com.sakethh.linkora.ui.navigation.Navigation

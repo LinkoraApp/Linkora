@@ -1,4 +1,4 @@
-package com.sakethh.linkora.ui.components
+package com.sakethh.linkora.ui.components.tag
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -56,6 +56,7 @@ import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.ui.LastSeenId
 import com.sakethh.linkora.ui.LastSeenString
 import com.sakethh.linkora.ui.LocalizedStrings
+import com.sakethh.linkora.ui.components.PerformAtTheEndOfTheList
 import com.sakethh.linkora.ui.domain.PaginationState
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged

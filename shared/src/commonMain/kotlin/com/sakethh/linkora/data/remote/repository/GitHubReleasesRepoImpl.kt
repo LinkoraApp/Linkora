@@ -20,8 +20,8 @@ class GitHubReleasesRepoImpl(
             .run {
                 copy(
                     releaseName =
-                    if (releaseName.startsWith("v").not()) {
-                        "v$releaseName"
+                        if (!releaseName.startsWith("v")) {
+                            "v$releaseName"
                     } else {
                         releaseName
                     },

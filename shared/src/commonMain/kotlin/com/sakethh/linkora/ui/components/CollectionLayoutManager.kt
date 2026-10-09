@@ -201,7 +201,7 @@ fun CollectionLayoutManager(
                 onFolderClick(it)
             },
             onLongClick = {
-                if (CollectionsScreenVM.isSelectionEnabled.value.not()) {
+                if (!CollectionsScreenVM.isSelectionEnabled.value) {
                     CollectionsScreenVM.isSelectionEnabled.value = true
                     CollectionsScreenVM.selectedFoldersViaLongClick.add(it)
                 }

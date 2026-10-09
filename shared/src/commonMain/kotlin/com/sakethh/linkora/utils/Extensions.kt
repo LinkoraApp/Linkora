@@ -264,7 +264,7 @@ fun NavHostController.inRootScreen(includeSettingsScreen: Boolean): Boolean? {
 
 fun String.inDoubleQuotes(): String = "\"$this\""
 
-suspend inline fun <reified IncomingBody> HttpResponse.handleResponseBody(): Result<IncomingBody> = if (this.status.isSuccess().not()) {
+suspend inline fun <reified IncomingBody> HttpResponse.handleResponseBody(): Result<IncomingBody> = if (!this.status.isSuccess()) {
         Result.Failure(Throwable(this.status.value.toString() + " " + this.status.description))
     } else {
         Result.Success(this.body<IncomingBody>())
