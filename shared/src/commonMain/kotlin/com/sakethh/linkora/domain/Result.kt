@@ -5,7 +5,10 @@ sealed interface Result<T> {
         val data: T,
         val remoteExecResult: RemoteExecResult? = null
     ) : Result<T> {
-        data class RemoteExecResult(val isRemoteExecutionSuccessful: Boolean, val e: Throwable?)
+        data class RemoteExecResult(
+            val isRemoteExecutionSuccessful: Boolean,
+            val e: Throwable?
+        )
     }
 
     data class Loading<T>(
