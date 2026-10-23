@@ -25,8 +25,7 @@ class LocalizationRepoImpl(
     private val standardClient: HttpClient,
     private val localizationServerURL: suspend () -> String,
     private val localizationDao: LocalizationDao,
-) : LocalizationRepo.Remote,
-    LocalizationRepo.Local {
+) : LocalizationRepo.Remote, LocalizationRepo.Local {
     override fun getLanguagesFromServer(): Flow<Result<LocalizationInfoDTO>> = flow {
         emit(Result.Loading())
         standardClient.get(localizationServerURL() + "info").bodyAsText().let {
@@ -68,7 +67,8 @@ class LocalizationRepoImpl(
         localizationDao.addLocalizedStrings(localizedStrings)
     }
 
-    override suspend fun doesStringsPackForThisLanguageExists(languageCode: String): Boolean = localizationDao.doesStringsPackForThisLanguageExists(languageCode)
+    override suspend fun doesStringsPackForThisLanguageExists(languageCode: String): Boolean =
+        localizationDao.doesStringsPackForThisLanguageExists(languageCode)
 
     override suspend fun deleteAllLocalizedStringsForThisLanguage(
         languageCode: String,
@@ -76,39 +76,43 @@ class LocalizationRepoImpl(
         localizationDao.deleteAllLocalizedStringsForThisLanguage(languageCode)
     }
 
-    override suspend fun addNewLanguages(languages: List<LocalizedLanguage>): Flow<Result<Unit>> = wrappedResultFlow {
+    override suspend fun addNewLanguages(languages: List<LocalizedLanguage>): Flow<Result<Unit>> =
+        wrappedResultFlow {
             localizationDao.addNewLanguages(languages)
         }
 
-    override fun getAllLanguages(): Flow<Result<List<LocalizedLanguage>>> = localizationDao
-        .getAllLanguages()
-        .map {
-            Result.Success(it)
-        }
-        .onStart {
-            Result.Loading<List<LocalizedLanguage>>()
-        }
-        .catchAsExceptionAndEmitFailure()
+    override fun getAllLanguages(): Flow<Result<List<LocalizedLanguage>>> =
+        localizationDao
+            .getAllLanguages()
+            .map {
+                Result.Success(it)
+            }
+            .onStart {
+                Result.Loading<List<LocalizedLanguage>>()
+            }
+            .catchAsExceptionAndEmitFailure()
 
     private val _localizedStrings: MutableStateFlow<LocalizedStrings> =
         MutableStateFlow(
             LocalizedStrings(
-                values = mapOf()
-            )
+                values = mapOf(),
+            ),
         )
 
     override val localizedStrings: StateFlow<LocalizedStrings> = _localizedStrings.asStateFlow()
 
     override suspend fun loadLanguage(languageCode: String) {
-        // if strings are missing, LocalizedStrings falls back to default values, so this shouldn't be an issue
-        val localizedPairs = localizationDao.getLocalizedPairs(
-            languageCode = languageCode
-        )
+        // if strings are missing, LocalizedStrings falls back to default values, so this shouldn't
+        // be an issue
+        val localizedPairs =
+            localizationDao.getLocalizedPairs(
+                languageCode = languageCode,
+            )
 
         _localizedStrings.emit(
             LocalizedStrings(
-                values = localizedPairs
-            )
+                values = localizedPairs,
+            ),
         )
     }
 }

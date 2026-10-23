@@ -36,8 +36,7 @@ fun DeleteSelectedItemsDialog(deleteSelectedItemsDialogParam: DeleteSelectedItem
             if (!isDeletionInProgress.value) {
                 Button(
                     modifier =
-                        Modifier
-                            .pointerHoverIcon(icon = PointerIcon.Hand)
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxWidth()
                             .pressScaleEffect(),
                     onClick = {
@@ -60,8 +59,7 @@ fun DeleteSelectedItemsDialog(deleteSelectedItemsDialogParam: DeleteSelectedItem
             if (!isDeletionInProgress.value) {
                 OutlinedButton(
                     modifier =
-                        Modifier
-                            .pointerHoverIcon(icon = PointerIcon.Hand)
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxWidth()
                             .pressScaleEffect(),
                     onClick = deleteSelectedItemsDialogParam.onDismiss,
@@ -76,7 +74,9 @@ fun DeleteSelectedItemsDialog(deleteSelectedItemsDialogParam: DeleteSelectedItem
         },
         title = {
             Text(
-                text = if (isDeletionInProgress.value) localizedStrings.DeletionInProgress else localizedStrings.AreYouSureDeleteSelectedItems,
+                text =
+                    if (isDeletionInProgress.value) localizedStrings.DeletionInProgress
+                    else localizedStrings.AreYouSureDeleteSelectedItems,
                 style = MaterialTheme.typography.titleMedium,
                 fontSize = 22.sp,
                 lineHeight = 27.sp,
@@ -88,6 +88,8 @@ fun DeleteSelectedItemsDialog(deleteSelectedItemsDialogParam: DeleteSelectedItem
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
         },
-        onDismissRequest = { if (!isDeletionInProgress.value) deleteSelectedItemsDialogParam.onDismiss() },
+        onDismissRequest = {
+            if (!isDeletionInProgress.value) deleteSelectedItemsDialogParam.onDismiss()
+        },
     )
 }

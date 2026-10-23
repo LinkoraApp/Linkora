@@ -17,7 +17,9 @@ import kotlinx.coroutines.launch
  */
 object UIEvent {
     private val _uiEvents =
-        MutableSharedFlow<Type>() // `StateFlow` won't emit the same value again, so to make sure we're playing it safe,
+        MutableSharedFlow<
+            Type,
+        >() // `StateFlow` won't emit the same value again, so to make sure we're playing it safe,
 
     // `SharedFlow` is the way 🤪
     val uiEvents = _uiEvents.asSharedFlow()

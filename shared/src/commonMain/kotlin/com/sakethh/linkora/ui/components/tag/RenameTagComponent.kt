@@ -43,9 +43,9 @@ fun RenameTagComponent(
 ) {
     val localizedStrings = LocalizedStrings.current
     var newTagName by
-    rememberSaveable(existingName) {
-        mutableStateOf(existingName)
-    }
+        rememberSaveable(existingName) {
+            mutableStateOf(existingName)
+        }
     val tagFieldFocusRequester = remember {
         FocusRequester()
     }
@@ -84,7 +84,8 @@ fun RenameTagComponent(
                         newTagName = it
                     },
                     modifier =
-                        Modifier.padding(15.dp).fillMaxWidth()
+                        Modifier.padding(15.dp)
+                            .fillMaxWidth()
                             .focusRequester(tagFieldFocusRequester),
                     label = {
                         Text(

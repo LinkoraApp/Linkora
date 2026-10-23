@@ -100,11 +100,14 @@ class LocalFoldersRepoImpl(
         )
     }
 
-    override suspend fun insertANewFolderLocally(folder: Folder): Long = foldersDao.insertANewFolder(folder)
+    override suspend fun insertANewFolderLocally(folder: Folder): Long =
+        foldersDao.insertANewFolder(folder)
 
-    override suspend fun getAllRootFoldersAsList(): List<Folder> = foldersDao.getAllRootFoldersAsList()
+    override suspend fun getAllRootFoldersAsList(): List<Folder> =
+        foldersDao.getAllRootFoldersAsList()
 
-    override fun getAllFoldersAsResultList(): Flow<Result<List<Folder>>> = performLocalOperationWithRemoteSyncFlow<List<Folder>, Unit>(
+    override fun getAllFoldersAsResultList(): Flow<Result<List<Folder>>> =
+        performLocalOperationWithRemoteSyncFlow<List<Folder>, Unit>(
             canPushToServer = {
                 false
             },
@@ -119,11 +122,13 @@ class LocalFoldersRepoImpl(
 
     override suspend fun isFoldersTableEmpty(): Boolean = !foldersDao.doesFolderTableHaveData()
 
-    override suspend fun getChildFoldersOfThisParentIDAsList(parentFolderID: Long?): List<Folder> = foldersDao.getChildFoldersAsList(parentFolderID)
+    override suspend fun getChildFoldersOfThisParentIDAsList(parentFolderID: Long?): List<Folder> =
+        foldersDao.getChildFoldersAsList(parentFolderID)
 
     override suspend fun getLatestFoldersTableID(): Long = foldersDao.getLatestFoldersTableID()
 
-    override suspend fun getThisFolderData(folderID: Long): Flow<Result<Folder>> = performLocalOperationWithRemoteSyncFlow<Folder, Unit>(
+    override suspend fun getThisFolderData(folderID: Long): Flow<Result<Folder>> =
+        performLocalOperationWithRemoteSyncFlow<Folder, Unit>(
             canPushToServer = {
                 false
             },
@@ -135,19 +140,21 @@ class LocalFoldersRepoImpl(
     override suspend fun doesThisChildFolderExists(
         folderName: String,
         parentFolderID: Long?,
-    ): Flow<Result<Int>> = performLocalOperationWithRemoteSyncFlow<Int, Unit>(
-        canPushToServer = {
-            false
-        },
-        performRemoteOperation = false,
-    ) {
-        foldersDao.doesFolderExists(
-            folderName,
-            parentFolderID,
-        )
-    }
+    ): Flow<Result<Int>> =
+        performLocalOperationWithRemoteSyncFlow<Int, Unit>(
+            canPushToServer = {
+                false
+            },
+            performRemoteOperation = false,
+        ) {
+            foldersDao.doesFolderExists(
+                folderName,
+                parentFolderID,
+            )
+        }
 
-    override suspend fun doesThisRootFolderExists(folderName: String): Flow<Result<Boolean>> = performLocalOperationWithRemoteSyncFlow<Boolean, Unit>(
+    override suspend fun doesThisRootFolderExists(folderName: String): Flow<Result<Boolean>> =
+        performLocalOperationWithRemoteSyncFlow<Boolean, Unit>(
             canPushToServer = {
                 false
             },
@@ -162,36 +169,39 @@ class LocalFoldersRepoImpl(
         pageSize: Int,
         lastSeenName: String?,
         lastSeenId: Long?,
-    ): Flow<Result<List<Folder>>> = when (sortOption) {
-        Sorting.A_TO_Z,
-        Sorting.Z_TO_A,
-            ->
-            foldersDao.getRootFoldersSortedByName(
-                lastSeenId = lastSeenId,
-                lastSeenName = lastSeenName?.takeIf { it.isNotEmpty() },
-                isAscending = sortOption == Sorting.A_TO_Z,
-                pageSize = pageSize,
-                isArchived = isArchived,
-            )
+    ): Flow<Result<List<Folder>>> =
+        when (sortOption) {
+            Sorting.A_TO_Z,
+            Sorting.Z_TO_A ->
+                foldersDao.getRootFoldersSortedByName(
+                    lastSeenId = lastSeenId,
+                    lastSeenName = lastSeenName?.takeIf { it.isNotEmpty() },
+                    isAscending = sortOption == Sorting.A_TO_Z,
+                    pageSize = pageSize,
+                    isArchived = isArchived,
+                )
 
-        else ->
-            foldersDao.getRootFoldersSortedById(
-                lastSeenId = lastSeenId,
-                isAscending = sortOption == Sorting.OLD_TO_NEW,
-                pageSize = pageSize,
-                isArchived = isArchived,
-            )
-    }.mapToResultFlow()
+            else ->
+                foldersDao.getRootFoldersSortedById(
+                    lastSeenId = lastSeenId,
+                    isAscending = sortOption == Sorting.OLD_TO_NEW,
+                    pageSize = pageSize,
+                    isArchived = isArchived,
+                )
+        }.mapToResultFlow()
 
     override suspend fun getChildFolders(
         parentFolderId: Long,
         sortOption: String,
         pageSize: Int,
         startIndex: Long,
-    ): Flow<Result<List<Folder>>> = foldersDao.getChildFolders(parentFolderId, sortOption, pageSize, startIndex)
+    ): Flow<Result<List<Folder>>> =
+        foldersDao
+            .getChildFolders(parentFolderId, sortOption, pageSize, startIndex)
             .mapToResultFlow()
 
-    override suspend fun getChildFoldersAsList(parentFolderId: Long): List<Folder> = foldersDao.getChildFoldersAsList(parentFolderId)
+    override suspend fun getChildFoldersAsList(parentFolderId: Long): List<Folder> =
+        foldersDao.getChildFoldersAsList(parentFolderId)
 
     override fun sortFoldersAsNonResultFlow(
         parentFolderId: Long,
@@ -200,11 +210,14 @@ class LocalFoldersRepoImpl(
 
     override suspend fun getChildFoldersOfThisParentIDAsFlow(
         parentFolderID: Long?,
-    ): Flow<Result<List<Folder>>> = foldersDao.getChildFoldersAsFlow(parentFolderID).mapToResultFlow()
+    ): Flow<Result<List<Folder>>> =
+        foldersDao.getChildFoldersAsFlow(parentFolderID).mapToResultFlow()
 
-    override suspend fun getRemoteIdOfAFolder(localId: Long): Long? = foldersDao.getRemoteFolderId(localId)
+    override suspend fun getRemoteIdOfAFolder(localId: Long): Long? =
+        foldersDao.getRemoteFolderId(localId)
 
-    override suspend fun getLocalIdOfAFolder(remoteId: Long): Long? = foldersDao.getLocalIdOfAFolder(remoteId)
+    override suspend fun getLocalIdOfAFolder(remoteId: Long): Long? =
+        foldersDao.getLocalIdOfAFolder(remoteId)
 
     override suspend fun markFolderAsArchive(
         folderID: Long,
@@ -301,7 +314,8 @@ class LocalFoldersRepoImpl(
         }
     }
 
-    override suspend fun updateLocalFolderData(folder: Folder): Flow<Result<Unit>> = performLocalOperationWithRemoteSyncFlow<Unit, Unit>(
+    override suspend fun updateLocalFolderData(folder: Folder): Flow<Result<Unit>> =
+        performLocalOperationWithRemoteSyncFlow<Unit, Unit>(
             canPushToServer = {
                 false
             },
@@ -337,7 +351,9 @@ class LocalFoldersRepoImpl(
                             },
                         preferences.correlation,
                     )
-                remoteFoldersRepo.updateFolder(remoteFolderDTO.copy(eventTimestamp = eventTimestamp))
+                remoteFoldersRepo.updateFolder(
+                    remoteFolderDTO.copy(eventTimestamp = eventTimestamp),
+                )
             },
             remoteOperationOnSuccess = {
                 preferencesRepository.updateLastSyncedWithServerTimeStamp(it.eventTimestamp)
@@ -409,7 +425,8 @@ class LocalFoldersRepoImpl(
         folderID: Long,
         viaSocket: Boolean,
     ): Flow<Result<Unit>> {
-        // we need to hold the id because the local folder gets deleted first, so if we try to search
+        // we need to hold the id because the local folder gets deleted first, so if we try to
+        // search
         // after that, there will be nothing to search
         val remoteFolderId = getRemoteIdOfAFolder(folderID)
         val preferences = preferencesRepository.getPreferences()

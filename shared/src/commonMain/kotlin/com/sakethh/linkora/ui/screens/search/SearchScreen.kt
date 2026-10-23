@@ -102,7 +102,7 @@ fun SearchScreen(
         cancelForceSearchActive()
     }
     val historyLinkTagsPairsState by
-    searchScreenVM.historyLinkTagsPairsState.collectAsStateWithLifecycle()
+        searchScreenVM.historyLinkTagsPairsState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
     val localUriHandler = LocalUriHandler.current
     val navController = LocalNavController.current
@@ -171,7 +171,8 @@ fun SearchScreen(
                                 key(it.name) {
                                     FilterChip(
                                         text = it.asLocalizedString(),
-                                        isSelected = searchScreenVM.appliedFolderFilters.contains(it),
+                                        isSelected =
+                                            searchScreenVM.appliedFolderFilters.contains(it),
                                         onClick = {
                                             searchScreenVM.toggleFolderFilter(it)
                                         },
@@ -278,8 +279,8 @@ fun SearchScreen(
                             tagMoreIconClick = {
                                 coroutineScope.pushUIEvent(
                                     UIEvent.Type.ShowTagMenuBtmSheet(
-                                        selectedTag = it
-                                    )
+                                        selectedTag = it,
+                                    ),
                                 )
                             },
                             onRetrieveNextPage = searchScreenVM::retrieveNextSearchPage,

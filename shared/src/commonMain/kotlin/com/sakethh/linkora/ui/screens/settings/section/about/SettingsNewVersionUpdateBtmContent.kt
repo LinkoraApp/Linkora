@@ -63,8 +63,9 @@ fun NewVersionUpdateBtmContent(
         item {
             VersionCardForBtmSheetContent(
                 title =
-                    localizedStrings.LatestVersionAvailableDesc
-                        .replaceActual(tagName.substringBefore("-")),
+                    localizedStrings.LatestVersionAvailableDesc.replaceActual(
+                        tagName.substringBefore("-"),
+                    ),
                 value = latestVersion,
             )
         }

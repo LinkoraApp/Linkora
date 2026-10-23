@@ -36,7 +36,8 @@ fun SettingsSectionScaffold(
     actions: ComposableContent = {},
     bottomBar: ComposableContent = {},
     content:
-    @Composable (paddingValues: PaddingValues, topAppBarScrollBehaviour: TopAppBarScrollBehavior) -> Unit,
+        @Composable
+        (paddingValues: PaddingValues, topAppBarScrollBehaviour: TopAppBarScrollBehavior) -> Unit,
 ) {
     val navController = LocalNavController.current
     val topAppBarScrollBehaviour = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -57,7 +58,8 @@ fun SettingsSectionScaffold(
                     navigationIcon = {
                         IconButton(
                             modifier =
-                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(),
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .pressScaleEffect(),
                             onClick = {
                                 navController.navigateUp()
                             },

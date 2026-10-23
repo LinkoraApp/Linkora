@@ -68,17 +68,22 @@ fun DesktopNavigationRail(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 rootRouteList.forEach { navRouteItem ->
-                    if (!preferences.isHomeScreenEnabled && navRouteItem.toString() == Navigation.Root.HomeScreen.toString()) {
+                    if (
+                        !preferences.isHomeScreenEnabled &&
+                            navRouteItem.toString() == Navigation.Root.HomeScreen.toString()
+                    ) {
                         return@forEach
                     }
 
                     val isSelected = currentRoute?.hasRoute(navRouteItem::class) == true
                     NavigationRailItem(
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(
-                            start = 15.dp,
-                            end = 15.dp,
-                            top = 15.dp,
-                        ),
+                        modifier =
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .padding(
+                                    start = 15.dp,
+                                    end = 15.dp,
+                                    top = 15.dp,
+                                ),
                         selected = isSelected,
                         onClick = {
                             if (currentRoute?.hasRoute(navRouteItem::class) == false) {
@@ -88,23 +93,26 @@ fun DesktopNavigationRail(
                         },
                         icon = {
                             Icon(
-                                imageVector = if (isSelected) {
-                                    when (navRouteItem) {
-                                        Navigation.Root.HomeScreen -> Icons.Filled.Home
-                                        Navigation.Root.SearchScreen -> Icons.Filled.Search
-                                        Navigation.Root.CollectionsScreen -> Icons.Filled.Folder
-                                        Navigation.Root.SettingsScreen -> Icons.Filled.Settings
-                                        else -> return@NavigationRailItem
-                                    }
-                                } else {
-                                    when (navRouteItem) {
-                                        Navigation.Root.HomeScreen -> Icons.Outlined.Home
-                                        Navigation.Root.SearchScreen -> Icons.Outlined.Search
-                                        Navigation.Root.CollectionsScreen -> Icons.Outlined.Folder
-                                        Navigation.Root.SettingsScreen -> Icons.Outlined.Settings
-                                        else -> return@NavigationRailItem
-                                    }
-                                },
+                                imageVector =
+                                    if (isSelected) {
+                                        when (navRouteItem) {
+                                            Navigation.Root.HomeScreen -> Icons.Filled.Home
+                                            Navigation.Root.SearchScreen -> Icons.Filled.Search
+                                            Navigation.Root.CollectionsScreen -> Icons.Filled.Folder
+                                            Navigation.Root.SettingsScreen -> Icons.Filled.Settings
+                                            else -> return@NavigationRailItem
+                                        }
+                                    } else {
+                                        when (navRouteItem) {
+                                            Navigation.Root.HomeScreen -> Icons.Outlined.Home
+                                            Navigation.Root.SearchScreen -> Icons.Outlined.Search
+                                            Navigation.Root.CollectionsScreen ->
+                                                Icons.Outlined.Folder
+                                            Navigation.Root.SettingsScreen ->
+                                                Icons.Outlined.Settings
+                                            else -> return@NavigationRailItem
+                                        }
+                                    },
                                 contentDescription = null,
                             )
                         },
@@ -113,7 +121,8 @@ fun DesktopNavigationRail(
                                 text = navRouteItem.asLocalizedString(),
                                 style = MaterialTheme.typography.titleSmall,
                                 maxLines = 1,
-                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                fontWeight =
+                                    if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                             )
                         },
                     )
@@ -130,10 +139,13 @@ fun DesktopNavigationRail(
                     ) {
                         IconButton(
                             onClick = {
-                                if (!isPerformingStartupSync && !isDataSyncingFromPullRefresh.value) {
+                                if (
+                                    !isPerformingStartupSync && !isDataSyncingFromPullRefresh.value
+                                ) {
                                     performAction(
                                         AppAction.SaveServerConnectionAndSync(
-                                            serverConnection = preferences.currentSavedServerConfig(),
+                                            serverConnection =
+                                                preferences.currentSavedServerConfig(),
                                             timeStampAfter = getLastSyncedTime,
                                             onSyncStart = {
                                                 isDataSyncingFromPullRefresh.value = true
@@ -161,10 +173,13 @@ fun DesktopNavigationRail(
                 if (preferences.areSnapshotsEnabled && platform == Platform.Desktop) {
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
-                            .alpha(
-                                if (!Platform.Android.onMobile() && isAnySnapshotOngoing) 1f else 0.25f,
-                            ),
+                        modifier =
+                            Modifier.align(Alignment.BottomCenter)
+                                .padding(bottom = 20.dp)
+                                .alpha(
+                                    if (!Platform.Android.onMobile() && isAnySnapshotOngoing) 1f
+                                    else 0.25f,
+                                ),
                     ) {
                         Icon(
                             imageVector = Icons.Default.BackupTable,

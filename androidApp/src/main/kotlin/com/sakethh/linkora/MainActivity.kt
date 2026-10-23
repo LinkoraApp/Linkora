@@ -84,7 +84,8 @@ class MainActivity : ComponentActivity() {
             }
 
             val activityResultLauncherForFileImport =
-                rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+                rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri?
+                    ->
                     coroutineScope.pushUIEvent(
                         AndroidUIEvent.Type.UriOfTheFileForImporting(
                             uri,
@@ -93,10 +94,13 @@ class MainActivity : ComponentActivity() {
                 }
             val localContext = LocalContext.current
             val activityResultLauncherForPickingADirectory =
-                rememberLauncherForActivityResult(contract = OpenDocumentTreeWithPermissionsContract()) { uri: Uri? ->
+                rememberLauncherForActivityResult(
+                    contract = OpenDocumentTreeWithPermissionsContract(),
+                ) { uri: Uri? ->
                     uri?.let {
                         val flags =
-                            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                                Intent.FLAG_GRANT_WRITE_URI_PERMISSION
 
                         val isUriPermissionPersisted =
                             contentResolver.persistedUriPermissions.any { uriPermission ->
@@ -123,12 +127,14 @@ class MainActivity : ComponentActivity() {
                                         when (it) {
                                             Action.LaunchDirectoryPicker -> {
                                                 activityResultLauncherForPickingADirectory.launch(
-                                                    null
+                                                    null,
                                                 )
                                             }
 
                                             is Action.LaunchFileImport -> {
-                                                activityResultLauncherForFileImport.launch(it.fileType)
+                                                activityResultLauncherForFileImport.launch(
+                                                    it.fileType,
+                                                )
                                             }
 
                                             Action.LaunchWriteExternalStoragePermission -> {
@@ -153,21 +159,25 @@ class MainActivity : ComponentActivity() {
             CompositionLocalProvider(
                 LocalNavController provides navController,
                 LocalFabController provides
-                        retain {
-                            FabStateController()
-                        },
-                LocalPlatform provides remember(
-                    LocalWindowInfo.current.containerSize,
-                    LocalConfiguration.current.orientation
-                ) { currentAndroidPlatform() },
-                LocalizedStrings provides localizedStrings
+                    retain {
+                        FabStateController()
+                    },
+                LocalPlatform provides
+                    remember(
+                        LocalWindowInfo.current.containerSize,
+                        LocalConfiguration.current.orientation,
+                    ) {
+                        currentAndroidPlatform()
+                    },
+                LocalizedStrings provides localizedStrings,
             ) {
                 val context = LocalContext.current
                 val isSystemInDarkTheme = isSystemInDarkTheme()
 
-                val colorScheme = retain(isSystemInDarkTheme, preferences) {
-                    getAppColorScheme(preferences, context, isSystemInDarkTheme)
-                }
+                val colorScheme =
+                    retain(isSystemInDarkTheme, preferences) {
+                        getAppColorScheme(preferences, context, isSystemInDarkTheme)
+                    }
 
                 LinkoraTheme(
                     colorScheme = colorScheme,
@@ -182,7 +192,9 @@ class MainActivity : ComponentActivity() {
                             showNotificationPermissionDialog = false
                         },
                         launchRuntimePermission = {
-                            notificationRuntimePermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            notificationRuntimePermission.launch(
+                                Manifest.permission.POST_NOTIFICATIONS,
+                            )
                         },
                     )
                 }
@@ -196,15 +208,16 @@ class OpenDocumentTreeWithPermissionsContract : ActivityResultContracts.OpenDocu
     override fun createIntent(
         context: Context,
         input: Uri?,
-    ): Intent = super.createIntent(context, input).apply {
-        listOf(
-            Intent.FLAG_GRANT_PREFIX_URI_PERMISSION,
-            Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
-            Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION,
-            Intent.FLAG_GRANT_READ_URI_PERMISSION,
-        )
-            .forEach {
-                addFlags(it)
-            }
-    }
+    ): Intent =
+        super.createIntent(context, input).apply {
+            listOf(
+                    Intent.FLAG_GRANT_PREFIX_URI_PERMISSION,
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+                    Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                )
+                .forEach {
+                    addFlags(it)
+                }
+        }
 }

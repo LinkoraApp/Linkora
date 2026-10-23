@@ -65,6 +65,10 @@ import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.isSuccess
+import kotlin.jvm.JvmName
+import kotlin.time.Duration
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.CoroutineScope
@@ -76,68 +80,72 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.update
-import kotlin.jvm.JvmName
-import kotlin.time.Duration
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
-fun String.addZeroAtPrefixOnInt() = try {
-    if (toInt() > 9) this else "0$this"
-} catch (e: Exception) {
-    e.printStackTrace()
-    this
-}
-
-fun String.initialCaps(): String = when {
-    length > 1 -> {
-        get(0).uppercase() + substring(1).lowercase()
+fun String.addZeroAtPrefixOnInt() =
+    try {
+        if (toInt() > 9) this else "0$this"
+    } catch (e: Exception) {
+        e.printStackTrace()
+        this
     }
 
-    else -> this.uppercase()
-}
+fun String.initialCaps(): String =
+    when {
+        length > 1 -> {
+            get(0).uppercase() + substring(1).lowercase()
+        }
 
-fun String.host(throwOnException: Boolean = true): String = try {
-    this.split("/")[2]
-} catch (e: Exception) {
-    if (throwOnException) {
-        throw e
+        else -> this.uppercase()
     }
-    this
-}
+
+fun String.host(throwOnException: Boolean = true): String =
+    try {
+        this.split("/")[2]
+    } catch (e: Exception) {
+        if (throwOnException) {
+            throw e
+        }
+        this
+    }
 
 fun Modifier.fillMaxWidthWithPadding(
-    paddingValues: PaddingValues = PaddingValues(
-        start = 15.dp,
-        end = 15.dp,
-    ),
+    paddingValues: PaddingValues =
+        PaddingValues(
+            start = 15.dp,
+            end = 15.dp,
+        ),
 ): Modifier = this.fillMaxWidth().padding(paddingValues)
 
 @Composable
-fun Modifier.bottomNavPaddingAcrossPlatforms(): Modifier = if (Platform.Android.onMobile()) {
-    this.navigationBarsPadding()
-} else {
-    this.padding(bottom = 10.dp)
-}
+fun Modifier.bottomNavPaddingAcrossPlatforms(): Modifier =
+    if (Platform.Android.onMobile()) {
+        this.navigationBarsPadding()
+    } else {
+        this.padding(bottom = 10.dp)
+    }
 
 // keeps the nav bar (what's it actually called?) transparent while still applying padding on top,
 // end, bottom;
 // kinda a hacky workaround, but there doesn't seem to be any clear documentation on how to handle
 // this properly
-fun Modifier.addEdgeToEdgeScaffoldPadding(paddingValues: PaddingValues) = this.padding(
-    top = paddingValues.calculateTopPadding(),
-    start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
-    end = paddingValues.calculateEndPadding(LayoutDirection.Rtl),
-).consumeWindowInsets(paddingValues)
+fun Modifier.addEdgeToEdgeScaffoldPadding(paddingValues: PaddingValues) =
+    this.padding(
+            top = paddingValues.calculateTopPadding(),
+            start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+            end = paddingValues.calculateEndPadding(LayoutDirection.Rtl),
+        )
+        .consumeWindowInsets(paddingValues)
 
 fun String?.isNotNullOrNotBlank(): Boolean = !this.isNullOrBlank()
 
-fun String.isAValidLink(): Boolean = try {
-    this.host()
-    true
-} catch (e: Exception) {
-    e.printStackTrace()
-    false
-}
+fun String.isAValidLink(): Boolean =
+    try {
+        this.host()
+        true
+    } catch (e: Exception) {
+        e.printStackTrace()
+        false
+    }
 
 inline fun Boolean.ifNot(init: () -> Unit): Boolean {
     if (!this) {
@@ -159,9 +167,11 @@ suspend fun <T> Result<T>.pushSnackbarOnFailure() {
     }
 }
 
-fun <T> Result.Success<T>.isRemoteSuccessful() = this.remoteExecResult?.isRemoteExecutionSuccessful == true
+fun <T> Result.Success<T>.isRemoteSuccessful() =
+    this.remoteExecResult?.isRemoteExecutionSuccessful == true
 
-fun <T> Result.Success<T>.getRemoteOnlyFailureMsg(remoteExecFailedLocalizedLabel: String): String = if (this.remoteExecResult != null) {
+fun <T> Result.Success<T>.getRemoteOnlyFailureMsg(remoteExecFailedLocalizedLabel: String): String =
+    if (this.remoteExecResult != null) {
         "\n\n${remoteExecFailedLocalizedLabel}\n" + this.remoteExecResult.e.toString()
     } else {
         ""
@@ -181,29 +191,35 @@ fun Throwable?.pushSnackbar(coroutineScope: CoroutineScope) {
 
 fun <T> Flow<Result<T>>.catchAsThrowableAndEmitFailure(
     init: suspend () -> Unit = {},
-): Flow<Result<T>> = this.catch {
-    init()
-    it.printStackTrace()
-    emit(Result.Failure(it))
-}
-
-fun <T> Flow<Result<T>>.catchAsExceptionAndEmitFailure(): Flow<Result<T>> = this.catch {
-    try {
-        it as Exception
-        it.printStackTrace()
-        emit(Result.Failure(it))
-    } catch (e: Exception) {
-        e.printStackTrace()
+): Flow<Result<T>> =
+    this.catch {
+        init()
         it.printStackTrace()
         emit(Result.Failure(it))
     }
-}
+
+fun <T> Flow<Result<T>>.catchAsExceptionAndEmitFailure(): Flow<Result<T>> =
+    this.catch {
+        try {
+            it as Exception
+            it.printStackTrace()
+            emit(Result.Failure(it))
+        } catch (e: Exception) {
+            e.printStackTrace()
+            it.printStackTrace()
+            emit(Result.Failure(it))
+        }
+    }
 
 fun String.replaceActual(vararg actuals: String): String {
     val finalStr = StringBuilder()
     var currIteration = 0
     while (currIteration < length) {
-        if (currIteration + 1 < length && this[currIteration] == '>' && this[currIteration + 1] == '{') {
+        if (
+            currIteration + 1 < length &&
+                this[currIteration] == '>' &&
+                this[currIteration + 1] == '{'
+        ) {
             val closeTagIndex = indexOf('}', startIndex = currIteration)
             if (closeTagIndex != -1) {
                 val indexValue =
@@ -216,7 +232,7 @@ fun String.replaceActual(vararg actuals: String): String {
                     finalStr.append(
                         this,
                         currIteration,
-                        closeTagIndex + 1
+                        closeTagIndex + 1,
                     ) // '}' is also appended with the rest of the invalid value
                 }
                 currIteration = closeTagIndex + 1
@@ -234,9 +250,11 @@ fun String.replaceActual(vararg actuals: String): String {
     return finalStr.toString()
 }
 
-fun String.isATwitterUrl(): Boolean = this.trim().startsWith("http://twitter.com/") || this.trim()
-    .startsWith("https://twitter.com/") || this.trim().startsWith("http://x.com/") || this.trim()
-    .startsWith("https://x.com/")
+fun String.isATwitterUrl(): Boolean =
+    this.trim().startsWith("http://twitter.com/") ||
+        this.trim().startsWith("https://twitter.com/") ||
+        this.trim().startsWith("http://x.com/") ||
+        this.trim().startsWith("https://x.com/")
 
 suspend fun <T : Any> T.then(init: suspend () -> Unit): T {
     init()
@@ -254,17 +272,20 @@ fun NavHostController.inRootScreen(includeSettingsScreen: Boolean): Boolean? {
         )
     }
     return this.currentBackStackEntryAsState().value?.destination?.let { destination ->
-        rootRoutesList.filter {
-            includeSettingsScreen || it != Navigation.Root.SettingsScreen
-        }.any {
-            destination.hasRoute(it::class)
-        }
+        rootRoutesList
+            .filter {
+                includeSettingsScreen || it != Navigation.Root.SettingsScreen
+            }
+            .any {
+                destination.hasRoute(it::class)
+            }
     }
 }
 
 fun String.inDoubleQuotes(): String = "\"$this\""
 
-suspend inline fun <reified IncomingBody> HttpResponse.handleResponseBody(): Result<IncomingBody> = if (!this.status.isSuccess()) {
+suspend inline fun <reified IncomingBody> HttpResponse.handleResponseBody(): Result<IncomingBody> =
+    if (!this.status.isSuccess()) {
         Result.Failure(Throwable(this.status.value.toString() + " " + this.status.description))
     } else {
         Result.Success(this.body<IncomingBody>())
@@ -276,24 +297,28 @@ fun AppPreferences.ifServerConfigured(init: () -> Unit) {
     }
 }
 
-fun AppPreferences.currentSavedServerConfig(): ServerConnection = ServerConnection(
-    serverUrl = serverBaseUrl,
-    authToken = serverSecurityToken,
-    syncType = serverSyncType,
-    webSocketScheme = "wss",
-)
+fun AppPreferences.currentSavedServerConfig(): ServerConnection =
+    ServerConnection(
+        serverUrl = serverBaseUrl,
+        authToken = serverSecurityToken,
+        syncType = serverSyncType,
+        webSocketScheme = "wss",
+    )
 
 fun AppPreferences.isServerConfigured(): Boolean = serverBaseUrl.isNotBlank()
 
-fun AppPreferences.canPushToServer(): Boolean = listOf(SyncType.TwoWay, SyncType.ClientToServer).any {
+fun AppPreferences.canPushToServer(): Boolean =
+    listOf(SyncType.TwoWay, SyncType.ClientToServer).any {
         isServerConfigured() && serverSyncType == it
     }
 
-fun AppPreferences.canReadFromServer(): Boolean = listOf(SyncType.TwoWay, SyncType.ServerToClient).any {
+fun AppPreferences.canReadFromServer(): Boolean =
+    listOf(SyncType.TwoWay, SyncType.ServerToClient).any {
         isServerConfigured() && serverSyncType == it
     }
 
-suspend fun AppPreferences.lastSyncedLocally(preferencesRepository: PreferencesRepository): Long = preferencesRepository.readPreferenceValue(
+suspend fun AppPreferences.lastSyncedLocally(preferencesRepository: PreferencesRepository): Long =
+    preferencesRepository.readPreferenceValue(
         preferenceKey = AppPreferences.LAST_TIME_SYNCED_WITH_SERVER,
     ) ?: 0
 
@@ -307,7 +332,8 @@ suspend fun PreferencesRepository.updateLastSyncedWithServerTimeStamp(newValue: 
     }
 }
 
-fun <T> MutableStateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<T>>>>.onRetrieved(
+fun <T> MutableStateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<T>>>>
+    .onRetrieved(
     currentKey: Pair<LastSeenId, LastSeenString>,
     data: List<T>,
     shouldShuffle: Boolean,
@@ -369,28 +395,35 @@ context(viewModel: ViewModel)
 fun <T> Flow<T>.asStateInWhileSubscribed(
     initialValue: T,
     stopTimeoutMillis: Long = 5000,
-): StateFlow<T> = stateIn(
-    scope = viewModel.viewModelScope,
-    started = SharingStarted.WhileSubscribed(stopTimeoutMillis = stopTimeoutMillis),
-    initialValue = initialValue,
-)
+): StateFlow<T> =
+    stateIn(
+        scope = viewModel.viewModelScope,
+        started = SharingStarted.WhileSubscribed(stopTimeoutMillis = stopTimeoutMillis),
+        initialValue = initialValue,
+    )
 
 @JvmName("shuffleLinksFlatChildFolderData")
-fun Flow<Result<List<FlatChildFolderData>>>.shuffleLinks(): Flow<Result<List<FlatChildFolderData>>> = transform {
-        when (it) {
-            is Result.Success -> emit(
+fun Flow<Result<List<FlatChildFolderData>>>.shuffleLinks():
+    Flow<Result<List<FlatChildFolderData>>> = transform {
+    when (it) {
+        is Result.Success ->
+            emit(
                 it.copy(
-                    data = it.data.filter {
-                        it.itemType != Constants.LINK
-                    } + it.data.filter {
-                        it.itemType == Constants.LINK
-                    }.shuffled(),
+                    data =
+                        it.data.filter {
+                            it.itemType != Constants.LINK
+                        } +
+                            it.data
+                                .filter {
+                                    it.itemType == Constants.LINK
+                                }
+                                .shuffled(),
                 ),
             )
 
-            else -> emit(it)
-        }
+        else -> emit(it)
     }
+}
 
 fun Flow<Result<List<Link>>>.shuffleLinks(): Flow<Result<List<Link>>> = transform {
     when (it) {
@@ -400,17 +433,23 @@ fun Flow<Result<List<Link>>>.shuffleLinks(): Flow<Result<List<Link>>> = transfor
 }
 
 @JvmName("shuffleLinksFlatSearchResult")
-fun Flow<Result<List<FlatSearchResult>>>.shuffleLinks(): Flow<Result<List<FlatSearchResult>>> = transform {
+fun Flow<Result<List<FlatSearchResult>>>.shuffleLinks(): Flow<Result<List<FlatSearchResult>>> =
+    transform {
         when (it) {
-            is Result.Success -> emit(
-                it.copy(
-                    data = it.data.filter {
-                        it.itemType != Constants.LINK
-                    } + it.data.filter {
-                        it.itemType == Constants.LINK
-                    }.shuffled(),
-                ),
-            )
+            is Result.Success ->
+                emit(
+                    it.copy(
+                        data =
+                            it.data.filter {
+                                it.itemType != Constants.LINK
+                            } +
+                                it.data
+                                    .filter {
+                                        it.itemType == Constants.LINK
+                                    }
+                                    .shuffled(),
+                    ),
+                )
 
             else -> emit(it)
         }
@@ -435,45 +474,57 @@ fun Modifier.highlightOnFocused(shape: Shape = RectangleShape): Modifier {
         mutableStateOf(false)
     }
     return onFocusChanged { focusState ->
-        hasFocus = focusState.hasFocus
-    }.border(
-        width = if (hasFocus) 2.5.dp else 0.dp,
-        color = if (hasFocus) MaterialTheme.colorScheme.primary else Color.Transparent,
-        shape
-    ).background(
-        color = if (hasFocus) {
-            MaterialTheme.colorScheme.primaryContainer.copy(0.15f)
-        } else {
-            Color.Transparent
-        },
-        shape
-    )
+            hasFocus = focusState.hasFocus
+        }
+        .border(
+            width = if (hasFocus) 2.5.dp else 0.dp,
+            color = if (hasFocus) MaterialTheme.colorScheme.primary else Color.Transparent,
+            shape,
+        )
+        .background(
+            color =
+                if (hasFocus) {
+                    MaterialTheme.colorScheme.primaryContainer.copy(0.15f)
+                } else {
+                    Color.Transparent
+                },
+            shape,
+        )
 }
 
 @Composable
 fun ScrollAreaScope.VerticalScrollbar() {
     VerticalScrollbar(
-        modifier = Modifier.align(Alignment.TopEnd).pointerHoverIcon(PointerIcon.Hand)
-            .fillMaxHeight().padding(end = 2.5.dp, start = 2.5.dp).width(8.dp),
+        modifier =
+            Modifier.align(Alignment.TopEnd)
+                .pointerHoverIcon(PointerIcon.Hand)
+                .fillMaxHeight()
+                .padding(end = 2.5.dp, start = 2.5.dp)
+                .width(8.dp),
     ) {
         Thumb(
-            thumbVisibility = ThumbVisibility.HideWhileIdle(
-                enter = fadeIn(),
-                exit = fadeOut(),
-                hideDelay = Duration.parse("2s"),
-            ),
-            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand).clip(RoundedCornerShape(25.dp))
-                .background(MaterialTheme.colorScheme.secondary.copy(0.65f)),
+            thumbVisibility =
+                ThumbVisibility.HideWhileIdle(
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                    hideDelay = Duration.parse("2s"),
+                ),
+            modifier =
+                Modifier.pointerHoverIcon(PointerIcon.Hand)
+                    .clip(RoundedCornerShape(25.dp))
+                    .background(MaterialTheme.colorScheme.secondary.copy(0.65f)),
         )
     }
 }
 
 @OptIn(ExperimentalUuidApi::class)
-suspend fun WebCaptureRepo.getOrCreateFolderUuid(url: String): String = this.getFolderNameByLink(url) ?: run {
-        val newUuid = Uuid.random().toString()
-        this.insertMetadata(WebCaptureMetadata(link = url, uuid = newUuid))
-        newUuid
-    }
+suspend fun WebCaptureRepo.getOrCreateFolderUuid(url: String): String =
+    this.getFolderNameByLink(url)
+        ?: run {
+            val newUuid = Uuid.random().toString()
+            this.insertMetadata(WebCaptureMetadata(link = url, uuid = newUuid))
+            newUuid
+        }
 
 @Composable
 fun SyncType.asUIString(): String {
@@ -507,10 +558,11 @@ fun Navigation.Root.asLocalizedString(): String {
     }
 }
 
-fun initialRoutePairs(localizedStrings: LocalizedStrings): PersistentList<Pair<String, Int>> = persistentListOf(
+fun initialRoutePairs(localizedStrings: LocalizedStrings): PersistentList<Pair<String, Int>> =
+    persistentListOf(
         localizedStrings.Home to Constants.HOME_SCREEN_ROUTE_ID,
         localizedStrings.Search to Constants.SEARCH_SCREEN_ROUTE_ID,
-        localizedStrings.Collections to Constants.COLLECTIONS_SCREEN_ROUTE_ID
+        localizedStrings.Collections to Constants.COLLECTIONS_SCREEN_ROUTE_ID,
     )
 
 fun Int.toInitialRoutePair(localizedStrings: LocalizedStrings): Pair<String, Int> {
@@ -519,7 +571,8 @@ fun Int.toInitialRoutePair(localizedStrings: LocalizedStrings): Pair<String, Int
     }
     return when (this) {
         Constants.HOME_SCREEN_ROUTE_ID -> localizedStrings.Home to Constants.HOME_SCREEN_ROUTE_ID
-        Constants.SEARCH_SCREEN_ROUTE_ID -> localizedStrings.Search to Constants.SEARCH_SCREEN_ROUTE_ID
+        Constants.SEARCH_SCREEN_ROUTE_ID ->
+            localizedStrings.Search to Constants.SEARCH_SCREEN_ROUTE_ID
         else -> localizedStrings.Collections to Constants.COLLECTIONS_SCREEN_ROUTE_ID
     }
 }

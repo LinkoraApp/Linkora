@@ -83,8 +83,7 @@ fun ServerManagementBottomSheet(
                         Spacer(Modifier.width(15.dp))
                         Column {
                             Text(
-                                text =
-                                    localizedStrings.CurrentlyConnectedTo,
+                                text = localizedStrings.CurrentlyConnectedTo,
                                 style = MaterialTheme.typography.titleSmall,
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.secondary,
@@ -131,8 +130,7 @@ fun ServerManagementBottomSheet(
                         },
                     ) {
                         Text(
-                            text =
-                                localizedStrings.EditServerConfiguration,
+                            text = localizedStrings.EditServerConfiguration,
                             style = MaterialTheme.typography.titleSmall,
                         )
                     }
@@ -160,8 +158,7 @@ fun ServerManagementBottomSheet(
                         },
                     ) {
                         Text(
-                            text =
-                                localizedStrings.DeleteTheServerConnection,
+                            text = localizedStrings.DeleteTheServerConnection,
                             style = MaterialTheme.typography.titleSmall,
                         )
                     }

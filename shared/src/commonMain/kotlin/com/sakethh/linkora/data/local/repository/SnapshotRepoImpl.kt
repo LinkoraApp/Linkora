@@ -92,27 +92,29 @@ class SnapshotRepoImpl(
                             this.launch(Dispatchers.Default) {
                                 linkoraLog("data checks for snapshots are now enabled")
                                 septetCombine(
-                                    linksRepo.getAllLinksAsFlow(),
-                                    foldersRepo.getAllFoldersAsFlow(),
-                                    localPanelsRepo.getAllThePanels(),
-                                    localPanelsRepo.getAllThePanelFoldersAsAFlow(),
-                                    snapshotFlow {
-                                        forceSnapshot.value
-                                    },
-                                    localTagsRepo.getAllTags(
-                                        preferencesRepository.getPreferences().selectedSortingType,
-                                    ),
-                                    localTagsRepo.getAllLinkTags(),
-                                ) { links, folders, panels, panelFolders, _, tags, linkTags ->
-                                    AllTablesDTO(
-                                        links = links,
-                                        folders = folders,
-                                        panels = panels,
-                                        panelFolders = panelFolders,
-                                        tags = tags,
-                                        linkTagsPairs = linkTags,
-                                    )
-                                }
+                                        linksRepo.getAllLinksAsFlow(),
+                                        foldersRepo.getAllFoldersAsFlow(),
+                                        localPanelsRepo.getAllThePanels(),
+                                        localPanelsRepo.getAllThePanelFoldersAsAFlow(),
+                                        snapshotFlow {
+                                            forceSnapshot.value
+                                        },
+                                        localTagsRepo.getAllTags(
+                                            preferencesRepository
+                                                .getPreferences()
+                                                .selectedSortingType,
+                                        ),
+                                        localTagsRepo.getAllLinkTags(),
+                                    ) { links, folders, panels, panelFolders, _, tags, linkTags ->
+                                        AllTablesDTO(
+                                            links = links,
+                                            folders = folders,
+                                            panels = panels,
+                                            panelFolders = panelFolders,
+                                            tags = tags,
+                                            linkTagsPairs = linkTags,
+                                        )
+                                    }
                                     .cancellable()
                                     .drop(1)
                                     .debounce(1000)
@@ -120,15 +122,13 @@ class SnapshotRepoImpl(
                                     .collectLatest {
                                         if (
                                             pauseSnapshots ||
-                                            (
-                                                    it.links +
-                                                            it.folders +
-                                                            it.panelFolders +
-                                                            it.panels +
-                                                            it.tags +
-                                                            it.linkTagsPairs
-                                                    )
-                                                .isEmpty()
+                                                (it.links +
+                                                        it.folders +
+                                                        it.panelFolders +
+                                                        it.panels +
+                                                        it.tags +
+                                                        it.linkTagsPairs)
+                                                    .isEmpty()
                                         ) {
                                             return@collectLatest
                                         }
@@ -182,51 +182,51 @@ class SnapshotRepoImpl(
 
         if (
             preferences.snapshotExportFormatID.toInt() == Constants.SNAPSHOT_JSON_FORMAT_ID ||
-            preferences.snapshotExportFormatID.toInt() == Constants.SNAPSHOT_BOTH_FORMAT_ID
+                preferences.snapshotExportFormatID.toInt() == Constants.SNAPSHOT_BOTH_FORMAT_ID
         ) {
             val serializedJsonExportString =
                 JSONExportSchema(
-                    schemaVersion = JSONExportSchema.VERSION,
-                    links =
-                        allLinks.map {
-                            it.copy(
-                                remoteId = null,
-                                lastModified = 0,
-                            )
-                        },
-                    folders =
-                        allFolders.map {
-                            it.copy(
-                                remoteId = null,
-                                lastModified = 0,
-                            )
-                        },
-                    panels =
-                        PanelForJSONExportSchema(
-                            panels =
-                                allPanels.map {
-                                    it.copy(
-                                        remoteId = null,
-                                        lastModified = 0,
-                                    )
-                                },
-                            panelFolders =
-                                allPanelFolders.map {
-                                    it.copy(
-                                        remoteId = null,
-                                        lastModified = 0,
-                                    )
-                                },
-                        ),
-                    tags =
-                        allTags.map {
-                            it.copy(remoteId = null, lastModified = 0)
-                        },
-                    linkTags =
-                        allLinkTagsPairs.map {
-                            it.copy(remoteId = null, lastModified = 0)
-                        },
-                )
+                        schemaVersion = JSONExportSchema.VERSION,
+                        links =
+                            allLinks.map {
+                                it.copy(
+                                    remoteId = null,
+                                    lastModified = 0,
+                                )
+                            },
+                        folders =
+                            allFolders.map {
+                                it.copy(
+                                    remoteId = null,
+                                    lastModified = 0,
+                                )
+                            },
+                        panels =
+                            PanelForJSONExportSchema(
+                                panels =
+                                    allPanels.map {
+                                        it.copy(
+                                            remoteId = null,
+                                            lastModified = 0,
+                                        )
+                                    },
+                                panelFolders =
+                                    allPanelFolders.map {
+                                        it.copy(
+                                            remoteId = null,
+                                            lastModified = 0,
+                                        )
+                                    },
+                            ),
+                        tags =
+                            allTags.map {
+                                it.copy(remoteId = null, lastModified = 0)
+                            },
+                        linkTags =
+                            allLinkTagsPairs.map {
+                                it.copy(remoteId = null, lastModified = 0)
+                            },
+                    )
                     .run {
                         Json.encodeToString(this)
                     }
@@ -240,7 +240,7 @@ class SnapshotRepoImpl(
 
         if (
             preferences.snapshotExportFormatID.toInt() == Constants.SNAPSHOT_HTML_FORMAT_ID ||
-            preferences.snapshotExportFormatID.toInt() == Constants.SNAPSHOT_BOTH_FORMAT_ID
+                preferences.snapshotExportFormatID.toInt() == Constants.SNAPSHOT_BOTH_FORMAT_ID
         ) {
             fileManager.exportSnapshotData(
                 rawExportString =

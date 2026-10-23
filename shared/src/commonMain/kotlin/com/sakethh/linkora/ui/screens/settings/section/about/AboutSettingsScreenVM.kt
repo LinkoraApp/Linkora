@@ -23,9 +23,11 @@ import kotlinx.coroutines.launch
 class AboutSettingsScreenVM(
     private val localLinksRepo: LocalLinksRepo,
     private val gitHubReleasesRepo: GitHubReleasesRepo,
-    private val localizationRepo: LocalizationRepo.Local
+    private val localizationRepo: LocalizationRepo.Local,
 ) : ViewModel() {
-    val localizedStrings get() = localizationRepo.localizedStrings.value
+    val localizedStrings
+        get() = localizationRepo.localizedStrings.value
+
     fun addANewLinkToHistory(
         link: Link,
         tagIds: List<Long>?,
@@ -37,24 +39,30 @@ class AboutSettingsScreenVM(
             localLinksRepo
                 .addANewLink(
                     link =
-                    link.copy(
-                        linkType = LinkType.HISTORY_LINK,
-                        idOfLinkedFolder = null,
-                    ),
+                        link.copy(
+                            linkType = LinkType.HISTORY_LINK,
+                            idOfLinkedFolder = null,
+                        ),
                     linkSaveConfig =
-                    LinkSaveConfig(
-                        forceAutoDetectTitle = false,
-                        forceSaveWithoutRetrievingData = true,
-                        useProxy = useProxy,
-                        skipSavingIfExists = skipSavingIfExists,
-                        forceSaveIfRetrievalFails = forceSaveIfRetrievalFails,
-                    ),
+                        LinkSaveConfig(
+                            forceAutoDetectTitle = false,
+                            forceSaveWithoutRetrievingData = true,
+                            useProxy = useProxy,
+                            skipSavingIfExists = skipSavingIfExists,
+                            forceSaveIfRetrievalFails = forceSaveIfRetrievalFails,
+                        ),
                     selectedTagIds = tagIds,
                 )
                 .collectLatest {
                     it.onSuccess {
                         if (!it.isRemoteSuccessful()) {
-                            pushUIEvent(UIEvent.Type.ShowSnackbar(it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed)))
+                            pushUIEvent(
+                                UIEvent.Type.ShowSnackbar(
+                                    it.getRemoteOnlyFailureMsg(
+                                        localizedStrings.RemoteExecutionFailed,
+                                    ),
+                                ),
+                            )
                         }
                     }
                     it.pushSnackbarOnFailure()
@@ -69,8 +77,8 @@ class AboutSettingsScreenVM(
         viewModelScope.launch {
             gitHubReleasesRepo.getLatestVersionData().collectLatest {
                 it.onLoading {
-                    onLoading()
-                }
+                        onLoading()
+                    }
                     .onSuccess { success ->
                         onCompletion(success.data)
                     }

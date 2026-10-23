@@ -54,7 +54,8 @@ actual val showDynamicThemingOption: Boolean = false
 actual val hostOS: HostOS = HostOS.Web
 
 actual class PermissionManager {
-    actual suspend fun permittedToShowNotification(): PermissionStatus = PermissionStatus.NeedsRequest
+    actual suspend fun permittedToShowNotification(): PermissionStatus =
+        PermissionStatus.NeedsRequest
 
     actual suspend fun isStorageAccessPermitted(): PermissionStatus = PermissionStatus.NeedsRequest
 }
@@ -63,8 +64,7 @@ actual fun platformSpecificLogging(string: String) {
     println(string)
 }
 
-@Composable
-actual fun PlatformSpecificBackHandler(init: () -> Unit) = Unit
+@Composable actual fun PlatformSpecificBackHandler(init: () -> Unit) = Unit
 
 actual class FileManager {
     actual suspend fun writeRawExportStringToFile(
@@ -99,9 +99,11 @@ actual class FileManager {
 
     actual suspend fun importFromHTMLString(): Flow<Result<String>> = emptyFlow()
 
-    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> = emptyFlow()
+    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> =
+        emptyFlow()
 
-    actual suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>> = emptyFlow()
+    actual suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>> =
+        emptyFlow()
 
     actual suspend fun getSyncServerCertificate(
         onCompletion: (provider: String) -> Unit,
@@ -169,8 +171,11 @@ actual class NativeUtils {
         ) = Unit
 
         actual fun cancelAllWebPagesBulkCaptures() = Unit
+
         actual fun isWebCaptureWorkerEnqueued(): Flow<Boolean?> = emptyFlow()
+
         actual suspend fun nuke() = Unit
+
         actual suspend fun prepareExternalDatabase(
             captureLocation: String,
             webCaptureDatabaseManager: WebCaptureDatabaseManager,
@@ -213,8 +218,8 @@ actual class Network(private val localizedStrings: () -> LocalizedStrings) {
 
     private var syncServerClient: HttpClient? = null
 
-    actual fun getSyncServerClient(): HttpClient = syncServerClient
-        ?: error(localizedStrings().SyncServerConfigurationError)
+    actual fun getSyncServerClient(): HttpClient =
+        syncServerClient ?: error(localizedStrings().SyncServerConfigurationError)
 
     actual fun closeSyncServerClient() {
         syncServerClient?.close()
@@ -260,212 +265,233 @@ actual object PlatformPreference {
             is PreferenceKey.StringPreferencesKey -> rawValue
             is PreferenceKey.IntPreferencesKey -> rawValue.toIntOrNull()
         }
-                as T?
+            as T?
     }
 
-    actual suspend fun readAllPreferences(): AppPreferences = AppPreferences(
-        correlation =
-            localStorage.getItem(AppPreferences.SERVER_CORRELATION.key).let {
-                if (it != null) {
-                    Json.decodeFromString<Correlation>(it)
-                } else {
-                    val randomCorrelation = Correlation.generateRandomCorrelation()
-                    localStorage.set(
-                        key = AppPreferences.SERVER_CORRELATION.key,
-                        value = Json.encodeToString(randomCorrelation),
-                    )
-                    randomCorrelation
-                }
-            },
-        showSyncServerSurveyNotice = false,
-        useDarkTheme =
-            localStorage.getItem(AppPreferences.DARK_THEME.key)?.toBooleanStrictOrNull() ?: true,
-        useSystemTheme =
-            localStorage.getItem(AppPreferences.FOLLOW_SYSTEM_THEME.key)?.toBooleanStrictOrNull()
-                ?: false,
-        useAmoledTheme =
-            localStorage.getItem(AppPreferences.AMOLED_THEME_STATE.key)?.toBooleanStrictOrNull()
-                ?: false,
-        useDynamicTheming =
-            localStorage.getItem(AppPreferences.DYNAMIC_THEMING.key)?.toBooleanStrictOrNull()
-                ?: false,
-        isAutoDetectTitleForLinksEnabled =
-            localStorage
-                .getItem(AppPreferences.AUTO_DETECT_TITLE_FOR_LINK.key)
-                ?.toBooleanStrictOrNull() ?: false,
-        showAssociatedImageInLinkMenu =
-            localStorage
-                .getItem(AppPreferences.ASSOCIATED_IMAGES_IN_LINK_MENU_VISIBILITY.key)
-                ?.toBooleanStrictOrNull() ?: false,
-        isHomeScreenEnabled =
-            localStorage.getItem(AppPreferences.HOME_SCREEN_VISIBILITY.key)?.toBooleanStrictOrNull()
-                ?: true,
-        useRemoteStrings =
-            localStorage
-                .getItem(AppPreferences.USE_REMOTE_LANGUAGE_STRINGS.key)
-                ?.toBooleanStrictOrNull() ?: false,
-        selectedSortingType =
-            localStorage.getItem(AppPreferences.SORTING_PREFERENCE.key)
-                ?: SortingType.NEW_TO_OLD.name,
-        primaryJsoupUserAgent =
-            localStorage.getItem(AppPreferences.JSOUP_USER_AGENT.key)
-                ?: Constants.DEFAULT_USER_AGENT,
-        localizationServerURL =
-            localStorage.getItem(AppPreferences.LOCALIZATION_SERVER_URL.key)
-                ?: Constants.LOCALIZATION_SERVER_URL,
-        preferredAppLanguageName =
-            localStorage.getItem(AppPreferences.APP_LANGUAGE_NAME.key) ?: Constants.DEFAULT_APP_LANGUAGE_NAME,
-        preferredAppLanguageCode =
-            localStorage.getItem(AppPreferences.APP_LANGUAGE_CODE.key) ?: Constants.DEFAULT_APP_LANGUAGE_CODE,
-        selectedLinkLayout =
-            localStorage.getItem(AppPreferences.CURRENTLY_SELECTED_LINK_VIEW.key)
-                ?: Layout.REGULAR_LIST_VIEW.name,
-        showTitleInLinkGridView =
-            localStorage
-                .getItem(AppPreferences.TITLE_VISIBILITY_FOR_NON_LIST_VIEWS.key)
-                ?.toBooleanStrictOrNull() ?: true,
-        showHostInLinkListView =
-            localStorage
-                .getItem(AppPreferences.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS.key)
-                ?.toBooleanStrictOrNull() ?: true,
-        enableFadedEdgeForNonListViews =
-            localStorage
-                .getItem(AppPreferences.FADED_EDGE_VISIBILITY_FOR_NON_LIST_VIEWS.key)
-                ?.toBooleanStrictOrNull() ?: true,
-        forceSaveWithoutFetchingAnyMetaData =
-            localStorage
-                .getItem(AppPreferences.FORCE_SAVE_WITHOUT_FETCHING_META_DATA.key)
-                ?.toBooleanStrictOrNull() ?: false,
-        skipSavingExistingLink =
-            localStorage
-                .getItem(AppPreferences.SKIP_SAVING_EXISTING_LINK.key)
-                ?.toBooleanStrictOrNull() ?: true,
-        useProxy =
-            localStorage.getItem(AppPreferences.USE_PROXY.key)?.toBooleanStrictOrNull() ?: true,
-        proxyUrl = localStorage.getItem(AppPreferences.PROXY_URL.key) ?: Constants.PROXY_SERVER_URL,
-        initialRouteId =
-            localStorage.getItem(AppPreferences.INITIAL_ROUTE_ID.key)?.toIntOrNull()
-                ?: Constants.HOME_SCREEN_ROUTE_ID,
-        serverBaseUrl = localStorage.getItem(AppPreferences.SERVER_URL.key) ?: "",
-        serverSecurityToken = localStorage.getItem(AppPreferences.SERVER_AUTH_TOKEN.key) ?: "",
-        serverSyncType =
-            localStorage.getItem(AppPreferences.SERVER_SYNC_TYPE.key)?.let { SyncType.valueOf(it) }
-                ?: SyncType.TwoWay,
-        useLinkoraTopDecoratorOnDesktop =
-            localStorage.getItem(AppPreferences.DESKTOP_TOP_DECORATOR.key)?.toBooleanStrictOrNull()
-                ?: true,
-        refreshLinksWorkerTag =
-            localStorage.getItem(AppPreferences.REFRESH_ALL_LINKS_WORKER_UUID.key)
-                ?: "52ae3f4a-d37f-4fdb-a6b6-4397b99ef1bd",
-        showVideoTagOnUIIfApplicable =
-            localStorage
-                .getItem(AppPreferences.SHOW_VIDEO_TAG_IF_APPLICABLE.key)
-                ?.toBooleanStrictOrNull() ?: false,
-        forceShuffleLinks =
-            localStorage.getItem(AppPreferences.FORCE_SHUFFLE_LINKS.key)?.toBooleanStrictOrNull()
-                ?: false,
-        showNoteInLinkView =
-            localStorage
-                .getItem(AppPreferences.NOTE_VISIBILITY_IN_LIST_VIEWS.key)
-                ?.toBooleanStrictOrNull() ?: true,
-        showDateInLinkView =
-            localStorage.getItem(AppPreferences.SHOW_DATE_IN_LINK_VIEW.key)?.toBooleanStrictOrNull()
-                ?: true,
-        showTagsInLinkView =
-            localStorage.getItem(AppPreferences.SHOW_TAGS_IN_LINK_VIEW.key)?.toBooleanStrictOrNull()
-                ?: true,
-        areSnapshotsEnabled =
-            localStorage.getItem(AppPreferences.USE_SNAPSHOTS.key)?.toBooleanStrictOrNull()
-                ?: false,
-        snapshotExportFormatID =
-            localStorage.getItem(AppPreferences.SNAPSHOTS_EXPORT_TYPE.key)
-                ?: Constants.SNAPSHOT_JSON_FORMAT_ID.toString(),
-        skipCertCheckForSync =
-            localStorage
-                .getItem(AppPreferences.SKIP_CERT_CHECK_FOR_SYNC_SERVER.key)
-                ?.toBooleanStrictOrNull() ?: false,
-        currentExportLocation = localStorage.getItem(AppPreferences.EXPORT_LOCATION.key) ?: "",
-        currentBackupLocation = localStorage.getItem(AppPreferences.BACKUP_LOCATION.key) ?: "",
-        backupAutoDeleteThreshold =
-            localStorage.getItem(AppPreferences.BACKUP_AUTO_DELETION_THRESHOLD.key)?.toIntOrNull()
-                ?: 10,
-        backupAutoDeletionEnabled =
-            localStorage
-                .getItem(AppPreferences.BACKUP_AUTO_DELETION_ENABLED.key)
-                ?.toBooleanStrictOrNull() ?: false,
-        selectedCollectionSourceId =
-            localStorage.getItem(AppPreferences.COLLECTION_SOURCE_ID.key)?.toIntOrNull() ?: 0,
-        selectedAppIcon =
-            localStorage.getItem(AppPreferences.SELECTED_APP_ICON.key) ?: AppIconCode.new_logo.name,
-        showTagsInAddNewLinkDialogBox =
-            localStorage
-                .getItem(AppPreferences.SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK.key)
-                ?.toBooleanStrictOrNull() ?: false,
-        showMenuOnGridLinkClick =
-            localStorage
-                .getItem(AppPreferences.SHOW_MENU_ON_GRID_LINK_CLICK.key)
-                ?.toBooleanStrictOrNull() ?: true,
-        autoSaveOnShareIntent =
-            localStorage
-                .getItem(AppPreferences.AUTO_SAVE_ON_SHARE_INTENT.key)
-                ?.toBooleanStrictOrNull() ?: false,
-        forceSaveIfRetrievalFails =
-            localStorage.getItem(AppPreferences.FORCE_SAVE_LINKS.key)?.toBooleanStrictOrNull()
-                ?: true,
-        selectedFont =
-            localStorage.getItem(AppPreferences.FONT_TYPE.key)?.let { Font.valueOf(it) }
-                ?: Font.POPPINS,
-        selectedLinkRefreshType =
-            localStorage.getItem(AppPreferences.REFRESH_LINK_TYPE.key)?.let {
-                RefreshLinkType.valueOf(it)
-            } ?: RefreshLinkType.Both,
-        maxConcurrentRefreshCount =
-            localStorage.getItem(AppPreferences.MAX_CONCURRENT_REFRESH_COUNT.key)?.toIntOrNull()
-                ?: 15,
-        useWebCaptures =
-            localStorage.getItem(AppPreferences.USE_WEB_CAPTURES.key)?.toBooleanStrictOrNull()
-                ?: false,
-        webCapturesLocation = localStorage.getItem(AppPreferences.WEB_CAPTURES_LOCATION.key) ?: "",
-        webCaptureSaveImages =
-            localStorage
-                .getItem(AppPreferences.WEB_CAPTURE_SAVE_IMAGES.key)
-                ?.toBooleanStrictOrNull() ?: true,
-        webCaptureSaveFonts =
-            localStorage.getItem(AppPreferences.WEB_CAPTURE_SAVE_FONTS.key)?.toBooleanStrictOrNull()
-                ?: true,
-        webCaptureSaveCss =
-            localStorage.getItem(AppPreferences.WEB_CAPTURE_SAVE_CSS.key)?.toBooleanStrictOrNull()
-                ?: true,
-        webCaptureExecuteJs =
-            localStorage.getItem(AppPreferences.WEB_CAPTURE_EXECUTE_JS.key)?.toBooleanStrictOrNull()
-                ?: false,
-        webCaptureSaveAudio =
-            localStorage.getItem(AppPreferences.WEB_CAPTURE_SAVE_AUDIO.key)?.toBooleanStrictOrNull()
-                ?: true,
-        webCaptureSaveVideo =
-            localStorage.getItem(AppPreferences.WEB_CAPTURE_SAVE_VIDEO.key)?.toBooleanStrictOrNull()
-                ?: true,
-        webCaptureSaveMetadata =
-            localStorage
-                .getItem(AppPreferences.WEB_CAPTURE_SAVE_METADATA.key)
-                ?.toBooleanStrictOrNull() ?: true,
-        webCaptureWhitelistDomains =
-            localStorage.getItem(AppPreferences.WEB_CAPTURE_WHITELIST_DOMAINS.key) ?: "",
-        webCaptureBlacklistDomains =
-            localStorage.getItem(AppPreferences.WEB_CAPTURE_BLACKLIST_DOMAINS.key) ?: "",
-        webCaptureSaveAsVersions =
-            localStorage
-                .getItem(AppPreferences.WEB_CAPTURE_SAVE_AS_VERSIONS.key)
-                ?.toBooleanStrictOrNull() ?: false,
-        webCaptureRetainAllVersions =
-            localStorage
-                .getItem(AppPreferences.WEB_CAPTURE_RETAIN_ALL_VERSIONS.key)
-                ?.toBooleanStrictOrNull() ?: false,
-        webCaptureMaxVersions =
-            localStorage.getItem(AppPreferences.WEB_CAPTURE_MAX_VERSIONS.key)?.toIntOrNull() ?: 3,
-        captureWhenRefreshAllLink = false,
-        alwaysShowOpenWebCaptureFolderInMenu = false
-    )
+    actual suspend fun readAllPreferences(): AppPreferences =
+        AppPreferences(
+            correlation =
+                localStorage.getItem(AppPreferences.SERVER_CORRELATION.key).let {
+                    if (it != null) {
+                        Json.decodeFromString<Correlation>(it)
+                    } else {
+                        val randomCorrelation = Correlation.generateRandomCorrelation()
+                        localStorage.set(
+                            key = AppPreferences.SERVER_CORRELATION.key,
+                            value = Json.encodeToString(randomCorrelation),
+                        )
+                        randomCorrelation
+                    }
+                },
+            showSyncServerSurveyNotice = false,
+            useDarkTheme =
+                localStorage.getItem(AppPreferences.DARK_THEME.key)?.toBooleanStrictOrNull()
+                    ?: true,
+            useSystemTheme =
+                localStorage
+                    .getItem(AppPreferences.FOLLOW_SYSTEM_THEME.key)
+                    ?.toBooleanStrictOrNull() ?: false,
+            useAmoledTheme =
+                localStorage.getItem(AppPreferences.AMOLED_THEME_STATE.key)?.toBooleanStrictOrNull()
+                    ?: false,
+            useDynamicTheming =
+                localStorage.getItem(AppPreferences.DYNAMIC_THEMING.key)?.toBooleanStrictOrNull()
+                    ?: false,
+            isAutoDetectTitleForLinksEnabled =
+                localStorage
+                    .getItem(AppPreferences.AUTO_DETECT_TITLE_FOR_LINK.key)
+                    ?.toBooleanStrictOrNull() ?: false,
+            showAssociatedImageInLinkMenu =
+                localStorage
+                    .getItem(AppPreferences.ASSOCIATED_IMAGES_IN_LINK_MENU_VISIBILITY.key)
+                    ?.toBooleanStrictOrNull() ?: false,
+            isHomeScreenEnabled =
+                localStorage
+                    .getItem(AppPreferences.HOME_SCREEN_VISIBILITY.key)
+                    ?.toBooleanStrictOrNull() ?: true,
+            useRemoteStrings =
+                localStorage
+                    .getItem(AppPreferences.USE_REMOTE_LANGUAGE_STRINGS.key)
+                    ?.toBooleanStrictOrNull() ?: false,
+            selectedSortingType =
+                localStorage.getItem(AppPreferences.SORTING_PREFERENCE.key)
+                    ?: SortingType.NEW_TO_OLD.name,
+            primaryJsoupUserAgent =
+                localStorage.getItem(AppPreferences.JSOUP_USER_AGENT.key)
+                    ?: Constants.DEFAULT_USER_AGENT,
+            localizationServerURL =
+                localStorage.getItem(AppPreferences.LOCALIZATION_SERVER_URL.key)
+                    ?: Constants.LOCALIZATION_SERVER_URL,
+            preferredAppLanguageName =
+                localStorage.getItem(AppPreferences.APP_LANGUAGE_NAME.key)
+                    ?: Constants.DEFAULT_APP_LANGUAGE_NAME,
+            preferredAppLanguageCode =
+                localStorage.getItem(AppPreferences.APP_LANGUAGE_CODE.key)
+                    ?: Constants.DEFAULT_APP_LANGUAGE_CODE,
+            selectedLinkLayout =
+                localStorage.getItem(AppPreferences.CURRENTLY_SELECTED_LINK_VIEW.key)
+                    ?: Layout.REGULAR_LIST_VIEW.name,
+            showTitleInLinkGridView =
+                localStorage
+                    .getItem(AppPreferences.TITLE_VISIBILITY_FOR_NON_LIST_VIEWS.key)
+                    ?.toBooleanStrictOrNull() ?: true,
+            showHostInLinkListView =
+                localStorage
+                    .getItem(AppPreferences.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS.key)
+                    ?.toBooleanStrictOrNull() ?: true,
+            enableFadedEdgeForNonListViews =
+                localStorage
+                    .getItem(AppPreferences.FADED_EDGE_VISIBILITY_FOR_NON_LIST_VIEWS.key)
+                    ?.toBooleanStrictOrNull() ?: true,
+            forceSaveWithoutFetchingAnyMetaData =
+                localStorage
+                    .getItem(AppPreferences.FORCE_SAVE_WITHOUT_FETCHING_META_DATA.key)
+                    ?.toBooleanStrictOrNull() ?: false,
+            skipSavingExistingLink =
+                localStorage
+                    .getItem(AppPreferences.SKIP_SAVING_EXISTING_LINK.key)
+                    ?.toBooleanStrictOrNull() ?: true,
+            useProxy =
+                localStorage.getItem(AppPreferences.USE_PROXY.key)?.toBooleanStrictOrNull() ?: true,
+            proxyUrl =
+                localStorage.getItem(AppPreferences.PROXY_URL.key) ?: Constants.PROXY_SERVER_URL,
+            initialRouteId =
+                localStorage.getItem(AppPreferences.INITIAL_ROUTE_ID.key)?.toIntOrNull()
+                    ?: Constants.HOME_SCREEN_ROUTE_ID,
+            serverBaseUrl = localStorage.getItem(AppPreferences.SERVER_URL.key) ?: "",
+            serverSecurityToken = localStorage.getItem(AppPreferences.SERVER_AUTH_TOKEN.key) ?: "",
+            serverSyncType =
+                localStorage.getItem(AppPreferences.SERVER_SYNC_TYPE.key)?.let {
+                    SyncType.valueOf(it)
+                } ?: SyncType.TwoWay,
+            useLinkoraTopDecoratorOnDesktop =
+                localStorage
+                    .getItem(AppPreferences.DESKTOP_TOP_DECORATOR.key)
+                    ?.toBooleanStrictOrNull() ?: true,
+            refreshLinksWorkerTag =
+                localStorage.getItem(AppPreferences.REFRESH_ALL_LINKS_WORKER_UUID.key)
+                    ?: "52ae3f4a-d37f-4fdb-a6b6-4397b99ef1bd",
+            showVideoTagOnUIIfApplicable =
+                localStorage
+                    .getItem(AppPreferences.SHOW_VIDEO_TAG_IF_APPLICABLE.key)
+                    ?.toBooleanStrictOrNull() ?: false,
+            forceShuffleLinks =
+                localStorage
+                    .getItem(AppPreferences.FORCE_SHUFFLE_LINKS.key)
+                    ?.toBooleanStrictOrNull() ?: false,
+            showNoteInLinkView =
+                localStorage
+                    .getItem(AppPreferences.NOTE_VISIBILITY_IN_LIST_VIEWS.key)
+                    ?.toBooleanStrictOrNull() ?: true,
+            showDateInLinkView =
+                localStorage
+                    .getItem(AppPreferences.SHOW_DATE_IN_LINK_VIEW.key)
+                    ?.toBooleanStrictOrNull() ?: true,
+            showTagsInLinkView =
+                localStorage
+                    .getItem(AppPreferences.SHOW_TAGS_IN_LINK_VIEW.key)
+                    ?.toBooleanStrictOrNull() ?: true,
+            areSnapshotsEnabled =
+                localStorage.getItem(AppPreferences.USE_SNAPSHOTS.key)?.toBooleanStrictOrNull()
+                    ?: false,
+            snapshotExportFormatID =
+                localStorage.getItem(AppPreferences.SNAPSHOTS_EXPORT_TYPE.key)
+                    ?: Constants.SNAPSHOT_JSON_FORMAT_ID.toString(),
+            skipCertCheckForSync =
+                localStorage
+                    .getItem(AppPreferences.SKIP_CERT_CHECK_FOR_SYNC_SERVER.key)
+                    ?.toBooleanStrictOrNull() ?: false,
+            currentExportLocation = localStorage.getItem(AppPreferences.EXPORT_LOCATION.key) ?: "",
+            currentBackupLocation = localStorage.getItem(AppPreferences.BACKUP_LOCATION.key) ?: "",
+            backupAutoDeleteThreshold =
+                localStorage
+                    .getItem(AppPreferences.BACKUP_AUTO_DELETION_THRESHOLD.key)
+                    ?.toIntOrNull() ?: 10,
+            backupAutoDeletionEnabled =
+                localStorage
+                    .getItem(AppPreferences.BACKUP_AUTO_DELETION_ENABLED.key)
+                    ?.toBooleanStrictOrNull() ?: false,
+            selectedCollectionSourceId =
+                localStorage.getItem(AppPreferences.COLLECTION_SOURCE_ID.key)?.toIntOrNull() ?: 0,
+            selectedAppIcon =
+                localStorage.getItem(AppPreferences.SELECTED_APP_ICON.key)
+                    ?: AppIconCode.new_logo.name,
+            showTagsInAddNewLinkDialogBox =
+                localStorage
+                    .getItem(AppPreferences.SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK.key)
+                    ?.toBooleanStrictOrNull() ?: false,
+            showMenuOnGridLinkClick =
+                localStorage
+                    .getItem(AppPreferences.SHOW_MENU_ON_GRID_LINK_CLICK.key)
+                    ?.toBooleanStrictOrNull() ?: true,
+            autoSaveOnShareIntent =
+                localStorage
+                    .getItem(AppPreferences.AUTO_SAVE_ON_SHARE_INTENT.key)
+                    ?.toBooleanStrictOrNull() ?: false,
+            forceSaveIfRetrievalFails =
+                localStorage.getItem(AppPreferences.FORCE_SAVE_LINKS.key)?.toBooleanStrictOrNull()
+                    ?: true,
+            selectedFont =
+                localStorage.getItem(AppPreferences.FONT_TYPE.key)?.let { Font.valueOf(it) }
+                    ?: Font.POPPINS,
+            selectedLinkRefreshType =
+                localStorage.getItem(AppPreferences.REFRESH_LINK_TYPE.key)?.let {
+                    RefreshLinkType.valueOf(it)
+                } ?: RefreshLinkType.Both,
+            maxConcurrentRefreshCount =
+                localStorage.getItem(AppPreferences.MAX_CONCURRENT_REFRESH_COUNT.key)?.toIntOrNull()
+                    ?: 15,
+            useWebCaptures =
+                localStorage.getItem(AppPreferences.USE_WEB_CAPTURES.key)?.toBooleanStrictOrNull()
+                    ?: false,
+            webCapturesLocation =
+                localStorage.getItem(AppPreferences.WEB_CAPTURES_LOCATION.key) ?: "",
+            webCaptureSaveImages =
+                localStorage
+                    .getItem(AppPreferences.WEB_CAPTURE_SAVE_IMAGES.key)
+                    ?.toBooleanStrictOrNull() ?: true,
+            webCaptureSaveFonts =
+                localStorage
+                    .getItem(AppPreferences.WEB_CAPTURE_SAVE_FONTS.key)
+                    ?.toBooleanStrictOrNull() ?: true,
+            webCaptureSaveCss =
+                localStorage
+                    .getItem(AppPreferences.WEB_CAPTURE_SAVE_CSS.key)
+                    ?.toBooleanStrictOrNull() ?: true,
+            webCaptureExecuteJs =
+                localStorage
+                    .getItem(AppPreferences.WEB_CAPTURE_EXECUTE_JS.key)
+                    ?.toBooleanStrictOrNull() ?: false,
+            webCaptureSaveAudio =
+                localStorage
+                    .getItem(AppPreferences.WEB_CAPTURE_SAVE_AUDIO.key)
+                    ?.toBooleanStrictOrNull() ?: true,
+            webCaptureSaveVideo =
+                localStorage
+                    .getItem(AppPreferences.WEB_CAPTURE_SAVE_VIDEO.key)
+                    ?.toBooleanStrictOrNull() ?: true,
+            webCaptureSaveMetadata =
+                localStorage
+                    .getItem(AppPreferences.WEB_CAPTURE_SAVE_METADATA.key)
+                    ?.toBooleanStrictOrNull() ?: true,
+            webCaptureWhitelistDomains =
+                localStorage.getItem(AppPreferences.WEB_CAPTURE_WHITELIST_DOMAINS.key) ?: "",
+            webCaptureBlacklistDomains =
+                localStorage.getItem(AppPreferences.WEB_CAPTURE_BLACKLIST_DOMAINS.key) ?: "",
+            webCaptureSaveAsVersions =
+                localStorage
+                    .getItem(AppPreferences.WEB_CAPTURE_SAVE_AS_VERSIONS.key)
+                    ?.toBooleanStrictOrNull() ?: false,
+            webCaptureRetainAllVersions =
+                localStorage
+                    .getItem(AppPreferences.WEB_CAPTURE_RETAIN_ALL_VERSIONS.key)
+                    ?.toBooleanStrictOrNull() ?: false,
+            webCaptureMaxVersions =
+                localStorage.getItem(AppPreferences.WEB_CAPTURE_MAX_VERSIONS.key)?.toIntOrNull()
+                    ?: 3,
+            captureWhenRefreshAllLink = false,
+            alwaysShowOpenWebCaptureFolderInMenu = false,
+        )
 }
 
 actual fun defaultExportLocation(): String? = null

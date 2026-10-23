@@ -72,20 +72,20 @@ fun SnapshotsScreen() {
     val dataSettingsScreenVM: DataSettingsScreenVM = linkoraViewModel()
     val preferences by dataSettingsScreenVM.preferencesAsFlow.collectAsStateWithLifecycle()
     var backupLocation by
-    rememberSaveable(preferences.currentBackupLocation) {
-        mutableStateOf(preferences.currentBackupLocation)
-    }
+        rememberSaveable(preferences.currentBackupLocation) {
+            mutableStateOf(preferences.currentBackupLocation)
+        }
 
     var backupAutoDeleteThreshold by
-    rememberSaveable(preferences.backupAutoDeleteThreshold) {
-        mutableIntStateOf(preferences.backupAutoDeleteThreshold)
-    }
+        rememberSaveable(preferences.backupAutoDeleteThreshold) {
+            mutableIntStateOf(preferences.backupAutoDeleteThreshold)
+        }
     val localFocusManager = LocalFocusManager.current
 
     val isBackupAutoDeletionEnabled by
-    rememberSaveable(preferences.backupAutoDeletionEnabled) {
-        mutableStateOf(preferences.backupAutoDeletionEnabled)
-    }
+        rememberSaveable(preferences.backupAutoDeletionEnabled) {
+            mutableStateOf(preferences.backupAutoDeletionEnabled)
+        }
     val platform = LocalPlatform.current
     val coroutineScope = rememberCoroutineScope()
     SettingsSectionScaffold(
@@ -108,8 +108,7 @@ fun SnapshotsScreen() {
                         isIconNeeded = true,
                         title = localizedStrings.UseSnapshots,
                         doesDescriptionExists = true,
-                        description =
-                            localizedStrings.UseSnapshotsDescription,
+                        description = localizedStrings.UseSnapshotsDescription,
                         isSwitchNeeded = true,
                         isSwitchEnabled = preferences.areSnapshotsEnabled,
                         onSwitchStateChange = {
@@ -138,18 +137,18 @@ fun SnapshotsScreen() {
                 item {
                     if (platform is Platform.Android.TV) {
                         HorizontalInfoCard(
-                            info = localizedStrings.SnapshotLocationNoticeOnAndroidTV.replaceActual(
-                                ExportLocationType.SNAPSHOT.dirRef
-                            ),
-                            paddingValues = PaddingValues(start = 15.dp, end = 15.dp)
+                            info =
+                                localizedStrings.SnapshotLocationNoticeOnAndroidTV.replaceActual(
+                                    ExportLocationType.SNAPSHOT.dirRef,
+                                ),
+                            paddingValues = PaddingValues(start = 15.dp, end = 15.dp),
                         )
                     } else {
                         TextField(
                             supportingText = {
                                 if (platform is Platform.Android) {
                                     Text(
-                                        text =
-                                            localizedStrings.SnapshotsBackupLocationWarning,
+                                        text = localizedStrings.SnapshotsBackupLocationWarning,
                                         style = MaterialTheme.typography.titleSmall,
                                     )
                                 }
@@ -185,8 +184,7 @@ fun SnapshotsScreen() {
                             readOnly = platform is Platform.Android,
                             label = {
                                 Text(
-                                    text =
-                                        localizedStrings.SnapshotsBackupLocation,
+                                    text = localizedStrings.SnapshotsBackupLocation,
                                     style = MaterialTheme.typography.titleMedium,
                                     textAlign = TextAlign.Start,
                                 )
@@ -197,18 +195,25 @@ fun SnapshotsScreen() {
                             },
                             modifier =
                                 Modifier.padding(
-                                    start = 15.dp,
-                                    end = 15.dp,
-                                )
-                                    .fillMaxWidth().highlightOnFocused().clickable(onClick = {
-                                        if (platform is Platform.Android.TV) {
-                                            dataSettingsScreenVM.changeExportLocation(
-                                                exportLocation = backupLocation,
-                                                platform = platform,
-                                                exportLocationType = ExportLocationType.SNAPSHOT,
-                                            )
-                                        }
-                                    }, indication = null, interactionSource = null),
+                                        start = 15.dp,
+                                        end = 15.dp,
+                                    )
+                                    .fillMaxWidth()
+                                    .highlightOnFocused()
+                                    .clickable(
+                                        onClick = {
+                                            if (platform is Platform.Android.TV) {
+                                                dataSettingsScreenVM.changeExportLocation(
+                                                    exportLocation = backupLocation,
+                                                    platform = platform,
+                                                    exportLocationType =
+                                                        ExportLocationType.SNAPSHOT,
+                                                )
+                                            }
+                                        },
+                                        indication = null,
+                                        interactionSource = null,
+                                    ),
                         )
                     }
                 }
@@ -216,11 +221,9 @@ fun SnapshotsScreen() {
                     SettingComponent(
                         SettingComponentParam(
                             isIconNeeded = true,
-                            title =
-                                localizedStrings.EnableAutoDeleteSnapshots,
+                            title = localizedStrings.EnableAutoDeleteSnapshots,
                             doesDescriptionExists = true,
-                            description =
-                                localizedStrings.EnableAutoDeleteSnapshotsDescription,
+                            description = localizedStrings.EnableAutoDeleteSnapshotsDescription,
                             isSwitchNeeded = true,
                             isSwitchEnabled = isBackupAutoDeletionEnabled,
                             onSwitchStateChange = {
@@ -235,23 +238,26 @@ fun SnapshotsScreen() {
                 if (isBackupAutoDeletionEnabled) {
                     item {
                         TextField(
-                            keyboardActions = KeyboardActions(onDone = {
-                                dataSettingsScreenVM.updateAutoDeletionBackupsThreshold(
-                                    backupAutoDeleteThreshold,
-                                )
-                                localFocusManager.clearFocus(force = true)
-                            }),
+                            keyboardActions =
+                                KeyboardActions(
+                                    onDone = {
+                                        dataSettingsScreenVM.updateAutoDeletionBackupsThreshold(
+                                            backupAutoDeleteThreshold,
+                                        )
+                                        localFocusManager.clearFocus(force = true)
+                                    },
+                                ),
                             supportingText = {
                                 Text(
-                                    text =
-                                        localizedStrings.SnapshotsFileLimitWarning,
+                                    text = localizedStrings.SnapshotsFileLimitWarning,
                                     style = MaterialTheme.typography.titleSmall,
                                 )
                             },
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Number,
-                                imeAction = ImeAction.Done
-                            ),
+                            keyboardOptions =
+                                KeyboardOptions(
+                                    keyboardType = KeyboardType.Number,
+                                    imeAction = ImeAction.Done,
+                                ),
                             textStyle = MaterialTheme.typography.titleSmall,
                             trailingIcon = {
                                 if (!Platform.Android.onTV()) {
@@ -276,8 +282,7 @@ fun SnapshotsScreen() {
                             },
                             label = {
                                 Text(
-                                    text =
-                                        localizedStrings.SnapshotsFileLimit,
+                                    text = localizedStrings.SnapshotsFileLimit,
                                     style = MaterialTheme.typography.titleMedium,
                                     textAlign = TextAlign.Start,
                                 )
@@ -308,16 +313,21 @@ fun SnapshotsScreen() {
                         Spacer(Modifier.height(15.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                             retain(localizedStrings) {
-                                listOf(
-                                    Constants.SNAPSHOT_JSON_FORMAT to Constants.SNAPSHOT_JSON_FORMAT_ID,
-                                    Constants.SNAPSHOT_HTML_FORMAT to Constants.SNAPSHOT_HTML_FORMAT_ID,
-                                    localizedStrings.Both to Constants.SNAPSHOT_BOTH_FORMAT_ID
-                                )
-                            }
+                                    listOf(
+                                        Constants.SNAPSHOT_JSON_FORMAT to
+                                            Constants.SNAPSHOT_JSON_FORMAT_ID,
+                                        Constants.SNAPSHOT_HTML_FORMAT to
+                                            Constants.SNAPSHOT_HTML_FORMAT_ID,
+                                        localizedStrings.Both to Constants.SNAPSHOT_BOTH_FORMAT_ID,
+                                    )
+                                }
                                 .let {
-                                    it.forEachIndexed { index, (snapshotFormatLocalizedStr, snapshotFormatID) ->
+                                    it.forEachIndexed {
+                                        index,
+                                        (snapshotFormatLocalizedStr, snapshotFormatID) ->
                                         val checked =
-                                            snapshotFormatID.toString() == preferences.snapshotExportFormatID
+                                            snapshotFormatID.toString() ==
+                                                preferences.snapshotExportFormatID
                                         ToggleButton(
                                             shape =
                                                 when (index) {
@@ -342,7 +352,8 @@ fun SnapshotsScreen() {
                                             checked = checked,
                                             onCheckedChange = {
                                                 dataSettingsScreenVM.changeSettingPreferenceValue(
-                                                    preferenceKey = AppPreferences.SNAPSHOTS_EXPORT_TYPE,
+                                                    preferenceKey =
+                                                        AppPreferences.SNAPSHOTS_EXPORT_TYPE,
                                                     newValue = snapshotFormatID.toString(),
                                                 )
                                             },

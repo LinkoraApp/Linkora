@@ -87,7 +87,10 @@ fun LinkMenuBtmSheet(
         menuBtmSheetParam.showProgressBarDuringRemoteSave.value,
         menuBtmSheetParam.btmModalSheetState.isVisible,
     ) {
-        if (menuBtmSheetParam.showProgressBarDuringRemoteSave.value && !menuBtmSheetParam.btmModalSheetState.isVisible) {
+        if (
+            menuBtmSheetParam.showProgressBarDuringRemoteSave.value &&
+                !menuBtmSheetParam.btmModalSheetState.isVisible
+        ) {
             menuBtmSheetParam.btmModalSheetState.expand()
         }
     }
@@ -107,7 +110,8 @@ fun LinkMenuBtmSheet(
                 if (menuBtmSheetParam.btmModalSheetState.isVisible) {
                     menuBtmSheetParam.btmModalSheetState.hide()
                 }
-            }.invokeOnCompletion {
+            }
+            .invokeOnCompletion {
                 menuBtmSheetParam.onDismiss()
             }
     }
@@ -129,8 +133,7 @@ fun LinkMenuBtmSheet(
                         bottomEnd = 8.dp,
                     ),
                 modifier =
-                    Modifier
-                        .pointerHoverIcon(icon = PointerIcon.Hand)
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                         .weight(1f)
                         .pressScaleEffect(),
                 onClick = {
@@ -140,20 +143,18 @@ fun LinkMenuBtmSheet(
                 text = localizedStrings.Open,
                 icon = Icons.AutoMirrored.Filled.OpenInNew,
             )
-            val lastItemShape =
-                retain {
-                    RoundedCornerShape(
-                        topStart = 8.dp,
-                        topEnd = 20.dp,
-                        bottomStart = 8.dp,
-                        bottomEnd = 20.dp,
-                    )
-                }
+            val lastItemShape = retain {
+                RoundedCornerShape(
+                    topStart = 8.dp,
+                    topEnd = 20.dp,
+                    bottomStart = 8.dp,
+                    bottomEnd = 20.dp,
+                )
+            }
             QuickActionItem(
                 shape = if (onAndroidMobile) RoundedCornerShape(8.dp) else lastItemShape,
                 modifier =
-                    Modifier
-                        .pointerHoverIcon(icon = PointerIcon.Hand)
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                         .weight(1f)
                         .pressScaleEffect(),
                 onClick = {
@@ -167,8 +168,7 @@ fun LinkMenuBtmSheet(
                 QuickActionItem(
                     shape = lastItemShape,
                     modifier =
-                        Modifier
-                            .pointerHoverIcon(icon = PointerIcon.Hand)
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                             .weight(1f)
                             .pressScaleEffect(),
                     onClick = {
@@ -190,10 +190,10 @@ fun LinkMenuBtmSheet(
                 if (onAndroidMobile) {
                     Modifier
                 } else {
-                    Modifier
-                        .verticalScroll(
+                    Modifier.verticalScroll(
                             rememberScrollState(),
-                        ).focusGroup()
+                        )
+                        .focusGroup()
                 },
         ) {
             if (onAndroidMobile) {
@@ -204,7 +204,8 @@ fun LinkMenuBtmSheet(
                                 if (menuBtmSheetParam.btmModalSheetState.isVisible) {
                                     menuBtmSheetParam.btmModalSheetState.hide()
                                 }
-                            }.invokeOnCompletion {
+                            }
+                            .invokeOnCompletion {
                                 showNote = true
                                 coroutineScope.launch {
                                     menuBtmSheetParam.btmModalSheetState.show()
@@ -245,14 +246,14 @@ fun LinkMenuBtmSheet(
 
             Row(
                 modifier =
-                    Modifier
-                        .highlightOnFocused()
+                    Modifier.highlightOnFocused()
                         .pointerHoverIcon(icon = PointerIcon.Hand)
                         .combinedClickable(
                             interactionSource = null,
                             indication = null,
                             onClick = { showRefreshOptions = !showRefreshOptions },
-                        ).pressScaleEffect()
+                        )
+                        .pressScaleEffect()
                         .padding(end = 10.dp)
                         .wrapContentHeight()
                         .fillMaxWidth(),
@@ -310,8 +311,12 @@ fun LinkMenuBtmSheet(
                     menuBtmSheetParam.onAddToImportantLinks?.let { it() }
                     hideContent()
                 },
-                elementName = if (!markedAsImportant) localizedStrings.MarkALinkAsImpLink else localizedStrings.RemoveALinkFromImpLink,
-                elementImageVector = if (markedAsImportant) Icons.Outlined.DeleteForever else Icons.Outlined.StarOutline,
+                elementName =
+                    if (!markedAsImportant) localizedStrings.MarkALinkAsImpLink
+                    else localizedStrings.RemoveALinkFromImpLink,
+                elementImageVector =
+                    if (markedAsImportant) Icons.Outlined.DeleteForever
+                    else Icons.Outlined.StarOutline,
             )
 
             val isArchived = currentLink.link.linkType == LinkType.ARCHIVE_LINK
@@ -322,8 +327,10 @@ fun LinkMenuBtmSheet(
                         menuBtmSheetParam.onArchive()
                         hideContent()
                     },
-                    elementName = if (isArchived) localizedStrings.UnArchive else localizedStrings.Archive,
-                    elementImageVector = if (isArchived) Icons.Outlined.Unarchive else Icons.Outlined.Archive,
+                    elementName =
+                        if (isArchived) localizedStrings.UnArchive else localizedStrings.Archive,
+                    elementImageVector =
+                        if (isArchived) Icons.Outlined.Unarchive else Icons.Outlined.Archive,
                 )
             }
 
@@ -346,7 +353,8 @@ fun LinkMenuBtmSheet(
                             if (menuBtmSheetParam.btmModalSheetState.isVisible) {
                                 menuBtmSheetParam.btmModalSheetState.hide()
                             }
-                        }.invokeOnCompletion {
+                        }
+                        .invokeOnCompletion {
                             menuBtmSheetParam.onDismiss()
                         }
                 },
@@ -354,13 +362,13 @@ fun LinkMenuBtmSheet(
                 elementImageVector = Icons.Outlined.DeleteForever,
             )
 
-            if ((
-                        onAndroidMobile && preferences.selectedLinkLayout in
-                                listOf(
-                                    Layout.STAGGERED_VIEW.name,
-                                    Layout.GRID_VIEW.name,
-                                )
-                        ) || !onAndroidMobile
+            if (
+                (onAndroidMobile &&
+                    preferences.selectedLinkLayout in
+                        listOf(
+                            Layout.STAGGERED_VIEW.name,
+                            Layout.GRID_VIEW.name,
+                        )) || !onAndroidMobile
             ) {
                 quickActions()
             }

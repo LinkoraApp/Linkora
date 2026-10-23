@@ -64,7 +64,8 @@ val addNetlifyHeadersToDist =
                 /*
                 Cross-Origin-Opener-Policy: same-origin
                 Cross-Origin-Embedder-Policy: require-corp
-                """.trimIndent(),
+                """
+                    .trimIndent(),
             )
 
             println("Wrote Netlify headers to: ${headersFile.absolutePath}")

@@ -35,9 +35,10 @@ class PreferencesImpl(
         updateStateMemory(preferenceKey, newValue)
     }
 
-    override suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T? = platformPreference.readPreferenceValue(
-        preferenceKey = preferenceKey,
-    )
+    override suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T? =
+        platformPreference.readPreferenceValue(
+            preferenceKey = preferenceKey,
+        )
 
     @Suppress("UNCHECKED_CAST")
     private fun <T> updateStateMemory(
@@ -48,11 +49,14 @@ class PreferencesImpl(
             when (key) {
                 AppPreferences.DARK_THEME -> currentPref.copy(useDarkTheme = value as Boolean)
 
-                AppPreferences.FOLLOW_SYSTEM_THEME -> currentPref.copy(useSystemTheme = value as Boolean)
+                AppPreferences.FOLLOW_SYSTEM_THEME ->
+                    currentPref.copy(useSystemTheme = value as Boolean)
 
-                AppPreferences.AMOLED_THEME_STATE -> currentPref.copy(useAmoledTheme = value as Boolean)
+                AppPreferences.AMOLED_THEME_STATE ->
+                    currentPref.copy(useAmoledTheme = value as Boolean)
 
-                AppPreferences.DYNAMIC_THEMING -> currentPref.copy(useDynamicTheming = value as Boolean)
+                AppPreferences.DYNAMIC_THEMING ->
+                    currentPref.copy(useDynamicTheming = value as Boolean)
 
                 AppPreferences.AUTO_DETECT_TITLE_FOR_LINK ->
                     currentPref.copy(
@@ -73,9 +77,11 @@ class PreferencesImpl(
                 AppPreferences.ALWAYS_SHOW_OPEN_WEB_CAPTURE_FOLDER_IN_MENU ->
                     currentPref.copy(alwaysShowOpenWebCaptureFolderInMenu = value as Boolean)
 
-                AppPreferences.SORTING_PREFERENCE -> currentPref.copy(selectedSortingType = value as String)
+                AppPreferences.SORTING_PREFERENCE ->
+                    currentPref.copy(selectedSortingType = value as String)
 
-                AppPreferences.JSOUP_USER_AGENT -> currentPref.copy(primaryJsoupUserAgent = value as String)
+                AppPreferences.JSOUP_USER_AGENT ->
+                    currentPref.copy(primaryJsoupUserAgent = value as String)
 
                 AppPreferences.LOCALIZATION_SERVER_URL ->
                     currentPref.copy(localizationServerURL = value as String)
@@ -120,14 +126,15 @@ class PreferencesImpl(
 
                 AppPreferences.SERVER_URL -> currentPref.copy(serverBaseUrl = value as String)
 
-                AppPreferences.SERVER_AUTH_TOKEN -> currentPref.copy(serverSecurityToken = value as String)
+                AppPreferences.SERVER_AUTH_TOKEN ->
+                    currentPref.copy(serverSecurityToken = value as String)
 
                 AppPreferences.SERVER_SYNC_TYPE ->
                     currentPref.copy(
                         serverSyncType =
-                        SyncType.valueOf(
-                            value as String,
-                        ),
+                            SyncType.valueOf(
+                                value as String,
+                            ),
                     )
 
                 AppPreferences.DESKTOP_TOP_DECORATOR ->
@@ -150,7 +157,8 @@ class PreferencesImpl(
                         showVideoTagOnUIIfApplicable = value as Boolean,
                     )
 
-                AppPreferences.FORCE_SHUFFLE_LINKS -> currentPref.copy(forceShuffleLinks = value as Boolean)
+                AppPreferences.FORCE_SHUFFLE_LINKS ->
+                    currentPref.copy(forceShuffleLinks = value as Boolean)
 
                 AppPreferences.NOTE_VISIBILITY_IN_LIST_VIEWS ->
                     currentPref.copy(showNoteInLinkView = value as Boolean)
@@ -161,7 +169,8 @@ class PreferencesImpl(
                 AppPreferences.SHOW_TAGS_IN_LINK_VIEW ->
                     currentPref.copy(showTagsInLinkView = value as Boolean)
 
-                AppPreferences.USE_SNAPSHOTS -> currentPref.copy(areSnapshotsEnabled = value as Boolean)
+                AppPreferences.USE_SNAPSHOTS ->
+                    currentPref.copy(areSnapshotsEnabled = value as Boolean)
 
                 AppPreferences.SNAPSHOTS_EXPORT_TYPE ->
                     currentPref.copy(snapshotExportFormatID = value as String)
@@ -171,9 +180,11 @@ class PreferencesImpl(
                         skipCertCheckForSync = value as Boolean,
                     )
 
-                AppPreferences.EXPORT_LOCATION -> currentPref.copy(currentExportLocation = value as String)
+                AppPreferences.EXPORT_LOCATION ->
+                    currentPref.copy(currentExportLocation = value as String)
 
-                AppPreferences.BACKUP_LOCATION -> currentPref.copy(currentBackupLocation = value as String)
+                AppPreferences.BACKUP_LOCATION ->
+                    currentPref.copy(currentBackupLocation = value as String)
 
                 AppPreferences.BACKUP_AUTO_DELETION_THRESHOLD ->
                     currentPref.copy(
@@ -188,7 +199,8 @@ class PreferencesImpl(
                 AppPreferences.COLLECTION_SOURCE_ID ->
                     currentPref.copy(selectedCollectionSourceId = value as Int)
 
-                AppPreferences.SELECTED_APP_ICON -> currentPref.copy(selectedAppIcon = value as String)
+                AppPreferences.SELECTED_APP_ICON ->
+                    currentPref.copy(selectedAppIcon = value as String)
 
                 AppPreferences.SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK ->
                     currentPref.copy(
@@ -206,14 +218,15 @@ class PreferencesImpl(
                 AppPreferences.FORCE_SAVE_LINKS ->
                     currentPref.copy(forceSaveIfRetrievalFails = value as Boolean)
 
-                AppPreferences.FONT_TYPE -> currentPref.copy(selectedFont = Font.valueOf(value as String))
+                AppPreferences.FONT_TYPE ->
+                    currentPref.copy(selectedFont = Font.valueOf(value as String))
 
                 AppPreferences.REFRESH_LINK_TYPE ->
                     currentPref.copy(
                         selectedLinkRefreshType =
-                        RefreshLinkType.valueOf(
-                            value as String,
-                        ),
+                            RefreshLinkType.valueOf(
+                                value as String,
+                            ),
                     )
 
                 AppPreferences.MAX_CONCURRENT_REFRESH_COUNT ->
@@ -301,9 +314,10 @@ class PreferencesImpl(
                         webCaptureMaxConcurrency = value as Int,
                     )
 
-                AppPreferences.CAPTURE_WHEN_REFRESH_ALL_LINK -> currentPref.copy(
-                    captureWhenRefreshAllLink = value as Boolean,
-                )
+                AppPreferences.CAPTURE_WHEN_REFRESH_ALL_LINK ->
+                    currentPref.copy(
+                        captureWhenRefreshAllLink = value as Boolean,
+                    )
 
                 else -> currentPref
             }

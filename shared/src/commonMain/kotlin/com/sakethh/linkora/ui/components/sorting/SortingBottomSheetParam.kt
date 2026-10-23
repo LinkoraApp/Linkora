@@ -10,11 +10,12 @@ data class SortingBottomSheetParam
 @OptIn(ExperimentalMaterial3Api::class)
 constructor(
     val onDismiss: () -> Unit,
-    val onSelected: (
-        selectedSortingTypeType: SortingType,
-        isLinksSortingSelected: Boolean,
-        isFoldersSortingSelected: Boolean,
-    ) -> Unit,
+    val onSelected:
+        (
+            selectedSortingTypeType: SortingType,
+            isLinksSortingSelected: Boolean,
+            isFoldersSortingSelected: Boolean,
+        ) -> Unit,
     val bottomModalSheetState: SheetState,
     val sortingBtmSheetType: SortingBtmSheetType,
     val showFoldersSelection: MutableState<Boolean>,

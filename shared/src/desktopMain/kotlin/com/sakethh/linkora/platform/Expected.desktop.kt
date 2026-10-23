@@ -37,6 +37,15 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.serialization.kotlinx.json.json
+import java.io.File
+import java.security.cert.CertificateException
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
+import javax.net.ssl.X509TrustManager
+import kotlin.io.inputStream
+import kotlin.io.println
+import kotlin.io.resolve
+import kotlin.use
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -50,22 +59,12 @@ import okio.Path.Companion.toPath
 import readAllPreferences
 import readPreferenceValue
 import writePreferenceValue
-import java.io.File
-import java.security.cert.CertificateException
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
-import javax.net.ssl.X509TrustManager
-import kotlin.io.inputStream
-import kotlin.io.println
-import kotlin.io.resolve
-import kotlin.use
 
 actual val showFollowSystemThemeOption: Boolean = false
 
 actual val showDynamicThemingOption: Boolean = false
 
-@Composable
-actual fun PlatformSpecificBackHandler(init: () -> Unit) = Unit
+@Composable actual fun PlatformSpecificBackHandler(init: () -> Unit) = Unit
 
 actual fun platformSpecificLogging(string: String) {
     println("Linkora Log : $string")
@@ -125,10 +124,11 @@ actual class NativeUtils {
             nativeFolderPath: String,
             url: String,
         ): Result<Boolean> {
-            val request = WebCaptureRequest(
-                nativeFolderPath = nativeFolderPath,
-                url = url,
-            )
+            val request =
+                WebCaptureRequest(
+                    nativeFolderPath = nativeFolderPath,
+                    url = url,
+                )
             WebCaptureService.queueCapture(request)
             return Result.Success(true)
         }
@@ -150,14 +150,16 @@ actual class NativeUtils {
             AllLinksWebCaptureService.cancel()
         }
 
-        actual fun isWebCaptureWorkerEnqueued(): Flow<Boolean?> = combine(
-            WebCaptureService.isProcessing,
-            snapshotFlow {
-                DataSettingsScreenVM.onGoingWebCaptureState
-            },
-        ) { b1, b2 ->
-            b1 || b2.isInProgress
-        }.distinctUntilChanged()
+        actual fun isWebCaptureWorkerEnqueued(): Flow<Boolean?> =
+            combine(
+                    WebCaptureService.isProcessing,
+                    snapshotFlow {
+                        DataSettingsScreenVM.onGoingWebCaptureState
+                    },
+                ) { b1, b2 ->
+                    b1 || b2.isInProgress
+                }
+                .distinctUntilChanged()
 
         actual suspend fun nuke() {
             WebCaptureService.killService()
@@ -208,8 +210,8 @@ actual class Network(private val localizedStrings: () -> LocalizedStrings) {
 
     private var syncServerClient: HttpClient? = null
 
-    actual fun getSyncServerClient(): HttpClient = syncServerClient
-        ?: error(localizedStrings().SyncServerConfigurationError)
+    actual fun getSyncServerClient(): HttpClient =
+        syncServerClient ?: error(localizedStrings().SyncServerConfigurationError)
 
     actual fun closeSyncServerClient() {
         syncServerClient?.close()
@@ -253,8 +255,7 @@ actual class Network(private val localizedStrings: () -> LocalizedStrings) {
                                 override fun checkClientTrusted(
                                     chain: Array<out X509Certificate?>?,
                                     authType: String?,
-                                ) {
-                                }
+                                ) {}
 
                                 override fun checkServerTrusted(
                                     chain: Array<out X509Certificate?>?,
@@ -266,7 +267,8 @@ actual class Network(private val localizedStrings: () -> LocalizedStrings) {
                                     }
 
                                     if (chain?.isEmpty() == true) {
-                                        throw CertificateException("Certificate chain is empty") as Throwable
+                                        throw CertificateException("Certificate chain is empty")
+                                            as Throwable
                                     }
 
                                     val serverCert = chain?.get(0)
@@ -276,7 +278,8 @@ actual class Network(private val localizedStrings: () -> LocalizedStrings) {
                                     serverCert?.checkValidity()
                                 }
 
-                                override fun getAcceptedIssuers(): Array<out X509Certificate?> = if (bypassCertCheck) arrayOf() else arrayOf(signedCertificate)
+                                override fun getAcceptedIssuers(): Array<out X509Certificate?> =
+                                    if (bypassCertCheck) arrayOf() else arrayOf(signedCertificate)
                             }
                     }
                 }
@@ -311,7 +314,8 @@ actual object PlatformPreference {
         )
     }
 
-    actual suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T? = readPreferenceValue(dataStore = dataStore, preferenceKey = preferenceKey)
+    actual suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T? =
+        readPreferenceValue(dataStore = dataStore, preferenceKey = preferenceKey)
 
     actual suspend fun readAllPreferences(): AppPreferences {
         val prefs = dataStore.data.first()

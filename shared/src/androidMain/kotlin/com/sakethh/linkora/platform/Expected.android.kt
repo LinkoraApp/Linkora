@@ -28,6 +28,13 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.serialization.kotlinx.json.json
+import java.security.cert.CertificateException
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
+import javax.net.ssl.X509TrustManager
+import kotlin.io.inputStream
+import kotlin.io.resolve
+import kotlin.use
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -36,13 +43,6 @@ import kotlinx.serialization.json.Json
 import readAllPreferences
 import readPreferenceValue
 import writePreferenceValue
-import java.security.cert.CertificateException
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
-import javax.net.ssl.X509TrustManager
-import kotlin.io.inputStream
-import kotlin.io.resolve
-import kotlin.use
 
 actual val showFollowSystemThemeOption: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
 
@@ -75,7 +75,7 @@ actual val PlatformIODispatcher: CoroutineDispatcher = Dispatchers.IO
 
 actual class Network(
     private val context: Context,
-    private val localizedStrings: () -> LocalizedStrings
+    private val localizedStrings: () -> LocalizedStrings,
 ) {
 
     private fun HttpClientConfig<CIOEngineConfig>.installLogger() {
@@ -109,8 +109,8 @@ actual class Network(
 
     private var syncServerClient: HttpClient? = null
 
-    actual fun getSyncServerClient(): HttpClient = syncServerClient
-        ?: error(localizedStrings().SyncServerConfigurationError)
+    actual fun getSyncServerClient(): HttpClient =
+        syncServerClient ?: error(localizedStrings().SyncServerConfigurationError)
 
     actual fun closeSyncServerClient() {
         syncServerClient?.close()
@@ -154,8 +154,7 @@ actual class Network(
                                 override fun checkClientTrusted(
                                     chain: Array<out X509Certificate?>?,
                                     authType: String?,
-                                ) {
-                                }
+                                ) {}
 
                                 override fun checkServerTrusted(
                                     chain: Array<out X509Certificate?>?,
@@ -167,7 +166,8 @@ actual class Network(
                                     }
 
                                     if (chain?.isEmpty() == true) {
-                                        throw CertificateException("Certificate chain is empty") as Throwable
+                                        throw CertificateException("Certificate chain is empty")
+                                            as Throwable
                                     }
 
                                     val serverCert = chain?.get(0)
@@ -177,7 +177,8 @@ actual class Network(
                                     serverCert?.checkValidity()
                                 }
 
-                                override fun getAcceptedIssuers(): Array<out X509Certificate?> = if (bypassCertCheck) arrayOf() else arrayOf(signedCertificate)
+                                override fun getAcceptedIssuers(): Array<out X509Certificate?> =
+                                    if (bypassCertCheck) arrayOf() else arrayOf(signedCertificate)
                             }
                     }
                 }
@@ -204,7 +205,8 @@ actual class PlatformPreference(private val dataStore: DataStore<Preferences>) {
         )
     }
 
-    actual suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T? = readPreferenceValue(dataStore = dataStore, preferenceKey = preferenceKey)
+    actual suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T? =
+        readPreferenceValue(dataStore = dataStore, preferenceKey = preferenceKey)
 
     actual suspend fun readAllPreferences(): AppPreferences {
         val prefs = dataStore.data.first()
@@ -218,4 +220,5 @@ actual class PlatformPreference(private val dataStore: DataStore<Preferences>) {
 actual fun defaultExportLocation(): String? = null
 
 actual fun defaultSnapshotLocation(): String? = null
+
 actual val hostOS: HostOS = HostOS.Android

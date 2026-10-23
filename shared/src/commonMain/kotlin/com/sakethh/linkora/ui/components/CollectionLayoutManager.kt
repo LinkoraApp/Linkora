@@ -73,9 +73,12 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 fun CollectionLayoutManager(
     preferences: AppPreferences,
     screenType: ScreenType,
-    flatChildFolderDataState: PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<FlatChildFolderData>>>?,
-    linksTagsPairsState: PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<LinkTagsPair>>>?,
-    flatSearchResultState: PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<FlatSearchResult>>>?,
+    flatChildFolderDataState:
+        PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<FlatChildFolderData>>>?,
+    linksTagsPairsState:
+        PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<LinkTagsPair>>>?,
+    flatSearchResultState:
+        PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<FlatSearchResult>>>?,
     paddingValues: PaddingValues,
     folderMoreIconClick: (folder: Folder) -> Unit,
     tagMoreIconClick: (tag: Tag) -> Unit,
@@ -109,7 +112,9 @@ fun CollectionLayoutManager(
                 if (!CollectionsScreenVM.isSelectionEnabled.value) {
                     onLinkClick(linkTagsPair)
                 } else {
-                    if (CollectionsScreenVM.selectedLinkTagPairsViaLongClick.contains(linkTagsPair)) {
+                    if (
+                        CollectionsScreenVM.selectedLinkTagPairsViaLongClick.contains(linkTagsPair)
+                    ) {
                         CollectionsScreenVM.selectedLinkTagPairsViaLongClick.remove(linkTagsPair)
                     } else {
                         CollectionsScreenVM.selectedLinkTagPairsViaLongClick.add(linkTagsPair)
@@ -118,9 +123,9 @@ fun CollectionLayoutManager(
             },
             onForceOpenInExternalBrowserClicked = {},
             isItemSelected =
-            mutableStateOf(
-                CollectionsScreenVM.selectedLinkTagPairsViaLongClick.contains(linkTagsPair),
-            ),
+                mutableStateOf(
+                    CollectionsScreenVM.selectedLinkTagPairsViaLongClick.contains(linkTagsPair),
+                ),
             onLongClick = {
                 if (!CollectionsScreenVM.isSelectionEnabled.value) {
                     CollectionsScreenVM.isSelectionEnabled.value = true
@@ -210,10 +215,10 @@ fun CollectionLayoutManager(
             isCurrentlyInDetailsView = mutableStateOf(isCurrentlyInDetailsView(it)),
             showMoreIcon = mutableStateOf(true),
             isSelectedForSelection =
-            mutableStateOf(
-                CollectionsScreenVM.isSelectionEnabled.value &&
-                    CollectionsScreenVM.selectedFoldersViaLongClick.contains(it),
-            ),
+                mutableStateOf(
+                    CollectionsScreenVM.isSelectionEnabled.value &&
+                        CollectionsScreenVM.selectedFoldersViaLongClick.contains(it),
+                ),
             showCheckBox = CollectionsScreenVM.isSelectionEnabled,
             onCheckBoxChanged = { bool ->
                 if (bool) {
@@ -249,8 +254,7 @@ fun CollectionLayoutManager(
     val unifiedListState = retain {
         when (preferences.selectedLinkLayout) {
             Layout.TITLE_ONLY_LIST_VIEW.name,
-            Layout.REGULAR_LIST_VIEW.name,
-            -> listLayoutState.asUnifiedLazyState()
+            Layout.REGULAR_LIST_VIEW.name -> listLayoutState.asUnifiedLazyState()
 
             Layout.STAGGERED_VIEW.name -> staggeredGridLayoutState.asUnifiedLazyState()
 
@@ -265,21 +269,20 @@ fun CollectionLayoutManager(
 
     when (preferences.selectedLinkLayout) {
         Layout.TITLE_ONLY_LIST_VIEW.name,
-        Layout.REGULAR_LIST_VIEW.name,
-        -> {
+        Layout.REGULAR_LIST_VIEW.name -> {
             val state = rememberScrollAreaState(lazyListState = listLayoutState)
             ScrollArea(state = state) {
                 LazyColumn(
                     modifier =
-                    Modifier.then(
-                        if (nestedScrollConnection != null) {
-                            Modifier.nestedScroll(nestedScrollConnection)
-                        } else {
-                            Modifier
-                        },
-                    )
-                        .padding(paddingValues)
-                        .fillMaxSize(),
+                        Modifier.then(
+                                if (nestedScrollConnection != null) {
+                                    Modifier.nestedScroll(nestedScrollConnection)
+                                } else {
+                                    Modifier
+                                },
+                            )
+                            .padding(paddingValues)
+                            .fillMaxSize(),
                     state = listLayoutState,
                 ) {
                     if (screenType == ScreenType.TAGS_FOLDERS_LINKS) {
@@ -292,18 +295,25 @@ fun CollectionLayoutManager(
                             ) {
                                 when (it.itemType) {
                                     Constants.TAG -> {
-                                        FolderComponent(folderComponentParam = tagComponentParam(it.asTag))
+                                        FolderComponent(
+                                            folderComponentParam = tagComponentParam(it.asTag),
+                                        )
                                     }
 
                                     Constants.FOLDER -> {
-                                        FolderComponent(folderComponentParam = folderComponentParam(it.asFolder))
+                                        FolderComponent(
+                                            folderComponentParam =
+                                                folderComponentParam(it.asFolder),
+                                        )
                                     }
 
                                     else -> {
                                         ListViewLinkComponent(
-                                            linkComponentParam = linkComponentParam(it.asLinkTagsPair),
+                                            linkComponentParam =
+                                                linkComponentParam(it.asLinkTagsPair),
                                             titleOnlyView =
-                                            preferences.selectedLinkLayout == Layout.TITLE_ONLY_LIST_VIEW.name,
+                                                preferences.selectedLinkLayout ==
+                                                    Layout.TITLE_ONLY_LIST_VIEW.name,
                                             preferences = preferences,
                                             onShare = {
                                                 LinkoraSDK.getInstance().nativeUtils.onShare(it)
@@ -324,13 +334,16 @@ fun CollectionLayoutManager(
                                 },
                             ) {
                                 if (it.itemType == Constants.FOLDER) {
-                                    FolderComponent(folderComponentParam = folderComponentParam(it.asFolder))
+                                    FolderComponent(
+                                        folderComponentParam = folderComponentParam(it.asFolder),
+                                    )
                                 } else {
                                     ListViewLinkComponent(
                                         preferences = preferences,
                                         linkComponentParam = linkComponentParam(it.asLinkTagsPair),
                                         titleOnlyView =
-                                        preferences.selectedLinkLayout == Layout.TITLE_ONLY_LIST_VIEW.name,
+                                            preferences.selectedLinkLayout ==
+                                                Layout.TITLE_ONLY_LIST_VIEW.name,
                                         onShare = {
                                             LinkoraSDK.getInstance().nativeUtils.onShare(it)
                                         },
@@ -353,7 +366,8 @@ fun CollectionLayoutManager(
                                     preferences = preferences,
                                     linkComponentParam = linkComponentParam(it),
                                     titleOnlyView =
-                                    preferences.selectedLinkLayout == Layout.TITLE_ONLY_LIST_VIEW.name,
+                                        preferences.selectedLinkLayout ==
+                                            Layout.TITLE_ONLY_LIST_VIEW.name,
                                     onShare = {
                                         LinkoraSDK.getInstance().nativeUtils.onShare(it)
                                     },
@@ -399,8 +413,8 @@ fun CollectionLayoutManager(
 
             LaunchedEffect(Unit) {
                 snapshotFlow {
-                    listLayoutState.firstVisibleItemIndex
-                }
+                        listLayoutState.firstVisibleItemIndex
+                    }
                     .debounce(500)
                     .distinctUntilChanged()
                     .collectLatest {
@@ -415,15 +429,15 @@ fun CollectionLayoutManager(
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(150.dp),
                     modifier =
-                    Modifier.padding(paddingValues)
-                        .fillMaxSize()
-                        .then(
-                            if (nestedScrollConnection != null) {
-                                Modifier.nestedScroll(nestedScrollConnection)
-                            } else {
-                                Modifier
-                            },
-                        ),
+                        Modifier.padding(paddingValues)
+                            .fillMaxSize()
+                            .then(
+                                if (nestedScrollConnection != null) {
+                                    Modifier.nestedScroll(nestedScrollConnection)
+                                } else {
+                                    Modifier
+                                },
+                            ),
                     state = gridLayoutState,
                 ) {
                     if (screenType == ScreenType.TAGS_FOLDERS_LINKS) {
@@ -443,17 +457,23 @@ fun CollectionLayoutManager(
                             ) {
                                 when (it.itemType) {
                                     Constants.TAG -> {
-                                        FolderComponent(folderComponentParam = tagComponentParam(it.asTag))
+                                        FolderComponent(
+                                            folderComponentParam = tagComponentParam(it.asTag),
+                                        )
                                     }
 
                                     Constants.FOLDER -> {
-                                        FolderComponent(folderComponentParam = folderComponentParam(it.asFolder))
+                                        FolderComponent(
+                                            folderComponentParam =
+                                                folderComponentParam(it.asFolder),
+                                        )
                                     }
 
                                     else -> {
                                         GridViewLinkComponent(
                                             preferences = preferences,
-                                            linkComponentParam = linkComponentParam(it.asLinkTagsPair),
+                                            linkComponentParam =
+                                                linkComponentParam(it.asLinkTagsPair),
                                             forStaggeredView = false,
                                         )
                                     }
@@ -478,13 +498,16 @@ fun CollectionLayoutManager(
                                 },
                             ) {
                                 if (it.itemType == Constants.FOLDER) {
-                                    FolderComponent(folderComponentParam = folderComponentParam(it.asFolder))
+                                    FolderComponent(
+                                        folderComponentParam = folderComponentParam(it.asFolder),
+                                    )
                                 } else {
                                     GridViewLinkComponent(
                                         linkComponentParam = linkComponentParam(it.asLinkTagsPair),
                                         preferences = preferences,
                                         forStaggeredView =
-                                        preferences.selectedLinkLayout == Layout.STAGGERED_VIEW.name,
+                                            preferences.selectedLinkLayout ==
+                                                Layout.STAGGERED_VIEW.name,
                                     )
                                 }
                             }
@@ -512,7 +535,9 @@ fun CollectionLayoutManager(
                                 GridViewLinkComponent(
                                     linkComponentParam = linkComponentParam(it),
                                     preferences = preferences,
-                                    forStaggeredView = preferences.selectedLinkLayout == Layout.STAGGERED_VIEW.name,
+                                    forStaggeredView =
+                                        preferences.selectedLinkLayout ==
+                                            Layout.STAGGERED_VIEW.name,
                                 )
                             }
                         }
@@ -569,8 +594,8 @@ fun CollectionLayoutManager(
             }
             LaunchedEffect(Unit) {
                 snapshotFlow {
-                    gridLayoutState.firstVisibleItemIndex
-                }
+                        gridLayoutState.firstVisibleItemIndex
+                    }
                     .debounce(500)
                     .distinctUntilChanged()
                     .collectLatest {
@@ -583,15 +608,15 @@ fun CollectionLayoutManager(
             LazyVerticalStaggeredGrid(
                 columns = StaggeredGridCells.Adaptive(150.dp),
                 modifier =
-                Modifier.padding(paddingValues)
-                    .fillMaxSize()
-                    .then(
-                        if (nestedScrollConnection != null) {
-                            Modifier.nestedScroll(nestedScrollConnection)
-                        } else {
-                            Modifier
-                        },
-                    ),
+                    Modifier.padding(paddingValues)
+                        .fillMaxSize()
+                        .then(
+                            if (nestedScrollConnection != null) {
+                                Modifier.nestedScroll(nestedScrollConnection)
+                            } else {
+                                Modifier
+                            },
+                        ),
                 state = staggeredGridLayoutState,
             ) {
                 if (screenType == ScreenType.TAGS_FOLDERS_LINKS) {
@@ -611,11 +636,15 @@ fun CollectionLayoutManager(
                         ) {
                             when (it.itemType) {
                                 Constants.TAG -> {
-                                    FolderComponent(folderComponentParam = tagComponentParam(it.asTag))
+                                    FolderComponent(
+                                        folderComponentParam = tagComponentParam(it.asTag),
+                                    )
                                 }
 
                                 Constants.FOLDER -> {
-                                    FolderComponent(folderComponentParam = folderComponentParam(it.asFolder))
+                                    FolderComponent(
+                                        folderComponentParam = folderComponentParam(it.asFolder),
+                                    )
                                 }
 
                                 else -> {
@@ -651,12 +680,16 @@ fun CollectionLayoutManager(
                             },
                         ) {
                             if (it.itemType == Constants.FOLDER) {
-                                FolderComponent(folderComponentParam = folderComponentParam(it.asFolder))
+                                FolderComponent(
+                                    folderComponentParam = folderComponentParam(it.asFolder),
+                                )
                             } else {
                                 GridViewLinkComponent(
                                     linkComponentParam = linkComponentParam(it.asLinkTagsPair),
                                     preferences = preferences,
-                                    forStaggeredView = preferences.selectedLinkLayout == Layout.STAGGERED_VIEW.name,
+                                    forStaggeredView =
+                                        preferences.selectedLinkLayout ==
+                                            Layout.STAGGERED_VIEW.name,
                                 )
                             }
                         }
@@ -673,13 +706,15 @@ fun CollectionLayoutManager(
                         items(
                             linkTagsPairs,
                             key = {
-                                "LazyVerticalStaggeredGrid-linksTagsPairs-P$pageKey-ID" + it.link.localId
+                                "LazyVerticalStaggeredGrid-linksTagsPairs-P$pageKey-ID" +
+                                    it.link.localId
                             },
                         ) {
                             GridViewLinkComponent(
                                 linkComponentParam = linkComponentParam(it),
                                 preferences = preferences,
-                                forStaggeredView = preferences.selectedLinkLayout == Layout.STAGGERED_VIEW.name,
+                                forStaggeredView =
+                                    preferences.selectedLinkLayout == Layout.STAGGERED_VIEW.name,
                             )
                         }
                     }
@@ -719,8 +754,8 @@ fun CollectionLayoutManager(
 
             LaunchedEffect(Unit) {
                 snapshotFlow {
-                    staggeredGridLayoutState.firstVisibleItemIndex
-                }
+                        staggeredGridLayoutState.firstVisibleItemIndex
+                    }
                     .debounce(500)
                     .distinctUntilChanged()
                     .collectLatest {

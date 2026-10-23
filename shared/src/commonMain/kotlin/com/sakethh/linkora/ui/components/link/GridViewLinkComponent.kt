@@ -80,7 +80,8 @@ fun GridViewLinkComponent(
     val currentOnMoreIconClick by rememberUpdatedState(linkComponentParam.onMoreIconClick)
     val currentOnLongClick by rememberUpdatedState(linkComponentParam.onLongClick)
     val currentShowMenuOnGridLinkClick by rememberUpdatedState(preferences.showMenuOnGridLinkClick)
-    val currentIsSelectionModeEnabled by rememberUpdatedState(linkComponentParam.isSelectionModeEnabled.value)
+    val currentIsSelectionModeEnabled by
+        rememberUpdatedState(linkComponentParam.isSelectionModeEnabled.value)
     val onAndroidTV = LocalPlatform.current is Platform.Android.TV
     val handleCardClick: () -> Unit = {
         if (currentShowMenuOnGridLinkClick && !currentIsSelectionModeEnabled) {
@@ -91,47 +92,48 @@ fun GridViewLinkComponent(
     }
 
     val showTitle by
-    rememberSaveable(
-        preferences.showTitleInLinkGridView,
-        linkComponentParam.link.title.isNotBlank(),
-    ) {
-        mutableStateOf(
-            preferences.showTitleInLinkGridView && linkComponentParam.link.title.isNotBlank(),
-        )
-    }
+        rememberSaveable(
+            preferences.showTitleInLinkGridView,
+            linkComponentParam.link.title.isNotBlank(),
+        ) {
+            mutableStateOf(
+                preferences.showTitleInLinkGridView && linkComponentParam.link.title.isNotBlank(),
+            )
+        }
 
     val showNote by
-    rememberSaveable(
-        preferences.showNoteInLinkView,
-        linkComponentParam.link.note.isNotBlank(),
-    ) {
-        mutableStateOf(
-            preferences.showNoteInLinkView && linkComponentParam.link.note.isNotBlank(),
-        )
-    }
+        rememberSaveable(
+            preferences.showNoteInLinkView,
+            linkComponentParam.link.note.isNotBlank(),
+        ) {
+            mutableStateOf(
+                preferences.showNoteInLinkView && linkComponentParam.link.note.isNotBlank(),
+            )
+        }
 
     val showDate by
-    rememberSaveable(
-        preferences.showDateInLinkView,
-        linkComponentParam.link.date != null,
-    ) {
-        mutableStateOf(preferences.showDateInLinkView && linkComponentParam.link.date != null)
-    }
+        rememberSaveable(
+            preferences.showDateInLinkView,
+            linkComponentParam.link.date != null,
+        ) {
+            mutableStateOf(preferences.showDateInLinkView && linkComponentParam.link.date != null)
+        }
 
     val showTags by
-    rememberSaveable(preferences.showTagsInLinkView, linkComponentParam.tags != null) {
-        mutableStateOf(preferences.showTagsInLinkView && linkComponentParam.tags != null)
-    }
+        rememberSaveable(preferences.showTagsInLinkView, linkComponentParam.tags != null) {
+            mutableStateOf(preferences.showTagsInLinkView && linkComponentParam.tags != null)
+        }
 
     val showHost by
-    rememberSaveable(
-        !linkComponentParam.isSelectionModeEnabled.value,
-        preferences.showHostInLinkListView,
-    ) {
-        mutableStateOf(
-            !linkComponentParam.isSelectionModeEnabled.value && preferences.showHostInLinkListView,
-        )
-    }
+        rememberSaveable(
+            !linkComponentParam.isSelectionModeEnabled.value,
+            preferences.showHostInLinkListView,
+        ) {
+            mutableStateOf(
+                !linkComponentParam.isSelectionModeEnabled.value &&
+                    preferences.showHostInLinkListView,
+            )
+        }
 
     val foldersPath = retain {
         linkComponentParam.link.path
@@ -154,8 +156,7 @@ fun GridViewLinkComponent(
                     },
             ),
         modifier =
-            Modifier
-                .fillMaxWidth()
+            Modifier.fillMaxWidth()
                 .then(if (!forStaggeredView) Modifier.wrapContentHeight() else Modifier)
                 .focusGroup()
                 .onFocusChanged { focusState ->
@@ -180,25 +181,22 @@ fun GridViewLinkComponent(
         Box(modifier = Modifier.fillMaxWidth()) {
             Spacer(
                 modifier =
-                    Modifier
-                        .matchParentSize()
-                        .pointerInput(Unit) {
-                            detectTapGestures(
-                                onTap = {
-                                    handleCardClick()
-                                },
-                                onLongPress = {
-                                    currentOnLongClick()
-                                },
-                            )
-                        },
+                    Modifier.matchParentSize().pointerInput(Unit) {
+                        detectTapGestures(
+                            onTap = {
+                                handleCardClick()
+                            },
+                            onLongPress = {
+                                currentOnLongClick()
+                            },
+                        )
+                    },
             )
 
             Column(modifier = Modifier.fillMaxWidth()) {
                 Column(
                     modifier =
-                        Modifier
-                            .fillMaxWidth()
+                        Modifier.fillMaxWidth()
                             .combinedClickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
@@ -213,8 +211,7 @@ fun GridViewLinkComponent(
                 ) {
                     if (linkComponentParam.isItemSelected.value) {
                         Box(
-                            Modifier
-                                .fillMaxWidth()
+                            Modifier.fillMaxWidth()
                                 .height(150.dp)
                                 .background(MaterialTheme.colorScheme.primary),
                             contentAlignment = Alignment.Center,
@@ -232,8 +229,7 @@ fun GridViewLinkComponent(
                         ) {
                             CoilImage(
                                 modifier =
-                                    Modifier
-                                        .fillMaxSize()
+                                    Modifier.fillMaxSize()
                                         .then(
                                             if (preferences.enableFadedEdgeForNonListViews) {
                                                 Modifier.fadedEdges(colorScheme)
@@ -246,8 +242,7 @@ fun GridViewLinkComponent(
                                     if (
                                         linkComponentParam.link.imgURL.startsWith(
                                             "https://pbs.twimg.com/profile_images/",
-                                        ) ||
-                                        !forStaggeredView
+                                        ) || !forStaggeredView
                                     ) {
                                         ContentScale.Crop
                                     } else {
@@ -261,21 +256,20 @@ fun GridViewLinkComponent(
 
                             if (
                                 preferences.showVideoTagOnUIIfApplicable &&
-                                (
-                                        linkComponentParam.link.mediaType == MediaType.VIDEO ||
-                                                linkComponentParam.link.url.host(throwOnException = false) in
-                                                getVideoPlatformBaseUrls()
-                                        )
+                                    (linkComponentParam.link.mediaType == MediaType.VIDEO ||
+                                        linkComponentParam.link.url.host(
+                                            throwOnException = false,
+                                        ) in getVideoPlatformBaseUrls())
                             ) {
                                 Text(
                                     text = MediaType.VIDEO.name,
                                     modifier =
-                                        Modifier
-                                            .padding(start = 10.dp)
+                                        Modifier.padding(start = 10.dp)
                                             .background(
-                                                color = MaterialTheme.colorScheme.secondary.copy(
-                                                    0.25f
-                                                ),
+                                                color =
+                                                    MaterialTheme.colorScheme.secondary.copy(
+                                                        0.25f,
+                                                    ),
                                                 shape = RoundedCornerShape(5.dp),
                                             )
                                             .padding(5.dp)
@@ -362,10 +356,7 @@ fun GridViewLinkComponent(
                     )
 
                     FoldersRow(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(start = 10.dp),
+                        modifier = Modifier.fillMaxWidth().padding(start = 10.dp),
                         folders = foldersPath,
                         onFolderClick = { linkComponentParam.onFolderClick(it) },
                     )
@@ -375,8 +366,7 @@ fun GridViewLinkComponent(
                     Text(
                         text = linkComponentParam.link.url.host(throwOnException = false),
                         modifier =
-                            Modifier
-                                .padding(
+                            Modifier.padding(
                                     start = 10.dp,
                                     top = if (!preferences.showTagsInLinkView) 10.dp else 5.dp,
                                     end = 10.dp,
@@ -396,8 +386,7 @@ fun GridViewLinkComponent(
                 if (!preferences.showMenuOnGridLinkClick) {
                     Box(
                         modifier =
-                            Modifier
-                                .padding(top = if (addTopSpacing) 10.dp else 0.dp)
+                            Modifier.padding(top = if (addTopSpacing) 10.dp else 0.dp)
                                 .fillMaxWidth()
                                 .height(36.dp)
                                 .clickable(

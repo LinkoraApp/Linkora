@@ -42,16 +42,14 @@ fun LinkNonMobileMenu(
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(
             modifier =
-                Modifier
-                    .fillMaxWidth(0.5f)
+                Modifier.fillMaxWidth(0.5f)
                     .padding(start = 15.dp, bottom = 15.dp)
                     .wrapContentHeight()
                     .verticalScroll(rememberScrollState()),
         ) {
             CoilImage(
                 modifier =
-                    Modifier
-                        .animateContentSize()
+                    Modifier.animateContentSize()
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(15.dp))
                         .height(200.dp),
@@ -77,8 +75,7 @@ fun LinkNonMobileMenu(
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
                 modifier =
-                    Modifier
-                        .clip(RoundedCornerShape(5.dp))
+                    Modifier.clip(RoundedCornerShape(5.dp))
                         .background(MaterialTheme.colorScheme.primary.copy(0.1f))
                         .padding(5.dp),
             )

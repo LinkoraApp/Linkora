@@ -133,9 +133,7 @@ fun AddANewFolderDialogBox(addNewFolderDialogBoxParam: AddNewFolderDialogBoxPara
                     modifier = Modifier.fillMaxWidth(),
                     label = {
                         Text(
-                            text =
-
-                                localizedStrings.NoteForCreatingTheFolder,
+                            text = localizedStrings.NoteForCreatingTheFolder,
                             style = MaterialTheme.typography.titleSmall,
                             fontSize = 12.sp,
                         )
@@ -157,12 +155,11 @@ fun AddANewFolderDialogBox(addNewFolderDialogBoxParam: AddNewFolderDialogBoxPara
                 text =
                     if (
                         addNewFolderDialogBoxParam.inCollectionDetailPane &&
-                        addNewFolderDialogBoxParam.currentFolder != null
+                            addNewFolderDialogBoxParam.currentFolder != null
                     ) {
-                        localizedStrings.CreateANewFolderIn
-                            .replaceActual(
-                                addNewFolderDialogBoxParam.currentFolder.name.inDoubleQuotes(),
-                            )
+                        localizedStrings.CreateANewFolderIn.replaceActual(
+                            addNewFolderDialogBoxParam.currentFolder.name.inDoubleQuotes(),
+                        )
                     } else {
                         localizedStrings.CreateANewFolder
                     },

@@ -42,11 +42,13 @@ fun CoilImage(
     val platformContext = LocalPlatformContext.current
     AsyncImage(
         model =
-        ImageRequest.Builder(platformContext)
-            .data(imgURL)
-            .httpHeaders(headers = NetworkHeaders.Builder().add("User-Agent", userAgent).build())
-            .crossfade(true)
-            .build(),
+            ImageRequest.Builder(platformContext)
+                .data(imgURL)
+                .httpHeaders(
+                    headers = NetworkHeaders.Builder().add("User-Agent", userAgent).build(),
+                )
+                .crossfade(true)
+                .build(),
         contentDescription = contentDescription,
         modifier = modifier,
         contentScale = contentScale,

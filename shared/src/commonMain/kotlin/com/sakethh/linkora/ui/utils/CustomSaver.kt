@@ -11,15 +11,16 @@ import kotlinx.serialization.json.Json
 @Composable
 inline fun <reified T> rememberDeserializableMutableObject(
     noinline init: () -> MutableState<T>,
-): MutableState<T> = rememberSaveable(
-    saver =
-    Saver(
-        save = {
-            Json.encodeToString(it.value)
-        },
-        restore = {
-            mutableStateOf(Json.decodeFromString<T>(it))
-        },
-    ),
-    init = init,
-)
+): MutableState<T> =
+    rememberSaveable(
+        saver =
+            Saver(
+                save = {
+                    Json.encodeToString(it.value)
+                },
+                restore = {
+                    mutableStateOf(Json.decodeFromString<T>(it))
+                },
+            ),
+        init = init,
+    )

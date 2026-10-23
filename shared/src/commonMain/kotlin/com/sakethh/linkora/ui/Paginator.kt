@@ -8,6 +8,9 @@ import com.sakethh.linkora.domain.onLoading
 import com.sakethh.linkora.domain.onSuccess
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
+import kotlin.concurrent.atomics.AtomicLong
+import kotlin.concurrent.atomics.AtomicReference
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -18,9 +21,6 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlin.concurrent.atomics.AtomicLong
-import kotlin.concurrent.atomics.AtomicReference
-import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 typealias LastSeenId = Long
 
@@ -34,12 +34,12 @@ typealias UpdatedLastSeenString = String
 class Paginator<T>(
     private val coroutineScope: CoroutineScope,
     private val onRetrieve:
-    suspend (lastSeenId: LastSeenId?, lastSeenString: String?) -> Flow<Result<List<T>>>,
+        suspend (lastSeenId: LastSeenId?, lastSeenString: String?) -> Flow<Result<List<T>>>,
     private val onRetrieved:
-    suspend (
-        currentKey: Pair<LastSeenId, LastSeenString>,
-        data: List<T>,
-    ) -> Pair<UpdatedLastSeenId, UpdatedLastSeenString>,
+        suspend (
+            currentKey: Pair<LastSeenId, LastSeenString>,
+            data: List<T>,
+        ) -> Pair<UpdatedLastSeenId, UpdatedLastSeenString>,
     private val onError: suspend (Throwable) -> Unit,
     private val onRetrieving: suspend () -> Unit,
     private val onPagesFinished: suspend () -> Unit,
@@ -109,14 +109,15 @@ class Paginator<T>(
 
                     if (
                         (existingJob == null || existingJob.isCancelled) &&
-                        seenPageKeys.contains(
-                            pageKey,
-                        )
+                            seenPageKeys.contains(
+                                pageKey,
+                            )
                     ) {
                         linkoraLog("restarting the $pageKey job")
 
                         val restartId =
-                            if (pageKey.first == Constants.EMPTY_LAST_SEEN_ID) null else pageKey.first
+                            if (pageKey.first == Constants.EMPTY_LAST_SEEN_ID) null
+                            else pageKey.first
 
                         var newJob: Job? = null
 
@@ -216,7 +217,9 @@ class Paginator<T>(
         }
     }
 
-    private suspend fun Flow<Result<List<T>>>.collectData(pageKey: Pair<LastSeenId, LastSeenString>) {
+    private suspend fun Flow<Result<List<T>>>.collectData(
+        pageKey: Pair<LastSeenId, LastSeenString>,
+    ) {
         cancellable().distinctUntilChanged().collect { result ->
             result
                 .onSuccess {

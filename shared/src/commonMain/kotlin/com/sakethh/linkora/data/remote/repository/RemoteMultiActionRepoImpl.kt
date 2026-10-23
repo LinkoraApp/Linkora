@@ -21,51 +21,56 @@ class RemoteMultiActionRepoImpl(
 ) : RemoteMultiActionRepo {
     override suspend fun archiveMultipleItems(
         archiveMultipleItemsDTO: ArchiveMultipleItemsDTO,
-    ): Flow<Result<TimeStampBasedResponse>> = postFlow(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.ARCHIVE_MULTIPLE_ITEMS.name,
-        outgoingBody = archiveMultipleItemsDTO,
-    )
+    ): Flow<Result<TimeStampBasedResponse>> =
+        postFlow(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.ARCHIVE_MULTIPLE_ITEMS.name,
+            outgoingBody = archiveMultipleItemsDTO,
+        )
 
     override suspend fun deleteMultipleItems(
         deleteMultipleItemsDTO: DeleteMultipleItemsDTO,
-    ): Flow<Result<TimeStampBasedResponse>> = postFlow(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.DELETE_MULTIPLE_ITEMS.name,
-        outgoingBody = deleteMultipleItemsDTO,
-    )
+    ): Flow<Result<TimeStampBasedResponse>> =
+        postFlow(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.DELETE_MULTIPLE_ITEMS.name,
+            outgoingBody = deleteMultipleItemsDTO,
+        )
 
     override suspend fun moveMultipleItems(
         moveItemsDTO: MoveItemsDTO,
-    ): Flow<Result<TimeStampBasedResponse>> = postFlow(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.MOVE_EXISTING_ITEMS.name,
-        outgoingBody = moveItemsDTO,
-    )
+    ): Flow<Result<TimeStampBasedResponse>> =
+        postFlow(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.MOVE_EXISTING_ITEMS.name,
+            outgoingBody = moveItemsDTO,
+        )
 
     override suspend fun copyMultipleItems(
         copyItemsDTO: CopyItemsDTO,
-    ): Flow<Result<CopyItemsHTTPResponseDTO>> = postFlow(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.COPY_EXISTING_ITEMS.name,
-        outgoingBody = copyItemsDTO,
-    )
+    ): Flow<Result<CopyItemsHTTPResponseDTO>> =
+        postFlow(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.COPY_EXISTING_ITEMS.name,
+            outgoingBody = copyItemsDTO,
+        )
 
     override suspend fun markItemsAsRegular(
         markItemsRegularDTO: MarkItemsRegularDTO,
-    ): Flow<Result<TimeStampBasedResponse>> = postFlow(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.UNARCHIVE_MULTIPLE_ITEMS.name,
-        outgoingBody = markItemsRegularDTO,
-    )
+    ): Flow<Result<TimeStampBasedResponse>> =
+        postFlow(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.UNARCHIVE_MULTIPLE_ITEMS.name,
+            outgoingBody = markItemsRegularDTO,
+        )
 }

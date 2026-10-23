@@ -20,16 +20,6 @@ import com.sakethh.linkora.utils.ifNot
 import com.sakethh.linkora.utils.replaceActual
 import getCertificateInfo
 import getFileNameWithTimestamp
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.ProducerScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.FlowCollector
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.internal.ChannelFlow
-import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import java.awt.Desktop
 import java.awt.FileDialog
 import java.awt.Frame
@@ -41,6 +31,13 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.ProducerScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 
 actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
     private suspend fun writeToFile(
@@ -146,56 +143,61 @@ actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
         }
     }
 
-    private suspend fun getFile(fileType: FileType): File? = try {
-        val fileDialog =
-            FileDialog(
-                Frame(),
-                localizedStrings().SelectAValidFile
-                    .replaceActual(fileType.name),
-                FileDialog.LOAD,
-            )
-        fileDialog.isVisible = true
-        val sourceFile = File(fileDialog.directory, fileDialog.file)
-        if (sourceFile.extension == fileType.name.lowercase()) {
-            sourceFile
-        } else if (sourceFile.extension != fileType.name.lowercase()) {
-            UIEvent.pushUIEvent(
-                UIEvent.Type.ShowSnackbar(
-                    localizedStrings().FileTypeNotSupportedOnDesktopImport
-                        .replaceActual(sourceFile.extension, fileType.name)
-                ),
-            )
-            null
-        } else {
+    private suspend fun getFile(fileType: FileType): File? =
+        try {
+            val fileDialog =
+                FileDialog(
+                    Frame(),
+                    localizedStrings().SelectAValidFile.replaceActual(fileType.name),
+                    FileDialog.LOAD,
+                )
+            fileDialog.isVisible = true
+            val sourceFile = File(fileDialog.directory, fileDialog.file)
+            if (sourceFile.extension == fileType.name.lowercase()) {
+                sourceFile
+            } else if (sourceFile.extension != fileType.name.lowercase()) {
+                UIEvent.pushUIEvent(
+                    UIEvent.Type.ShowSnackbar(
+                        localizedStrings().FileTypeNotSupportedOnDesktopImport.replaceActual(
+                            sourceFile.extension,
+                            fileType.name,
+                        ),
+                    ),
+                )
+                null
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
             null
         }
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
-    }
 
     private suspend fun getFile(
         fileType: FileType,
         fileLocation: String,
-    ): File? = try {
-        val sourceFile = File(fileLocation)
-        if (sourceFile.extension == fileType.name.lowercase()) {
-            sourceFile
-        } else if (sourceFile.extension != fileType.name.lowercase()) {
-            UIEvent.pushUIEvent(
-                UIEvent.Type.ShowSnackbar(
-                    localizedStrings().FileTypeNotSupportedOnDesktopImport
-                        .replaceActual(sourceFile.extension, fileType.name),
-                ),
-            )
-            null
-        } else {
+    ): File? =
+        try {
+            val sourceFile = File(fileLocation)
+            if (sourceFile.extension == fileType.name.lowercase()) {
+                sourceFile
+            } else if (sourceFile.extension != fileType.name.lowercase()) {
+                UIEvent.pushUIEvent(
+                    UIEvent.Type.ShowSnackbar(
+                        localizedStrings().FileTypeNotSupportedOnDesktopImport.replaceActual(
+                            sourceFile.extension,
+                            fileType.name,
+                        ),
+                    ),
+                )
+                null
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
             null
         }
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
-    }
 
     actual suspend fun importFromJSONObj(): Flow<Result<JSONExportSchema>> = channelFlow {
         val importFile =
@@ -203,106 +205,112 @@ actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
                 ?: return@channelFlow send(Result.Failure(Throwable("Importing Failed.")))
 
         getJsonObj(importFile, importFile.name)
-    }.catch { throwable ->
-        throwable.printStackTrace()
-        emit(Result.Failure(Throwable(throwable.message ?: "Import failed")))
     }
+        .catch { throwable ->
+            throwable.printStackTrace()
+            emit(Result.Failure(Throwable(throwable.message ?: "Import failed")))
+        }
 
     private suspend fun ProducerScope<Result<JSONExportSchema>>.getJsonObj(
         file: File,
         fileName: String,
-    ) = withContext(Dispatchers.IO) {
-        send(Result.Loading(message = "Starting data import from JSON file: $fileName"))
+    ) =
+        withContext(Dispatchers.IO) {
+            send(Result.Loading(message = "Starting data import from JSON file: $fileName"))
 
-        val currentSystemEpochSeconds = getSystemEpochSeconds()
+            val currentSystemEpochSeconds = getSystemEpochSeconds()
 
-        val jsonContent = file.readText()
+            val jsonContent = file.readText()
 
-        val basedOnNewExportSchema =
-            jsonContent.substringAfter("\"").substringBefore("\"") == "schemaVersion"
+            val basedOnNewExportSchema =
+                jsonContent.substringAfter("\"").substringBefore("\"") == "schemaVersion"
 
-        send(
-            Result.Loading(
-                message =
-                    if (!basedOnNewExportSchema) {
-                        "This JSON file is based on the legacy export schema."
-                    } else {
-                        "This JSON file is based on schema version."
-                    },
-            ),
-        )
+            send(
+                Result.Loading(
+                    message =
+                        if (!basedOnNewExportSchema) {
+                            "This JSON file is based on the legacy export schema."
+                        } else {
+                            "This JSON file is based on schema version."
+                        },
+                ),
+            )
 
-        send(Result.Loading(message = "Reading and deserializing JSON file: $fileName"))
+            send(Result.Loading(message = "Reading and deserializing JSON file: $fileName"))
 
-        val jsonObj =
-            if (!basedOnNewExportSchema) {
-                Json.decodeFromString<LegacyExportSchema>(jsonContent)
-                    .asJSONExportSchema(
-                        DependencyContainer.preferencesRepo.getPreferences().primaryJsoupUserAgent,
-                    )
-            } else {
-                Utils.json.decodeFromString<JSONExportSchema>(jsonContent).run {
-                    JSONExportSchema(
-                        schemaVersion = schemaVersion,
-                        links =
-                            links.map {
-                                it.copy(
-                                    remoteId = null,
-                                    lastModified = currentSystemEpochSeconds
-                                )
-                            },
-                        folders =
-                            folders.map {
-                                it.copy(
-                                    remoteId = null,
-                                    lastModified = currentSystemEpochSeconds
-                                )
-                            },
-                        panels =
-                            PanelForJSONExportSchema(
-                                panels =
-                                    panels.panels.map {
-                                        it.copy(
-                                            remoteId = null,
-                                            lastModified = currentSystemEpochSeconds,
-                                        )
-                                    },
-                                panelFolders =
-                                    panels.panelFolders.map {
-                                        it.copy(
-                                            remoteId = null,
-                                            lastModified = currentSystemEpochSeconds,
-                                        )
-                                    },
-                            ),
-                        tags =
-                            tags.map {
-                                it.copy(
-                                    remoteId = null,
-                                    lastModified = currentSystemEpochSeconds,
-                                )
-                            },
-                        linkTags =
-                            linkTags.map {
-                                it.copy(
-                                    remoteId = null,
-                                    lastModified = currentSystemEpochSeconds,
-                                )
-                            },
-                    )
+            val jsonObj =
+                if (!basedOnNewExportSchema) {
+                    Json.decodeFromString<LegacyExportSchema>(jsonContent)
+                        .asJSONExportSchema(
+                            DependencyContainer.preferencesRepo
+                                .getPreferences()
+                                .primaryJsoupUserAgent,
+                        )
+                } else {
+                    Utils.json.decodeFromString<JSONExportSchema>(jsonContent).run {
+                        JSONExportSchema(
+                            schemaVersion = schemaVersion,
+                            links =
+                                links.map {
+                                    it.copy(
+                                        remoteId = null,
+                                        lastModified = currentSystemEpochSeconds,
+                                    )
+                                },
+                            folders =
+                                folders.map {
+                                    it.copy(
+                                        remoteId = null,
+                                        lastModified = currentSystemEpochSeconds,
+                                    )
+                                },
+                            panels =
+                                PanelForJSONExportSchema(
+                                    panels =
+                                        panels.panels.map {
+                                            it.copy(
+                                                remoteId = null,
+                                                lastModified = currentSystemEpochSeconds,
+                                            )
+                                        },
+                                    panelFolders =
+                                        panels.panelFolders.map {
+                                            it.copy(
+                                                remoteId = null,
+                                                lastModified = currentSystemEpochSeconds,
+                                            )
+                                        },
+                                ),
+                            tags =
+                                tags.map {
+                                    it.copy(
+                                        remoteId = null,
+                                        lastModified = currentSystemEpochSeconds,
+                                    )
+                                },
+                            linkTags =
+                                linkTags.map {
+                                    it.copy(
+                                        remoteId = null,
+                                        lastModified = currentSystemEpochSeconds,
+                                    )
+                                },
+                        )
+                    }
                 }
-            }
-        send(Result.Success(jsonObj))
-    }
+            send(Result.Success(jsonObj))
+        }
 
     actual suspend fun importFromHTMLString(): Flow<Result<String>> = channelFlow {
-        val file = getFile(FileType.HTML)
-            ?: return@channelFlow send(Result.Failure(Throwable("Importing Failed.")))
+        val file =
+            getFile(FileType.HTML)
+                ?: return@channelFlow send(Result.Failure(Throwable("Importing Failed.")))
         getHtmlStr(file)
-    }.catch { throwable ->
-        throwable.printStackTrace()
-        emit(Result.Failure(Throwable(throwable.message ?: "Import failed")))
     }
+        .catch { throwable ->
+            throwable.printStackTrace()
+            emit(Result.Failure(Throwable(throwable.message ?: "Import failed")))
+        }
 
     private suspend fun ProducerScope<Result<String>>.getHtmlStr(file: File) {
         val fileName = file.name
@@ -312,7 +320,8 @@ actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
         send(Result.Success(htmlStr))
     }
 
-    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> = channelFlow {
+    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> =
+        channelFlow {
             val importFile =
                 getFile(fileType = FileType.JSON, fileLocation = fileLocation)
                     ?: return@channelFlow send(
@@ -322,14 +331,15 @@ actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
             getJsonObj(importFile, importFile.name)
         }
 
-    actual suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>> = channelFlow {
-        val file =
-            getFile(fileType = FileType.HTML, fileLocation = fileLocation)
-                ?: return@channelFlow send(
-                    Result.Failure(Throwable("Importing Failed.")),
-                )
-        getHtmlStr(file)
-    }
+    actual suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>> =
+        channelFlow {
+            val file =
+                getFile(fileType = FileType.HTML, fileLocation = fileLocation)
+                    ?: return@channelFlow send(
+                        Result.Failure(Throwable("Importing Failed.")),
+                    )
+            getHtmlStr(file)
+        }
 
     actual suspend fun getSyncServerCertificate(
         onCompletion: (certInfo: String) -> Unit,
@@ -339,8 +349,7 @@ actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
             val fileDialog =
                 FileDialog(
                     Frame(),
-                    localizedStrings().SelectAValidFile
-                        .replaceActual("CER"),
+                    localizedStrings().SelectAValidFile.replaceActual("CER"),
                     FileDialog.LOAD,
                 )
             fileDialog.isVisible = true
@@ -348,8 +357,10 @@ actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
             if (sourceFile.extension != "cer") {
                 UIEvent.pushUIEvent(
                     UIEvent.Type.ShowSnackbar(
-                        localizedStrings().FileTypeNotSupportedOnDesktopImport
-                            .replaceActual(sourceFile.extension, "cer"),
+                        localizedStrings().FileTypeNotSupportedOnDesktopImport.replaceActual(
+                            sourceFile.extension,
+                            "cer",
+                        ),
                     ),
                 )
                 return null
@@ -362,7 +373,8 @@ actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
                         factory = factory,
                         inputStream = ByteArrayInputStream(certBytes),
                     )
-                (factory.generateCertificate(ByteArrayInputStream(certBytes)) as X509Certificate).encoded
+                (factory.generateCertificate(ByteArrayInputStream(certBytes)) as X509Certificate)
+                    .encoded
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -376,7 +388,7 @@ actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
         val captureFolderUUID =
             DependencyContainer.webCaptureRepo.getFolderNameByLink(link)
                 ?: return UIEvent.pushUIEvent(
-                    UIEvent.Type.ShowSnackbar("No saved webpage found for this link.")
+                    UIEvent.Type.ShowSnackbar("No saved webpage found for this link."),
                 )
 
         val rootFolderPath =
@@ -385,13 +397,14 @@ actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
 
         if (!captureFolder.exists() || !captureFolder.isDirectory) {
             return UIEvent.pushUIEvent(
-                UIEvent.Type.ShowSnackbar("No saved webpage found for this link.")
+                UIEvent.Type.ShowSnackbar("No saved webpage found for this link."),
             )
         }
 
         try {
-            if (Desktop.isDesktopSupported() && Desktop.getDesktop()
-                    .isSupported(Desktop.Action.OPEN)
+            if (
+                Desktop.isDesktopSupported() &&
+                    Desktop.getDesktop().isSupported(Desktop.Action.OPEN)
             ) {
                 withContext(Dispatchers.IO) {
                     Desktop.getDesktop().open(captureFolder)
@@ -405,7 +418,9 @@ actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
             clipboard.setContents(selection, selection)
 
             UIEvent.pushUIEvent(
-                UIEvent.Type.ShowSnackbar("Couldn't open the folder. The folder name has been copied to your clipboard.")
+                UIEvent.Type.ShowSnackbar(
+                    "Couldn't open the folder. The folder name has been copied to your clipboard.",
+                ),
             )
         }
     }

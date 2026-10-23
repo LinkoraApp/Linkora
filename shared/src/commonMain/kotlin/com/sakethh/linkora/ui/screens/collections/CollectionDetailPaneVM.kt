@@ -52,10 +52,12 @@ class CollectionDetailPaneVM(
     private val localDatabaseUtilsRepo: LocalDatabaseUtilsRepo,
     val collectionDetailPaneInfo: CollectionDetailPaneInfo,
     private val preferencesRepository: PreferencesRepository,
-    private val localizationRepo: LocalizationRepo.Local
+    private val localizationRepo: LocalizationRepo.Local,
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
-    val localizedStrings get() = localizationRepo.localizedStrings.value
+    val localizedStrings
+        get() = localizationRepo.localizedStrings.value
+
     private val _linkTagsPairsState =
         MutableStateFlow(
             value = PaginationState.retrieving<List<LinkTagsPair>>(),
@@ -75,7 +77,7 @@ class CollectionDetailPaneVM(
         get() = run {
             if (
                 collectionDetailPaneInfo.collectionType == CollectionType.TAG &&
-                collectionDetailPaneInfo.currentTag != null
+                    collectionDetailPaneInfo.currentTag != null
             ) {
                 LinkTagsPairPaginatorType.LinksAssociatedWithATag
             } else {
@@ -106,63 +108,69 @@ class CollectionDetailPaneVM(
             }
         }
 
-    fun performAction(collectionPaneAction: CollectionPaneAction) = when (collectionPaneAction) {
-        is CollectionPaneAction.ToggleAllLinksFilter ->
-            toggleAllLinksFilter(collectionPaneAction.filter)
+    fun performAction(collectionPaneAction: CollectionPaneAction) =
+        when (collectionPaneAction) {
+            is CollectionPaneAction.ToggleAllLinksFilter ->
+                toggleAllLinksFilter(collectionPaneAction.filter)
 
-        is CollectionPaneAction.OnFirstVisibleItemIndexChangeOfLinkTagsPair -> {
-            if (collectionDetailPaneInfo.currentFolder?.localId == Constants.ALL_LINKS_ID) {
-                updateAllLinksPaginatorFirstVisibleIndex(collectionPaneAction.index)
-            } else {
-                updateLinkTagsPaginatorFirstVisibleIndex(
+            is CollectionPaneAction.OnFirstVisibleItemIndexChangeOfLinkTagsPair -> {
+                if (collectionDetailPaneInfo.currentFolder?.localId == Constants.ALL_LINKS_ID) {
+                    updateAllLinksPaginatorFirstVisibleIndex(collectionPaneAction.index)
+                } else {
+                    updateLinkTagsPaginatorFirstVisibleIndex(
+                        collectionPaneAction.index,
+                    )
+                }
+            }
+
+            CollectionPaneAction.RetrieveNextLinksPage -> {
+                if (collectionDetailPaneInfo.currentFolder?.localId == Constants.ALL_LINKS_ID) {
+                    retrieveNextAllLinksPage()
+                } else {
+                    retrieveNextLinksPage()
+                }
+            }
+
+            is CollectionPaneAction.OnFirstVisibleItemIndexChangeOfRootArchivedFolders ->
+                updateStartingIndexForArchivedRootFoldersPaginator(
                     collectionPaneAction.index,
                 )
-            }
-        }
 
-        CollectionPaneAction.RetrieveNextLinksPage -> {
-            if (collectionDetailPaneInfo.currentFolder?.localId == Constants.ALL_LINKS_ID) {
-                retrieveNextAllLinksPage()
-            } else {
-                retrieveNextLinksPage()
-            }
-        }
+            CollectionPaneAction.RetrieveNextRootArchivedFolderPage ->
+                retrieveNextBatchOfArchivedRootFolders()
 
-        is CollectionPaneAction.OnFirstVisibleItemIndexChangeOfRootArchivedFolders ->
-            updateStartingIndexForArchivedRootFoldersPaginator(
-                collectionPaneAction.index,
-            )
-
-        CollectionPaneAction.RetrieveNextRootArchivedFolderPage ->
-            retrieveNextBatchOfArchivedRootFolders()
-
-        is CollectionPaneAction.AddANewLink ->
-            viewModelScope.launch {
-                localLinksRepo
-                    .addANewLink(
-                        link = collectionPaneAction.link,
-                        selectedTagIds =
-                            collectionPaneAction.selectedTags.map {
-                                it.localId
-                            },
-                        linkSaveConfig = collectionPaneAction.linkSaveConfig,
-                    )
-                    .collectLatest {
-                        it.onSuccess {
-                            collectionPaneAction.onCompletion()
-                            if (collectionPaneAction.pushSnackbarOnSuccess) {
-                                localizedStrings.SavedTheLink.pushLocalizedSnackbar(
-                                    append = it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed),
-                                )
-                            }
+            is CollectionPaneAction.AddANewLink ->
+                viewModelScope.launch {
+                    localLinksRepo
+                        .addANewLink(
+                            link = collectionPaneAction.link,
+                            selectedTagIds =
+                                collectionPaneAction.selectedTags.map {
+                                    it.localId
+                                },
+                            linkSaveConfig = collectionPaneAction.linkSaveConfig,
+                        )
+                        .collectLatest {
+                            it.onSuccess {
+                                    collectionPaneAction.onCompletion()
+                                    if (collectionPaneAction.pushSnackbarOnSuccess) {
+                                        localizedStrings.SavedTheLink.pushLocalizedSnackbar(
+                                            append =
+                                                it.getRemoteOnlyFailureMsg(
+                                                    localizedStrings.RemoteExecutionFailed,
+                                                ),
+                                        )
+                                    }
+                                }
+                                .onFailure {
+                                    collectionPaneAction.onCompletion()
+                                    UIEvent.pushUIEvent(
+                                        UIEvent.Type.ShowSnackbar(it.message.toString()),
+                                    )
+                                }
                         }
-                            .onFailure {
-                                collectionPaneAction.onCompletion()
-                                UIEvent.pushUIEvent(UIEvent.Type.ShowSnackbar(it.message.toString()))
-                            }
-                    }
-            }
-    }
+                }
+        }
 
     fun retrieveNextBatchOfArchivedRootFolders() {
         viewModelScope.launch {
@@ -187,9 +195,11 @@ class CollectionDetailPaneVM(
     val shuffleLinks
         get() = preferencesRepository.getPreferences().forceShuffleLinks
 
-    // localDatabaseUtilsRepo#getChildFolderData supports this directly, since it directly queries and
+    // localDatabaseUtilsRepo#getChildFolderData supports this directly, since it directly queries
+    // and
     // returns the result. This can be replaced with it, but this should be fine.
-    fun Flow<Result<List<Link>>>.mapToLinkTagsPair(): Flow<Result<List<LinkTagsPair>>> = flatMapLatest { result ->
+    fun Flow<Result<List<Link>>>.mapToLinkTagsPair(): Flow<Result<List<LinkTagsPair>>> =
+        flatMapLatest { result ->
             when (result) {
                 is Result.Failure -> flowOf(Result.Failure(result.e))
 
@@ -264,12 +274,16 @@ class CollectionDetailPaneVM(
         Paginator(
             coroutineScope = viewModelScope,
             onRetrieve = { lastSeenId, lastSeenString ->
-                if (linkTagsPairPaginatorType == LinkTagsPairPaginatorType.LinksAssociatedWithATag) {
+                if (
+                    linkTagsPairPaginatorType == LinkTagsPairPaginatorType.LinksAssociatedWithATag
+                ) {
                     localLinksRepo
                         .getLinks(
                             tagId =
                                 collectionDetailPaneInfo.currentTag?.localId
-                                    ?: error("collectionDetailPaneInfo.currentTag?.localId is null"),
+                                    ?: error(
+                                        "collectionDetailPaneInfo.currentTag?.localId is null",
+                                    ),
                             sortOption = sortingType,
                             pageSize = Constants.PAGE_SIZE,
                             lastSeenTitle = lastSeenString,
@@ -285,7 +299,9 @@ class CollectionDetailPaneVM(
                             linkType = currentInstanceLinkType,
                             parentFolderId =
                                 collectionDetailPaneInfo.currentFolder?.localId
-                                    ?: error("collectionDetailPaneInfo.currentFolder?.localId is null"),
+                                    ?: error(
+                                        "collectionDetailPaneInfo.currentFolder?.localId is null",
+                                    ),
                             sortOption = sortingType,
                             pageSize = Constants.PAGE_SIZE,
                             lastSeenId = lastSeenId,
@@ -370,7 +386,7 @@ class CollectionDetailPaneVM(
         viewModelScope.launch {
             if (
                 collectionDetailPaneInfo.currentFolder != null &&
-                collectionDetailPaneInfo.currentFolder.localId >= 0
+                    collectionDetailPaneInfo.currentFolder.localId >= 0
             ) {
                 childFoldersFlatPaginator.updateFirstVisibleItemIndex(index)
             } else {
@@ -389,7 +405,7 @@ class CollectionDetailPaneVM(
         viewModelScope.launch {
             if (
                 collectionDetailPaneInfo.currentFolder != null &&
-                collectionDetailPaneInfo.currentFolder.localId >= 0
+                    collectionDetailPaneInfo.currentFolder.localId >= 0
             ) {
                 childFoldersFlatPaginator.retrieveNextBatch()
             } else {
@@ -472,7 +488,10 @@ class CollectionDetailPaneVM(
                     _appliedFiltersForAllLinks.toList()
                 }
                     .transform {
-                        if (collectionDetailPaneInfo.currentFolder?.localId == Constants.ALL_LINKS_ID) {
+                        if (
+                            collectionDetailPaneInfo.currentFolder?.localId ==
+                                Constants.ALL_LINKS_ID
+                        ) {
                             emit(it)
                         }
                     }
@@ -501,7 +520,10 @@ class CollectionDetailPaneVM(
                         _linkTagsPairsState.emit(PaginationState.retrievingOnEmpty())
                         archiveRootFoldersPaginator.cancelAndReset()
 
-                        if (collectionDetailPaneInfo.currentFolder?.localId == Constants.ALL_LINKS_ID) {
+                        if (
+                            collectionDetailPaneInfo.currentFolder?.localId ==
+                                Constants.ALL_LINKS_ID
+                        ) {
                             retrieveNextAllLinksPage()
                             return@collectLatest
                         }

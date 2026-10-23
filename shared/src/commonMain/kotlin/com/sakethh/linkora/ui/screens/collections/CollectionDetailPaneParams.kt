@@ -14,11 +14,14 @@ import kotlinx.coroutines.flow.StateFlow
 
 @Stable
 data class CollectionDetailPaneParams(
-    val linkTagsPairs: StateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<LinkTagsPair>>>>,
-    val childFoldersFlat: StateFlow<
-        PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<FlatChildFolderData>>>,
+    val linkTagsPairs:
+        StateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<LinkTagsPair>>>>,
+    val childFoldersFlat:
+        StateFlow<
+            PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<FlatChildFolderData>>>,
         >,
-    val rootArchiveFolders: StateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<Folder>>>>,
+    val rootArchiveFolders:
+        StateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<Folder>>>>,
     val selectedInfo: CollectionDetailPaneInfo,
     val appliedFiltersForAllLinks: SnapshotStateList<LinkType>,
     val performAction: (CollectionsScreenAction) -> Unit,

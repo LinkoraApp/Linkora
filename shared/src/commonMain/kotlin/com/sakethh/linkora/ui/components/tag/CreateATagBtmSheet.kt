@@ -105,7 +105,8 @@ fun CreateATagBtmSheet(
                 OutlinedButton(
                     onClick = onCancel,
                     modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect()
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            .pressScaleEffect()
                             .fillMaxWidth()
                             .padding(
                                 start = 15.dp,

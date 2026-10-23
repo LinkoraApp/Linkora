@@ -144,7 +144,8 @@ private fun AcknowledgeComponent(
                 Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                     .fillMaxWidth()
                     .padding(start = 15.dp, top = 10.dp, end = 15.dp)
-                    .pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
+                    .pressScaleEffect()
+                    .highlightOnFocused(shape = ButtonDefaults.shape),
         ) {
             Text(
                 text = btnText,

@@ -23,13 +23,13 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
-import kotlin.test.Test
 
 class LocalDataUpdateServiceTest {
     private lateinit var localFoldersRepo: LocalFoldersRepo
@@ -86,74 +86,79 @@ class LocalDataUpdateServiceTest {
     }
 
     @Test
-    fun `events with matching correlation id update timestamp but abort local database operations`() = runTest {
-        val tagDto =
-            TagDTO(
-                id = 100L,
-                name = "Kotlin",
-                eventTimestamp = 5000L,
-                correlation = Correlation(id = myClientCorrelationId, clientName = "TestClient"),
-            )
-        val event =
-            WebSocketEvent(
-                operation = SyncServerRoute.CREATE_TAG.name,
-                payload = Json.encodeToJsonElement(tagDto),
-            )
+    fun `events with matching correlation id update timestamp but abort local database operations`() =
+        runTest {
+            val tagDto =
+                TagDTO(
+                    id = 100L,
+                    name = "Kotlin",
+                    eventTimestamp = 5000L,
+                    correlation =
+                        Correlation(id = myClientCorrelationId, clientName = "TestClient"),
+                )
+            val event =
+                WebSocketEvent(
+                    operation = SyncServerRoute.CREATE_TAG.name,
+                    payload = Json.encodeToJsonElement(tagDto),
+                )
 
-        localDataUpdateService.updateLocalDBAccordingToEvent(event)
+            localDataUpdateService.updateLocalDBAccordingToEvent(event)
 
-        coVerify(exactly = 0) { localTagsRepo.createATag(any(), any()) }
-        coVerify(exactly = 1) {
-            preferencesRepository.changePreferenceValue(
-                match { it.key == AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key },
-                5000L,
-            )
+            coVerify(exactly = 0) { localTagsRepo.createATag(any(), any()) }
+            coVerify(exactly = 1) {
+                preferencesRepository.changePreferenceValue(
+                    match { it.key == AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key },
+                    5000L,
+                )
+            }
         }
-    }
 
     @Test
-    fun `create folder sync dynamically resolves remote parent folder id to local id before insertion`() = runTest {
-        val folderDto =
-            FolderDTO(
-                id = 200L,
-                name = "NewRemoteFolder",
-                note = "",
-                parentFolderId = 50L,
-                isArchived = false,
-                eventTimestamp = 6000L,
-                correlation = Correlation(id = "other-client", clientName = "Other"),
-            )
-        val event =
-            WebSocketEvent(
-                operation = SyncServerRoute.CREATE_FOLDER.name,
-                payload = Json.encodeToJsonElement(folderDto),
-            )
+    fun `create folder sync dynamically resolves remote parent folder id to local id before insertion`() =
+        runTest {
+            val folderDto =
+                FolderDTO(
+                    id = 200L,
+                    name = "NewRemoteFolder",
+                    note = "",
+                    parentFolderId = 50L,
+                    isArchived = false,
+                    eventTimestamp = 6000L,
+                    correlation = Correlation(id = "other-client", clientName = "Other"),
+                )
+            val event =
+                WebSocketEvent(
+                    operation = SyncServerRoute.CREATE_FOLDER.name,
+                    payload = Json.encodeToJsonElement(folderDto),
+                )
 
-        coEvery { localFoldersRepo.getLocalIdOfAFolder(50L) } returns 5L
-        coEvery {
-            localFoldersRepo.insertANewFolder(
-                any(),
-                any(),
-            )
-        } returns flowOf(Result.Success(1))
+            coEvery { localFoldersRepo.getLocalIdOfAFolder(50L) } returns 5L
+            coEvery {
+                localFoldersRepo.insertANewFolder(
+                    any(),
+                    any(),
+                )
+            } returns flowOf(Result.Success(1))
 
-        localDataUpdateService.updateLocalDBAccordingToEvent(event)
+            localDataUpdateService.updateLocalDBAccordingToEvent(event)
 
-        coVerify(exactly = 1) {
-            localFoldersRepo.insertANewFolder(
-                match {
-                    it.name == "NewRemoteFolder" && it.parentFolderId == 5L && it.remoteId == 200L
-                },
-                viaSocket = true,
-            )
+            coVerify(exactly = 1) {
+                localFoldersRepo.insertANewFolder(
+                    match {
+                        it.name == "NewRemoteFolder" &&
+                            it.parentFolderId == 5L &&
+                            it.remoteId == 200L
+                    },
+                    viaSocket = true,
+                )
+            }
+            coVerify(exactly = 1) {
+                preferencesRepository.changePreferenceValue(
+                    match { it.key == AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key },
+                    6000L,
+                )
+            }
         }
-        coVerify(exactly = 1) {
-            preferencesRepository.changePreferenceValue(
-                match { it.key == AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key },
-                6000L,
-            )
-        }
-    }
 
     @Test
     fun `delete link safely aborts if remote id cannot be mapped to a local link id`() = runTest {

@@ -31,18 +31,19 @@ class RefreshAllLinksNotificationService(
         notificationManager.cancelAll()
     }
 
-    private val localizedStrings get() = DependencyContainer.localizationRepo.localizedStrings.value
+    private val localizedStrings
+        get() = DependencyContainer.localizationRepo.localizedStrings.value
+
     fun showNotification() {
         val notification =
             NotificationCompat.Builder(context, "1")
                 .setSmallIcon(R.drawable.notification_icon)
                 .setContentTitle(localizedStrings.RefreshingLinks)
                 .setContentText(
-                    localizedStrings.NoOfLinksRefreshed
-                        .replaceActual(
-                            DataSettingsScreenVM.refreshLinksState.value.currentIteration.toString(),
-                            DataSettingsScreenVM.refreshLinksState.value.total.toString()
-                        )
+                    localizedStrings.NoOfLinksRefreshed.replaceActual(
+                        DataSettingsScreenVM.refreshLinksState.value.currentIteration.toString(),
+                        DataSettingsScreenVM.refreshLinksState.value.total.toString(),
+                    ),
                 )
                 .setProgress(
                     DataSettingsScreenVM.refreshLinksState.value.total,

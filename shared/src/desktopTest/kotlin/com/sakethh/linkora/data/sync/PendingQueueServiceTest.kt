@@ -32,16 +32,16 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertTrue
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertTrue
 
 class PendingQueueServiceTest {
     private lateinit var localFoldersRepo: LocalFoldersRepo
@@ -105,26 +105,30 @@ class PendingQueueServiceTest {
     }
 
     @Test
-    fun `queue processing with empty queue returns immediately and makes no remote calls`() = runTest {
-        coEvery { pendingSyncQueueRepo.getAllItemsFromQueue() } returns emptyList()
+    fun `queue processing with empty queue returns immediately and makes no remote calls`() =
+        runTest {
+            coEvery { pendingSyncQueueRepo.getAllItemsFromQueue() } returns emptyList()
 
-        val channel = Channel<Result<Unit>>(Channel.UNLIMITED)
+            val channel = Channel<Result<Unit>>(Channel.UNLIMITED)
 
-        with(pendingQueueService) {
-            val result =
-                channel.pushPendingSyncQueueToServer().filterNot { it is Result.Loading }.first()
-            assertTrue(result is Result.Success)
+            with(pendingQueueService) {
+                val result =
+                    channel
+                        .pushPendingSyncQueueToServer()
+                        .filterNot { it is Result.Loading }
+                        .first()
+                assertTrue(result is Result.Success)
+            }
+
+            coVerify(exactly = 0) { remoteTagsRepo.createATag(any()) }
+            coVerify(exactly = 0) { remoteLinksRepo.addANewLink(any()) }
+            coVerify(exactly = 0) {
+                preferencesRepository.changePreferenceValue<Long>(
+                    any(),
+                    any(),
+                )
+            }
         }
-
-        coVerify(exactly = 0) { remoteTagsRepo.createATag(any()) }
-        coVerify(exactly = 0) { remoteLinksRepo.addANewLink(any()) }
-        coVerify(exactly = 0) {
-            preferencesRepository.changePreferenceValue<Long>(
-                any(),
-                any(),
-            )
-        }
-    }
 
     @Test
     fun `create tag sync operation updates remote id and clears queue`() = runTest {
@@ -172,7 +176,8 @@ class PendingQueueServiceTest {
         val timeStampResponse = TimeStampBasedResponse(2000L, "Deleted")
 
         coEvery { pendingSyncQueueRepo.getAllItemsFromQueue() } returns listOf(queueItem)
-        coEvery { remoteTagsRepo.deleteATag(any()) } returns flowOf(Result.Success(timeStampResponse))
+        coEvery { remoteTagsRepo.deleteATag(any()) } returns
+            flowOf(Result.Success(timeStampResponse))
 
         val channel = Channel<Result<Unit>>(Channel.UNLIMITED)
 
@@ -221,7 +226,8 @@ class PendingQueueServiceTest {
 
         coEvery { pendingSyncQueueRepo.getAllItemsFromQueue() } returns listOf(queueItem)
         coEvery { tagsDao.getTags(any()) } returns emptyList()
-        coEvery { remoteLinksRepo.addANewLink(any()) } returns flowOf(Result.Success(newItemResponse))
+        coEvery { remoteLinksRepo.addANewLink(any()) } returns
+            flowOf(Result.Success(newItemResponse))
         coEvery { localLinksRepo.getALink(15L) } returns linkMock
         coEvery { localLinksRepo.updateALink(any(), any(), any()) } returns
             flowOf(

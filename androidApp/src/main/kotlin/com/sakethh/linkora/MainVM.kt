@@ -37,7 +37,7 @@ class MainVM(
                         is AndroidUIEvent.Type.ShowRuntimePermissionForStorage -> {
                             pushUIEvent(
                                 UIEvent.Type.ShowSnackbar(
-                                    localizedStrings.value.StoragePermissionIsRequired
+                                    localizedStrings.value.StoragePermissionIsRequired,
                                 ),
                             )
                             launchAction(Action.LaunchWriteExternalStoragePermission)
@@ -49,15 +49,14 @@ class MainVM(
                                     pushUIEvent(
                                         UIEvent.Type.ShowSnackbar(
                                             message =
-                                                localizedStrings.value.StoragePermissionIsRequired
+                                                localizedStrings.value.StoragePermissionIsRequired,
                                         ),
                                     )
                                 }
                                 .ifTrue {
                                     pushUIEvent(
                                         UIEvent.Type.ShowSnackbar(
-                                            message = localizedStrings.value.PermissionGranted
-
+                                            message = localizedStrings.value.PermissionGranted,
                                         ),
                                     )
                                 }
@@ -78,7 +77,7 @@ class MainVM(
                                 pushUIEvent(
                                     UIEvent.Type.ShowSnackbar(
                                         message =
-                                            localizedStrings.value.NotificationPermissionIsRequired
+                                            localizedStrings.value.NotificationPermissionIsRequired,
                                     ),
                                 )
                             }

@@ -30,21 +30,21 @@ fun HorizontalInfoCard(
 ) {
     Card(
         border =
-        BorderStroke(
-            1.dp,
-            contentColorFor(MaterialTheme.colorScheme.surface),
-        ),
+            BorderStroke(
+                1.dp,
+                contentColorFor(MaterialTheme.colorScheme.surface),
+            ),
         colors = CardDefaults.cardColors(containerColor = AlertDialogDefaults.containerColor),
         modifier = Modifier.fillMaxWidth().padding(paddingValues),
     ) {
         Row(
             modifier =
-            Modifier.fillMaxWidth()
-                .wrapContentHeight()
-                .padding(
-                    top = 10.dp,
-                    bottom = 10.dp,
-                ),
+                Modifier.fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(
+                        top = 10.dp,
+                        bottom = 10.dp,
+                    ),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(contentAlignment = Alignment.CenterStart) {
@@ -52,10 +52,10 @@ fun HorizontalInfoCard(
                     imageVector = Icons.Outlined.Info,
                     contentDescription = null,
                     modifier =
-                    Modifier.padding(
-                        start = 10.dp,
-                        end = 10.dp,
-                    ),
+                        Modifier.padding(
+                            start = 10.dp,
+                            end = 10.dp,
+                        ),
                 )
             }
             Text(

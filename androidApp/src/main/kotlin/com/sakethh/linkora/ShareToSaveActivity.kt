@@ -53,24 +53,26 @@ import kotlinx.coroutines.runBlocking
 
 class ShareToSaveActivity : ComponentActivity() {
 
-    val intentActivityVM by viewModels<IntentActivityVM> {
-        viewModelFactory {
-            initializer {
-                IntentActivityVM(
-                    localLinksRepo = DependencyContainer.localLinksRepo,
-                    localFoldersRepo = DependencyContainer.localFoldersRepo,
-                    localPanelsRepo = DependencyContainer.localPanelsRepo,
-                    localTagsRepo = DependencyContainer.localTagsRepo,
-                    snapshotRepo = DependencyContainer.snapshotRepo,
-                    preferencesRepository = DependencyContainer.preferencesRepo,
-                    localizationRepo = DependencyContainer.localizationRepo,
-                    showToast = { message ->
-                        Toast.makeText(this@ShareToSaveActivity, message, Toast.LENGTH_SHORT).show()
-                    },
-                )
+    val intentActivityVM by
+        viewModels<IntentActivityVM> {
+            viewModelFactory {
+                initializer {
+                    IntentActivityVM(
+                        localLinksRepo = DependencyContainer.localLinksRepo,
+                        localFoldersRepo = DependencyContainer.localFoldersRepo,
+                        localPanelsRepo = DependencyContainer.localPanelsRepo,
+                        localTagsRepo = DependencyContainer.localTagsRepo,
+                        snapshotRepo = DependencyContainer.snapshotRepo,
+                        preferencesRepository = DependencyContainer.preferencesRepo,
+                        localizationRepo = DependencyContainer.localizationRepo,
+                        showToast = { message ->
+                            Toast.makeText(this@ShareToSaveActivity, message, Toast.LENGTH_SHORT)
+                                .show()
+                        },
+                    )
+                }
             }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,13 +82,13 @@ class ShareToSaveActivity : ComponentActivity() {
         if (autoSave) {
             if (
                 checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) !=
-                PackageManager.PERMISSION_GRANTED
+                    PackageManager.PERMISSION_GRANTED
             ) {
                 Toast.makeText(
-                    applicationContext,
-                    intentActivityVM.localizedStrings.value.AutoSaveNotificationPermission,
-                    Toast.LENGTH_SHORT,
-                )
+                        applicationContext,
+                        intentActivityVM.localizedStrings.value.AutoSaveNotificationPermission,
+                        Toast.LENGTH_SHORT,
+                    )
                     .show()
                 finishAndRemoveTask()
             }
@@ -121,19 +123,23 @@ class ShareToSaveActivity : ComponentActivity() {
             CompositionLocalProvider(
                 LocalNavController provides navController,
                 LocalFabController provides
-                        retain {
-                            FabStateController()
-                        },
-                LocalPlatform provides remember(
-                    LocalWindowInfo.current.containerSize,
-                    LocalConfiguration.current.orientation
-                ) { currentAndroidPlatform() },
-                LocalizedStrings provides localizedStrings
+                    retain {
+                        FabStateController()
+                    },
+                LocalPlatform provides
+                    remember(
+                        LocalWindowInfo.current.containerSize,
+                        LocalConfiguration.current.orientation,
+                    ) {
+                        currentAndroidPlatform()
+                    },
+                LocalizedStrings provides localizedStrings,
             ) {
                 val isSystemInDarkTheme = isSystemInDarkTheme()
-                val colorScheme = retain(isSystemInDarkTheme, preferences) {
-                    getAppColorScheme(preferences, context, isSystemInDarkTheme)
-                }
+                val colorScheme =
+                    retain(isSystemInDarkTheme, preferences) {
+                        getAppColorScheme(preferences, context, isSystemInDarkTheme)
+                    }
                 val collectionsScreenVM: CollectionsScreenVM = linkoraViewModel()
                 LinkoraTheme(
                     colorScheme = colorScheme,
@@ -162,15 +168,20 @@ class ShareToSaveActivity : ComponentActivity() {
                                 allTags = collectionsScreenVM.allTags,
                                 selectedTags = collectionsScreenVM.selectedTags,
                                 foldersSearchQuery = collectionsScreenVM.foldersSearchQuery,
-                                foldersSearchQueryResult = collectionsScreenVM.foldersSearchQueryResult,
+                                foldersSearchQueryResult =
+                                    collectionsScreenVM.foldersSearchQueryResult,
                                 rootRegularFolders = collectionsScreenVM.rootRegularFolders,
                                 performAction = collectionsScreenVM::performAction,
-                                url = this@ShareToSaveActivity.intent?.getStringExtra(
-                                    Intent.EXTRA_TEXT,
-                                ).toString(),
-                                title = this@ShareToSaveActivity.intent?.getStringExtra(
-                                    Intent.EXTRA_SUBJECT,
-                                ) ?: "",
+                                url =
+                                    this@ShareToSaveActivity.intent
+                                        ?.getStringExtra(
+                                            Intent.EXTRA_TEXT,
+                                        )
+                                        .toString(),
+                                title =
+                                    this@ShareToSaveActivity.intent?.getStringExtra(
+                                        Intent.EXTRA_SUBJECT,
+                                    ) ?: "",
                                 shouldAutofocus = false,
                             ),
                     )
@@ -192,6 +203,7 @@ class IntentActivityVM(
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
     val localizedStrings = localizationRepo.localizedStrings
+
     fun createADataSnapshot(onCompletion: () -> Unit) {
         viewModelScope.launch {
             val allLinks = async { localLinksRepo.getAllLinks() }

@@ -38,8 +38,7 @@ fun DeleteFolderDialog(deleteFolderDialogParam: DeleteFolderDialogParam) {
             if (!isDeletionInProgress.value) {
                 Button(
                     modifier =
-                        Modifier
-                            .pointerHoverIcon(icon = PointerIcon.Hand)
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxWidth()
                             .pressScaleEffect(),
                     onClick = {
@@ -62,8 +61,7 @@ fun DeleteFolderDialog(deleteFolderDialogParam: DeleteFolderDialogParam) {
             if (!isDeletionInProgress.value) {
                 OutlinedButton(
                     modifier =
-                        Modifier
-                            .pointerHoverIcon(icon = PointerIcon.Hand)
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxWidth()
                             .pressScaleEffect(),
                     onClick = deleteFolderDialogParam.onDismiss,
@@ -82,7 +80,9 @@ fun DeleteFolderDialog(deleteFolderDialogParam: DeleteFolderDialogParam) {
                     if (isDeletionInProgress.value) {
                         localizedStrings.DeletionInProgress
                     } else {
-                        if (deleteFolderDialogParam.isBulk) localizedStrings.AreYouSureDeleteSelectedFolders else localizedStrings.AreYouSureDeleteFolder
+                        if (deleteFolderDialogParam.isBulk)
+                            localizedStrings.AreYouSureDeleteSelectedFolders
+                        else localizedStrings.AreYouSureDeleteFolder
                     },
                 style = MaterialTheme.typography.titleMedium,
                 fontSize = 22.sp,

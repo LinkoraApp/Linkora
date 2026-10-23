@@ -64,7 +64,8 @@ import org.w3c.dom.Worker
 import org.w3c.dom.set
 
 @OptIn(ExperimentalWasmJsInterop::class)
-private fun createWorker(): Worker = js("""new Worker(new URL("sqlite-wasm-worker/worker.js", import.meta.url))""")
+private fun createWorker(): Worker =
+    js("""new Worker(new URL("sqlite-wasm-worker/worker.js", import.meta.url))""")
 
 private const val SHOW_WEB_NOTICE = "SHOW_WEB_NOTICE"
 
@@ -87,14 +88,20 @@ fun main() {
                         .setDriver(WebWorkerSQLiteDriver(createWorker()))
                         .build(),
                 platformPreference = PlatformPreference,
-                network = Network(localizedStrings = {
-                    DependencyContainer.localizationRepo.localizedStrings.value
-                }),
+                network =
+                    Network(
+                        localizedStrings = {
+                            DependencyContainer.localizationRepo.localizedStrings.value
+                        },
+                    ),
                 dataSyncingNotificationService = NativeUtils.DataSyncingNotificationService(),
                 webCapture = NativeUtils.WebCapture(),
-                webCaptureDatabaseManager = WebCaptureDatabaseManager(databaseBuilder = {
-                    error("This call isn't supposed happen")
-                }),
+                webCaptureDatabaseManager =
+                    WebCaptureDatabaseManager(
+                        databaseBuilder = {
+                            error("This call isn't supposed happen")
+                        },
+                    ),
             ),
     )
 
@@ -106,7 +113,7 @@ fun main() {
 
     ComposeViewport {
         val preferences by
-        DependencyContainer.preferencesRepo.preferencesAsFlow.collectAsStateWithLifecycle()
+            DependencyContainer.preferencesRepo.preferencesAsFlow.collectAsStateWithLifecycle()
         val navController = rememberNavController()
         LaunchedEffect(Unit) {
             navController.bindToBrowserNavigation()
@@ -115,23 +122,24 @@ fun main() {
             rememberModalBottomSheetState(
                 skipPartiallyExpanded = true,
                 confirmValueChange = {
-                    it != SheetValue.Hidden || localStorage.getItem(SHOW_WEB_NOTICE)
-                        ?.toBooleanStrictOrNull() == false
+                    it != SheetValue.Hidden ||
+                        localStorage.getItem(SHOW_WEB_NOTICE)?.toBooleanStrictOrNull() == false
                 },
             )
         var showWebNoticeState by rememberSaveable {
             mutableStateOf(true)
         }
         val coroutineScope = rememberCoroutineScope()
-        val localizedStrings by DependencyContainer.localizationRepo.localizedStrings.collectAsStateWithLifecycle()
+        val localizedStrings by
+            DependencyContainer.localizationRepo.localizedStrings.collectAsStateWithLifecycle()
         CompositionLocalProvider(
             LocalNavController provides navController,
             LocalFabController provides
-                    retain {
-                        FabStateController()
-                    },
+                retain {
+                    FabStateController()
+                },
             LocalPlatform provides Platform.Web,
-            LocalizedStrings provides localizedStrings
+            LocalizedStrings provides localizedStrings,
         ) {
             LinkoraTheme(
                 colorScheme = if (preferences.useDarkTheme) DarkColors else LightColors,
@@ -142,7 +150,7 @@ fun main() {
 
                     if (
                         showWebNoticeState &&
-                        localStorage.getItem(SHOW_WEB_NOTICE)?.toBooleanStrictOrNull() != false
+                            localStorage.getItem(SHOW_WEB_NOTICE)?.toBooleanStrictOrNull() != false
                     ) {
                         ModalBottomSheet(
                             sheetState = webNoticeState,
@@ -166,7 +174,7 @@ fun main() {
                                 Text(
                                     text =
                                         "Room handles database operations on Linkora Web using OPFS, which has strict browser locking limits. " +
-                                                "If something breaks, please report it on GitHub with your browser version and console logs.",
+                                            "If something breaks, please report it on GitHub with your browser version and console logs.",
                                     fontSize = 16.sp,
                                     style = MaterialTheme.typography.titleSmall,
                                 )
@@ -176,7 +184,7 @@ fun main() {
                                 Text(
                                     text =
                                         "Linkora Web relies on a dedicated proxy to fetch images and metadata. Since only one public instance is available, you may encounter issues.\n" +
-                                                "To ensure reliable image display and metadata retrieval, use a self-hosted Linkora proxy. Update your proxy address in the Advanced Settings screen.",
+                                            "To ensure reliable image display and metadata retrieval, use a self-hosted Linkora proxy. Update your proxy address in the Advanced Settings screen.",
                                     fontSize = 16.sp,
                                     style = MaterialTheme.typography.titleSmall,
                                 )

@@ -62,31 +62,35 @@ fun LinkMobileMenu(
     val localClipBoardManager = LocalClipboardManager.current
     val coroutineScope = rememberCoroutineScope()
 
-    val showTags =
-        remember {
-            currentLinkTagsPair.tags?.isEmpty() == false &&
-                    preferences.selectedLinkLayout in
-                    listOf(
-                        Layout.STAGGERED_VIEW.name,
-                        Layout.GRID_VIEW.name,
-                    )
-        }
+    val showTags = remember {
+        currentLinkTagsPair.tags?.isEmpty() == false &&
+            preferences.selectedLinkLayout in
+                listOf(
+                    Layout.STAGGERED_VIEW.name,
+                    Layout.GRID_VIEW.name,
+                )
+    }
 
     val hostComponent: ComposableContent = {
         Text(
             modifier =
-                Modifier
-                    .then(if (!showTags) Modifier else Modifier.padding(start = 10.dp))
+                Modifier.then(if (!showTags) Modifier else Modifier.padding(start = 10.dp))
                     .background(
-                        color = MaterialTheme.colorScheme.secondaryContainer.copy(if (!showTags) 1f else 0.5f),
+                        color =
+                            MaterialTheme.colorScheme.secondaryContainer.copy(
+                                if (!showTags) 1f else 0.5f,
+                            ),
                         shape = RoundedCornerShape(10.dp),
-                    ).padding(5.dp),
+                    )
+                    .padding(5.dp),
             text =
                 currentLinkTagsPair.link.host
                     .replace("www.", "")
                     .replace("http://", "")
                     .replace("https://", ""),
-            style = if (!showTags) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleMedium,
+            style =
+                if (!showTags) MaterialTheme.typography.titleLarge
+                else MaterialTheme.typography.titleMedium,
             maxLines = 1,
             textAlign = TextAlign.Start,
             overflow = TextOverflow.Ellipsis,
@@ -96,12 +100,14 @@ fun LinkMobileMenu(
     }
 
     Column(modifier = Modifier.navigationBarsPadding().verticalScroll(rememberScrollState())) {
-        if (currentLinkTagsPair.link.imgURL.isNotEmpty() && preferences.showAssociatedImageInLinkMenu) {
+        if (
+            currentLinkTagsPair.link.imgURL.isNotEmpty() &&
+                preferences.showAssociatedImageInLinkMenu
+        ) {
             Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
                 CoilImage(
                     modifier =
-                        Modifier
-                            .height(200.dp)
+                        Modifier.height(200.dp)
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp))
                             .fadedEdges(MaterialTheme.colorScheme, edgeType = EdgeType.BOTTOM)
@@ -109,13 +115,11 @@ fun LinkMobileMenu(
                     imgURL = currentLinkTagsPair.link.imgURL,
                     preferences = preferences,
                     userAgent =
-                        currentLinkTagsPair.link.userAgent
-                            ?: preferences.primaryJsoupUserAgent,
+                        currentLinkTagsPair.link.userAgent ?: preferences.primaryJsoupUserAgent,
                 )
                 Column(
                     modifier =
-                        Modifier
-                            .align(Alignment.BottomStart)
+                        Modifier.align(Alignment.BottomStart)
                             .padding(start = 8.dp, end = 15.dp, top = 15.dp, bottom = 8.dp),
                 ) {
                     Text(
@@ -127,15 +131,18 @@ fun LinkMobileMenu(
                         fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier =
-                            Modifier
-                                .pointerHoverIcon(icon = PointerIcon.Hand)
-                                .clickable(interactionSource = null, onClick = {
-                                    localClipBoardManager.setText(
-                                        AnnotatedString(
-                                            currentLinkTagsPair.link.title
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .clickable(
+                                    interactionSource = null,
+                                    onClick = {
+                                        localClipBoardManager.setText(
+                                            AnnotatedString(
+                                                currentLinkTagsPair.link.title,
+                                            ),
                                         )
-                                    )
-                                }, indication = null)
+                                    },
+                                    indication = null,
+                                )
                                 .padding(end = 20.dp),
                     )
                     if (!showTags) {
@@ -146,11 +153,15 @@ fun LinkMobileMenu(
             }
         }
 
-        if (!preferences.showAssociatedImageInLinkMenu || currentLinkTagsPair.link.imgURL.isEmpty()) {
+        if (
+            !preferences.showAssociatedImageInLinkMenu || currentLinkTagsPair.link.imgURL.isEmpty()
+        ) {
             MenuNonImageHeader(
                 onClick = {
                     localClipBoardManager.setText(AnnotatedString(currentLinkTagsPair.link.title))
-                    coroutineScope.pushUIEvent(UIEvent.Type.ShowSnackbar(localizedStrings.CopiedTitleToTheClipboard))
+                    coroutineScope.pushUIEvent(
+                        UIEvent.Type.ShowSnackbar(localizedStrings.CopiedTitleToTheClipboard),
+                    )
                 },
                 leadingIcon = Icons.Default.Link,
                 text = currentLinkTagsPair.link.title,
@@ -171,8 +182,9 @@ fun LinkMobileMenu(
                     modifier =
                         commonModifier.padding(
                             top =
-                                if (!preferences.showAssociatedImageInLinkMenu ||
-                                    currentLinkTagsPair.link.imgURL.isEmpty()
+                                if (
+                                    !preferences.showAssociatedImageInLinkMenu ||
+                                        currentLinkTagsPair.link.imgURL.isEmpty()
                                 ) {
                                     10.dp
                                 } else {
@@ -206,17 +218,19 @@ fun LinkMobileMenu(
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 20.sp,
                     modifier =
-                        Modifier
-                            .fillMaxWidth()
+                        Modifier.fillMaxWidth()
                             .pointerHoverIcon(icon = PointerIcon.Hand)
-                            .combinedClickable(onClick = {}, onLongClick = {
-                                localClipBoardManager.setText(AnnotatedString(note))
-                                coroutineScope.pushUIEvent(
-                                    UIEvent.Type.ShowSnackbar(
-                                        localizedStrings.CopiedNoteToTheClipboard
+                            .combinedClickable(
+                                onClick = {},
+                                onLongClick = {
+                                    localClipBoardManager.setText(AnnotatedString(note))
+                                    coroutineScope.pushUIEvent(
+                                        UIEvent.Type.ShowSnackbar(
+                                            localizedStrings.CopiedNoteToTheClipboard,
+                                        ),
                                     )
-                                )
-                            })
+                                },
+                            )
                             .padding(start = 20.dp, end = 25.dp),
                     textAlign = TextAlign.Start,
                     lineHeight = 24.sp,

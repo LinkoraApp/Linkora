@@ -23,11 +23,11 @@ import com.sakethh.linkora.utils.getOrCreateFolderUuid
 import com.sakethh.linkora.utils.isAllowedByWebCapturePolicies
 import com.sakethh.linkora.utils.onTV
 import com.sakethh.linkora.utils.prepareWebCaptureFolder
+import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
-import java.util.UUID
 
 class WebCaptureWorker(
     appContext: Context,
@@ -42,19 +42,23 @@ class WebCaptureWorker(
         const val WORKER_ID = "WORKER_ID"
     }
 
-    override suspend fun getForegroundInfo(): ForegroundInfo = ForegroundInfo(
-        1,
-        NotificationCompat.Builder(applicationContext, "1")
-            .setSmallIcon(R.drawable.notification_icon)
-            .build(),
-    )
+    override suspend fun getForegroundInfo(): ForegroundInfo =
+        ForegroundInfo(
+            1,
+            NotificationCompat.Builder(applicationContext, "1")
+                .setSmallIcon(R.drawable.notification_icon)
+                .build(),
+        )
 
     private fun pushNotification(title: String, description: String) {
-        val notification = NotificationCompat.Builder(applicationContext, "1")
-            .setSmallIcon(R.drawable.notification_icon).setContentTitle(title)
-            .setContentText(description).setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setAutoCancel(true)
-            .build()
+        val notification =
+            NotificationCompat.Builder(applicationContext, "1")
+                .setSmallIcon(R.drawable.notification_icon)
+                .setContentTitle(title)
+                .setContentText(description)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true)
+                .build()
 
         try {
             NotificationManagerCompat.from(applicationContext).notify(2, notification)
@@ -71,18 +75,21 @@ class WebCaptureWorker(
         }
 
         try {
-            LinkoraSDK.getInstance().webCapture.init(
-                options = KaptureOptions(
-                    userAgent = preferences.primaryJsoupUserAgent,
-                    includeCss = preferences.webCaptureSaveCss,
-                    includeImages = preferences.webCaptureSaveImages,
-                    includeJs = preferences.webCaptureExecuteJs,
-                    includeAudio = preferences.webCaptureSaveAudio,
-                    includeVideo = preferences.webCaptureSaveVideo,
-                    includeFonts = preferences.webCaptureSaveFonts,
-                    includeMetadata = preferences.webCaptureSaveMetadata,
+            LinkoraSDK.getInstance()
+                .webCapture
+                .init(
+                    options =
+                        KaptureOptions(
+                            userAgent = preferences.primaryJsoupUserAgent,
+                            includeCss = preferences.webCaptureSaveCss,
+                            includeImages = preferences.webCaptureSaveImages,
+                            includeJs = preferences.webCaptureExecuteJs,
+                            includeAudio = preferences.webCaptureSaveAudio,
+                            includeVideo = preferences.webCaptureSaveVideo,
+                            includeFonts = preferences.webCaptureSaveFonts,
+                            includeMetadata = preferences.webCaptureSaveMetadata,
+                        ),
                 )
-            )
         } catch (e: Exception) {
             e.printStackTrace()
             return@coroutineScope Result.failure()
@@ -98,23 +105,32 @@ class WebCaptureWorker(
 
         DependencyContainer.webCaptureRepo.insertAProcessedId(
             CaptureTrack(
-                capturedLinkId = CaptureTrack.getCaptureLinkId(
-                    inAllLinksWorker = false,
-                    linkId = null,
-                    // we don't care about the link, we only care about the captureWorkerId on Android;
-                    // this should generally be in its own table, so the data won't be scattered around,
-                    // but for our case, this should be fine
-                    link = UUID.randomUUID().toString(),
-                ),
+                capturedLinkId =
+                    CaptureTrack.getCaptureLinkId(
+                        inAllLinksWorker = false,
+                        linkId = null,
+                        // we don't care about the link, we only care about the captureWorkerId on
+                        // Android;
+                        // this should generally be in its own table, so the data won't be scattered
+                        // around,
+                        // but for our case, this should be fine
+                        link = UUID.randomUUID().toString(),
+                    ),
                 captureWorkerId = captureWorkerId,
             ),
         )
 
         return@coroutineScope try {
-            val whitelist = preferences.webCaptureWhitelistDomains.split(",").map { it.trim() }
-                .filter { it.isNotBlank() }
-            val blacklist = preferences.webCaptureBlacklistDomains.split(",").map { it.trim() }
-                .filter { it.isNotBlank() }
+            val whitelist =
+                preferences.webCaptureWhitelistDomains
+                    .split(",")
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
+            val blacklist =
+                preferences.webCaptureBlacklistDomains
+                    .split(",")
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
 
             if (!url.isAllowedByWebCapturePolicies(whitelist, blacklist)) {
                 return@coroutineScope Result.success()
@@ -122,45 +138,51 @@ class WebCaptureWorker(
 
             val folderUuid = webCaptureRepo.getOrCreateFolderUuid(url)
 
-            val isOnTV = with(applicationContext) {
-                onTV()
-            }
+            val isOnTV =
+                with(applicationContext) {
+                    onTV()
+                }
 
-            val captureFilePOSIXPath = if (isOnTV) {
-                val linkWebCaptureFolder =
-                    getDefaultFolder(ExportLocationType.WEB_CAPTURE).prepareWebCaptureFolder(
-                        folderUuid,
-                        saveAsVersions = preferences.webCaptureSaveAsVersions,
-                        retainAllVersions = preferences.webCaptureRetainAllVersions,
-                        maxVersions = preferences.webCaptureMaxVersions,
-                    )
-                createPOSIXOwnedFile(
-                    folder = linkWebCaptureFolder,
-                    exportFileType = ExportFileType.HTML,
-                    exportLocationType = ExportLocationType.WEB_CAPTURE
-                ) ?: return@coroutineScope Result.failure()
-            } else {
-                val baseCaptureDir = DocumentFile.fromTreeUri(
-                    applicationContext,
-                    preferences.webCapturesLocation.toUri(),
-                ) ?: return@coroutineScope Result.failure()
+            val captureFilePOSIXPath =
+                if (isOnTV) {
+                    val linkWebCaptureFolder =
+                        getDefaultFolder(ExportLocationType.WEB_CAPTURE)
+                            .prepareWebCaptureFolder(
+                                folderUuid,
+                                saveAsVersions = preferences.webCaptureSaveAsVersions,
+                                retainAllVersions = preferences.webCaptureRetainAllVersions,
+                                maxVersions = preferences.webCaptureMaxVersions,
+                            )
+                    createPOSIXOwnedFile(
+                        folder = linkWebCaptureFolder,
+                        exportFileType = ExportFileType.HTML,
+                        exportLocationType = ExportLocationType.WEB_CAPTURE,
+                    ) ?: return@coroutineScope Result.failure()
+                } else {
+                    val baseCaptureDir =
+                        DocumentFile.fromTreeUri(
+                            applicationContext,
+                            preferences.webCapturesLocation.toUri(),
+                        ) ?: return@coroutineScope Result.failure()
 
-                val linkWebCaptureFolder = baseCaptureDir.prepareWebCaptureFolder(
-                    folderUuid = folderUuid,
-                    saveAsVersions = preferences.webCaptureSaveAsVersions,
-                    retainAllVersions = preferences.webCaptureRetainAllVersions,
-                    maxVersions = preferences.webCaptureMaxVersions,
-                )
+                    val linkWebCaptureFolder =
+                        baseCaptureDir.prepareWebCaptureFolder(
+                            folderUuid = folderUuid,
+                            saveAsVersions = preferences.webCaptureSaveAsVersions,
+                            retainAllVersions = preferences.webCaptureRetainAllVersions,
+                            maxVersions = preferences.webCaptureMaxVersions,
+                        )
 
-                val folderUri =
-                    linkWebCaptureFolder?.uri?.toString() ?: return@coroutineScope Result.failure()
-                createPOSIXOwnedFile(
-                    context = applicationContext,
-                    folderUriString = folderUri,
-                    exportFileType = ExportFileType.HTML,
-                    exportLocationType = ExportLocationType.WEB_CAPTURE
-                ) ?: return@coroutineScope Result.failure()
-            }
+                    val folderUri =
+                        linkWebCaptureFolder?.uri?.toString()
+                            ?: return@coroutineScope Result.failure()
+                    createPOSIXOwnedFile(
+                        context = applicationContext,
+                        folderUriString = folderUri,
+                        exportFileType = ExportFileType.HTML,
+                        exportLocationType = ExportLocationType.WEB_CAPTURE,
+                    ) ?: return@coroutineScope Result.failure()
+                }
 
             var isSuccess = false
 

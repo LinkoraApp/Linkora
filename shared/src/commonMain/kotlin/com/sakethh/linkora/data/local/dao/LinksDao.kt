@@ -15,8 +15,7 @@ import kotlinx.coroutines.flow.Flow
 interface LinksDao {
     @Insert suspend fun addANewLink(link: Link): Long
 
-    @Insert @Transaction
-    suspend fun addMultipleLinks(links: List<Link>): List<Long>
+    @Insert @Transaction suspend fun addMultipleLinks(links: List<Link>): List<Long>
 
     @Query("DELETE FROM links WHERE idOfLinkedFolder = :folderId")
     suspend fun deleteLinksOfFolder(folderId: Long)
@@ -37,14 +36,12 @@ interface LinksDao {
         eventTimestamp: Long,
     )
 
-    @Query("DELETE FROM links WHERE localId = :linkId")
-    suspend fun deleteALink(linkId: Long)
+    @Query("DELETE FROM links WHERE localId = :linkId") suspend fun deleteALink(linkId: Long)
 
     @Query("DELETE FROM links WHERE localId IN (:linkIds)")
     suspend fun deleteMultipleLinks(linkIds: List<Long>)
 
-    @Query("DELETE FROM links WHERE url = :url")
-    suspend fun deleteALink(url: String)
+    @Query("DELETE FROM links WHERE url = :url") suspend fun deleteALink(url: String)
 
     @Query("UPDATE links SET note = :newNote WHERE localId=:linkId")
     suspend fun updateLinkNote(
@@ -58,7 +55,9 @@ interface LinksDao {
         newTitle: String,
     )
 
-    @Query("SELECT (linkType = '${LinkType.ARCHIVE_LINK}' OR idOfLinkedFolder = ${Constants.ARCHIVE_ID}) FROM links WHERE url = :url")
+    @Query(
+        "SELECT (linkType = '${LinkType.ARCHIVE_LINK}' OR idOfLinkedFolder = ${Constants.ARCHIVE_ID}) FROM links WHERE url = :url",
+    )
     suspend fun isInArchive(url: String): Boolean
 
     @Query(
@@ -213,11 +212,9 @@ interface LinksDao {
         pageSize: Int,
     ): Flow<List<Link>>
 
-    @Query("SELECT * FROM links")
-    suspend fun getAllLinks(): List<Link>
+    @Query("SELECT * FROM links") suspend fun getAllLinks(): List<Link>
 
-    @Query("SELECT * FROM links")
-    fun getAllLinksAsFlow(): Flow<List<Link>>
+    @Query("SELECT * FROM links") fun getAllLinksAsFlow(): Flow<List<Link>>
 
     @Query("SELECT * FROM links WHERE idOfLinkedFolder=:folderId")
     suspend fun getLinksOfThisFolderAsList(folderId: Long): List<Link>
@@ -233,14 +230,12 @@ interface LinksDao {
     @Query("SELECT localId FROM links WHERE remoteId IN (:remoteIds)")
     suspend fun getLocalIds(remoteIds: List<Long>): List<Long>
 
-    @Query("SELECT MAX(localId) FROM links")
-    suspend fun getLatestId(): Long
+    @Query("SELECT MAX(localId) FROM links") suspend fun getLatestId(): Long
 
     @Query("SELECT * FROM links WHERE localId = :localId LIMIT 1")
     suspend fun getLink(localId: Long): Link
 
-    @Query("SELECT * FROM links WHERE remoteId IS NULL")
-    suspend fun getUnSyncedLinks(): List<Link>
+    @Query("SELECT * FROM links WHERE remoteId IS NULL") suspend fun getUnSyncedLinks(): List<Link>
 
     @Query("UPDATE links SET lastModified = :timestamp WHERE localId=:localLinkId")
     suspend fun updateLinkTimestamp(
@@ -274,7 +269,9 @@ interface LinksDao {
         newId: Long,
     )
 
-    @Query("DELETE FROM links WHERE url=:url AND (linkType = '${LinkType.HISTORY_LINK}' OR idOfLinkedFolder = ${Constants.HISTORY_ID})")
+    @Query(
+        "DELETE FROM links WHERE url=:url AND (linkType = '${LinkType.HISTORY_LINK}' OR idOfLinkedFolder = ${Constants.HISTORY_ID})",
+    )
     suspend fun deleteLinksFromHistory(url: String)
 
     @Transaction
@@ -378,8 +375,7 @@ interface LinksDao {
         pageSize: Int,
     ): Flow<List<Link>>
 
-    @Query("SELECT EXISTS(SELECT 1 FROM links)")
-    suspend fun doesLinkTableHaveData(): Boolean
+    @Query("SELECT EXISTS(SELECT 1 FROM links)") suspend fun doesLinkTableHaveData(): Boolean
 
     @Transaction
     @Query(

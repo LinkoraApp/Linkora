@@ -30,8 +30,7 @@ import com.sakethh.linkora.utils.highlightOnFocused
 fun SettingSectionComponent(settingSectionComponentParam: SettingSectionComponentParam) {
     Column(
         modifier =
-            Modifier
-                .highlightOnFocused()
+            Modifier.highlightOnFocused()
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
@@ -44,19 +43,16 @@ fun SettingSectionComponent(settingSectionComponentParam: SettingSectionComponen
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier =
-                Modifier
-                    .pointerHoverIcon(icon = PointerIcon.Hand)
+                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                     .fillMaxWidth()
                     .pressScaleEffect(),
         ) {
             Spacer(modifier = Modifier.width(10.dp))
             FilledTonalIconButton(
                 modifier =
-                    Modifier
-                        .pointerHoverIcon(icon = PointerIcon.Hand)
-                        .focusProperties {
-                            canFocus = false
-                        },
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand).focusProperties {
+                        canFocus = false
+                    },
                 onClick = {
                     settingSectionComponentParam.onClick()
                 },
@@ -80,11 +76,9 @@ fun SettingSectionComponent(settingSectionComponentParam: SettingSectionComponen
                     Row {
                         IconButton(
                             modifier =
-                                Modifier
-                                    .pointerHoverIcon(icon = PointerIcon.Hand)
-                                    .focusProperties {
-                                        canFocus = false
-                                    },
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand).focusProperties {
+                                    canFocus = false
+                                },
                             onClick = {
                                 settingSectionComponentParam.onClick()
                             },

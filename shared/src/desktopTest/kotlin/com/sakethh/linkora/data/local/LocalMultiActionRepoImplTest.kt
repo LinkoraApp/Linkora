@@ -28,17 +28,17 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.filterNot
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.runTest
 
 class LocalMultiActionRepoImplTest {
     private lateinit var database: LocalDatabase
@@ -123,255 +123,260 @@ class LocalMultiActionRepoImplTest {
         database.close()
     }
 
-    private suspend fun executeAndGetErrorMessage(block: suspend () -> Any): String = try {
-        val result = block()
-        if (result is Result.Failure<*>) {
-            result.e.message.toString()
-        } else {
-            ""
+    private suspend fun executeAndGetErrorMessage(block: suspend () -> Any): String =
+        try {
+            val result = block()
+            if (result is Result.Failure<*>) {
+                result.e.message.toString()
+            } else {
+                ""
+            }
+        } catch (e: Throwable) {
+            e.message?.takeIf { it.isNotBlank() } ?: e.javaClass.simpleName
         }
-    } catch (e: Throwable) {
-        e.message?.takeIf { it.isNotBlank() } ?: e.javaClass.simpleName
-    }
 
     @Test
-    fun `network failure during archive multiple items captures payload to pending sync queue`() = runTest {
-        coEvery { remoteMultiActionRepo.archiveMultipleItems(any()) } returns
-            flowOf(Result.Failure(Exception("Network Timeout")))
+    fun `network failure during archive multiple items captures payload to pending sync queue`() =
+        runTest {
+            coEvery { remoteMultiActionRepo.archiveMultipleItems(any()) } returns
+                flowOf(Result.Failure(Exception("Network Timeout")))
 
-        val linkId =
-            linksDao.addANewLink(
-                Link(
-                    url = "https://test.com",
-                    title = "T",
-                    linkType = LinkType.SAVED_LINK,
-                    idOfLinkedFolder = null,
-                    imgURL = "",
-                    note = "",
-                    lastModified = 0L,
-                    userAgent = "",
-                    remoteId = 111L,
-                ),
-            )
-        val folderId =
-            foldersDao.insertANewFolder(
-                Folder(
-                    name = "F",
-                    note = "",
-                    parentFolderId = null,
-                    isArchived = false,
-                    lastModified = 0L,
-                    remoteId = 222L,
-                ),
-            )
+            val linkId =
+                linksDao.addANewLink(
+                    Link(
+                        url = "https://test.com",
+                        title = "T",
+                        linkType = LinkType.SAVED_LINK,
+                        idOfLinkedFolder = null,
+                        imgURL = "",
+                        note = "",
+                        lastModified = 0L,
+                        userAgent = "",
+                        remoteId = 111L,
+                    ),
+                )
+            val folderId =
+                foldersDao.insertANewFolder(
+                    Folder(
+                        name = "F",
+                        note = "",
+                        parentFolderId = null,
+                        isArchived = false,
+                        lastModified = 0L,
+                        remoteId = 222L,
+                    ),
+                )
 
-        val result =
+            val result =
+                localMultiActionRepo
+                    .archiveMultipleItems(
+                        listOf(linkId),
+                        listOf(folderId),
+                        viaSocket = false,
+                    )
+                    .filterNot { it is Result.Loading }
+                    .first()
+
+            assertTrue(result is Result.Success)
+
+            coVerify(exactly = 1) {
+                pendingSyncQueueRepo.addInQueue(
+                    match { queueItem ->
+                        queueItem.operation == "ARCHIVE_MULTIPLE_ITEMS" &&
+                            queueItem.payload.contains(linkId.toString()) &&
+                            queueItem.payload.contains(folderId.toString())
+                    },
+                )
+            }
+
+            val folder = foldersDao.getThisFolderData(folderId)
+            assertTrue(folder.isArchived)
+        }
+
+    @Test
+    fun `viaSocket flag entirely bypasses remote repo execution during delete multiple items`() =
+        runTest {
+            val linkId =
+                linksDao.addANewLink(
+                    Link(
+                        url = "https://del.com",
+                        title = "T",
+                        linkType = LinkType.SAVED_LINK,
+                        idOfLinkedFolder = null,
+                        imgURL = "",
+                        note = "",
+                        lastModified = 0L,
+                        userAgent = "",
+                        remoteId = 333L,
+                    ),
+                )
+            val folderId =
+                foldersDao.insertANewFolder(
+                    Folder(
+                        name = "F",
+                        note = "",
+                        parentFolderId = null,
+                        isArchived = false,
+                        lastModified = 0L,
+                        remoteId = 444L,
+                    ),
+                )
+
             localMultiActionRepo
-                .archiveMultipleItems(
+                .deleteMultipleItems(
                     listOf(linkId),
                     listOf(folderId),
-                    viaSocket = false,
+                    viaSocket = true,
                 )
                 .filterNot { it is Result.Loading }
                 .first()
 
-        assertTrue(result is Result.Success)
+            assertTrue(linksDao.getAllLinks().isEmpty())
+            assertTrue(foldersDao.getAllFoldersAsList().isEmpty())
 
-        coVerify(exactly = 1) {
-            pendingSyncQueueRepo.addInQueue(
-                match { queueItem ->
-                    queueItem.operation == "ARCHIVE_MULTIPLE_ITEMS" &&
-                        queueItem.payload.contains(linkId.toString()) &&
-                        queueItem.payload.contains(folderId.toString())
-                },
+            coVerify(exactly = 0) { remoteMultiActionRepo.deleteMultipleItems(any()) }
+            coVerify(exactly = 0) { pendingSyncQueueRepo.addInQueue(any()) }
+        }
+
+    @Test
+    fun `move multiple items to an unsynced parent folder throws local validation exception`() =
+        runTest {
+            val unsyncedDestId =
+                foldersDao.insertANewFolder(
+                    Folder(
+                        name = "Unsynced",
+                        note = "",
+                        parentFolderId = null,
+                        isArchived = false,
+                        lastModified = 0L,
+                        remoteId = null,
+                    ),
+                )
+
+            val moveError = executeAndGetErrorMessage {
+                localMultiActionRepo
+                    .moveMultipleItems(
+                        linkIds = emptyList(),
+                        folderIds = emptyList(),
+                        linkType = LinkType.FOLDER_LINK,
+                        newParentFolderId = unsyncedDestId,
+                        viaSocket = false,
+                    )
+                    .filterNot { it is Result.Loading }
+                    .first()
+            }
+
+            assertTrue(
+                moveError.contains(
+                    "Failed requirement",
+                    ignoreCase = true,
+                ) || moveError.contains("null", ignoreCase = true),
             )
         }
 
-        val folder = foldersDao.getThisFolderData(folderId)
-        assertTrue(folder.isArchived)
-    }
-
     @Test
-    fun `viaSocket flag entirely bypasses remote repo execution during delete multiple items`() = runTest {
-        val linkId =
+    fun `copy multiple items recursively clones nested folders and deeply embedded links locally`() =
+        runTest {
+            val destFolderId =
+                foldersDao.insertANewFolder(
+                    Folder(
+                        "Dest",
+                        "",
+                        null,
+                        localId = 0,
+                        remoteId = 100L,
+                        isArchived = false,
+                        lastModified = 0L,
+                    ),
+                )
+            val srcFolderId =
+                foldersDao.insertANewFolder(
+                    Folder(
+                        "SrcRoot",
+                        "",
+                        null,
+                        localId = 0,
+                        remoteId = 200L,
+                        isArchived = false,
+                        lastModified = 0L,
+                    ),
+                )
+
             linksDao.addANewLink(
                 Link(
-                    url = "https://del.com",
-                    title = "T",
-                    linkType = LinkType.SAVED_LINK,
-                    idOfLinkedFolder = null,
-                    imgURL = "",
-                    note = "",
-                    lastModified = 0L,
-                    userAgent = "",
-                    remoteId = 333L,
-                ),
-            )
-        val folderId =
-            foldersDao.insertANewFolder(
-                Folder(
-                    name = "F",
-                    note = "",
-                    parentFolderId = null,
-                    isArchived = false,
-                    lastModified = 0L,
-                    remoteId = 444L,
-                ),
-            )
-
-        localMultiActionRepo
-            .deleteMultipleItems(
-                listOf(linkId),
-                listOf(folderId),
-                viaSocket = true,
-            )
-            .filterNot { it is Result.Loading }
-            .first()
-
-        assertTrue(linksDao.getAllLinks().isEmpty())
-        assertTrue(foldersDao.getAllFoldersAsList().isEmpty())
-
-        coVerify(exactly = 0) { remoteMultiActionRepo.deleteMultipleItems(any()) }
-        coVerify(exactly = 0) { pendingSyncQueueRepo.addInQueue(any()) }
-    }
-
-    @Test
-    fun `move multiple items to an unsynced parent folder throws local validation exception`() = runTest {
-        val unsyncedDestId =
-            foldersDao.insertANewFolder(
-                Folder(
-                    name = "Unsynced",
-                    note = "",
-                    parentFolderId = null,
-                    isArchived = false,
-                    lastModified = 0L,
-                    remoteId = null,
-                ),
-            )
-
-        val moveError = executeAndGetErrorMessage {
-            localMultiActionRepo
-                .moveMultipleItems(
-                    linkIds = emptyList(),
-                    folderIds = emptyList(),
+                    url = "https://src.com",
+                    title = "SrcLink",
                     linkType = LinkType.FOLDER_LINK,
-                    newParentFolderId = unsyncedDestId,
-                    viaSocket = false,
-                )
-                .filterNot { it is Result.Loading }
-                .first()
-        }
-
-        assertTrue(
-            moveError.contains(
-                "Failed requirement",
-                ignoreCase = true,
-            ) ||
-                moveError.contains("null", ignoreCase = true),
-        )
-    }
-
-    @Test
-    fun `copy multiple items recursively clones nested folders and deeply embedded links locally`() = runTest {
-        val destFolderId =
-            foldersDao.insertANewFolder(
-                Folder(
-                    "Dest",
-                    "",
-                    null,
-                    localId = 0,
-                    remoteId = 100L,
-                    isArchived = false,
-                    lastModified = 0L,
-                ),
-            )
-        val srcFolderId =
-            foldersDao.insertANewFolder(
-                Folder(
-                    "SrcRoot",
-                    "",
-                    null,
-                    localId = 0,
-                    remoteId = 200L,
-                    isArchived = false,
-                    lastModified = 0L,
-                ),
-            )
-
-        linksDao.addANewLink(
-            Link(
-                url = "https://src.com",
-                title = "SrcLink",
-                linkType = LinkType.FOLDER_LINK,
-                idOfLinkedFolder = srcFolderId,
-                imgURL = "",
-                note = "",
-                lastModified = 0L,
-                userAgent = "",
-            ),
-        )
-
-        coEvery { localTagsRepo.getTagsForLinksAsMap(any()) } returns emptyMap()
-        coEvery { localTagsRepo.createLinkTags(any()) } returns Unit
-
-        val srcFolder = foldersDao.getThisFolderData(srcFolderId)
-
-        localMultiActionRepo
-            .copyMultipleItems(
-                linkTagsPairs = emptyList(),
-                folders = listOf(srcFolder),
-                linkType = LinkType.FOLDER_LINK,
-                newParentFolderId = destFolderId,
-                viaSocket = true,
-            )
-            .filterNot { it is Result.Loading }
-            .first()
-
-        val allFolders = foldersDao.getAllFoldersAsList()
-        val clonedFolder = allFolders.find {
-            it.name == "SrcRoot" && it.parentFolderId == destFolderId
-        }
-
-        assertNotNull(clonedFolder)
-        assertTrue(clonedFolder.localId != srcFolderId)
-
-        val allLinks = linksDao.getAllLinks()
-        val clonedLink = allLinks.find {
-            it.url == "https://src.com" && it.idOfLinkedFolder == clonedFolder.localId
-        }
-
-        assertNotNull(clonedLink)
-    }
-
-    @Test
-    fun `unarchive multiple items successfully commits immediate transaction and updates synced timestamps`() = runTest {
-        val linkId =
-            linksDao.addANewLink(
-                Link(
-                    url = "https://unarchive.com",
-                    title = "T",
-                    linkType = LinkType.ARCHIVE_LINK,
-                    idOfLinkedFolder = null,
+                    idOfLinkedFolder = srcFolderId,
                     imgURL = "",
                     note = "",
                     lastModified = 0L,
                     userAgent = "",
-                    remoteId = 555L,
                 ),
             )
 
-        localMultiActionRepo
-            .unArchiveMultipleItems(
-                listOf(linkId),
-                emptyList(),
-                viaSocket = false,
-            )
-            .filterNot { it is Result.Loading }
-            .first()
+            coEvery { localTagsRepo.getTagsForLinksAsMap(any()) } returns emptyMap()
+            coEvery { localTagsRepo.createLinkTags(any()) } returns Unit
 
-        val updatedLink = linksDao.getLink(linkId)
+            val srcFolder = foldersDao.getThisFolderData(srcFolderId)
 
-        assertEquals(LinkType.SAVED_LINK, updatedLink.linkType)
-        coVerify(exactly = 1) { remoteMultiActionRepo.markItemsAsRegular(any()) }
-    }
+            localMultiActionRepo
+                .copyMultipleItems(
+                    linkTagsPairs = emptyList(),
+                    folders = listOf(srcFolder),
+                    linkType = LinkType.FOLDER_LINK,
+                    newParentFolderId = destFolderId,
+                    viaSocket = true,
+                )
+                .filterNot { it is Result.Loading }
+                .first()
+
+            val allFolders = foldersDao.getAllFoldersAsList()
+            val clonedFolder = allFolders.find {
+                it.name == "SrcRoot" && it.parentFolderId == destFolderId
+            }
+
+            assertNotNull(clonedFolder)
+            assertTrue(clonedFolder.localId != srcFolderId)
+
+            val allLinks = linksDao.getAllLinks()
+            val clonedLink = allLinks.find {
+                it.url == "https://src.com" && it.idOfLinkedFolder == clonedFolder.localId
+            }
+
+            assertNotNull(clonedLink)
+        }
+
+    @Test
+    fun `unarchive multiple items successfully commits immediate transaction and updates synced timestamps`() =
+        runTest {
+            val linkId =
+                linksDao.addANewLink(
+                    Link(
+                        url = "https://unarchive.com",
+                        title = "T",
+                        linkType = LinkType.ARCHIVE_LINK,
+                        idOfLinkedFolder = null,
+                        imgURL = "",
+                        note = "",
+                        lastModified = 0L,
+                        userAgent = "",
+                        remoteId = 555L,
+                    ),
+                )
+
+            localMultiActionRepo
+                .unArchiveMultipleItems(
+                    listOf(linkId),
+                    emptyList(),
+                    viaSocket = false,
+                )
+                .filterNot { it is Result.Loading }
+                .first()
+
+            val updatedLink = linksDao.getLink(linkId)
+
+            assertEquals(LinkType.SAVED_LINK, updatedLink.linkType)
+            coVerify(exactly = 1) { remoteMultiActionRepo.markItemsAsRegular(any()) }
+        }
 }

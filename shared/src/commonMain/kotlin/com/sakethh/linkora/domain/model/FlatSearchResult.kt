@@ -6,8 +6,8 @@ import com.sakethh.linkora.domain.MediaType
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
-import kotlinx.serialization.json.Json
 import kotlin.jvm.Transient
+import kotlinx.serialization.json.Json
 
 data class FlatSearchResult(
     val itemType: String,
@@ -36,8 +36,7 @@ data class FlatSearchResult(
     val linkLastModified: Long? = null,
     val linkTagsJson: String? = null,
 ) {
-    @Ignore @Transient
-    var path: List<Folder>? = null
+    @Ignore @Transient var path: List<Folder>? = null
 
     val asTag: Tag by lazy {
         Tag(
@@ -50,14 +49,14 @@ data class FlatSearchResult(
 
     val asFolder: Folder by lazy {
         Folder(
-            name = folderName!!,
-            note = folderNote!!,
-            parentFolderId = folderParentId,
-            localId = folderLocalId!!,
-            remoteId = folderRemoteId,
-            isArchived = folderIsArchived!!,
-            lastModified = folderLastModified!!,
-        )
+                name = folderName!!,
+                note = folderNote!!,
+                parentFolderId = folderParentId,
+                localId = folderLocalId!!,
+                remoteId = folderRemoteId,
+                isArchived = folderIsArchived!!,
+                lastModified = folderLastModified!!,
+            )
             .also {
                 it.path = path
             }
@@ -88,9 +87,9 @@ data class FlatSearchResult(
 
         LinkTagsPair(
             link =
-            link.also {
-                it.path = path
-            },
+                link.also {
+                    it.path = path
+                },
             tags = tags,
         )
     }

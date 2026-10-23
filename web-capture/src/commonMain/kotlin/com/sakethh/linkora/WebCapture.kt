@@ -5,9 +5,7 @@ import io.github.sakethpathike.kapture.Kapture
 object WebCapture {
     private var isLibraryLoaded = false
 
-    /**
-     * Kapture uses Mutex for initializing the options and will only be initialized once
-     * */
+    /** Kapture uses Mutex for initializing the options and will only be initialized once */
     suspend fun init(options: KaptureOptions) {
         if (isLibraryLoaded) return
         Kapture.init(options.toKaptureLibOptions())
@@ -22,8 +20,10 @@ object WebCapture {
     }
 }
 
-// maybe i should reintroduce options in shared module (in kapture), so this redundancy can be avoided
-private fun KaptureOptions.toKaptureLibOptions(): io.github.sakethpathike.kapture.KaptureOptions = io.github.sakethpathike.kapture.KaptureOptions(
+// maybe i should reintroduce options in shared module (in kapture), so this redundancy can be
+// avoided
+private fun KaptureOptions.toKaptureLibOptions(): io.github.sakethpathike.kapture.KaptureOptions =
+    io.github.sakethpathike.kapture.KaptureOptions(
         includeJs = includeJs,
         includeCss = includeCss,
         includeImages = includeImages,
@@ -33,7 +33,7 @@ private fun KaptureOptions.toKaptureLibOptions(): io.github.sakethpathike.kaptur
         includeMetadata = includeMetadata,
         timeoutMillis = timeoutMillis,
         userAgent = userAgent,
-        base64StreamSize = base64StreamSize
+        base64StreamSize = base64StreamSize,
     )
 
 data class KaptureOptions(
@@ -45,6 +45,7 @@ data class KaptureOptions(
     val includeFonts: Boolean = true,
     val includeMetadata: Boolean = true,
     val timeoutMillis: Long = 30000L,
-    val userAgent: String = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    val base64StreamSize: Int = 3000
+    val userAgent: String =
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    val base64StreamSize: Int = 3000,
 )

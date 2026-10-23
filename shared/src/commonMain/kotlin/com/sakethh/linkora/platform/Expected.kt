@@ -27,8 +27,7 @@ expect val showDynamicThemingOption: Boolean
 
 expect val hostOS: HostOS
 
-@Composable
-expect fun PlatformSpecificBackHandler(init: () -> Unit = {})
+@Composable expect fun PlatformSpecificBackHandler(init: () -> Unit = {})
 
 expect val PlatformIODispatcher: CoroutineDispatcher
 

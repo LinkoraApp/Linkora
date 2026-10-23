@@ -54,7 +54,6 @@ import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.model.localization.LocalizedLanguage
 import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.LoadingDialog
-import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.DataEmptyScreen
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
 import com.sakethh.linkora.ui.utils.pressScaleEffect
@@ -142,7 +141,9 @@ fun LanguageSettingsScreen() {
             }
             item {
                 Box(modifier = Modifier.fillMaxWidth().animateContentSize()) {
-                    if (preferences.preferredAppLanguageCode != Constants.DEFAULT_APP_LANGUAGE_CODE) {
+                    if (
+                        preferences.preferredAppLanguageCode != Constants.DEFAULT_APP_LANGUAGE_CODE
+                    ) {
                         FilledTonalButton(
                             modifier =
                                 Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
@@ -154,7 +155,7 @@ fun LanguageSettingsScreen() {
                                 isLanguageSelectionBtmSheetVisible.value = false
                                 languageSettingsScreenVM.loadLocalizedStrings(
                                     languageCode = Constants.DEFAULT_APP_LANGUAGE_CODE,
-                                    languageName = Constants.DEFAULT_APP_LANGUAGE_NAME
+                                    languageName = Constants.DEFAULT_APP_LANGUAGE_NAME,
                                 )
                             },
                         ) {
@@ -207,7 +208,7 @@ fun LanguageSettingsScreen() {
                     localizationStatus =
                         localizedStrings.StringsLocalizedStatus.replaceActual(
                             it.localizedStringsCount.toString(),
-                            LocalizationKey.entries.size.toString()
+                            LocalizationKey.entries.size.toString(),
                         ),
                     localizationStatusFraction =
                         it.localizedStringsCount.toFloat() / LocalizationKey.entries.size.toFloat(),
@@ -255,8 +256,9 @@ fun LanguageSettingsScreen() {
                                 .padding(top = 7.5.dp, bottom = 7.5.dp, start = 10.dp, end = 15.dp),
                     ) {
                         FilledTonalIconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                .pressScaleEffect(),
+                            modifier =
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .pressScaleEffect(),
                             onClick = {
                                 isLanguageSelectionBtmSheetVisible.value = false
                                 languageSettingsScreenVM.loadLocalizedStrings(
@@ -295,10 +297,12 @@ fun LanguageSettingsScreen() {
                             .padding(top = 7.5.dp, bottom = 7.5.dp, start = 10.dp, end = 15.dp),
                 ) {
                     FilledTonalIconButton(
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .pressScaleEffect(),
+                        modifier =
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(),
                         onClick = {
-                            languageSettingsScreenVM.downloadALanguageStringsPack(selectedLanguage.value)
+                            languageSettingsScreenVM.downloadALanguageStringsPack(
+                                selectedLanguage.value,
+                            )
                             isLanguageSelectionBtmSheetVisible.value = false
                         },
                     ) {
@@ -323,14 +327,13 @@ fun LanguageSettingsScreen() {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier =
-                            Modifier
-                                .highlightOnFocused()
+                            Modifier.highlightOnFocused()
                                 .clickable(
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null,
                                     onClick = {
                                         languageSettingsScreenVM.deleteALanguagePack(
-                                            selectedLanguage.value
+                                            selectedLanguage.value,
                                         )
                                         isLanguageSelectionBtmSheetVisible.value = false
                                     },
@@ -341,8 +344,9 @@ fun LanguageSettingsScreen() {
                                 .padding(top = 7.5.dp, bottom = 7.5.dp, start = 10.dp, end = 15.dp),
                     ) {
                         FilledTonalIconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                .pressScaleEffect(),
+                            modifier =
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .pressScaleEffect(),
                             onClick = {
                                 languageSettingsScreenVM.deleteALanguagePack(selectedLanguage.value)
                                 isLanguageSelectionBtmSheetVisible.value = false
@@ -367,15 +371,14 @@ fun LanguageSettingsScreen() {
     LoadingDialog(
         shouldDialogBoxAppear =
             languageSettingsScreenVM.languageSettingsState.value.fetchingLanguageInfo ||
-                    languageSettingsScreenVM.languageSettingsState.value.fetchingStrings,
+                languageSettingsScreenVM.languageSettingsState.value.fetchingStrings,
         text =
             if (languageSettingsScreenVM.languageSettingsState.value.fetchingLanguageInfo) {
                 localizedStrings.FetchingAvailableLanguages
             } else {
-                localizedStrings.DownloadingStrings
-                    .replaceActual(
-                        selectedLanguage.value.languageName.inDoubleQuotes()
-                    )
+                localizedStrings.DownloadingStrings.replaceActual(
+                    selectedLanguage.value.languageName.inDoubleQuotes(),
+                )
             },
     )
 }

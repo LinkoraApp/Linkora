@@ -15,6 +15,7 @@ import com.sakethh.linkora.shared.R
 import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
 import com.sakethh.linkora.ui.screens.settings.section.data.RefreshLinksState
 import com.sakethh.linkora.ui.utils.linkoraLog
+import java.util.UUID
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
@@ -27,7 +28,6 @@ import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 class RefreshAllLinksWorker(
     appContext: Context,
@@ -40,11 +40,12 @@ class RefreshAllLinksWorker(
         ) {
             WorkManager.getInstance(appContext)
                 .cancelWorkById(UUID.fromString(refreshLinksWorkerTag))
-            DataSettingsScreenVM.refreshLinksState.value = RefreshLinksState(
-                isInRefreshingState = false,
-                currentIteration = 0,
-                total = 0,
-            )
+            DataSettingsScreenVM.refreshLinksState.value =
+                RefreshLinksState(
+                    isInRefreshingState = false,
+                    currentIteration = 0,
+                    total = 0,
+                )
             linkoraLog("cancelLinksRefreshing")
         }
 
@@ -53,12 +54,13 @@ class RefreshAllLinksWorker(
 
     private var refreshAllLinksNotificationService = RefreshAllLinksNotificationService(appContext)
 
-    override suspend fun getForegroundInfo(): ForegroundInfo = ForegroundInfo(
-        1,
-        NotificationCompat.Builder(applicationContext, "1")
-            .setSmallIcon(R.drawable.notification_icon)
-            .build(),
-    )
+    override suspend fun getForegroundInfo(): ForegroundInfo =
+        ForegroundInfo(
+            1,
+            NotificationCompat.Builder(applicationContext, "1")
+                .setSmallIcon(R.drawable.notification_icon)
+                .build(),
+        )
 
     private var linksProcessedChannel: Channel<Long>? = null
     private var linksProcessedChannelJob: Job? = null
@@ -67,9 +69,10 @@ class RefreshAllLinksWorker(
 
     override suspend fun doWork(): Result = coroutineScope {
         val preferences = DependencyContainer.preferencesRepo.getPreferences()
-        processedLinksCount = DependencyContainer.preferencesRepo.readPreferenceValue(
-            preferenceKey = AppPreferences.REFRESHED_LINKS_COUNT,
-        ) ?: 0
+        processedLinksCount =
+            DependencyContainer.preferencesRepo.readPreferenceValue(
+                preferenceKey = AppPreferences.REFRESHED_LINKS_COUNT,
+            ) ?: 0
 
         refreshAllLinksNotificationService.clearNotifications()
         linksProcessedChannel?.cancel()
@@ -88,11 +91,14 @@ class RefreshAllLinksWorker(
                     newValue = ++processedLinksCount,
                 )
 
-                LinkoraSDK.getInstance().localDatabase.refreshDao.insertAProcessedId(
-                    RefreshLink(
-                        refreshedLinkId,
-                    ),
-                )
+                LinkoraSDK.getInstance()
+                    .localDatabase
+                    .refreshDao
+                    .insertAProcessedId(
+                        RefreshLink(
+                            refreshedLinkId,
+                        ),
+                    )
                 DataSettingsScreenVM.refreshLinksState.value =
                     DataSettingsScreenVM.refreshLinksState.value.copy(
                         currentIteration = processedLinksCount.toInt(),
@@ -123,27 +129,33 @@ class RefreshAllLinksWorker(
 
             if (linksToBeRefreshed.isEmpty()) return@coroutineScope Result.success()
 
-            linksToBeRefreshed.asFlow()
+            linksToBeRefreshed
+                .asFlow()
                 .flatMapMerge(concurrency = preferences.maxConcurrentRefreshCount) { link ->
-                    DependencyContainer.localLinksRepo.refreshLinkMetadata(
-                        link,
-                        refreshLinkType = preferences.selectedLinkRefreshType,
-                        useWebCapture = false,
-                    ).map { result ->
-                        when (result) {
-                            is com.sakethh.linkora.domain.Result.Failure -> link.localId
-                            is com.sakethh.linkora.domain.Result.Loading -> -1
-                            is com.sakethh.linkora.domain.Result.Success -> link.localId
+                    DependencyContainer.localLinksRepo
+                        .refreshLinkMetadata(
+                            link,
+                            refreshLinkType = preferences.selectedLinkRefreshType,
+                            useWebCapture = false,
+                        )
+                        .map { result ->
+                            when (result) {
+                                is com.sakethh.linkora.domain.Result.Failure -> link.localId
+                                is com.sakethh.linkora.domain.Result.Loading -> -1
+                                is com.sakethh.linkora.domain.Result.Success -> link.localId
+                            }
                         }
-                    }
-                }.onEach {
+                }
+                .onEach {
                     if (isStopped) {
                         cleanUp()
                         cancel()
                     }
-                }.catch {
+                }
+                .catch {
                     it.printStackTrace()
-                }.collect { processedLinkId ->
+                }
+                .collect { processedLinkId ->
                     if (processedLinkId == (-1).toLong()) return@collect
                     linksProcessedChannel?.send(
                         processedLinkId,

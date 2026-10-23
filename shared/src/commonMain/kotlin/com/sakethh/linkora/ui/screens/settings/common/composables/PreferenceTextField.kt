@@ -11,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Restore
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
@@ -55,10 +54,10 @@ fun PreferenceTextField(
                         style = MaterialTheme.typography.titleSmall,
                         lineHeight = 18.sp,
                         modifier =
-                        Modifier.padding(
-                            top = 5.dp,
-                            bottom = 5.dp,
-                        ),
+                            Modifier.padding(
+                                top = 5.dp,
+                                bottom = 5.dp,
+                            ),
                     )
                 },
                 value = textFieldValue,
@@ -77,7 +76,9 @@ fun PreferenceTextField(
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             FilledTonalIconToggleButton(
-                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).highlightOnFocused(shape = IconButtonDefaults.filledShape),
+                modifier =
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        .highlightOnFocused(shape = IconButtonDefaults.filledShape),
                 checked = !readonly,
                 onCheckedChange = {
                     onConfirmButtonClick()
@@ -90,7 +91,9 @@ fun PreferenceTextField(
             }
             Spacer(modifier = Modifier.height(15.dp))
             FilledTonalIconButton(
-                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).highlightOnFocused(shape = IconButtonDefaults.filledShape),
+                modifier =
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        .highlightOnFocused(shape = IconButtonDefaults.filledShape),
                 onClick = onResetButtonClick,
             ) {
                 Icon(

@@ -34,14 +34,11 @@ interface FoldersDao {
     @Query("SELECT * FROM folders WHERE parentFolderID IS NULL")
     suspend fun getAllRootFoldersAsList(): List<Folder>
 
-    @Query("SELECT * FROM folders")
-    suspend fun getAllFoldersAsList(): List<Folder>
+    @Query("SELECT * FROM folders") suspend fun getAllFoldersAsList(): List<Folder>
 
-    @Query("SELECT EXISTS(SELECT 1 FROM folders)")
-    suspend fun doesFolderTableHaveData(): Boolean
+    @Query("SELECT EXISTS(SELECT 1 FROM folders)") suspend fun doesFolderTableHaveData(): Boolean
 
-    @Query("SELECT * FROM folders")
-    fun getAllFoldersAsFlow(): Flow<List<Folder>>
+    @Query("SELECT * FROM folders") fun getAllFoldersAsFlow(): Flow<List<Folder>>
 
     @Query("SELECT localId FROM folders WHERE localId = (SELECT MAX(localId) FROM folders)")
     suspend fun getLatestFoldersTableID(): Long

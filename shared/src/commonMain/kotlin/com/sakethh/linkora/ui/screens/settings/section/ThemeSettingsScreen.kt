@@ -45,7 +45,9 @@ fun ThemeSettingsScreen() {
             verticalArrangement = Arrangement.spacedBy(30.dp),
         ) {
             if (
-                platform is Platform.Android && showFollowSystemThemeOption && !preferences.useDarkTheme
+                platform is Platform.Android &&
+                    showFollowSystemThemeOption &&
+                    !preferences.useDarkTheme
             ) {
                 item(key = LocalizationKey.FollowSystemTheme.name) {
                     SettingComponent(
@@ -66,7 +68,11 @@ fun ThemeSettingsScreen() {
                     )
                 }
             }
-            if (!preferences.useSystemTheme || platform is Platform.Desktop || platform is Platform.Web) {
+            if (
+                !preferences.useSystemTheme ||
+                    platform is Platform.Desktop ||
+                    platform is Platform.Web
+            ) {
                 item(key = LocalizationKey.UseDarkMode.name) {
                     SettingComponent(
                         SettingComponentParam(
@@ -88,7 +94,8 @@ fun ThemeSettingsScreen() {
             }
             if (
                 platform is Platform.Android &&
-                (preferences.useDarkTheme || (isSystemInDarkTheme && preferences.useSystemTheme))
+                    (preferences.useDarkTheme ||
+                        (isSystemInDarkTheme && preferences.useSystemTheme))
             ) {
                 item {
                     SettingComponent(

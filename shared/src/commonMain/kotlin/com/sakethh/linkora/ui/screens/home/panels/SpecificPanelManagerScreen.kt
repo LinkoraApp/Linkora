@@ -63,17 +63,17 @@ fun SpecificPanelManagerScreen(specificPanelManagerScreenParam: SpecificPanelMan
     val localizedStrings = LocalizedStrings.current
     val platform = LocalPlatform.current
     val foldersOfTheSelectedPanel by
-    specificPanelManagerScreenParam.foldersOfTheSelectedPanel.collectAsStateWithLifecycle()
+        specificPanelManagerScreenParam.foldersOfTheSelectedPanel.collectAsStateWithLifecycle()
     val foldersToIncludeInPanel by
-    specificPanelManagerScreenParam.foldersToIncludeInPanel.collectAsStateWithLifecycle()
+        specificPanelManagerScreenParam.foldersToIncludeInPanel.collectAsStateWithLifecycle()
 
     val navController = LocalNavController.current
     val topAppBarState = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
         modifier =
             Modifier.padding(
-                top = specificPanelManagerScreenParam.paddingValues.calculateTopPadding(),
-            )
+                    top = specificPanelManagerScreenParam.paddingValues.calculateTopPadding(),
+                )
                 .fillMaxSize(),
         topBar = {
             MediumTopAppBar(
@@ -86,7 +86,7 @@ fun SpecificPanelManagerScreen(specificPanelManagerScreenParam: SpecificPanelMan
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = ""
+                            contentDescription = "",
                         )
                     }
                 },
@@ -212,7 +212,8 @@ fun SpecificPanelManagerScreen(specificPanelManagerScreenParam: SpecificPanelMan
                                             PanelsAction.RemoveAFolderFromPanel(
                                                 folderId = folderItem.folderId,
                                                 panelId =
-                                                    SpecificPanelManagerScreenVM.selectedPanel.value.localId,
+                                                    SpecificPanelManagerScreenVM.selectedPanel.value
+                                                        .localId,
                                             ),
                                         )
                                     },
@@ -262,7 +263,9 @@ fun SpecificPanelManagerScreen(specificPanelManagerScreenParam: SpecificPanelMan
                                                         folderId = folderToIncludeInPanel.localId,
                                                         folderName = folderToIncludeInPanel.name,
                                                         connectedPanelId =
-                                                            SpecificPanelManagerScreenVM.selectedPanel.value
+                                                            SpecificPanelManagerScreenVM
+                                                                .selectedPanel
+                                                                .value
                                                                 .localId,
                                                         panelPosition = 0,
                                                     ),

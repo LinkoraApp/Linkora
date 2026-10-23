@@ -38,7 +38,7 @@ fun QuickActionItem(
     onClick: () -> Unit,
     text: String,
     icon: ImageVector,
-    iconSize: Dp = 26.dp
+    iconSize: Dp = 26.dp,
 ) {
     var hasFocus by rememberSaveable {
         mutableStateOf(false)
@@ -49,7 +49,10 @@ fun QuickActionItem(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
         onClick = onClick,
         modifier =
-            modifier.pressScaleEffect().pointerHoverIcon(icon = PointerIcon.Hand).padding(start = 2.5.dp, end = 2.5.dp)
+            modifier
+                .pressScaleEffect()
+                .pointerHoverIcon(icon = PointerIcon.Hand)
+                .padding(start = 2.5.dp, end = 2.5.dp)
                 .onFocusChanged { focusState ->
                     hasFocus = focusState.hasFocus
                 }
@@ -58,11 +61,11 @@ fun QuickActionItem(
                         Modifier.border(
                             width = 4.5.dp,
                             color = MaterialTheme.colorScheme.inversePrimary,
-                            shape
+                            shape,
                         )
                     } else {
                         Modifier
-                    }
+                    },
                 ),
     ) {
         Column(

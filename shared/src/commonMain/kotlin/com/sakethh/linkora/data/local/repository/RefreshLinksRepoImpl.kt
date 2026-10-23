@@ -7,7 +7,8 @@ import com.sakethh.linkora.domain.repository.local.RefreshLinksRepo
 class RefreshLinksRepoImpl(
     private val refreshLinkDao: RefreshLinkDao,
 ) : RefreshLinksRepo {
-    override suspend fun insertAProcessedId(refreshLink: RefreshLink) = refreshLinkDao.insertAProcessedId(refreshLink)
+    override suspend fun insertAProcessedId(refreshLink: RefreshLink) =
+        refreshLinkDao.insertAProcessedId(refreshLink)
 
     override suspend fun getProcessedLinkIds(): List<Long> = refreshLinkDao.getProcessedLinkIds()
 

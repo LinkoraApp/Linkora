@@ -54,9 +54,9 @@ import com.sakethh.linkora.ui.theme.LightColors
 import com.sakethh.linkora.ui.theme.LinkoraTheme
 import com.sakethh.linkora.utils.Icons
 import com.sakethh.linkora.utils.isServerConfigured
-import kotlinx.coroutines.Dispatchers
 import java.awt.Dimension
 import java.io.File
+import kotlinx.coroutines.Dispatchers
 
 suspend fun main() {
     LinkoraSDK.set(
@@ -64,9 +64,12 @@ suspend fun main() {
             LinkoraSDK(
                 platform = Platform.Desktop,
                 nativeUtils = NativeUtils(),
-                fileManager = FileManager(localizedStrings = {
-                    DependencyContainer.localizationRepo.localizedStrings.value
-                }),
+                fileManager =
+                    FileManager(
+                        localizedStrings = {
+                            DependencyContainer.localizationRepo.localizedStrings.value
+                        },
+                    ),
                 permissionManager = PermissionManager(),
                 localDatabase =
                     File(linkoraSpecificFolder, "${LocalDatabase.NAME}.db").run {
@@ -83,9 +86,12 @@ suspend fun main() {
                             .build()
                     },
                 platformPreference = PlatformPreference,
-                network = Network(localizedStrings = {
-                    DependencyContainer.localizationRepo.localizedStrings.value
-                }),
+                network =
+                    Network(
+                        localizedStrings = {
+                            DependencyContainer.localizationRepo.localizedStrings.value
+                        },
+                    ),
                 dataSyncingNotificationService = NativeUtils.DataSyncingNotificationService(),
                 webCapture = NativeUtils.WebCapture(),
                 webCaptureDatabaseManager =
@@ -123,16 +129,16 @@ suspend fun main() {
         ) {
             val localizedStrings by localizedStrings.collectAsStateWithLifecycle()
             val preferences by
-            DependencyContainer.preferencesRepo.preferencesAsFlow.collectAsStateWithLifecycle()
+                DependencyContainer.preferencesRepo.preferencesAsFlow.collectAsStateWithLifecycle()
             window.minimumSize = Dimension(1054, 600)
             CompositionLocalProvider(
                 LocalNavController provides navController,
                 LocalFabController provides
-                        retain {
-                            FabStateController()
-                        },
+                    retain {
+                        FabStateController()
+                    },
                 LocalPlatform provides Platform.Desktop,
-                LocalizedStrings provides localizedStrings
+                LocalizedStrings provides localizedStrings,
             ) {
                 LinkoraTheme(
                     colorScheme = if (preferences.useDarkTheme) DarkColors else LightColors,

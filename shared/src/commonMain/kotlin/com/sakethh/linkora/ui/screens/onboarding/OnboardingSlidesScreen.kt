@@ -146,8 +146,8 @@ fun OnboardingSlidesScreen(onOnboardingComplete: () -> Unit) {
                     exit = fadeOut(),
                 ) {
                     FilledTonalButton(
-                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                            .pressScaleEffect(),
+                        modifier =
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(),
                         onClick = {
                             if (pagerState.isScrollInProgress) return@FilledTonalButton
                             coroutineScope.launch {
@@ -170,8 +170,8 @@ fun OnboardingSlidesScreen(onOnboardingComplete: () -> Unit) {
                 }
                 Spacer(Modifier.width(15.dp))
                 Button(
-                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        .pressScaleEffect(),
+                    modifier =
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand).pressScaleEffect(),
                     onClick = {
                         if (pagerState.currentPage == pagerState.pageCount - 1) {
                             onOnboardingComplete()
@@ -227,10 +227,10 @@ fun Slide1() {
             painter =
                 painterResource(
                     listOf(
-                        Res.drawable.mondstern_logo,
-                        Res.drawable.new_logo,
-                        Res.drawable.LOLCATpl_logo,
-                    )
+                            Res.drawable.mondstern_logo,
+                            Res.drawable.new_logo,
+                            Res.drawable.LOLCATpl_logo,
+                        )
                         .random(),
                 ),
             contentDescription = null,
@@ -347,7 +347,7 @@ fun Slide2() {
                             coroutineScope.launch {
                                 localUriHandler.openUriOrNotify(
                                     "https://www.rockstargames.com/reddeadredemption2",
-                                    localizedStrings
+                                    localizedStrings,
                                 )
                             }
                         },
@@ -407,7 +407,7 @@ fun Slide2() {
                             coroutineScope.launch {
                                 localUriHandler.openUriOrNotify(
                                     "https://open.spotify.com/artist/20qISvAhX20dpIbOOzGK3q",
-                                    localizedStrings
+                                    localizedStrings,
                                 )
                             }
                         },
@@ -551,7 +551,8 @@ fun Slide3() {
                                 LinkComponentParam(
                                     link =
                                         Link(
-                                            title = "Building Webpage Capture in Linkora | Saketh Pathike",
+                                            title =
+                                                "Building Webpage Capture in Linkora | Saketh Pathike",
                                             host = "sakethpathike.github.io",
                                             imgURL =
                                                 "https://sakethpathike.github.io/images/web-capture-in-linkora/og.png",
@@ -568,12 +569,13 @@ fun Slide3() {
                                         coroutineScope.launch {
                                             localUriHandler.openUriOrNotify(
                                                 "https://sakethpathike.github.io/blog/web-capture-in-linkora",
-                                                localizedStrings
+                                                localizedStrings,
                                             )
                                         }
                                     },
                                     onForceOpenInExternalBrowserClicked = {},
-                                    isSelectionModeEnabled = rememberSaveable { mutableStateOf(false) },
+                                    isSelectionModeEnabled =
+                                        rememberSaveable { mutableStateOf(false) },
                                     isItemSelected = rememberSaveable { mutableStateOf(false) },
                                     onLongClick = {},
                                     tags = listOf(Tag(name = "Linkora")),
@@ -641,12 +643,13 @@ fun Slide3() {
                                         coroutineScope.launch {
                                             localUriHandler.openUriOrNotify(
                                                 "https://github.com/LinkoraApp/sync-server",
-                                                localizedStrings
+                                                localizedStrings,
                                             )
                                         }
                                     },
                                     onForceOpenInExternalBrowserClicked = {},
-                                    isSelectionModeEnabled = rememberSaveable { mutableStateOf(false) },
+                                    isSelectionModeEnabled =
+                                        rememberSaveable { mutableStateOf(false) },
                                     isItemSelected =
                                         rememberSaveable {
                                             mutableStateOf(false)
@@ -692,18 +695,18 @@ fun Slide4() {
         SlideTitle(string = localizedStrings.AppIntroSlide4Label1)
         Spacer(Modifier.height(5.dp))
         listOf(
-            localizedStrings.AppIntroSlide4Label1Desc1,
-            localizedStrings.AppIntroSlide4Label1Desc2,
-            localizedStrings.AppIntroSlide4Label1Desc2_1,
-            localizedStrings.AppIntroSlide4Label1Desc3,
-            localizedStrings.AppIntroSlide4Label1Desc4,
-            localizedStrings.AppIntroSlide4Label1Desc5,
-            localizedStrings.AppIntroSlide4Label1Desc6,
-            localizedStrings.AppIntroSlide4Label1Desc7,
-            localizedStrings.AppIntroSlide4Label1Desc8,
-            localizedStrings.AppIntroSlide4Label1Desc9,
-            localizedStrings.AppIntroSlide4Label1Desc10,
-        )
+                localizedStrings.AppIntroSlide4Label1Desc1,
+                localizedStrings.AppIntroSlide4Label1Desc2,
+                localizedStrings.AppIntroSlide4Label1Desc2_1,
+                localizedStrings.AppIntroSlide4Label1Desc3,
+                localizedStrings.AppIntroSlide4Label1Desc4,
+                localizedStrings.AppIntroSlide4Label1Desc5,
+                localizedStrings.AppIntroSlide4Label1Desc6,
+                localizedStrings.AppIntroSlide4Label1Desc7,
+                localizedStrings.AppIntroSlide4Label1Desc8,
+                localizedStrings.AppIntroSlide4Label1Desc9,
+                localizedStrings.AppIntroSlide4Label1Desc10,
+            )
             .forEach {
                 key(it) {
                     Row(modifier = Modifier.fillMaxWidth()) {

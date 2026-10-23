@@ -17,14 +17,12 @@ data class WebCaptureMetadata(
 
 @Dao
 interface WebCaptureMetadataDao {
-    @Upsert
-    suspend fun insert(metaData: WebCaptureMetadata)
+    @Upsert suspend fun insert(metaData: WebCaptureMetadata)
 
     @Query("SELECT uuid FROM metadata WHERE link = :link")
     suspend fun getFolderNameByLink(link: String): String?
 
-    @Query("SELECT link FROM metadata")
-    suspend fun getAllLinks(): List<String>
+    @Query("SELECT link FROM metadata") suspend fun getAllLinks(): List<String>
 }
 
 @Database(entities = [WebCaptureMetadata::class], version = 1)

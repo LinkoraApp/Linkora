@@ -22,35 +22,38 @@ data class UnifiedLazyItem(
     val index: Int,
 )
 
-fun LazyListState.asUnifiedLazyState(): UnifiedLazyState = object : UnifiedLazyState {
-    override val visibleItemsInfo: List<UnifiedLazyItem>
-        get() =
-            this@asUnifiedLazyState.layoutInfo.visibleItemsInfo.map {
-                UnifiedLazyItem(it.index)
-            }
+fun LazyListState.asUnifiedLazyState(): UnifiedLazyState =
+    object : UnifiedLazyState {
+        override val visibleItemsInfo: List<UnifiedLazyItem>
+            get() =
+                this@asUnifiedLazyState.layoutInfo.visibleItemsInfo.map {
+                    UnifiedLazyItem(it.index)
+                }
 
-    override val totalItemsCount: Int
-        get() = this@asUnifiedLazyState.layoutInfo.totalItemsCount
-}
+        override val totalItemsCount: Int
+            get() = this@asUnifiedLazyState.layoutInfo.totalItemsCount
+    }
 
-fun LazyGridState.asUnifiedLazyState(): UnifiedLazyState = object : UnifiedLazyState {
-    override val visibleItemsInfo: List<UnifiedLazyItem>
-        get() =
-            this@asUnifiedLazyState.layoutInfo.visibleItemsInfo.map {
-                UnifiedLazyItem(it.index)
-            }
+fun LazyGridState.asUnifiedLazyState(): UnifiedLazyState =
+    object : UnifiedLazyState {
+        override val visibleItemsInfo: List<UnifiedLazyItem>
+            get() =
+                this@asUnifiedLazyState.layoutInfo.visibleItemsInfo.map {
+                    UnifiedLazyItem(it.index)
+                }
 
-    override val totalItemsCount: Int
-        get() = this@asUnifiedLazyState.layoutInfo.totalItemsCount
-}
+        override val totalItemsCount: Int
+            get() = this@asUnifiedLazyState.layoutInfo.totalItemsCount
+    }
 
-fun LazyStaggeredGridState.asUnifiedLazyState(): UnifiedLazyState = object : UnifiedLazyState {
-    override val visibleItemsInfo: List<UnifiedLazyItem>
-        get() =
-            this@asUnifiedLazyState.layoutInfo.visibleItemsInfo.map {
-                UnifiedLazyItem(it.index)
-            }
+fun LazyStaggeredGridState.asUnifiedLazyState(): UnifiedLazyState =
+    object : UnifiedLazyState {
+        override val visibleItemsInfo: List<UnifiedLazyItem>
+            get() =
+                this@asUnifiedLazyState.layoutInfo.visibleItemsInfo.map {
+                    UnifiedLazyItem(it.index)
+                }
 
-    override val totalItemsCount: Int
-        get() = this@asUnifiedLazyState.layoutInfo.totalItemsCount
-}
+        override val totalItemsCount: Int
+            get() = this@asUnifiedLazyState.layoutInfo.totalItemsCount
+    }

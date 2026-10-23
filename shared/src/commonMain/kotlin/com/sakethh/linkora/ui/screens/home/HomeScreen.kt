@@ -98,7 +98,7 @@ fun HomeScreen() {
     val panels = homeScreenVM.existingPanels.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
     val activePanelAssociatedPanelFolders by
-    homeScreenVM.activePanelAssociatedPanelFolders.collectAsStateWithLifecycle()
+        homeScreenVM.activePanelAssociatedPanelFolders.collectAsStateWithLifecycle()
     val pagerState =
         rememberPagerState(
             pageCount = {
@@ -177,21 +177,25 @@ fun HomeScreen() {
                                     panelsBtmSheetState.show()
                                 }
                             },
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                .size(22.dp),
+                            modifier =
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand).size(22.dp),
                         ) {
                             Icon(
                                 imageVector = Icons.Default.ArrowDownward,
-                                contentDescription = null
+                                contentDescription = null,
                             )
                         }
                         Spacer(Modifier.width(10.dp))
                         Text(
-                            text = if (homeScreenVM.selectedPanelData?.localId == Constants.DEFAULT_PANELS_ID) {
-                                localizedStrings.Default
-                            } else {
-                                homeScreenVM.selectedPanelData!!.panelName
-                            },
+                            text =
+                                if (
+                                    homeScreenVM.selectedPanelData?.localId ==
+                                        Constants.DEFAULT_PANELS_ID
+                                ) {
+                                    localizedStrings.Default
+                                } else {
+                                    homeScreenVM.selectedPanelData!!.panelName
+                                },
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.titleLarge,
                             fontSize = 20.sp,
@@ -206,7 +210,10 @@ fun HomeScreen() {
             return@Scaffold
         }
         Column(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
-            if (activePanelAssociatedPanelFolders.isEmpty() && homeScreenVM.selectedPanelData != null) {
+            if (
+                activePanelAssociatedPanelFolders.isEmpty() &&
+                    homeScreenVM.selectedPanelData != null
+            ) {
                 DataEmptyScreen(text = localizedStrings.NoFoldersInThePanel)
                 return@Scaffold
             }
@@ -228,13 +235,14 @@ fun HomeScreen() {
                         modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
                     ) {
                         Text(
-                            text = if (panelFolder.folderId == Constants.SAVED_LINKS_ID) {
-                                localizedStrings.SavedLinks
-                            } else if (panelFolder.folderId == Constants.IMPORTANT_LINKS_ID) {
-                                localizedStrings.ImportantLinks
-                            } else {
-                                panelFolder.folderName
-                            },
+                            text =
+                                if (panelFolder.folderId == Constants.SAVED_LINKS_ID) {
+                                    localizedStrings.SavedLinks
+                                } else if (panelFolder.folderId == Constants.IMPORTANT_LINKS_ID) {
+                                    localizedStrings.ImportantLinks
+                                } else {
+                                    panelFolder.folderName
+                                },
                             style = MaterialTheme.typography.titleLarge,
                             fontSize = 18.sp,
                             modifier = Modifier.padding(15.dp),
@@ -355,7 +363,9 @@ fun HomeScreen() {
                             Modifier.fillMaxWidth()
                                 .clickable {
                                     homeScreenVM.selectedPanelData = panel
-                                    homeScreenVM.updatePanelFolders(homeScreenVM.selectedPanelData!!)
+                                    homeScreenVM.updatePanelFolders(
+                                        homeScreenVM.selectedPanelData!!,
+                                    )
                                     coroutineScope
                                         .launch {
                                             panelsBtmSheetState.hide()
@@ -385,7 +395,10 @@ fun HomeScreen() {
                         )
                         Spacer(Modifier.width(5.dp))
                         Text(
-                            text = if (panel.localId == Constants.DEFAULT_PANELS_ID) localizedStrings.Default else panel.panelName,
+                            text =
+                                if (panel.localId == Constants.DEFAULT_PANELS_ID)
+                                    localizedStrings.Default
+                                else panel.panelName,
                             style =
                                 if (homeScreenVM.selectedPanelData!!.localId == panel.localId) {
                                     MaterialTheme.typography.titleLarge

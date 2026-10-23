@@ -23,24 +23,26 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-fun <T> Flow<T>.mapToResultFlow(): Flow<Result<T>> = this.map {
-    Result.Success(it)
-}
-    .catchAsThrowableAndEmitFailure()
+fun <T> Flow<T>.mapToResultFlow(): Flow<Result<T>> =
+    this.map {
+            Result.Success(it)
+        }
+        .catchAsThrowableAndEmitFailure()
 
-fun Long.asLinkType() = when (this) {
-    Constants.SAVED_LINKS_ID -> LinkType.SAVED_LINK
+fun Long.asLinkType() =
+    when (this) {
+        Constants.SAVED_LINKS_ID -> LinkType.SAVED_LINK
 
-    Constants.HISTORY_ID -> LinkType.HISTORY_LINK
+        Constants.HISTORY_ID -> LinkType.HISTORY_LINK
 
-    Constants.IMPORTANT_LINKS_ID -> LinkType.IMPORTANT_LINK
+        Constants.IMPORTANT_LINKS_ID -> LinkType.IMPORTANT_LINK
 
-    Constants.ARCHIVE_ID -> LinkType.ARCHIVE_LINK
+        Constants.ARCHIVE_ID -> LinkType.ARCHIVE_LINK
 
-    else -> {
-        LinkType.FOLDER_LINK
+        else -> {
+            LinkType.FOLDER_LINK
+        }
     }
-}
 
 @Composable
 fun LinkType.asLocalizedString(): String {
@@ -63,70 +65,75 @@ fun FolderType.asLocalizedString(): String {
     }
 }
 
-fun Folder.asAddFolderDTO(correlation: Correlation): AddFolderDTO = AddFolderDTO(
-    name = this.name,
-    note = this.note,
-    parentFolderId = this.parentFolderId,
-    isArchived = this.isArchived,
-    eventTimestamp = this.lastModified,
-    correlation = correlation,
-)
+fun Folder.asAddFolderDTO(correlation: Correlation): AddFolderDTO =
+    AddFolderDTO(
+        name = this.name,
+        note = this.note,
+        parentFolderId = this.parentFolderId,
+        isArchived = this.isArchived,
+        eventTimestamp = this.lastModified,
+        correlation = correlation,
+    )
 
 fun Folder.asFolderDTO(
     remoteId: Long,
     remoteParentFolderId: Long?,
     correlation: Correlation,
-): FolderDTO = FolderDTO(
-    id = remoteId,
-    name = this.name,
-    note = this.note,
-    parentFolderId = remoteParentFolderId,
-    isArchived = this.isArchived,
-    eventTimestamp = this.lastModified,
-    correlation = correlation,
-)
+): FolderDTO =
+    FolderDTO(
+        id = remoteId,
+        name = this.name,
+        note = this.note,
+        parentFolderId = remoteParentFolderId,
+        isArchived = this.isArchived,
+        eventTimestamp = this.lastModified,
+        correlation = correlation,
+    )
 
 fun Link.asAddLinkDTO(
     remoteTagIds: List<Long>,
     correlation: Correlation,
-): AddLinkDTO = AddLinkDTO(
-    linkType = this.linkType,
-    title = this.title,
-    url = this.url,
-    baseURL = this.host,
-    imgURL = this.imgURL,
-    note = this.note,
-    eventTimestamp = this.lastModified,
-    idOfLinkedFolder = this.idOfLinkedFolder,
-    userAgent = this.userAgent,
-    markedAsImportant = false,
-    mediaType = this.mediaType,
-    tags = remoteTagIds,
-    correlation = correlation,
-)
+): AddLinkDTO =
+    AddLinkDTO(
+        linkType = this.linkType,
+        title = this.title,
+        url = this.url,
+        baseURL = this.host,
+        imgURL = this.imgURL,
+        note = this.note,
+        eventTimestamp = this.lastModified,
+        idOfLinkedFolder = this.idOfLinkedFolder,
+        userAgent = this.userAgent,
+        markedAsImportant = false,
+        mediaType = this.mediaType,
+        tags = remoteTagIds,
+        correlation = correlation,
+    )
 
 fun Link.asLinkDTO(
     id: Long,
     remoteLinkTags: List<LinkTagDTO>,
     correlation: Correlation,
-): LinkDTO = LinkDTO(
-    linkType = this.linkType,
-    title = this.title,
-    url = this.url,
-    baseURL = this.host,
-    imgURL = this.imgURL,
-    note = this.note,
-    idOfLinkedFolder = this.idOfLinkedFolder,
-    userAgent = this.userAgent,
-    markedAsImportant = false,
-    mediaType = this.mediaType,
-    id = id,
-    eventTimestamp = this.lastModified,
-    linkTags = remoteLinkTags,
-    correlation = correlation,
-)
+): LinkDTO =
+    LinkDTO(
+        linkType = this.linkType,
+        title = this.title,
+        url = this.url,
+        baseURL = this.host,
+        imgURL = this.imgURL,
+        note = this.note,
+        idOfLinkedFolder = this.idOfLinkedFolder,
+        userAgent = this.userAgent,
+        markedAsImportant = false,
+        mediaType = this.mediaType,
+        id = id,
+        eventTimestamp = this.lastModified,
+        linkTags = remoteLinkTags,
+        correlation = correlation,
+    )
 
-suspend fun LegacyExportSchema.asJSONExportSchema(userAgent: String): JSONExportSchema = coroutineScope {
+suspend fun LegacyExportSchema.asJSONExportSchema(userAgent: String): JSONExportSchema =
+    coroutineScope {
         val links = mutableListOf<Link>()
         val folders = mutableListOf<Folder>()
         val panels = mutableListOf<Panel>()

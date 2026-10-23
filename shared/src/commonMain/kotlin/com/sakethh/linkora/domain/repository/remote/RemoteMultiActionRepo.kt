@@ -25,5 +25,7 @@ interface RemoteMultiActionRepo {
 
     suspend fun moveMultipleItems(moveItemsDTO: MoveItemsDTO): Flow<Result<TimeStampBasedResponse>>
 
-    suspend fun copyMultipleItems(copyItemsDTO: CopyItemsDTO): Flow<Result<CopyItemsHTTPResponseDTO>>
+    suspend fun copyMultipleItems(
+        copyItemsDTO: CopyItemsDTO,
+    ): Flow<Result<CopyItemsHTTPResponseDTO>>
 }

@@ -37,14 +37,18 @@ fun DeleteAPanelDialogBox(deleteAPanelDialogBoxParam: DeleteAPanelDialogBoxParam
             confirmButton = {
                 if (isInProgress.value) return@AlertDialog
                 Button(
-                    modifier = Modifier.fillMaxWidth().pressScaleEffect()
-                        .highlightOnFocused(shape = ButtonDefaults.shape),
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .pressScaleEffect()
+                            .highlightOnFocused(shape = ButtonDefaults.shape),
                     onClick = {
                         isInProgress.value = true
-                        deleteAPanelDialogBoxParam.onDeleteClick({
-                            isInProgress.value = false
-                            deleteAPanelDialogBoxParam.isDialogBoxVisible.value = false
-                        })
+                        deleteAPanelDialogBoxParam.onDeleteClick(
+                            {
+                                isInProgress.value = false
+                                deleteAPanelDialogBoxParam.isDialogBoxVisible.value = false
+                            },
+                        )
                     },
                 ) {
                     Text(
@@ -57,8 +61,10 @@ fun DeleteAPanelDialogBox(deleteAPanelDialogBoxParam: DeleteAPanelDialogBoxParam
             dismissButton = {
                 if (!isInProgress.value) {
                     OutlinedButton(
-                        modifier = Modifier.fillMaxWidth().pressScaleEffect()
-                            .highlightOnFocused(shape = ButtonDefaults.shape),
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .pressScaleEffect()
+                                .highlightOnFocused(shape = ButtonDefaults.shape),
                         onClick = {
                             deleteAPanelDialogBoxParam.isDialogBoxVisible.value = false
                         },
@@ -76,8 +82,9 @@ fun DeleteAPanelDialogBox(deleteAPanelDialogBoxParam: DeleteAPanelDialogBoxParam
             title = {
                 Text(
                     text =
-                        localizedStrings.AreYouSureWantToDeleteThePanel
-                            .replaceActual(deleteAPanelDialogBoxParam.panelName),
+                        localizedStrings.AreYouSureWantToDeleteThePanel.replaceActual(
+                            deleteAPanelDialogBoxParam.panelName,
+                        ),
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 22.sp,
                     lineHeight = 28.sp,
@@ -86,8 +93,7 @@ fun DeleteAPanelDialogBox(deleteAPanelDialogBoxParam: DeleteAPanelDialogBoxParam
             },
             text = {
                 Text(
-                    text =
-                        localizedStrings.OnceDeletedThisPanelCannotBeRestored,
+                    text = localizedStrings.OnceDeletedThisPanelCannotBeRestored,
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 14.sp,
                     lineHeight = 18.sp,

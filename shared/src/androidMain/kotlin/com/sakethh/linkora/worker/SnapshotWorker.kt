@@ -16,30 +16,34 @@ class SnapshotWorker(
     appContext: Context,
     workerParameters: WorkerParameters,
 ) : CoroutineWorker(appContext, workerParameters) {
-    val localizedStrings get() = DependencyContainer.localizationRepo.localizedStrings.value
+    val localizedStrings
+        get() = DependencyContainer.localizationRepo.localizedStrings.value
+
     override suspend fun doWork(): Result {
         return try {
             val rawExportStringID = inputData.getLong(key = "rawExportStringID", defaultValue = 0)
             val rawExportString = DependencyContainer.snapshotRepo.getASnapshot(rawExportStringID)
             val fileType = inputData.getString(key = "fileType")!!
-            val isOnTV = with(applicationContext) {
-                onTV()
-            }
-            val exportLocation = if (isOnTV) {
-                // AndroidTV doesn't support selectable directory path(s)
-                // https://github.com/LinkoraApp/Linkora/issues/160
-                ""
-            } else {
-                DependencyContainer.preferencesRepo.readPreferenceValue(
-                    preferenceKey = AppPreferences.BACKUP_LOCATION,
-                )
-                    ?: return Result.failure().also {
-                        val failureMsg =
-                            localizedStrings.CouldntSaveSnapshotDueToLocationMismatch
-                        linkoraLog(failureMsg)
-                        UIEvent.pushUIEvent(UIEvent.Type.ShowSnackbar(failureMsg))
-                    }
-            }
+            val isOnTV =
+                with(applicationContext) {
+                    onTV()
+                }
+            val exportLocation =
+                if (isOnTV) {
+                    // AndroidTV doesn't support selectable directory path(s)
+                    // https://github.com/LinkoraApp/Linkora/issues/160
+                    ""
+                } else {
+                    DependencyContainer.preferencesRepo.readPreferenceValue(
+                        preferenceKey = AppPreferences.BACKUP_LOCATION,
+                    )
+                        ?: return Result.failure().also {
+                            val failureMsg =
+                                localizedStrings.CouldntSaveSnapshotDueToLocationMismatch
+                            linkoraLog(failureMsg)
+                            UIEvent.pushUIEvent(UIEvent.Type.ShowSnackbar(failureMsg))
+                        }
+                }
             LinkoraSDK.getInstance()
                 .fileManager
                 .writeRawExportStringToFile(

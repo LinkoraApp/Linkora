@@ -148,35 +148,31 @@ fun App(modifier: Modifier = Modifier) {
     val tagMenuBtmSheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val collectionsScreenVM: CollectionsScreenVM = linkoraViewModel()
-    val rootRouteList =
-        retain {
-            listOf(
-                Navigation.Root.HomeScreen,
-                Navigation.Root.SearchScreen,
-                Navigation.Root.CollectionsScreen,
-                Navigation.Root.SettingsScreen,
-            )
-        }
+    val rootRouteList = retain {
+        listOf(
+            Navigation.Root.HomeScreen,
+            Navigation.Root.SearchScreen,
+            Navigation.Root.CollectionsScreen,
+            Navigation.Root.SettingsScreen,
+        )
+    }
     val localNavController = LocalNavController.current
     val inRootScreen = localNavController.inRootScreen(includeSettingsScreen = true)
     val currentBackStackEntryState by localNavController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntryState?.destination
 
-    val rotationAnimatable =
-        remember {
-            Animatable(0f)
-        }
-    val isReducedTransparencyBoxVisible =
-        rememberSaveable {
-            mutableStateOf(false)
-        }
+    val rotationAnimatable = remember {
+        Animatable(0f)
+    }
+    val isReducedTransparencyBoxVisible = rememberSaveable {
+        mutableStateOf(false)
+    }
     val coroutineScope = rememberCoroutineScope()
     val platform = LocalPlatform.current
 
-    val isDataSyncingFromPullRefresh =
-        rememberSaveable {
-            mutableStateOf(false)
-        }
+    val isDataSyncingFromPullRefresh = rememberSaveable {
+        mutableStateOf(false)
+    }
     val pullToRefreshState = rememberPullToRefreshState()
     LaunchedEffect(AppVM.isMainFabRotated.value) {
         if (!AppVM.isMainFabRotated.value) {
@@ -198,7 +194,9 @@ fun App(modifier: Modifier = Modifier) {
     val isAnySnapshotInProgress by appVM.isAnySnapshotOngoing.collectAsStateWithLifecycle()
     Row(modifier = Modifier.fillMaxSize().then(modifier)) {
         AnimatedVisibility(
-            visible = (appVM.onBoardingCompleted.value || platform == Platform.Web) && supportsWideDisplay(),
+            visible =
+                (appVM.onBoardingCompleted.value || platform == Platform.Web) &&
+                    supportsWideDisplay(),
             exit = slideOutHorizontally(targetOffsetX = { -it }),
             enter = slideInHorizontally(initialOffsetX = { -it }),
         ) {
@@ -222,7 +220,8 @@ fun App(modifier: Modifier = Modifier) {
         val selectedAndInRoot =
             rememberSaveable(inRootScreen, appVM.transferActionType.value) {
                 mutableStateOf(
-                    (inRootScreen == true) && (appVM.transferActionType.value != TransferActionType.NONE),
+                    (inRootScreen == true) &&
+                        (appVM.transferActionType.value != TransferActionType.NONE),
                 )
             }
 
@@ -263,9 +262,9 @@ fun App(modifier: Modifier = Modifier) {
                     exit = fadeOut(),
                     visible =
                         currentRoute?.hasRoute<Navigation.Root.SettingsScreen>() == false &&
-                                !currentRoute.hasRoute<Navigation.Home.PanelsManagerScreen>() &&
-                                currentFABContext.fabContext != FABContext.HIDE &&
-                                !showLoadingProgressBarOnTransferAction,
+                            !currentRoute.hasRoute<Navigation.Home.PanelsManagerScreen>() &&
+                            currentFABContext.fabContext != FABContext.HIDE &&
+                            !showLoadingProgressBarOnTransferAction,
                 ) {
                     AnimatedContent(
                         targetState = currentFABContext.fabContext,
@@ -292,7 +291,8 @@ fun App(modifier: Modifier = Modifier) {
                             FABContext.REGULAR -> {
                                 AddItemFab(
                                     AddItemFABParam(
-                                        isReducedTransparencyBoxVisible = isReducedTransparencyBoxVisible.value,
+                                        isReducedTransparencyBoxVisible =
+                                            isReducedTransparencyBoxVisible.value,
                                         onShowDialogForNewFolder = {
                                             appVM.showNewFolderDialog = true
                                         },
@@ -330,8 +330,7 @@ fun App(modifier: Modifier = Modifier) {
                 SnackbarHost(appVM.snackbarHostState) { snackbarData ->
                     Box(
                         modifier =
-                            Modifier
-                                .fillMaxWidth()
+                            Modifier.fillMaxWidth()
                                 .padding(7.5.dp)
                                 .clip(RoundedCornerShape(15.dp))
                                 .background(MaterialTheme.colorScheme.secondary)
@@ -339,7 +338,8 @@ fun App(modifier: Modifier = Modifier) {
                                     width = 1.5.dp,
                                     color = MaterialTheme.colorScheme.primary,
                                     shape = RoundedCornerShape(15.dp),
-                                ).padding(15.dp),
+                                )
+                                .padding(15.dp),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
@@ -372,7 +372,10 @@ fun App(modifier: Modifier = Modifier) {
                                     preferences.serverBaseUrl.isNotBlank() && onAndroidMobile
                                 },
                             onRefresh = {
-                                if (appVM.isPerformingStartupSync || isDataSyncingFromPullRefresh.value) {
+                                if (
+                                    appVM.isPerformingStartupSync ||
+                                        isDataSyncingFromPullRefresh.value
+                                ) {
                                     coroutineScope.pushUIEvent(
                                         UIEvent.Type.ShowSnackbar(
                                             localizedStrings.SyncInProgress,
@@ -413,10 +416,14 @@ fun App(modifier: Modifier = Modifier) {
                             allTags = collectionsScreenVM.allTags,
                             currentCollectionSource = collectionsScreenVM.currentCollectionSource,
                             performAction = collectionsScreenVM::performAction,
-                            onRetrieveNextRegularRootFolderPage = collectionsScreenVM::retrieveNextBatchOfRegularRootFolders,
-                            onRegularRootFolderFirstVisibleItemIndexChange = collectionsScreenVM::updateStartingIndexForRegularRootFoldersPaginator,
+                            onRetrieveNextRegularRootFolderPage =
+                                collectionsScreenVM::retrieveNextBatchOfRegularRootFolders,
+                            onRegularRootFolderFirstVisibleItemIndexChange =
+                                collectionsScreenVM::
+                                    updateStartingIndexForRegularRootFoldersPaginator,
                             onRetrieveNextTagsPage = collectionsScreenVM::retrieveNextBatchOfTags,
-                            onTagsFirstVisibleItemIndexChange = collectionsScreenVM::updateStartingIndexForTagsPaginator,
+                            onTagsFirstVisibleItemIndexChange =
+                                collectionsScreenVM::updateStartingIndexForTagsPaginator,
                         ),
                 )
                 if (preferences.isServerConfigured()) {
@@ -434,8 +441,7 @@ fun App(modifier: Modifier = Modifier) {
             ) {
                 Box(
                     modifier =
-                        Modifier
-                            .pointerHoverIcon(icon = PointerIcon.Hand)
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxSize()
                             .background(MaterialTheme.colorScheme.background.copy(0.95f))
                             .clickable {
@@ -452,8 +458,11 @@ fun App(modifier: Modifier = Modifier) {
                                 appVM.showAddLinkDialog = false
                             },
                             currentFolder =
-                                if ((inRootScreen == true && currentFABContext.currentFolder == null) ||
-                                    currentFABContext.currentFolder?.localId == Constants.ALL_LINKS_ID
+                                if (
+                                    (inRootScreen == true &&
+                                        currentFABContext.currentFolder == null) ||
+                                        currentFABContext.currentFolder?.localId ==
+                                            Constants.ALL_LINKS_ID
                                 ) {
                                     null
                                 } else {
@@ -498,15 +507,15 @@ fun App(modifier: Modifier = Modifier) {
                 )
             }
             val localUriHandler = LocalUriHandler.current
-            val showProgressBarDuringRemoteSave =
-                rememberSaveable {
-                    mutableStateOf(false)
-                }
+            val showProgressBarDuringRemoteSave = rememberSaveable {
+                mutableStateOf(false)
+            }
             val hideMenuSheet: () -> Unit = {
                 coroutineScope
                     .launch {
                         appVM.menuBtmSheetState.hide()
-                    }.invokeOnCompletion {
+                    }
+                    .invokeOnCompletion {
                         appVM.showMenuForTag = false
                         appVM.showMenuForLink = false
                         appVM.showMenuForFolder = false
@@ -565,7 +574,8 @@ fun App(modifier: Modifier = Modifier) {
                                             forceSaveWithoutRetrievingData = true,
                                             useProxy = preferences.useProxy,
                                             skipSavingIfExists = preferences.skipSavingExistingLink,
-                                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
+                                            forceSaveIfRetrievalFails =
+                                                preferences.forceSaveIfRetrievalFails,
                                         ),
                                     onCompletion = {},
                                     pushSnackbarOnSuccess = false,
@@ -594,11 +604,15 @@ fun App(modifier: Modifier = Modifier) {
                                         showProgressBarDuringRemoteSave.value = false
                                         hideMenuSheet()
                                     },
-                                    tagIds = appVM.selectedLinkTagsForMenuBtmSheet.tags.map { it.localId },
+                                    tagIds =
+                                        appVM.selectedLinkTagsForMenuBtmSheet.tags.map {
+                                            it.localId
+                                        },
                                 )
                             },
                             shouldShowArchiveOption = {
-                                appVM.selectedLinkTagsForMenuBtmSheet.link.linkType == LinkType.ARCHIVE_LINK
+                                appVM.selectedLinkTagsForMenuBtmSheet.link.linkType ==
+                                    LinkType.ARCHIVE_LINK
                             },
                             showProgressBarDuringRemoteSave = showProgressBarDuringRemoteSave,
                             onTagClick = {
@@ -636,7 +650,8 @@ fun App(modifier: Modifier = Modifier) {
                                     link = url,
                                 )
                             },
-                            inChildFolder = appVM.selectedFolderForMenuBtmSheet.parentFolderId != null,
+                            inChildFolder =
+                                appVM.selectedFolderForMenuBtmSheet.parentFolderId != null,
                         ),
                 )
             }
@@ -734,7 +749,8 @@ fun App(modifier: Modifier = Modifier) {
                 coroutineScope
                     .launch {
                         renameDialogSheetState.hide()
-                    }.invokeOnCompletion {
+                    }
+                    .invokeOnCompletion {
                         appVM.showLinkRenameDialogBox = false
                         appVM.showFolderRenameDialogBox = false
                     }
@@ -748,13 +764,12 @@ fun App(modifier: Modifier = Modifier) {
                         selectedTags = appVM.selectedLinkTagsForMenuBtmSheet.tags,
                         allTags = allTags,
                         onSave = {
-                                newTitle: String,
-                                newNote: String,
-                                newImageUrl: String,
-                                newUrl: String,
-                                selectedTags: List<Tag>,
-                                onCompletion: () -> Unit,
-                            ->
+                            newTitle: String,
+                            newNote: String,
+                            newImageUrl: String,
+                            newUrl: String,
+                            selectedTags: List<Tag>,
+                            onCompletion: () -> Unit ->
                             collectionsScreenVM.updateLink(
                                 updatedLinkTagsPair =
                                     appVM.selectedLinkTagsForMenuBtmSheet.run {
@@ -784,7 +799,8 @@ fun App(modifier: Modifier = Modifier) {
                         onHide = slideDownAndHideRenameSheet,
                         sheetState = renameDialogSheetState,
                         onRetrieveNextTagsPage = collectionsScreenVM::retrieveNextBatchOfTags,
-                        onFirstVisibleIndexChange = collectionsScreenVM::updateStartingIndexForTagsPaginator,
+                        onFirstVisibleIndexChange =
+                            collectionsScreenVM::updateStartingIndexForTagsPaginator,
                     ),
             )
 
@@ -853,7 +869,8 @@ fun App(modifier: Modifier = Modifier) {
                     coroutineScope
                         .launch {
                             createTagBtmSheetState.hide()
-                        }.invokeOnCompletion {
+                        }
+                        .invokeOnCompletion {
                             appVM.showBtmSheetForNewTagAddition = false
                         }
                 },
@@ -864,7 +881,8 @@ fun App(modifier: Modifier = Modifier) {
                             coroutineScope
                                 .launch {
                                     createTagBtmSheetState.hide()
-                                }.invokeOnCompletion {
+                                }
+                                .invokeOnCompletion {
                                     appVM.showBtmSheetForNewTagAddition = false
                                 }
                         },
@@ -921,7 +939,8 @@ fun App(modifier: Modifier = Modifier) {
                             coroutineScope
                                 .launch {
                                     tagRenameBtmSheetState.hide()
-                                }.invokeOnCompletion {
+                                }
+                                .invokeOnCompletion {
                                     showTagRenameComponent = false
                                 }
                         },
@@ -939,7 +958,9 @@ fun App(modifier: Modifier = Modifier) {
             var showSyncServerNotice by rememberSaveable {
                 mutableStateOf(preferences.showSyncServerSurveyNotice)
             }
-            if (preferences.isServerConfigured() && platform != Platform.Web && showSyncServerNotice) {
+            if (
+                preferences.isServerConfigured() && platform != Platform.Web && showSyncServerNotice
+            ) {
                 ModalBottomSheet(
                     sheetState = syncServerSurveyBtmSheetState,
                     onDismissRequest = {},
@@ -972,7 +993,8 @@ fun App(modifier: Modifier = Modifier) {
                                         coroutineScope
                                             .launch {
                                                 syncServerSurveyBtmSheetState.hide()
-                                            }.invokeOnCompletion {
+                                            }
+                                            .invokeOnCompletion {
                                                 showSyncServerNotice = false
                                                 coroutineScope.launch {
                                                     localUriHandler.openUriOrNotify(
@@ -985,8 +1007,7 @@ fun App(modifier: Modifier = Modifier) {
                                 )
                             },
                             modifier =
-                                Modifier
-                                    .pointerHoverIcon(icon = PointerIcon.Hand)
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                                     .pressScaleEffect()
                                     .fillMaxWidth(),
                         ) {
@@ -1004,15 +1025,15 @@ fun App(modifier: Modifier = Modifier) {
                                         coroutineScope
                                             .launch {
                                                 syncServerSurveyBtmSheetState.hide()
-                                            }.invokeOnCompletion {
+                                            }
+                                            .invokeOnCompletion {
                                                 showSyncServerNotice = false
                                             }
                                     },
                                 )
                             },
                             modifier =
-                                Modifier
-                                    .pointerHoverIcon(icon = PointerIcon.Hand)
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                                     .pressScaleEffect()
                                     .fillMaxWidth(),
                         ) {

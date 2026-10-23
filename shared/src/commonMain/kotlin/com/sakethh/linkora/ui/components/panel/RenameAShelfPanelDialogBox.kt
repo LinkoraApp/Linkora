@@ -71,9 +71,7 @@ fun RenameAShelfPanelDialogBox(
             },
             title = {
                 Text(
-                    text =
-                        localizedStrings.EditPanelName
-                            .replaceActual(panelName),
+                    text = localizedStrings.EditPanelName.replaceActual(panelName),
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 22.sp,
                     lineHeight = 27.sp,

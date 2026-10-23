@@ -69,8 +69,7 @@ fun LayoutSettingsScreen() {
     ) { paddingValues, topAppBarScrollBehaviour ->
         when (preferences.selectedLinkLayout) {
             Layout.REGULAR_LIST_VIEW.name,
-            Layout.TITLE_ONLY_LIST_VIEW.name,
-                -> {
+            Layout.TITLE_ONLY_LIST_VIEW.name -> {
                 LazyColumn(
                     modifier =
                         Modifier.fillMaxSize()
@@ -90,7 +89,9 @@ fun LayoutSettingsScreen() {
                         LinkViewRadioButtonComponent(
                             selectedLinkLayout = Layout.valueOf(preferences.selectedLinkLayout),
                             linkLayout = it,
-                            changePreferenceValue = { preferenceKey: PreferenceKey<String>, newValue: String ->
+                            changePreferenceValue = {
+                                preferenceKey: PreferenceKey<String>,
+                                newValue: String ->
                                 settingsScreenViewModel.changeSettingPreferenceValue(
                                     preferenceKey = preferenceKey,
                                     newValue = newValue,
@@ -136,8 +137,7 @@ fun LayoutSettingsScreen() {
                             LinkViewPreferenceSwitch(
                                 onClick = {
                                     settingsScreenViewModel.changeSettingPreferenceValue(
-                                        preferenceKey =
-                                            AppPreferences.SHOW_TAGS_IN_LINK_VIEW,
+                                        preferenceKey = AppPreferences.SHOW_TAGS_IN_LINK_VIEW,
                                         newValue = !preferences.showTagsInLinkView,
                                     )
                                 },
@@ -151,8 +151,7 @@ fun LayoutSettingsScreen() {
                             LinkViewPreferenceSwitch(
                                 onClick = {
                                     settingsScreenViewModel.changeSettingPreferenceValue(
-                                        preferenceKey =
-                                            AppPreferences.SHOW_DATE_IN_LINK_VIEW,
+                                        preferenceKey = AppPreferences.SHOW_DATE_IN_LINK_VIEW,
                                         newValue = !preferences.showDateInLinkView,
                                     )
                                 },
@@ -187,7 +186,8 @@ fun LayoutSettingsScreen() {
                             onShare = {
                                 LinkoraSDK.getInstance().nativeUtils.onShare(it)
                             },
-                            titleOnlyView = preferences.selectedLinkLayout == Layout.TITLE_ONLY_LIST_VIEW.name,
+                            titleOnlyView =
+                                preferences.selectedLinkLayout == Layout.TITLE_ONLY_LIST_VIEW.name,
                             preferences = preferences,
                         )
                     }
@@ -227,7 +227,9 @@ fun LayoutSettingsScreen() {
                         LinkViewRadioButtonComponent(
                             selectedLinkLayout = Layout.valueOf(preferences.selectedLinkLayout),
                             linkLayout = it,
-                            changePreferenceValue = { preferenceKey: PreferenceKey<String>, newValue: String ->
+                            changePreferenceValue = {
+                                preferenceKey: PreferenceKey<String>,
+                                newValue: String ->
                                 settingsScreenViewModel.changeSettingPreferenceValue(
                                     preferenceKey = preferenceKey,
                                     newValue = newValue,
@@ -320,7 +322,9 @@ fun LayoutSettingsScreen() {
                         LinkViewRadioButtonComponent(
                             selectedLinkLayout = Layout.valueOf(preferences.selectedLinkLayout),
                             linkLayout = it,
-                            changePreferenceValue = { preferenceKey: PreferenceKey<String>, newValue: String ->
+                            changePreferenceValue = {
+                                preferenceKey: PreferenceKey<String>,
+                                newValue: String ->
                                 settingsScreenViewModel.changeSettingPreferenceValue(
                                     preferenceKey = preferenceKey,
                                     newValue = newValue,
@@ -453,8 +457,7 @@ private fun LinkViewRadioButtonComponent(
                 when (linkLayout) {
                     Layout.REGULAR_LIST_VIEW -> localizedStrings.RegularListView
 
-                    Layout.TITLE_ONLY_LIST_VIEW ->
-                        localizedStrings.TitleOnlyListView
+                    Layout.TITLE_ONLY_LIST_VIEW -> localizedStrings.TitleOnlyListView
 
                     Layout.GRID_VIEW -> localizedStrings.GridView
 

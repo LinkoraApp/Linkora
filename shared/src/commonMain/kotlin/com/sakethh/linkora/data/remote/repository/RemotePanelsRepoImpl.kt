@@ -21,59 +21,67 @@ class RemotePanelsRepoImpl(
 ) : RemotePanelsRepo {
     override suspend fun addANewPanel(
         addANewPanelDTO: AddANewPanelDTO,
-    ): Flow<Result<NewItemResponseDTO>> = postFlow(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.ADD_A_NEW_PANEL.name,
-        outgoingBody = addANewPanelDTO,
-    )
+    ): Flow<Result<NewItemResponseDTO>> =
+        postFlow(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.ADD_A_NEW_PANEL.name,
+            outgoingBody = addANewPanelDTO,
+        )
 
     override suspend fun addANewFolderInAPanel(
         addANewPanelFolderDTO: AddANewPanelFolderDTO,
-    ): Flow<Result<NewItemResponseDTO>> = postFlow(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.ADD_A_NEW_FOLDER_IN_A_PANEL.name,
-        outgoingBody = addANewPanelFolderDTO,
-    )
+    ): Flow<Result<NewItemResponseDTO>> =
+        postFlow(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.ADD_A_NEW_FOLDER_IN_A_PANEL.name,
+            outgoingBody = addANewPanelFolderDTO,
+        )
 
-    override suspend fun deleteAPanel(idBasedDTO: IDBasedDTO): Flow<Result<TimeStampBasedResponse>> = postFlow(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.DELETE_A_PANEL.name,
-        outgoingBody = idBasedDTO,
-    )
+    override suspend fun deleteAPanel(
+        idBasedDTO: IDBasedDTO,
+    ): Flow<Result<TimeStampBasedResponse>> =
+        postFlow(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.DELETE_A_PANEL.name,
+            outgoingBody = idBasedDTO,
+        )
 
     override suspend fun updateAPanelName(
         updatePanelNameDTO: UpdatePanelNameDTO,
-    ): Flow<Result<TimeStampBasedResponse>> = postFlow(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.UPDATE_A_PANEL_NAME.name,
-        outgoingBody = updatePanelNameDTO,
-    )
+    ): Flow<Result<TimeStampBasedResponse>> =
+        postFlow(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.UPDATE_A_PANEL_NAME.name,
+            outgoingBody = updatePanelNameDTO,
+        )
 
     override suspend fun deleteAFolderFromAllPanels(
         idBasedDTO: IDBasedDTO,
-    ): Flow<Result<TimeStampBasedResponse>> = postFlow(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.DELETE_A_FOLDER_FROM_ALL_PANELS.name,
-        outgoingBody = idBasedDTO,
-    )
+    ): Flow<Result<TimeStampBasedResponse>> =
+        postFlow(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.DELETE_A_FOLDER_FROM_ALL_PANELS.name,
+            outgoingBody = idBasedDTO,
+        )
 
     override suspend fun deleteAFolderFromAPanel(
         deleteAFolderFromAPanelDTO: DeleteAFolderFromAPanelDTO,
-    ): Flow<Result<TimeStampBasedResponse>> = postFlow(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.DELETE_A_FOLDER_FROM_A_PANEL.name,
-        outgoingBody = deleteAFolderFromAPanelDTO,
-    )
+    ): Flow<Result<TimeStampBasedResponse>> =
+        postFlow(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.DELETE_A_FOLDER_FROM_A_PANEL.name,
+            outgoingBody = deleteAFolderFromAPanelDTO,
+        )
 }

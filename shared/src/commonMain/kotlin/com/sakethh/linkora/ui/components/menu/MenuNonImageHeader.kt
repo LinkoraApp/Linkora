@@ -31,13 +31,13 @@ fun MenuNonImageHeader(
 ) {
     Row(
         modifier =
-            Modifier
-                .pointerHoverIcon(icon = PointerIcon.Hand)
+            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                 .combinedClickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
                     onClick = onClick,
-                ).pressScaleEffect()
+                )
+                .pressScaleEffect()
                 .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {

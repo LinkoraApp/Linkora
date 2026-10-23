@@ -2,7 +2,6 @@ package com.sakethh.linkora.web_capture
 
 import com.sakethh.linkora.KaptureOptions
 import com.sakethh.linkora.WebCapture
-import io.github.sakethpathike.kapture.Options
 import io.ktor.http.ContentType
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.ApplicationEngine
@@ -10,14 +9,6 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runTest
 import java.io.File
 import java.net.ConnectException
 import java.net.ServerSocket
@@ -27,6 +18,14 @@ import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 
 class WebCaptureIntegrationTest {
 
@@ -44,27 +43,27 @@ class WebCaptureIntegrationTest {
             masterPort = ServerSocket(0).use { it.localPort }
             masterServer =
                 embeddedServer(CIO, port = masterPort) {
-                    routing {
-                        get("/") {
-                            val requestedDelay =
-                                call.request.queryParameters["delay"]?.toLongOrNull() ?: 0L
-                            val targetId = call.request.queryParameters["id"] ?: "Unknown"
+                        routing {
+                            get("/") {
+                                val requestedDelay =
+                                    call.request.queryParameters["delay"]?.toLongOrNull() ?: 0L
+                                val targetId = call.request.queryParameters["id"] ?: "Unknown"
 
-                            if (requestedDelay > 0) {
-                                delay(requestedDelay.milliseconds)
+                                if (requestedDelay > 0) {
+                                    delay(requestedDelay.milliseconds)
+                                }
+                                call.respondText(
+                                    "<html><body>Target $targetId</body></html>",
+                                    ContentType.Text.Html,
+                                )
                             }
-                            call.respondText(
-                                "<html><body>Target $targetId</body></html>",
-                                ContentType.Text.Html,
-                            )
-                        }
-                        get("/trap") {
-                            val trapHtml =
-                                "<html><body><img src=\"http://127.0.0.1:$masterPort/?delay=3000&id=trap_image\"></body></html>"
-                            call.respondText(trapHtml, ContentType.Text.Html)
+                            get("/trap") {
+                                val trapHtml =
+                                    "<html><body><img src=\"http://127.0.0.1:$masterPort/?delay=3000&id=trap_image\"></body></html>"
+                                call.respondText(trapHtml, ContentType.Text.Html)
+                            }
                         }
                     }
-                }
                     .start(wait = false)
                     .engine
         }

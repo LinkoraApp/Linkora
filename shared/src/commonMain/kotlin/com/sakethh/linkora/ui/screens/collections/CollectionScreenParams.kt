@@ -12,7 +12,8 @@ import kotlinx.coroutines.flow.StateFlow
 @Stable
 data class CollectionScreenParams(
     val collectionPagerState: PagerState,
-    val rootRegularFolders: StateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<Folder>>>>,
+    val rootRegularFolders:
+        StateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<Folder>>>>,
     val allTags: StateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<Tag>>>>,
     var currentCollectionSource: String,
     val performAction: (CollectionsScreenAction) -> Unit,

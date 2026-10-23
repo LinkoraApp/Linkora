@@ -12,9 +12,9 @@ import kotlinx.serialization.Serializable
 @Entity(
     tableName = "tags",
     indices =
-    [
-        Index(value = ["name"], name = "idx_tags_name"),
-    ],
+        [
+            Index(value = ["name"], name = "idx_tags_name"),
+        ],
 )
 data class Tag(
     @PrimaryKey(autoGenerate = true) val localId: Long = 0,
@@ -27,20 +27,20 @@ data class Tag(
     tableName = "link_tags",
     primaryKeys = ["linkId", "tagId"],
     foreignKeys =
-    [
-        ForeignKey(
-            entity = Link::class,
-            parentColumns = ["localId"],
-            childColumns = ["linkId"],
-            onDelete = ForeignKey.CASCADE,
-        ),
-        ForeignKey(
-            entity = Tag::class,
-            parentColumns = ["localId"],
-            childColumns = ["tagId"],
-            onDelete = ForeignKey.CASCADE,
-        ),
-    ],
+        [
+            ForeignKey(
+                entity = Link::class,
+                parentColumns = ["localId"],
+                childColumns = ["linkId"],
+                onDelete = ForeignKey.CASCADE,
+            ),
+            ForeignKey(
+                entity = Tag::class,
+                parentColumns = ["localId"],
+                childColumns = ["tagId"],
+                onDelete = ForeignKey.CASCADE,
+            ),
+        ],
 )
 @Serializable
 data class LinkTag(

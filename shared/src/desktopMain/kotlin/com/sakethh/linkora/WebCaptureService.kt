@@ -7,6 +7,7 @@ import com.sakethh.linkora.model.WebCaptureRequest
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.utils.getOrCreateFolderUuid
 import getFileNameWithTimestamp
+import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -22,7 +23,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
 
 object WebCaptureService {
     private val requestChannel = Channel<WebCaptureRequest>(Channel.UNLIMITED)
@@ -30,11 +30,14 @@ object WebCaptureService {
     private var processingJob: Job? = null
     private var serviceScope = CoroutineScope(Dispatchers.IO)
 
-    val isProcessing = activeCapturesCount.map { it > 0 }.stateIn(
-        scope = serviceScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = false,
-    )
+    val isProcessing =
+        activeCapturesCount
+            .map { it > 0 }
+            .stateIn(
+                scope = serviceScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = false,
+            )
 
     private val androidDesktopWebCapture = AndroidDesktopWebCapture()
     private val preferencesRepository = DependencyContainer.preferencesRepo
@@ -49,8 +52,11 @@ object WebCaptureService {
         if (processingJob?.isActive == true) return
 
         processingJob = serviceScope.launch {
-            requestChannel.receiveAsFlow()
-                .flatMapMerge(concurrency = preferencesRepository.getPreferences().webCaptureMaxConcurrency) { request ->
+            requestChannel
+                .receiveAsFlow()
+                .flatMapMerge(
+                    concurrency = preferencesRepository.getPreferences().webCaptureMaxConcurrency,
+                ) { request ->
                     flow {
                         activeCapturesCount.emit(activeCapturesCount.value + 1)
                         val prefs = preferencesRepository.getPreferences()
@@ -60,13 +66,14 @@ object WebCaptureService {
                             val targetFolder =
                                 baseCaptureDir.prepareWebCaptureDir(folderUuid, prefs)
 
-                            val captureFile = File(
-                                targetFolder,
-                                getFileNameWithTimestamp(
-                                    ExportFileType.HTML,
-                                    ExportLocationType.WEB_CAPTURE,
-                                ),
-                            )
+                            val captureFile =
+                                File(
+                                    targetFolder,
+                                    getFileNameWithTimestamp(
+                                        ExportFileType.HTML,
+                                        ExportLocationType.WEB_CAPTURE,
+                                    ),
+                                )
                             withContext(Dispatchers.IO) {
                                 captureFile.createNewFile()
                                 androidDesktopWebCapture.saveHTMLPage(
@@ -81,7 +88,9 @@ object WebCaptureService {
                             activeCapturesCount.emit(activeCapturesCount.value - 1)
                         }
                     }
-                }.flowOn(Dispatchers.IO).collect()
+                }
+                .flowOn(Dispatchers.IO)
+                .collect()
         }
     }
 

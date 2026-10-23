@@ -15,5 +15,6 @@ class PendingSyncQueueRepoImpl(
         pendingSyncQueueDao.deleteFromQueue(id)
     }
 
-    override suspend fun getAllItemsFromQueue(): List<PendingSyncQueue> = pendingSyncQueueDao.getAllItemsFromQueue()
+    override suspend fun getAllItemsFromQueue(): List<PendingSyncQueue> =
+        pendingSyncQueueDao.getAllItemsFromQueue()
 }

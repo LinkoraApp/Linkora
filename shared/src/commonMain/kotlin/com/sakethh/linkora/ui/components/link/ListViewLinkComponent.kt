@@ -92,11 +92,11 @@ fun ListViewLinkComponent(
     val onAndroidTV = platform is Platform.Android.TV
     Column(
         modifier =
-            Modifier
-                .focusGroup()
+            Modifier.focusGroup()
                 .onFocusChanged { focusState ->
                     hasFocus = focusState.hasFocus
-                }.pointerInput(Unit) {
+                }
+                .pointerInput(Unit) {
                     detectTapGestures(
                         onTap = {
                             linkComponentParam.onLinkClick()
@@ -108,7 +108,9 @@ fun ListViewLinkComponent(
                 }
                 .border(
                     width = if (hasFocus && onAndroidTV) 2.5.dp else 0.dp,
-                    color = if (hasFocus && onAndroidTV) MaterialTheme.colorScheme.primary else Color.Transparent,
+                    color =
+                        if (hasFocus && onAndroidTV) MaterialTheme.colorScheme.primary
+                        else Color.Transparent,
                 )
                 .background(
                     if (hasFocus && onAndroidTV) {
@@ -135,8 +137,7 @@ fun ListViewLinkComponent(
     ) {
         Column(
             modifier =
-                Modifier
-                    .fillMaxWidth()
+                Modifier.fillMaxWidth()
                     .combinedClickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
@@ -159,9 +160,11 @@ fun ListViewLinkComponent(
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 16.sp,
                     modifier =
-                        Modifier
-                            .fillMaxWidth(
-                                if (!linkComponentParam.isSelectionModeEnabled.value && titleOnlyView) {
+                        Modifier.fillMaxWidth(
+                                if (
+                                    !linkComponentParam.isSelectionModeEnabled.value &&
+                                        titleOnlyView
+                                ) {
                                     1f
                                 } else {
                                     0.65f
@@ -178,10 +181,7 @@ fun ListViewLinkComponent(
                     if (linkComponentParam.link.imgURL.isNotEmpty()) {
                         CoilImage(
                             modifier =
-                                Modifier
-                                    .width(95.dp)
-                                    .height(60.dp)
-                                    .clip(RoundedCornerShape(15.dp)),
+                                Modifier.width(95.dp).height(60.dp).clip(RoundedCornerShape(15.dp)),
                             imgURL = linkComponentParam.link.imgURL,
                             userAgent =
                                 linkComponentParam.link.userAgent
@@ -192,8 +192,7 @@ fun ListViewLinkComponent(
                     } else {
                         Box(
                             modifier =
-                                Modifier
-                                    .width(95.dp)
+                                Modifier.width(95.dp)
                                     .height(60.dp)
                                     .clip(RoundedCornerShape(15.dp))
                                     .background(MaterialTheme.colorScheme.primary),
@@ -210,8 +209,7 @@ fun ListViewLinkComponent(
                 } else if (linkComponentParam.isItemSelected.value) {
                     Box(
                         modifier =
-                            Modifier
-                                .width(95.dp)
+                            Modifier.width(95.dp)
                                 .height(60.dp)
                                 .clip(RoundedCornerShape(15.dp))
                                 .background(MaterialTheme.colorScheme.primary),
@@ -270,11 +268,12 @@ fun ListViewLinkComponent(
         if (preferences.showHostInLinkListView) {
             Text(
                 modifier =
-                    Modifier
-                        .padding(
+                    Modifier.padding(
                             top = if (linkComponentParam.tags != null) 5.dp else 15.dp,
                             end = 15.dp,
-                            bottom = if (linkComponentParam.isSelectionModeEnabled.value) 15.dp else 0.dp,
+                            bottom =
+                                if (linkComponentParam.isSelectionModeEnabled.value) 15.dp
+                                else 0.dp,
                         )
                         .background(
                             color = MaterialTheme.colorScheme.primary.copy(0.1f),
@@ -310,8 +309,7 @@ fun ListViewLinkComponent(
 
             FoldersRow(
                 modifier =
-                    Modifier
-                        .fillMaxWidth()
+                    Modifier.fillMaxWidth()
                         .padding(
                             bottom =
                                 if (linkComponentParam.isSelectionModeEnabled.value) {
@@ -414,9 +412,10 @@ fun TagsRow(
                 border =
                     AssistChipDefaults.assistChipBorder(
                         enabled = true,
-                        borderColor = MaterialTheme.colorScheme.secondaryContainer.copy(
-                            chipColorOpacity
-                        ),
+                        borderColor =
+                            MaterialTheme.colorScheme.secondaryContainer.copy(
+                                chipColorOpacity,
+                            ),
                     ),
                 onClick = {
                     onTagClick(tag)
@@ -444,9 +443,10 @@ fun TagsRow(
 @Composable
 fun FoldersRow(
     modifier: Modifier,
-    folders: List<
+    folders:
+        List<
             Folder,
-            >, // this can be changed to a persistent list since we guarantee that the path doesn't
+        >, // this can be changed to a persistent list since we guarantee that the path doesn't
     // change once the list is built.
     onFolderClick: (Folder) -> Unit,
     chipColorOpacity: Float = 0.5f,
@@ -465,9 +465,10 @@ fun FoldersRow(
                 border =
                     AssistChipDefaults.assistChipBorder(
                         enabled = true,
-                        borderColor = MaterialTheme.colorScheme.secondaryContainer.copy(
-                            chipColorOpacity
-                        ),
+                        borderColor =
+                            MaterialTheme.colorScheme.secondaryContainer.copy(
+                                chipColorOpacity,
+                            ),
                     ),
                 onClick = {
                     onFolderClick(folder)

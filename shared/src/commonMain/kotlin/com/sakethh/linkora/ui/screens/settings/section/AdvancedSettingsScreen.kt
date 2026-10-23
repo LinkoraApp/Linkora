@@ -26,7 +26,6 @@ import com.sakethh.linkora.domain.Platform
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.LocalizedStrings
-import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.settings.SettingsScreenViewModel
 import com.sakethh.linkora.ui.screens.settings.common.composables.PreferenceTextField
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
@@ -49,9 +48,9 @@ fun AdvancedSettingsScreen() {
             mutableStateOf(preferences.localizationServerURL)
         }
     var proxyServerUrl by
-    rememberSaveable(preferences.proxyUrl) {
-        mutableStateOf(preferences.proxyUrl)
-    }
+        rememberSaveable(preferences.proxyUrl) {
+            mutableStateOf(preferences.proxyUrl)
+        }
     var isReadOnlyTextFieldForProxyServer by rememberSaveable {
         mutableStateOf(true)
     }
@@ -62,9 +61,9 @@ fun AdvancedSettingsScreen() {
         mutableStateOf(true)
     }
     val useProxy by
-    rememberSaveable(preferences.useProxy) {
-        mutableStateOf(preferences.useProxy)
-    }
+        rememberSaveable(preferences.useProxy) {
+            mutableStateOf(preferences.useProxy)
+        }
     val proxyUrlFocusRequester = remember { FocusRequester() }
     val primaryJsoupUserAgentFocusRequester = remember { FocusRequester() }
     val localizationServerTextFieldFocusRequester = remember { FocusRequester() }
@@ -110,8 +109,7 @@ fun AdvancedSettingsScreen() {
             if (useProxy || platform == Platform.Web) {
                 item {
                     PreferenceTextField(
-                        textFieldDescText =
-                            localizedStrings.UseAProxyServerLongDesc,
+                        textFieldDescText = localizedStrings.UseAProxyServerLongDesc,
                         textFieldLabel = localizedStrings.Proxy,
                         textFieldValue = proxyServerUrl,
                         onResetButtonClick = {

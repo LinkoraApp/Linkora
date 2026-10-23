@@ -90,8 +90,8 @@ fun TagSelectionComponent(
 
     LaunchedEffect(Unit) {
         snapshotFlow {
-            lazyColumnState.firstVisibleItemIndex
-        }
+                lazyColumnState.firstVisibleItemIndex
+            }
             .debounce(500)
             .distinctUntilChanged()
             .collect {
@@ -175,9 +175,9 @@ fun TagSelectionComponent(
                     },
                 ) {
                     val isTagSelected by
-                    rememberSaveable(selectedTags.contains(it)) {
-                        mutableStateOf(selectedTags.contains(it))
-                    }
+                        rememberSaveable(selectedTags.contains(it)) {
+                            mutableStateOf(selectedTags.contains(it))
+                        }
                     AssistChip(
                         shape = RoundedCornerShape(15.dp),
                         colors =
@@ -212,7 +212,8 @@ fun TagSelectionComponent(
                                         MaterialTheme.colorScheme.secondary
                                     },
                                 style = MaterialTheme.typography.titleSmall,
-                                fontWeight = if (isTagSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                fontWeight =
+                                    if (isTagSelected) FontWeight.SemiBold else FontWeight.Normal,
                             )
                         },
                         leadingIcon = {

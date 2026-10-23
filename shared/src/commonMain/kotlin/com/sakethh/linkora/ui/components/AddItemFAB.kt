@@ -97,8 +97,7 @@ fun AddItemFab(addItemFABParam: AddItemFABParam) {
         Row(
             horizontalArrangement = Arrangement.Center,
             modifier =
-                Modifier
-                    .align(Alignment.End)
+                Modifier.align(Alignment.End)
                     .focusGroup()
                     .highlightOnFocused(shape = RoundedCornerShape(15.dp))
                     .padding(top = 7.5.dp, bottom = 7.5.dp, start = 7.5.dp, end = 7.5.dp),
@@ -124,9 +123,7 @@ fun AddItemFab(addItemFABParam: AddItemFABParam) {
             ) {
                 FloatingActionButton(
                     modifier =
-                        Modifier
-                            .pressScaleEffect()
-                            .pointerHoverIcon(icon = PointerIcon.Hand),
+                        Modifier.pressScaleEffect().pointerHoverIcon(icon = PointerIcon.Hand),
                     onClick = {
                         addItemFABParam.hideReducedTransparencyBox()
                         addItemFABParam.onCreateATagClick()
@@ -144,8 +141,7 @@ fun AddItemFab(addItemFABParam: AddItemFABParam) {
         Row(
             horizontalArrangement = Arrangement.Center,
             modifier =
-                Modifier
-                    .align(Alignment.End)
+                Modifier.align(Alignment.End)
                     .focusGroup()
                     .highlightOnFocused(shape = RoundedCornerShape(15.dp))
                     .padding(top = 7.5.dp, bottom = 7.5.dp, start = 7.5.dp, end = 7.5.dp),
@@ -172,9 +168,7 @@ fun AddItemFab(addItemFABParam: AddItemFABParam) {
             ) {
                 FloatingActionButton(
                     modifier =
-                        Modifier
-                            .pressScaleEffect()
-                            .pointerHoverIcon(icon = PointerIcon.Hand),
+                        Modifier.pressScaleEffect().pointerHoverIcon(icon = PointerIcon.Hand),
                     onClick = {
                         addItemFABParam.hideReducedTransparencyBox()
                         addItemFABParam.onShowDialogForNewFolder()
@@ -192,8 +186,7 @@ fun AddItemFab(addItemFABParam: AddItemFABParam) {
         Row(
             horizontalArrangement = Arrangement.Center,
             modifier =
-                Modifier
-                    .align(Alignment.End)
+                Modifier.align(Alignment.End)
                     .focusGroup()
                     .highlightOnFocused(shape = RoundedCornerShape(15.dp))
                     .padding(top = 7.5.dp, bottom = 7.5.dp, start = 7.5.dp, end = 7.5.dp),
@@ -215,8 +208,7 @@ fun AddItemFab(addItemFABParam: AddItemFABParam) {
 
             FloatingActionButton(
                 modifier =
-                    Modifier
-                        .graphicsLayer {
+                    Modifier.graphicsLayer {
                             rotationZ = addItemFABParam.rotationAnimatable.value
                         }
                         .pressScaleEffect()

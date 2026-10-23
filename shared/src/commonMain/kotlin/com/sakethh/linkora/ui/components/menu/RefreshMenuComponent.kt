@@ -18,10 +18,10 @@ import com.sakethh.linkora.ui.utils.pressScaleEffect
 fun RefreshMenuComponent(label: String, onClick: () -> Unit) {
     OutlinedButton(
         modifier =
-        Modifier.pressScaleEffect()
-            .pointerHoverIcon(icon = PointerIcon.Hand)
-            .padding(start = 15.dp, end = 15.dp)
-            .fillMaxWidth(),
+            Modifier.pressScaleEffect()
+                .pointerHoverIcon(icon = PointerIcon.Hand)
+                .padding(start = 15.dp, end = 15.dp)
+                .fillMaxWidth(),
         onClick = onClick,
     ) {
         Text(

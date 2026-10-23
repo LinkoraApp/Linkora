@@ -19,22 +19,15 @@ plugins {
 group = "com.sakethh.linkora.shared"
 
 kotlin {
-
     android {
         namespace = "com.sakethh.linkora.shared"
 
-        compileSdk =
-            libs.versions.android.compileSdk
-                .get()
-                .toInt()
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
 
         // https://youtrack.jetbrains.com/issue/CMP-9547
         androidResources.enable = true
 
-        minSdk =
-            libs.versions.android.minSdk
-                .get()
-                .toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
     }
 
     compilerOptions {
@@ -142,6 +135,7 @@ kotlin {
         }
     }
 }
+
 compose.resources {
     packageOfResClass = "com.sakethh.linkora.shared.generated.resources"
 }
@@ -179,18 +173,16 @@ data class LocalizationItem(
     val defaultValue: String,
 )
 
-val localizationJsonFile =
-    rootProject.layout.projectDirectory.file("locales/default.json")
+val localizationJsonFile = rootProject.layout.projectDirectory.file("locales/default.json")
 val localizationItems =
-    (JsonSlurper().parse(localizationJsonFile.asFile) as List<*>)
-        .map {
-            (it as Map<*, *>).run {
-                LocalizationItem(
-                    key = get("key").toString(),
-                    defaultValue = get("defaultValue").toString(),
-                )
-            }
+    (JsonSlurper().parse(localizationJsonFile.asFile) as List<*>).map {
+        (it as Map<*, *>).run {
+            LocalizationItem(
+                key = get("key").toString(),
+                defaultValue = get("defaultValue").toString(),
+            )
         }
+    }
 
 val localizationGeneration =
     tasks.register("localizationGeneration") {
@@ -222,7 +214,8 @@ val localizationGeneration =
                      companion object {
                          val Default = LocalizedStrings(mapOf())
                      }
-                """.trimIndent(),
+                """
+                    .trimIndent(),
             )
 
             localizationItems.forEach { (enumName, defaultValue) ->
@@ -255,7 +248,9 @@ val localizationVerification =
             val tempSet = mutableSetOf<String>()
             localizationItems.forEach { (enumKey, defaultValue) ->
                 if (!tempSet.add(enumKey)) {
-                    error("Duplicate localization key: \"$enumKey\". Localization keys must be unique.")
+                    error(
+                        "Duplicate localization key: \"$enumKey\". Localization keys must be unique.",
+                    )
                 }
                 if (enumKey != defaultValue && !tempSet.add(defaultValue)) {
                     error(

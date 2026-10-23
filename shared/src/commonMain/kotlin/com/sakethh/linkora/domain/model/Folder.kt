@@ -12,9 +12,9 @@ import kotlinx.serialization.Transient
 @Entity(
     tableName = "folders",
     indices =
-    [
-        Index(value = ["name"], name = "idx_folders_name"),
-    ],
+        [
+            Index(value = ["name"], name = "idx_folders_name"),
+        ],
 )
 @Serializable
 @Immutable
@@ -27,8 +27,7 @@ data class Folder(
     val isArchived: Boolean = false,
     val lastModified: Long = getSystemEpochSeconds(),
 ) {
-    @Ignore @Transient
-    var path: List<Folder>? = null
+    @Ignore @Transient var path: List<Folder>? = null
 
     class BlankFolderName : ThrowableFolder()
 

@@ -42,8 +42,8 @@ class WebCaptureNotificationService(
                 .setContentText(
                     localizedStrings.value.CapturedCount.replaceActual(
                         webCaptureState.currentIteration.toString(),
-                        webCaptureState.total.toString()
-                    )
+                        webCaptureState.total.toString(),
+                    ),
                 )
                 .setProgress(
                     webCaptureState.total,

@@ -45,7 +45,8 @@ class LocalDatabaseUtilsImpl(
         }
     }
 
-    override suspend fun getFoldersRowCount(): Long = localDatabase.localDatabaseUtilsDao.getFoldersRowCount()
+    override suspend fun getFoldersRowCount(): Long =
+        localDatabase.localDatabaseUtilsDao.getFoldersRowCount()
 
     override fun getChildFolderData(
         parentFolderId: Long,
@@ -60,8 +61,7 @@ class LocalDatabaseUtilsImpl(
 
         return when (sortOption) {
             Sorting.A_TO_Z,
-            Sorting.Z_TO_A,
-            ->
+            Sorting.Z_TO_A ->
                 localDatabase.localDatabaseUtilsDao.getChildDataSortedByName(
                     pageSize = pageSize,
                     isAscending = sortOption == Sorting.A_TO_Z,
@@ -137,30 +137,45 @@ class LocalDatabaseUtilsImpl(
                                                 mutableListOf<Folder>()
                                                     .apply {
                                                         if (
-                                                            searchResultItemType == Constants.LINK &&
-                                                            searchResultItem.linkType != LinkType.FOLDER_LINK
+                                                            searchResultItemType ==
+                                                                Constants.LINK &&
+                                                                searchResultItem.linkType !=
+                                                                    LinkType.FOLDER_LINK
                                                         ) {
                                                             return@apply
                                                         }
 
                                                         val parentFolderId =
-                                                            if (searchResultItemType == Constants.LINK) {
-                                                                searchResultItem.linkIdOfLinkedFolder
+                                                            if (
+                                                                searchResultItemType ==
+                                                                    Constants.LINK
+                                                            ) {
+                                                                searchResultItem
+                                                                    .linkIdOfLinkedFolder
                                                             } else {
                                                                 searchResultItem.folderParentId
                                                             }
-                                                        if (parentFolderId != null && parentFolderId > 0) {
+                                                        if (
+                                                            parentFolderId != null &&
+                                                                parentFolderId > 0
+                                                        ) {
                                                             var ancestorFolder =
-                                                                localDatabase.foldersDao.getThisFolderData(
-                                                                    parentFolderId,
-                                                                )
+                                                                localDatabase.foldersDao
+                                                                    .getThisFolderData(
+                                                                        parentFolderId,
+                                                                    )
                                                             add(ancestorFolder)
 
-                                                            while (ancestorFolder.parentFolderId != null) {
+                                                            while (
+                                                                ancestorFolder.parentFolderId !=
+                                                                    null
+                                                            ) {
                                                                 ancestorFolder =
-                                                                    localDatabase.foldersDao.getThisFolderData(
-                                                                        ancestorFolder.parentFolderId,
-                                                                    )
+                                                                    localDatabase.foldersDao
+                                                                        .getThisFolderData(
+                                                                            ancestorFolder
+                                                                                .parentFolderId,
+                                                                        )
                                                                 add(ancestorFolder)
                                                             }
                                                         }

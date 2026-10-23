@@ -45,7 +45,7 @@ object Constants {
      * due to the stupid decision i took earlier in the project.
      */
     const val LINK_TYPE_PARAM_TO_FOLDER_ID_CASE =
-    """
+        """
     idOfLinkedFolder = CASE
         WHEN :linkType = '${LinkType.SAVED_LINK}' THEN $SAVED_LINKS_ID
         WHEN :linkType = '${LinkType.IMPORTANT_LINK}' THEN $IMPORTANT_LINKS_ID
@@ -55,7 +55,7 @@ object Constants {
     """
 
     const val LINK_TYPE_COLUMN_TO_FOLDER_ID_CASE =
-    """
+        """
     idOfLinkedFolder = CASE
         WHEN linkType = '${LinkType.SAVED_LINK}' THEN $SAVED_LINKS_ID
         WHEN linkType = '${LinkType.IMPORTANT_LINK}' THEN $IMPORTANT_LINKS_ID

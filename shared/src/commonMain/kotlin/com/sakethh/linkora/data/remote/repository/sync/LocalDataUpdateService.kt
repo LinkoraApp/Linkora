@@ -69,20 +69,25 @@ class LocalDataUpdateService(
         }
     }
 
-    fun Correlation?.isSameAsCurrentClient(): Boolean = this?.id == preferencesRepository.getPreferences().correlation.id
+    fun Correlation?.isSameAsCurrentClient(): Boolean =
+        this?.id == preferencesRepository.getPreferences().correlation.id
 
     suspend fun updateLocalDBAccordingToEvent(deserializedWebSocketEvent: WebSocketEvent) {
-        val currentRoute = try {
-            SyncServerRoute.valueOf(deserializedWebSocketEvent.operation)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return
-        }
+        val currentRoute =
+            try {
+                SyncServerRoute.valueOf(deserializedWebSocketEvent.operation)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return
+            }
         when (currentRoute) {
             SyncServerRoute.UPDATE_FOLDER -> {
-                val folderDTO = json.decodeFromJsonElement<FolderDTO>(deserializedWebSocketEvent.payload)
+                val folderDTO =
+                    json.decodeFromJsonElement<FolderDTO>(deserializedWebSocketEvent.payload)
                 if (folderDTO.correlation.isSameAsCurrentClient()) {
-                    preferencesRepository.updateLastSyncedWithServerTimeStamp(folderDTO.eventTimestamp)
+                    preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                        folderDTO.eventTimestamp,
+                    )
                     return
                 }
                 val localFolderId = localFoldersRepo.getLocalIdOfAFolder(folderDTO.id)
@@ -91,22 +96,22 @@ class LocalDataUpdateService(
                         .updateFolder(
                             viaSocket = true,
                             folder =
-                            Folder(
-                                name = folderDTO.name,
-                                note = folderDTO.note,
-                                parentFolderId =
-                                if (folderDTO.parentFolderId == null) {
-                                    null
-                                } else {
-                                    localFoldersRepo.getLocalIdOfAFolder(
-                                        folderDTO.parentFolderId,
-                                    )
-                                },
-                                localId = localFolderId,
-                                remoteId = folderDTO.id,
-                                isArchived = folderDTO.isArchived,
-                                lastModified = folderDTO.eventTimestamp,
-                            ),
+                                Folder(
+                                    name = folderDTO.name,
+                                    note = folderDTO.note,
+                                    parentFolderId =
+                                        if (folderDTO.parentFolderId == null) {
+                                            null
+                                        } else {
+                                            localFoldersRepo.getLocalIdOfAFolder(
+                                                folderDTO.parentFolderId,
+                                            )
+                                        },
+                                    localId = localFolderId,
+                                    remoteId = folderDTO.id,
+                                    isArchived = folderDTO.isArchived,
+                                    lastModified = folderDTO.eventTimestamp,
+                                ),
                         )
                         .collectAndUpdateTimestamp(folderDTO.eventTimestamp)
                 }
@@ -122,19 +127,22 @@ class LocalDataUpdateService(
                     .createATag(
                         viaSocket = true,
                         tag =
-                        Tag(
-                            remoteId = tagDto.id,
-                            lastModified = tagDto.eventTimestamp,
-                            name = tagDto.name,
-                        ),
+                            Tag(
+                                remoteId = tagDto.id,
+                                lastModified = tagDto.eventTimestamp,
+                                name = tagDto.name,
+                            ),
                     )
                     .collectAndUpdateTimestamp(tagDto.eventTimestamp)
             }
 
             SyncServerRoute.DELETE_TAG -> {
-                val iDBasedDTO = Json.decodeFromJsonElement<IDBasedDTO>(deserializedWebSocketEvent.payload)
+                val iDBasedDTO =
+                    Json.decodeFromJsonElement<IDBasedDTO>(deserializedWebSocketEvent.payload)
                 if (iDBasedDTO.correlation.isSameAsCurrentClient()) {
-                    preferencesRepository.updateLastSyncedWithServerTimeStamp(iDBasedDTO.eventTimestamp)
+                    preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                        iDBasedDTO.eventTimestamp,
+                    )
                     return
                 }
                 localTagsRepo
@@ -149,7 +157,9 @@ class LocalDataUpdateService(
                 val renameTagDTO =
                     Json.decodeFromJsonElement<RenameTagDTO>(deserializedWebSocketEvent.payload)
                 if (renameTagDTO.correlation.isSameAsCurrentClient()) {
-                    preferencesRepository.updateLastSyncedWithServerTimeStamp(renameTagDTO.eventTimestamp)
+                    preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                        renameTagDTO.eventTimestamp,
+                    )
                     return
                 }
                 localTagsRepo
@@ -193,13 +203,13 @@ class LocalDataUpdateService(
                 localMultiActionRepo
                     .unArchiveMultipleItems(
                         linkIds =
-                        markItemsRegularDTO.linkIds.map {
-                            localLinksRepo.getLocalLinkId(it) ?: -45454
-                        },
+                            markItemsRegularDTO.linkIds.map {
+                                localLinksRepo.getLocalLinkId(it) ?: -45454
+                            },
                         folderIds =
-                        markItemsRegularDTO.foldersIds.map {
-                            localFoldersRepo.getLocalIdOfAFolder(it) ?: -45454
-                        },
+                            markItemsRegularDTO.foldersIds.map {
+                                localFoldersRepo.getLocalIdOfAFolder(it) ?: -45454
+                            },
                         viaSocket = true,
                     )
                     .collectAndUpdateTimestamp(markItemsRegularDTO.eventTimestamp)
@@ -239,13 +249,13 @@ class LocalDataUpdateService(
                 localMultiActionRepo
                     .deleteMultipleItems(
                         linkIds =
-                        deleteMultipleItemsDTO.linkIds.map {
-                            localLinksRepo.getLocalLinkId(it) ?: -45454
-                        },
+                            deleteMultipleItemsDTO.linkIds.map {
+                                localLinksRepo.getLocalLinkId(it) ?: -45454
+                            },
                         folderIds =
-                        deleteMultipleItemsDTO.folderIds.map {
-                            localFoldersRepo.getLocalIdOfAFolder(it) ?: -45454
-                        },
+                            deleteMultipleItemsDTO.folderIds.map {
+                                localFoldersRepo.getLocalIdOfAFolder(it) ?: -45454
+                            },
                         viaSocket = true,
                     )
                     .collectAndUpdateTimestamp(deleteMultipleItemsDTO.eventTimestamp)
@@ -266,16 +276,17 @@ class LocalDataUpdateService(
                     .moveMultipleItems(
                         viaSocket = true,
                         linkIds =
-                        moveItemsDTO.linkIds.map {
-                            localLinksRepo.getLocalLinkId(it) ?: -45454
-                        },
+                            moveItemsDTO.linkIds.map {
+                                localLinksRepo.getLocalLinkId(it) ?: -45454
+                            },
                         folderIds =
-                        moveItemsDTO.folderIds.map {
-                            localFoldersRepo.getLocalIdOfAFolder(it) ?: -45454
-                        },
+                            moveItemsDTO.folderIds.map {
+                                localFoldersRepo.getLocalIdOfAFolder(it) ?: -45454
+                            },
                         linkType = moveItemsDTO.linkType,
                         newParentFolderId =
-                        localFoldersRepo.getLocalIdOfAFolder(moveItemsDTO.newParentFolderId) ?: -45454,
+                            localFoldersRepo.getLocalIdOfAFolder(moveItemsDTO.newParentFolderId)
+                                ?: -45454,
                     )
                     .collectAndUpdateTimestamp(moveItemsDTO.eventTimestamp)
             }
@@ -296,13 +307,13 @@ class LocalDataUpdateService(
                 localMultiActionRepo
                     .archiveMultipleItems(
                         linkIds =
-                        archiveMoveItemsDTO.linkIds.map {
-                            localLinksRepo.getLocalLinkId(it) ?: -45454
-                        },
+                            archiveMoveItemsDTO.linkIds.map {
+                                localLinksRepo.getLocalLinkId(it) ?: -45454
+                            },
                         folderIds =
-                        archiveMoveItemsDTO.folderIds.map {
-                            localFoldersRepo.getLocalIdOfAFolder(it) ?: -45454
-                        },
+                            archiveMoveItemsDTO.folderIds.map {
+                                localFoldersRepo.getLocalIdOfAFolder(it) ?: -45454
+                            },
                         viaSocket = true,
                     )
                     .collectAndUpdateTimestamp(archiveMoveItemsDTO.eventTimestamp)
@@ -322,9 +333,9 @@ class LocalDataUpdateService(
                 localFoldersRepo
                     .markFoldersAsRoot(
                         folderIDs =
-                        markSelectedFoldersAsRootDTO.folderIds.map {
-                            localFoldersRepo.getLocalIdOfAFolder(it) ?: -45454
-                        },
+                            markSelectedFoldersAsRootDTO.folderIds.map {
+                                localFoldersRepo.getLocalIdOfAFolder(it) ?: -45454
+                            },
                         viaSocket = true,
                     )
                     .collectAndUpdateTimestamp(markSelectedFoldersAsRootDTO.eventTimestamp)
@@ -360,27 +371,29 @@ class LocalDataUpdateService(
                         deserializedWebSocketEvent.payload,
                     )
                 if (folderDto.correlation.isSameAsCurrentClient()) {
-                    preferencesRepository.updateLastSyncedWithServerTimeStamp(folderDto.eventTimestamp)
+                    preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                        folderDto.eventTimestamp,
+                    )
                     return
                 }
                 localFoldersRepo
                     .insertANewFolder(
                         folder =
-                        Folder(
-                            name = folderDto.name,
-                            note = folderDto.note,
-                            parentFolderId =
-                            if (folderDto.parentFolderId != null) {
-                                localFoldersRepo.getLocalIdOfAFolder(
-                                    folderDto.parentFolderId,
-                                )
-                            } else {
-                                null
-                            },
-                            remoteId = folderDto.id,
-                            isArchived = folderDto.isArchived,
-                            lastModified = folderDto.eventTimestamp,
-                        ),
+                            Folder(
+                                name = folderDto.name,
+                                note = folderDto.note,
+                                parentFolderId =
+                                    if (folderDto.parentFolderId != null) {
+                                        localFoldersRepo.getLocalIdOfAFolder(
+                                            folderDto.parentFolderId,
+                                        )
+                                    } else {
+                                        null
+                                    },
+                                remoteId = folderDto.id,
+                                isArchived = folderDto.isArchived,
+                                lastModified = folderDto.eventTimestamp,
+                            ),
                         viaSocket = true,
                     )
                     .collectAndUpdateTimestamp(folderDto.eventTimestamp)
@@ -392,7 +405,9 @@ class LocalDataUpdateService(
                         deserializedWebSocketEvent.payload,
                     )
                 if (idBasedDTO.correlation.isSameAsCurrentClient()) {
-                    preferencesRepository.updateLastSyncedWithServerTimeStamp(idBasedDTO.eventTimestamp)
+                    preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                        idBasedDTO.eventTimestamp,
+                    )
                     return
                 }
 
@@ -410,7 +425,9 @@ class LocalDataUpdateService(
                         deserializedWebSocketEvent.payload,
                     )
                 if (idBasedDTO.correlation.isSameAsCurrentClient()) {
-                    preferencesRepository.updateLastSyncedWithServerTimeStamp(idBasedDTO.eventTimestamp)
+                    preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                        idBasedDTO.eventTimestamp,
+                    )
                     return
                 }
 
@@ -431,7 +448,9 @@ class LocalDataUpdateService(
                         deserializedWebSocketEvent.payload,
                     )
                 if (idBasedDTO.correlation.isSameAsCurrentClient()) {
-                    preferencesRepository.updateLastSyncedWithServerTimeStamp(idBasedDTO.eventTimestamp)
+                    preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                        idBasedDTO.eventTimestamp,
+                    )
                     return
                 }
 
@@ -458,7 +477,8 @@ class LocalDataUpdateService(
                     return
                 }
 
-                val localFolderId = localFoldersRepo.getLocalIdOfAFolder(updateFolderNameDTO.folderId)
+                val localFolderId =
+                    localFoldersRepo.getLocalIdOfAFolder(updateFolderNameDTO.folderId)
                 if (localFolderId != null) {
                     localFoldersRepo.getThisFolderData(localFolderId).collectLatest {
                         it.onSuccess {
@@ -490,7 +510,8 @@ class LocalDataUpdateService(
                     return
                 }
 
-                val localFolderId = localFoldersRepo.getLocalIdOfAFolder(updateFolderNoteDTO.folderId)
+                val localFolderId =
+                    localFoldersRepo.getLocalIdOfAFolder(updateFolderNoteDTO.folderId)
                 if (localFolderId != null) {
                     localFoldersRepo.getThisFolderData(localFolderId).collectLatest {
                         it.onSuccess {
@@ -516,7 +537,9 @@ class LocalDataUpdateService(
                         deserializedWebSocketEvent.payload,
                     )
                 if (idBasedDTO.correlation.isSameAsCurrentClient()) {
-                    preferencesRepository.updateLastSyncedWithServerTimeStamp(idBasedDTO.eventTimestamp)
+                    preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                        idBasedDTO.eventTimestamp,
+                    )
                     return
                 }
 
@@ -530,7 +553,9 @@ class LocalDataUpdateService(
                                     viaSocket = true,
                                 )
                                 .collect()
-                            preferencesRepository.updateLastSyncedWithServerTimeStamp(idBasedDTO.eventTimestamp)
+                            preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                                idBasedDTO.eventTimestamp,
+                            )
                         }
                     }
                 }
@@ -595,7 +620,9 @@ class LocalDataUpdateService(
                     )
 
                 if (idBasedDTO.correlation.isSameAsCurrentClient()) {
-                    preferencesRepository.updateLastSyncedWithServerTimeStamp(idBasedDTO.eventTimestamp)
+                    preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                        idBasedDTO.eventTimestamp,
+                    )
                     return
                 }
 
@@ -614,7 +641,9 @@ class LocalDataUpdateService(
                     )
 
                 if (idBasedDTO.correlation.isSameAsCurrentClient()) {
-                    preferencesRepository.updateLastSyncedWithServerTimeStamp(idBasedDTO.eventTimestamp)
+                    preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                        idBasedDTO.eventTimestamp,
+                    )
                     return
                 }
 
@@ -633,7 +662,9 @@ class LocalDataUpdateService(
                     )
 
                 if (idBasedDTO.correlation.isSameAsCurrentClient()) {
-                    preferencesRepository.updateLastSyncedWithServerTimeStamp(idBasedDTO.eventTimestamp)
+                    preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                        idBasedDTO.eventTimestamp,
+                    )
                     return
                 }
 
@@ -657,7 +688,9 @@ class LocalDataUpdateService(
                     )
 
                 if (idBasedDTO.correlation.isSameAsCurrentClient()) {
-                    preferencesRepository.updateLastSyncedWithServerTimeStamp(idBasedDTO.eventTimestamp)
+                    preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                        idBasedDTO.eventTimestamp,
+                    )
                     return
                 }
 
@@ -682,7 +715,9 @@ class LocalDataUpdateService(
                     )
 
                 if (idBasedDTO.correlation.isSameAsCurrentClient()) {
-                    preferencesRepository.updateLastSyncedWithServerTimeStamp(idBasedDTO.eventTimestamp)
+                    preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                        idBasedDTO.eventTimestamp,
+                    )
                     return
                 }
 
@@ -704,7 +739,9 @@ class LocalDataUpdateService(
                     )
 
                 if (linkDTO.correlation.isSameAsCurrentClient()) {
-                    preferencesRepository.updateLastSyncedWithServerTimeStamp(linkDTO.eventTimestamp)
+                    preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                        linkDTO.eventTimestamp,
+                    )
                     return
                 }
 
@@ -720,27 +757,27 @@ class LocalDataUpdateService(
                                 imgURL = linkDTO.imgURL,
                                 note = linkDTO.note,
                                 idOfLinkedFolder =
-                                when (linkDTO.linkType) {
-                                    LinkType.SAVED_LINK -> Constants.SAVED_LINKS_ID
-                                    LinkType.HISTORY_LINK -> Constants.HISTORY_ID
-                                    LinkType.IMPORTANT_LINK -> Constants.IMPORTANT_LINKS_ID
-                                    LinkType.ARCHIVE_LINK -> Constants.ARCHIVE_ID
-                                    else -> linkDTO.idOfLinkedFolder
-                                },
+                                    when (linkDTO.linkType) {
+                                        LinkType.SAVED_LINK -> Constants.SAVED_LINKS_ID
+                                        LinkType.HISTORY_LINK -> Constants.HISTORY_ID
+                                        LinkType.IMPORTANT_LINK -> Constants.IMPORTANT_LINKS_ID
+                                        LinkType.ARCHIVE_LINK -> Constants.ARCHIVE_ID
+                                        else -> linkDTO.idOfLinkedFolder
+                                    },
                                 userAgent = linkDTO.userAgent,
                                 mediaType = linkDTO.mediaType,
                             ),
                             updatedLinkTagsPair =
-                            LinkTagsPair(
-                                link = link,
-                                tags =
-                                localTagsRepo.getLocalTags(
-                                    remoteIds =
-                                    linkDTO.linkTags.map {
-                                        it.tagId
-                                    },
+                                LinkTagsPair(
+                                    link = link,
+                                    tags =
+                                        localTagsRepo.getLocalTags(
+                                            remoteIds =
+                                                linkDTO.linkTags.map {
+                                                    it.tagId
+                                                },
+                                        ),
                                 ),
-                            ),
                             viaSocket = true,
                         )
                         .collectAndUpdateTimestamp(linkDTO.eventTimestamp)
@@ -754,35 +791,38 @@ class LocalDataUpdateService(
                     )
                 linkoraLog("Received ${linkDTO.linkTags}")
                 if (linkDTO.correlation.isSameAsCurrentClient()) {
-                    preferencesRepository.updateLastSyncedWithServerTimeStamp(linkDTO.eventTimestamp)
+                    preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                        linkDTO.eventTimestamp,
+                    )
                     return
                 }
 
                 localLinksRepo
                     .addANewLink(
                         link =
-                        Link(
-                            linkType = linkDTO.linkType,
-                            title = linkDTO.title,
-                            url = linkDTO.url,
-                            imgURL = linkDTO.imgURL,
-                            note = linkDTO.note,
-                            idOfLinkedFolder =
-                            if (linkDTO.idOfLinkedFolder != null) {
-                                localFoldersRepo.getLocalIdOfAFolder(
-                                    linkDTO.idOfLinkedFolder,
-                                )
-                            } else {
-                                null
-                            },
-                            remoteId = linkDTO.id,
-                            userAgent = linkDTO.userAgent,
-                            mediaType = linkDTO.mediaType,
-                            lastModified = linkDTO.eventTimestamp,
-                        ),
+                            Link(
+                                linkType = linkDTO.linkType,
+                                title = linkDTO.title,
+                                url = linkDTO.url,
+                                imgURL = linkDTO.imgURL,
+                                note = linkDTO.note,
+                                idOfLinkedFolder =
+                                    if (linkDTO.idOfLinkedFolder != null) {
+                                        localFoldersRepo.getLocalIdOfAFolder(
+                                            linkDTO.idOfLinkedFolder,
+                                        )
+                                    } else {
+                                        null
+                                    },
+                                remoteId = linkDTO.id,
+                                userAgent = linkDTO.userAgent,
+                                mediaType = linkDTO.mediaType,
+                                lastModified = linkDTO.eventTimestamp,
+                            ),
                         linkSaveConfig = LinkSaveConfig.forceSaveWithoutRetrieving(),
                         viaSocket = true,
-                        selectedTagIds = localTagsRepo.getLocalTagIds(linkDTO.linkTags.map { it.tagId }),
+                        selectedTagIds =
+                            localTagsRepo.getLocalTagIds(linkDTO.linkTags.map { it.tagId }),
                     )
                     .collectAndUpdateTimestamp(linkDTO.eventTimestamp)
             }
@@ -790,10 +830,13 @@ class LocalDataUpdateService(
             // panels:
 
             SyncServerRoute.ADD_A_NEW_PANEL -> {
-                val panelDTO = json.decodeFromJsonElement<PanelDTO>(deserializedWebSocketEvent.payload)
+                val panelDTO =
+                    json.decodeFromJsonElement<PanelDTO>(deserializedWebSocketEvent.payload)
 
                 if (panelDTO.correlation.isSameAsCurrentClient()) {
-                    preferencesRepository.updateLastSyncedWithServerTimeStamp(panelDTO.eventTimestamp)
+                    preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                        panelDTO.eventTimestamp,
+                    )
                     return
                 }
 
@@ -816,7 +859,9 @@ class LocalDataUpdateService(
                     )
 
                 if (panelFolderDTO.correlation.isSameAsCurrentClient()) {
-                    preferencesRepository.updateLastSyncedWithServerTimeStamp(panelFolderDTO.eventTimestamp)
+                    preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                        panelFolderDTO.eventTimestamp,
+                    )
                     return
                 }
 
@@ -846,7 +891,9 @@ class LocalDataUpdateService(
                     )
 
                 if (idBasedDTO.correlation.isSameAsCurrentClient()) {
-                    preferencesRepository.updateLastSyncedWithServerTimeStamp(idBasedDTO.eventTimestamp)
+                    preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                        idBasedDTO.eventTimestamp,
+                    )
                     return
                 }
 
@@ -892,14 +939,18 @@ class LocalDataUpdateService(
                     )
 
                 if (idBasedDTO.correlation.isSameAsCurrentClient()) {
-                    preferencesRepository.updateLastSyncedWithServerTimeStamp(idBasedDTO.eventTimestamp)
+                    preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                        idBasedDTO.eventTimestamp,
+                    )
                     return
                 }
 
                 val localFolderId = localFoldersRepo.getLocalIdOfAFolder(idBasedDTO.id)
                 if (localFolderId != null) {
                     localPanelsRepo.deleteAFolderFromAllPanels(localFolderId)
-                    preferencesRepository.updateLastSyncedWithServerTimeStamp(idBasedDTO.eventTimestamp)
+                    preferencesRepository.updateLastSyncedWithServerTimeStamp(
+                        idBasedDTO.eventTimestamp,
+                    )
                 }
             }
 
@@ -918,7 +969,8 @@ class LocalDataUpdateService(
 
                 val localFolderId =
                     localFoldersRepo.getLocalIdOfAFolder(deleteAFolderFromAPanelDTO.folderID)
-                val localPanelId = localPanelsRepo.getLocalPanelId(deleteAFolderFromAPanelDTO.panelId)
+                val localPanelId =
+                    localPanelsRepo.getLocalPanelId(deleteAFolderFromAPanelDTO.panelId)
                 if (localFolderId != null && localPanelId != null) {
                     localPanelsRepo
                         .deleteAFolderFromAPanel(

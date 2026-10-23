@@ -7,8 +7,7 @@ import com.sakethh.linkora.domain.model.CaptureTrack
 
 @Dao
 interface CaptureTrackDao {
-    @Insert
-    suspend fun insertAProcessedId(captureTrack: CaptureTrack)
+    @Insert suspend fun insertAProcessedId(captureTrack: CaptureTrack)
 
     @Query("SELECT capturedLinkId FROM CaptureTrack WHERE captureWorkerId IS NULL")
     suspend fun getAllLinksCaptureProcessedLinkIds(): List<String>

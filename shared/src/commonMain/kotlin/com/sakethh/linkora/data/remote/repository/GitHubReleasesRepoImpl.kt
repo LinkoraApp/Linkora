@@ -12,20 +12,21 @@ import kotlinx.coroutines.flow.Flow
 class GitHubReleasesRepoImpl(
     private val standardClient: HttpClient,
 ) : GitHubReleasesRepo {
-    override suspend fun getLatestVersionData(): Flow<Result<GitHubReleaseDTOItem>> = wrappedResultFlow {
-        standardClient
-            .get("https://api.github.com/repos/sakethpathike/Linkora/releases")
-            .body<List<GitHubReleaseDTOItem>>()
-            .first()
-            .run {
-                copy(
-                    releaseName =
-                        if (!releaseName.startsWith("v")) {
-                            "v$releaseName"
-                    } else {
-                        releaseName
-                    },
-                )
-            }
-    }
+    override suspend fun getLatestVersionData(): Flow<Result<GitHubReleaseDTOItem>> =
+        wrappedResultFlow {
+            standardClient
+                .get("https://api.github.com/repos/sakethpathike/Linkora/releases")
+                .body<List<GitHubReleaseDTOItem>>()
+                .first()
+                .run {
+                    copy(
+                        releaseName =
+                            if (!releaseName.startsWith("v")) {
+                                "v$releaseName"
+                            } else {
+                                releaseName
+                            },
+                    )
+                }
+        }
 }

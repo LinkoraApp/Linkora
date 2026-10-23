@@ -9,20 +9,21 @@ import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
 import androidx.window.layout.WindowMetricsCalculator
 import com.sakethh.linkora.domain.Platform
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.net.URI
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 fun String.isAllowedByWebCapturePolicies(
     whitelist: List<String>,
     blacklist: List<String>,
 ): Boolean {
-    val host = try {
-        URI(this).host ?: ""
-    } catch (_: Exception) {
-        ""
-    }
+    val host =
+        try {
+            URI(this).host ?: ""
+        } catch (_: Exception) {
+            ""
+        }
 
     if (whitelist.isNotEmpty() && whitelist.none { host.endsWith(it) }) {
         return false
@@ -50,19 +51,18 @@ suspend fun DocumentFile.prepareWebCaptureFolder(
             }
             return@withContext this@prepareWebCaptureFolder.createDirectory(folderUuid)
         } else {
-            val targetFolder = if (existingFolder == null || !existingFolder.exists()) {
-                this@prepareWebCaptureFolder.createDirectory(folderUuid)
-            } else {
-                existingFolder
-            }
+            val targetFolder =
+                if (existingFolder == null || !existingFolder.exists()) {
+                    this@prepareWebCaptureFolder.createDirectory(folderUuid)
+                } else {
+                    existingFolder
+                }
 
             if (!retainAllVersions && targetFolder != null) {
-                val existingFiles = targetFolder.listFiles()
-                    .filter { it.isFile }
-                    .sortedBy { it.lastModified() }
+                val existingFiles =
+                    targetFolder.listFiles().filter { it.isFile }.sortedBy { it.lastModified() }
                 if (existingFiles.size >= maxVersions) {
-                    existingFiles.take(existingFiles.size - maxVersions + 1)
-                        .forEach { it.delete() }
+                    existingFiles.take(existingFiles.size - maxVersions + 1).forEach { it.delete() }
                 }
             }
             return@withContext targetFolder
@@ -88,13 +88,14 @@ suspend fun File.prepareWebCaptureFolder(
                 linkWebCaptureFolder.mkdirs()
             }
             if (!retainAllVersions) {
-                val existingFiles = linkWebCaptureFolder.listFiles()
-                    ?.filter { it.isFile }
-                    ?.sortedBy { it.lastModified() }
-                    .orEmpty()
+                val existingFiles =
+                    linkWebCaptureFolder
+                        .listFiles()
+                        ?.filter { it.isFile }
+                        ?.sortedBy { it.lastModified() }
+                        .orEmpty()
                 if (existingFiles.size >= maxVersions) {
-                    existingFiles.take(existingFiles.size - maxVersions + 1)
-                        .forEach { it.delete() }
+                    existingFiles.take(existingFiles.size - maxVersions + 1).forEach { it.delete() }
                 }
             }
         }
@@ -103,7 +104,9 @@ suspend fun File.prepareWebCaptureFolder(
 }
 
 context(context: Context)
-fun onTV(): Boolean = (context.getSystemService(UI_MODE_SERVICE) as UiModeManager).currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
+fun onTV(): Boolean =
+    (context.getSystemService(UI_MODE_SERVICE) as UiModeManager).currentModeType ==
+        Configuration.UI_MODE_TYPE_TELEVISION
 
 context(context: Context)
 private fun onMobile(): Boolean {
@@ -115,10 +118,11 @@ private fun onMobile(): Boolean {
 }
 
 context(context: Context)
-fun currentAndroidPlatform(): Platform = if (onTV()) {
-    Platform.Android.TV
-} else if (onMobile()) {
-    Platform.Android.Mobile
-} else {
-    Platform.Android.Tablet
-}
+fun currentAndroidPlatform(): Platform =
+    if (onTV()) {
+        Platform.Android.TV
+    } else if (onMobile()) {
+        Platform.Android.Mobile
+    } else {
+        Platform.Android.Tablet
+    }

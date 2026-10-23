@@ -71,17 +71,16 @@ fun SettingComponent(settingComponentParam: SettingComponentParam) {
                         IconButtonDefaults.iconButtonColors()
                     },
                 onClick = {
-                    settingComponentParam.onSwitchStateChange(!settingComponentParam.isSwitchEnabled)
+                    settingComponentParam.onSwitchStateChange(
+                        !settingComponentParam.isSwitchEnabled,
+                    )
                 },
             ) {
                 Icon(
                     imageVector = settingComponentParam.icon,
                     contentDescription = null,
                     modifier =
-                        if (
-                            settingComponentParam.title ==
-                            localizedStrings.TopDecoratorSetting
-                        ) {
+                        if (settingComponentParam.title == localizedStrings.TopDecoratorSetting) {
                             Modifier.rotate(180f)
                         } else {
                             Modifier
@@ -100,15 +99,15 @@ fun SettingComponent(settingComponentParam: SettingComponentParam) {
                 fontSize = 16.sp,
                 modifier =
                     Modifier.fillMaxWidth(
-                        if (
-                            settingComponentParam.shouldArrowIconBeAppear ||
-                            settingComponentParam.isSwitchNeeded
-                        ) {
-                            0.75f
-                        } else {
-                            1f
-                        },
-                    )
+                            if (
+                                settingComponentParam.shouldArrowIconBeAppear ||
+                                    settingComponentParam.isSwitchNeeded
+                            ) {
+                                0.75f
+                            } else {
+                                1f
+                            },
+                        )
                         .padding(
                             start = if (settingComponentParam.isIconNeeded) 0.dp else 15.dp,
                             end = if (!settingComponentParam.isSwitchNeeded) 25.dp else 0.dp,
@@ -127,15 +126,15 @@ fun SettingComponent(settingComponentParam: SettingComponentParam) {
                     textAlign = TextAlign.Start,
                     modifier =
                         Modifier.fillMaxWidth(
-                            if (
-                                settingComponentParam.shouldArrowIconBeAppear ||
-                                settingComponentParam.isSwitchNeeded
-                            ) {
-                                0.75f
-                            } else {
-                                1f
-                            },
-                        )
+                                if (
+                                    settingComponentParam.shouldArrowIconBeAppear ||
+                                        settingComponentParam.isSwitchNeeded
+                                ) {
+                                    0.75f
+                                } else {
+                                    1f
+                                },
+                            )
                             .padding(
                                 start = if (settingComponentParam.isIconNeeded) 0.dp else 15.dp,
                                 top = 10.dp,

@@ -40,13 +40,13 @@ fun LoadingDialog(shouldDialogBoxAppear: Boolean, text: String) {
         BasicAlertDialog(
             onDismissRequest = {},
             modifier =
-            Modifier.clip(RoundedCornerShape(20.dp))
-                .background(AlertDialogDefaults.containerColor)
-                .border(
-                    1.dp,
-                    AlertDialogDefaults.iconContentColor.copy(0.5f),
-                    RoundedCornerShape(20.dp),
-                ),
+                Modifier.clip(RoundedCornerShape(20.dp))
+                    .background(AlertDialogDefaults.containerColor)
+                    .border(
+                        1.dp,
+                        AlertDialogDefaults.iconContentColor.copy(0.5f),
+                        RoundedCornerShape(20.dp),
+                    ),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,

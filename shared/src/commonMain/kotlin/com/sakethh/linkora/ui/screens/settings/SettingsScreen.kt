@@ -110,11 +110,11 @@ fun SettingsScreen() {
                 Column(
                     modifier =
                         Modifier.padding(
-                            start = 15.dp,
-                            end = 15.dp,
-                            top = 7.5.dp,
-                            bottom = 7.5.dp,
-                        )
+                                start = 15.dp,
+                                end = 15.dp,
+                                top = 7.5.dp,
+                                bottom = 7.5.dp,
+                            )
                             .clip(RoundedCornerShape(15.dp))
                             .fillMaxWidth()
                             .background(MaterialTheme.colorScheme.primaryContainer)
@@ -126,12 +126,16 @@ fun SettingsScreen() {
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         FilledIconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                .pressScaleEffect()
-                                .highlightOnFocused(shape = IconButtonDefaults.filledShape),
+                            modifier =
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .pressScaleEffect()
+                                    .highlightOnFocused(shape = IconButtonDefaults.filledShape),
                             onClick = {
                                 coroutineScope.launch {
-                                    uriHandler.openUriOrNotify("https://www.github.com/LinkoraApp", localizedStrings)
+                                    uriHandler.openUriOrNotify(
+                                        "https://www.github.com/LinkoraApp",
+                                        localizedStrings,
+                                    )
                                 }
                             },
                         ) {
@@ -142,12 +146,16 @@ fun SettingsScreen() {
                             )
                         }
                         FilledIconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                .pressScaleEffect()
-                                .highlightOnFocused(shape = IconButtonDefaults.filledShape),
+                            modifier =
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .pressScaleEffect()
+                                    .highlightOnFocused(shape = IconButtonDefaults.filledShape),
                             onClick = {
                                 coroutineScope.launch {
-                                    uriHandler.openUriOrNotify("https://discord.gg/ZDBXNtv8MD", localizedStrings)
+                                    uriHandler.openUriOrNotify(
+                                        "https://discord.gg/ZDBXNtv8MD",
+                                        localizedStrings,
+                                    )
                                 }
                             },
                         ) {
@@ -158,12 +166,16 @@ fun SettingsScreen() {
                             )
                         }
                         FilledIconButton(
-                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                .pressScaleEffect()
-                                .highlightOnFocused(shape = IconButtonDefaults.filledShape),
+                            modifier =
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                    .pressScaleEffect()
+                                    .highlightOnFocused(shape = IconButtonDefaults.filledShape),
                             onClick = {
                                 coroutineScope.launch {
-                                    uriHandler.openUriOrNotify("https://www.twitter.com/LinkoraApp", localizedStrings)
+                                    uriHandler.openUriOrNotify(
+                                        "https://www.twitter.com/LinkoraApp",
+                                        localizedStrings,
+                                    )
                                 }
                             },
                         ) {
@@ -189,7 +201,10 @@ fun SettingsScreen() {
                     Button(
                         onClick = {
                             coroutineScope.launch {
-                                uriHandler.openUriOrNotify("https://github.com/LinkoraApp/localization-server", localizedStrings)
+                                uriHandler.openUriOrNotify(
+                                    "https://github.com/LinkoraApp/localization-server",
+                                    localizedStrings,
+                                )
                             }
                         },
                         modifier =
@@ -209,7 +224,10 @@ fun SettingsScreen() {
                     Button(
                         onClick = {
                             coroutineScope.launch {
-                                uriHandler.openUriOrNotify("https://ko-fi.com/sakethpathike", localizedStrings)
+                                uriHandler.openUriOrNotify(
+                                    "https://ko-fi.com/sakethpathike",
+                                    localizedStrings,
+                                )
                             }
                         },
                         modifier =
@@ -231,7 +249,7 @@ fun SettingsScreen() {
                             coroutineScope.launch {
                                 uriHandler.openUriOrNotify(
                                     "https://play.google.com/store/apps/details?id=com.sakethh.linkora",
-                                    localizedStrings
+                                    localizedStrings,
                                 )
                             }
                         },
@@ -292,68 +310,69 @@ fun AppVersionLabel(modifier: Modifier = Modifier.padding(top = 7.5.dp, start = 
 private fun settingsScreenOptions(
     localizedStrings: LocalizedStrings,
     navController: NavController,
-): List<SettingSectionComponentParam> = listOf(
-    SettingSectionComponentParam(
-        onClick = {
-            navController.navigate(Navigation.Settings.ThemeSettingsScreen)
-        },
-        sectionTitle = localizedStrings.Theme,
-        sectionIcon = Icons.Default.ColorLens,
-    ),
-    SettingSectionComponentParam(
-        onClick = {
-            navController.navigate(Navigation.Settings.GeneralSettingsScreen)
-        },
-        sectionTitle = localizedStrings.General,
-        sectionIcon = Icons.Default.SettingsInputSvideo,
-    ),
-    SettingSectionComponentParam(
-        onClick = {
-            navController.navigate(Navigation.Settings.AdvancedSettingsScreen)
-        },
-        sectionTitle = localizedStrings.Advanced,
-        sectionIcon = Icons.Default.Build,
-    ),
-    SettingSectionComponentParam(
-        onClick = {
-            navController.navigate(Navigation.Settings.LayoutSettingsScreen)
-        },
-        sectionTitle = localizedStrings.Layout,
-        sectionIcon = Icons.Default.Dashboard,
-    ),
-    SettingSectionComponentParam(
-        onClick = {
-            navController.navigate(Navigation.Settings.LanguageSettingsScreen)
-        },
-        sectionTitle = localizedStrings.Language,
-        sectionIcon = Icons.Default.Language,
-    ),
-    SettingSectionComponentParam(
-        onClick = {
-            navController.navigate(Navigation.Settings.DataSettingsScreen)
-        },
-        sectionTitle = localizedStrings.Data,
-        sectionIcon = Icons.Default.Storage,
-    ),
-    /*SettingSectionComponentParam(
-        onClick = {
+): List<SettingSectionComponentParam> =
+    listOf(
+        SettingSectionComponentParam(
+            onClick = {
+                navController.navigate(Navigation.Settings.ThemeSettingsScreen)
+            },
+            sectionTitle = localizedStrings.Theme,
+            sectionIcon = Icons.Default.ColorLens,
+        ),
+        SettingSectionComponentParam(
+            onClick = {
+                navController.navigate(Navigation.Settings.GeneralSettingsScreen)
+            },
+            sectionTitle = localizedStrings.General,
+            sectionIcon = Icons.Default.SettingsInputSvideo,
+        ),
+        SettingSectionComponentParam(
+            onClick = {
+                navController.navigate(Navigation.Settings.AdvancedSettingsScreen)
+            },
+            sectionTitle = localizedStrings.Advanced,
+            sectionIcon = Icons.Default.Build,
+        ),
+        SettingSectionComponentParam(
+            onClick = {
+                navController.navigate(Navigation.Settings.LayoutSettingsScreen)
+            },
+            sectionTitle = localizedStrings.Layout,
+            sectionIcon = Icons.Default.Dashboard,
+        ),
+        SettingSectionComponentParam(
+            onClick = {
+                navController.navigate(Navigation.Settings.LanguageSettingsScreen)
+            },
+            sectionTitle = localizedStrings.Language,
+            sectionIcon = Icons.Default.Language,
+        ),
+        SettingSectionComponentParam(
+            onClick = {
+                navController.navigate(Navigation.Settings.DataSettingsScreen)
+            },
+            sectionTitle = localizedStrings.Data,
+            sectionIcon = Icons.Default.Storage,
+        ),
+        /*SettingSectionComponentParam(
+            onClick = {
 
-        },
-        sectionTitle = localizedStrings.Privacy,
-        sectionIcon = Icons.Default.PrivacyTip
-    ),*/
-    SettingSectionComponentParam(
-        onClick = {
-            navController.navigate(Navigation.Settings.AboutScreen)
-        },
-        sectionTitle = localizedStrings.About,
-        sectionIcon = Icons.Default.Info,
-    ),
-    SettingSectionComponentParam(
-        onClick = {
-            navController.navigate(Navigation.Settings.AcknowledgementScreen)
-        },
-        sectionTitle = localizedStrings.Acknowledgments,
-        sectionIcon = Icons.Default.Group,
-    ),
-)
+            },
+            sectionTitle = localizedStrings.Privacy,
+            sectionIcon = Icons.Default.PrivacyTip
+        ),*/
+        SettingSectionComponentParam(
+            onClick = {
+                navController.navigate(Navigation.Settings.AboutScreen)
+            },
+            sectionTitle = localizedStrings.About,
+            sectionIcon = Icons.Default.Info,
+        ),
+        SettingSectionComponentParam(
+            onClick = {
+                navController.navigate(Navigation.Settings.AcknowledgementScreen)
+            },
+            sectionTitle = localizedStrings.Acknowledgments,
+            sectionIcon = Icons.Default.Group,
+        ),
+    )

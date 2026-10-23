@@ -9,8 +9,7 @@ import com.sakethh.linkora.domain.model.RefreshLink
 interface RefreshLinkDao {
     @Insert suspend fun insertAProcessedId(refreshLink: RefreshLink)
 
-    @Query("SELECT refreshedLinkId FROM RefreshLink")
-    suspend fun getProcessedLinkIds(): List<Long>
+    @Query("SELECT refreshedLinkId FROM RefreshLink") suspend fun getProcessedLinkIds(): List<Long>
 
     @Query("DELETE FROM RefreshLink") // TRUNCATE TABLE is not a thing here with room/sqlite
     suspend fun deleteAllIds()

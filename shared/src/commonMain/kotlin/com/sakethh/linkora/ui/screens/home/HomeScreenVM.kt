@@ -25,6 +25,8 @@ import com.sakethh.linkora.ui.Paginator
 import com.sakethh.linkora.ui.domain.PaginationState
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.asStateInWhileSubscribed
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,8 +44,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 class HomeScreenVM(
@@ -58,7 +58,8 @@ class HomeScreenVM(
     var currentPhaseOfTheDay by mutableStateOf("")
 
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
-    val localizedStrings get() = localizationRepo.localizedStrings.value
+    val localizedStrings
+        get() = localizationRepo.localizedStrings.value
 
     // TODO: migrate to the pagination
     private val _existingPanels = MutableStateFlow(emptyList<Panel>())
@@ -70,11 +71,11 @@ class HomeScreenVM(
 
     private val _panelFoldersDataFlat =
         MutableStateFlow<
-                Map<
-                        Long,
-                        PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<FlatChildFolderData>>>,
-                        >,
-                >(
+            Map<
+                Long,
+                PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<FlatChildFolderData>>>,
+            >,
+        >(
             value = emptyMap(),
         )
 
@@ -111,10 +112,11 @@ class HomeScreenVM(
             ),
         )
 
-    private fun defaultPanel(): Panel = Panel(
-        panelName = localizedStrings.Default,
-        localId = Constants.DEFAULT_PANELS_ID,
-    )
+    private fun defaultPanel(): Panel =
+        Panel(
+            panelName = localizedStrings.Default,
+            localId = Constants.DEFAULT_PANELS_ID,
+        )
 
     private val appPreferencesCombined = preferencesAsFlow.map {
         Pair(it.forceShuffleLinks, it.selectedSortingType)
@@ -197,11 +199,11 @@ class HomeScreenVM(
                 var lastShuffleLinks: Boolean? = null
 
                 combine(
-                    appPreferencesCombined,
-                    _activePanelAssociatedPanelFolders,
-                ) { (shuffleLinks, sortingType), activePanelFolders ->
-                    Triple(shuffleLinks, sortingType, activePanelFolders)
-                }
+                        appPreferencesCombined,
+                        _activePanelAssociatedPanelFolders,
+                    ) { (shuffleLinks, sortingType), activePanelFolders ->
+                        Triple(shuffleLinks, sortingType, activePanelFolders)
+                    }
                     .distinctUntilChanged()
                     .collectLatest { (shuffleLinks, sortingType, activePanelFolders) ->
                         val isSortChanged = lastSortingType != sortingType
@@ -238,136 +240,143 @@ class HomeScreenVM(
 
                             panelFolderPaginators[folderKey] =
                                 Paginator(
-                                    coroutineScope = viewModelScope,
-                                    onRetrieve = { _, lastSeenString ->
-                                        val parts = lastSeenString?.split("|")
-                                        val lastTypeOrder = parts?.getOrNull(0)?.toIntOrNull() ?: -1
-                                        val lastSortStr = parts?.getOrNull(1) ?: ""
-                                        val lastId =
-                                            parts?.getOrNull(2)?.toLongOrNull()
-                                                ?: Constants.EMPTY_LAST_SEEN_ID
+                                        coroutineScope = viewModelScope,
+                                        onRetrieve = { _, lastSeenString ->
+                                            val parts = lastSeenString?.split("|")
+                                            val lastTypeOrder =
+                                                parts?.getOrNull(0)?.toIntOrNull() ?: -1
+                                            val lastSortStr = parts?.getOrNull(1) ?: ""
+                                            val lastId =
+                                                parts?.getOrNull(2)?.toLongOrNull()
+                                                    ?: Constants.EMPTY_LAST_SEEN_ID
 
-                                        val (targetLinkType, targetParentId) =
-                                            when (panelFolder.folderId) {
-                                                Constants.SAVED_LINKS_ID ->
-                                                    LinkType.SAVED_LINK to Constants.SAVED_LINKS_ID
+                                            val (targetLinkType, targetParentId) =
+                                                when (panelFolder.folderId) {
+                                                    Constants.SAVED_LINKS_ID ->
+                                                        LinkType.SAVED_LINK to
+                                                            Constants.SAVED_LINKS_ID
 
-                                                Constants.IMPORTANT_LINKS_ID ->
-                                                    LinkType.IMPORTANT_LINK to Constants.IMPORTANT_LINKS_ID
+                                                    Constants.IMPORTANT_LINKS_ID ->
+                                                        LinkType.IMPORTANT_LINK to
+                                                            Constants.IMPORTANT_LINKS_ID
 
-                                                else -> LinkType.FOLDER_LINK to panelFolder.folderId
+                                                    else ->
+                                                        LinkType.FOLDER_LINK to panelFolder.folderId
+                                                }
+
+                                            localDatabaseUtilsRepo.getChildFolderData(
+                                                parentFolderId = targetParentId,
+                                                linkType = targetLinkType,
+                                                sortOption = sortingType,
+                                                pageSize = Constants.PAGE_SIZE,
+                                                lastTypeOrder = lastTypeOrder,
+                                                lastSortStr = lastSortStr,
+                                                lastId = lastId,
+                                            )
+                                        },
+                                        onRetrieved = { currentKey, retrievedData ->
+                                            val lastItem = retrievedData.lastOrNull()
+                                            val nextId =
+                                                lastItem?.let { it.folderLocalId ?: it.linkLocalId }
+                                                    ?: Constants.EMPTY_LAST_SEEN_ID
+
+                                            val nextString =
+                                                lastItem?.let { item ->
+                                                    val typeOrder =
+                                                        if (item.itemType == "FOLDER") 0 else 1
+                                                    val sortStr =
+                                                        item.folderName ?: item.linkTitle ?: ""
+                                                    val sortId =
+                                                        item.folderLocalId ?: item.linkLocalId ?: 0L
+                                                    "$typeOrder|$sortStr|$sortId"
+                                                } ?: ""
+
+                                            val dataToDisplay =
+                                                if (shuffleLinks) retrievedData.shuffled()
+                                                else retrievedData
+
+                                            _panelFoldersDataFlat.update { currentState ->
+                                                val updatedOuterMap = LinkedHashMap(currentState)
+
+                                                val existingState =
+                                                    updatedOuterMap[panelFolder.folderId]
+                                                        ?: PaginationState(
+                                                            isRetrieving = false,
+                                                            exception = null,
+                                                            pagesCompleted = false,
+                                                            data = emptyMap(),
+                                                        )
+
+                                                val updatedInnerData =
+                                                    LinkedHashMap(existingState.data)
+                                                updatedInnerData[currentKey] = dataToDisplay
+
+                                                updatedOuterMap[panelFolder.folderId] =
+                                                    existingState.copy(
+                                                        isRetrieving = false,
+                                                        pagesCompleted =
+                                                            retrievedData.isEmpty() ||
+                                                                retrievedData.size <
+                                                                    Constants.PAGE_SIZE,
+                                                        data = updatedInnerData,
+                                                    )
+                                                updatedOuterMap
                                             }
 
-                                        localDatabaseUtilsRepo.getChildFolderData(
-                                            parentFolderId = targetParentId,
-                                            linkType = targetLinkType,
-                                            sortOption = sortingType,
-                                            pageSize = Constants.PAGE_SIZE,
-                                            lastTypeOrder = lastTypeOrder,
-                                            lastSortStr = lastSortStr,
-                                            lastId = lastId,
-                                        )
-                                    },
-                                    onRetrieved = { currentKey, retrievedData ->
-                                        val lastItem = retrievedData.lastOrNull()
-                                        val nextId =
-                                            lastItem?.let { it.folderLocalId ?: it.linkLocalId }
-                                                ?: Constants.EMPTY_LAST_SEEN_ID
-
-                                        val nextString =
-                                            lastItem?.let { item ->
-                                                val typeOrder =
-                                                    if (item.itemType == "FOLDER") 0 else 1
-                                                val sortStr =
-                                                    item.folderName ?: item.linkTitle ?: ""
-                                                val sortId =
-                                                    item.folderLocalId ?: item.linkLocalId ?: 0L
-                                                "$typeOrder|$sortStr|$sortId"
-                                            } ?: ""
-
-                                        val dataToDisplay =
-                                            if (shuffleLinks) retrievedData.shuffled() else retrievedData
-
-                                        _panelFoldersDataFlat.update { currentState ->
-                                            val updatedOuterMap = LinkedHashMap(currentState)
-
-                                            val existingState =
-                                                updatedOuterMap[panelFolder.folderId]
-                                                    ?: PaginationState(
+                                            nextId to nextString
+                                        },
+                                        onError = { error ->
+                                            _panelFoldersDataFlat.update { state ->
+                                                val map = LinkedHashMap(state)
+                                                val folderState =
+                                                    map[panelFolder.folderId]
+                                                        ?: PaginationState(
+                                                            data = emptyMap(),
+                                                            isRetrieving = false,
+                                                            exception = null,
+                                                            pagesCompleted = false,
+                                                        )
+                                                map[panelFolder.folderId] =
+                                                    folderState.copy(
                                                         isRetrieving = false,
-                                                        exception = null,
-                                                        pagesCompleted = false,
-                                                        data = emptyMap(),
+                                                        exception = error,
                                                     )
-
-                                            val updatedInnerData = LinkedHashMap(existingState.data)
-                                            updatedInnerData[currentKey] = dataToDisplay
-
-                                            updatedOuterMap[panelFolder.folderId] =
-                                                existingState.copy(
-                                                    isRetrieving = false,
-                                                    pagesCompleted =
-                                                        retrievedData.isEmpty() ||
-                                                                retrievedData.size < Constants.PAGE_SIZE,
-                                                    data = updatedInnerData,
-                                                )
-                                            updatedOuterMap
-                                        }
-
-                                        nextId to nextString
-                                    },
-                                    onError = { error ->
-                                        _panelFoldersDataFlat.update { state ->
-                                            val map = LinkedHashMap(state)
-                                            val folderState =
-                                                map[panelFolder.folderId]
-                                                    ?: PaginationState(
-                                                        data = emptyMap(),
-                                                        isRetrieving = false,
-                                                        exception = null,
-                                                        pagesCompleted = false,
-                                                    )
-                                            map[panelFolder.folderId] =
-                                                folderState.copy(
-                                                    isRetrieving = false,
-                                                    exception = error,
-                                                )
-                                            map
-                                        }
-                                    },
-                                    onRetrieving = {
-                                        _panelFoldersDataFlat.update { state ->
-                                            val map = LinkedHashMap(state)
-                                            val folderState =
-                                                map[panelFolder.folderId]
-                                                    ?: PaginationState(
-                                                        data = emptyMap(),
-                                                        isRetrieving = false,
-                                                        exception = null,
-                                                        pagesCompleted = false,
-                                                    )
-                                            map[panelFolder.folderId] =
-                                                folderState.copy(isRetrieving = true)
-                                            map
-                                        }
-                                    },
-                                    onPagesFinished = {
-                                        _panelFoldersDataFlat.update { state ->
-                                            val map = LinkedHashMap(state)
-                                            val folderState =
-                                                map[panelFolder.folderId]
-                                                    ?: PaginationState(
-                                                        data = emptyMap(),
-                                                        isRetrieving = false,
-                                                        exception = null,
-                                                        pagesCompleted = false,
-                                                    )
-                                            map[panelFolder.folderId] =
-                                                folderState.copy(pagesCompleted = true)
-                                            map
-                                        }
-                                    },
-                                )
+                                                map
+                                            }
+                                        },
+                                        onRetrieving = {
+                                            _panelFoldersDataFlat.update { state ->
+                                                val map = LinkedHashMap(state)
+                                                val folderState =
+                                                    map[panelFolder.folderId]
+                                                        ?: PaginationState(
+                                                            data = emptyMap(),
+                                                            isRetrieving = false,
+                                                            exception = null,
+                                                            pagesCompleted = false,
+                                                        )
+                                                map[panelFolder.folderId] =
+                                                    folderState.copy(isRetrieving = true)
+                                                map
+                                            }
+                                        },
+                                        onPagesFinished = {
+                                            _panelFoldersDataFlat.update { state ->
+                                                val map = LinkedHashMap(state)
+                                                val folderState =
+                                                    map[panelFolder.folderId]
+                                                        ?: PaginationState(
+                                                            data = emptyMap(),
+                                                            isRetrieving = false,
+                                                            exception = null,
+                                                            pagesCompleted = false,
+                                                        )
+                                                map[panelFolder.folderId] =
+                                                    folderState.copy(pagesCompleted = true)
+                                                map
+                                            }
+                                        },
+                                    )
                                     .also {
                                         it.retrieveNextBatch()
                                     }

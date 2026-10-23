@@ -11,8 +11,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LocalDatabaseUtilsDao {
-    @Query("SELECT COALESCE(MAX(localId), 0) FROM folders")
-    suspend fun getFoldersRowCount(): Long
+    @Query("SELECT COALESCE(MAX(localId), 0) FROM folders") suspend fun getFoldersRowCount(): Long
 
     @Query(
         """
@@ -121,7 +120,7 @@ interface LocalDatabaseUtilsDao {
         pageSize: Int,
     ): Flow<
         List<FlatChildFolderData>,
-        > // UNION ALL in a typical RDBMS/SQL is a "god-sent" thing, i'm gonna tweet this
+    > // UNION ALL in a typical RDBMS/SQL is a "god-sent" thing, i'm gonna tweet this
 
     @Query(
         """

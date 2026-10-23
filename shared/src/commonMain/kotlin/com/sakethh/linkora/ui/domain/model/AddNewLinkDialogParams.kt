@@ -17,7 +17,8 @@ data class AddNewLinkDialogParams(
     val selectedTags: List<Tag>,
     val foldersSearchQuery: String,
     val foldersSearchQueryResult: StateFlow<List<Folder>>,
-    val rootRegularFolders: StateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<Folder>>>>,
+    val rootRegularFolders:
+        StateFlow<PaginationState<Map<Pair<LastSeenId, LastSeenString>, List<Folder>>>>,
     val performAction: (AddANewLinkDialogBoxAction) -> Unit,
     val url: String = "",
     val title: String = "",

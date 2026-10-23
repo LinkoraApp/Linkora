@@ -18,10 +18,7 @@ kotlin {
             version = release(37)
         }
 
-        minSdk =
-            libs.versions.android.minSdk
-                .get()
-                .toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
     }
 
     jvm("desktop") {
@@ -52,6 +49,7 @@ kotlin {
         }
     }
 }
+
 dependencies {
     add("kspDesktop", libs.androidx.room3.compiler)
     add("kspWasmJs", libs.androidx.room3.compiler)

@@ -23,15 +23,15 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.test.runTest
 
 class LocalTagsRepoImplTest {
     private lateinit var database: LocalDatabase
@@ -90,30 +90,32 @@ class LocalTagsRepoImplTest {
         database.close()
     }
 
-    private suspend fun executeAndGetErrorMessage(block: suspend () -> List<Any>): String = try {
-        val results = block()
-        val lastResult = results.lastOrNull()
-        if (lastResult is Result.Failure<*>) {
-            lastResult.e.message.toString()
-        } else {
-            ""
+    private suspend fun executeAndGetErrorMessage(block: suspend () -> List<Any>): String =
+        try {
+            val results = block()
+            val lastResult = results.lastOrNull()
+            if (lastResult is Result.Failure<*>) {
+                lastResult.e.message.toString()
+            } else {
+                ""
+            }
+        } catch (e: Throwable) {
+            e.message?.takeIf { it.isNotBlank() } ?: e.javaClass.simpleName
         }
-    } catch (e: Throwable) {
-        e.message?.takeIf { it.isNotBlank() } ?: e.javaClass.simpleName
-    }
 
     @Test
-    fun `creating a tag locally successfully executes remote call and updates local DB`() = runTest {
-        val newTag = Tag(localId = 0, name = "Android", lastModified = 0L)
+    fun `creating a tag locally successfully executes remote call and updates local DB`() =
+        runTest {
+            val newTag = Tag(localId = 0, name = "Android", lastModified = 0L)
 
-        localTagsRepo.createATag(newTag, viaSocket = false).toList()
+            localTagsRepo.createATag(newTag, viaSocket = false).toList()
 
-        val dbTags = tagsDao.getAllTagsAsList()
-        assertEquals(1, dbTags.size)
-        assertEquals("Android", dbTags.first().name)
+            val dbTags = tagsDao.getAllTagsAsList()
+            assertEquals(1, dbTags.size)
+            assertEquals("Android", dbTags.first().name)
 
-        coVerify(exactly = 1) { remoteTagsRepo.createATag(match { it.name == "Android" }) }
-    }
+            coVerify(exactly = 1) { remoteTagsRepo.createATag(match { it.name == "Android" }) }
+        }
 
     @Test
     fun `viaSocket flag entirely bypasses remote repo execution during tag creation`() = runTest {
@@ -130,62 +132,63 @@ class LocalTagsRepoImplTest {
     }
 
     @Test
-    fun `network failure during remote tag creation explicitly captures dto to pending sync queue`() = runTest {
-        coEvery { remoteTagsRepo.createATag(any()) } returns
-            flowOf(Result.Failure(Exception("Network Timeout")))
+    fun `network failure during remote tag creation explicitly captures dto to pending sync queue`() =
+        runTest {
+            coEvery { remoteTagsRepo.createATag(any()) } returns
+                flowOf(Result.Failure(Exception("Network Timeout")))
 
-        val newTag = Tag(localId = 0, name = "OfflineTag", lastModified = 0L)
+            val newTag = Tag(localId = 0, name = "OfflineTag", lastModified = 0L)
 
-        localTagsRepo.createATag(newTag, viaSocket = false).toList()
+            localTagsRepo.createATag(newTag, viaSocket = false).toList()
 
-        coVerify(exactly = 1) {
-            pendingSyncQueueRepo.addInQueue(
-                match { queueItem ->
-                    queueItem.operation == "CREATE_TAG" && queueItem.payload.contains("OfflineTag")
-                },
-            )
+            coVerify(exactly = 1) {
+                pendingSyncQueueRepo.addInQueue(
+                    match { queueItem ->
+                        queueItem.operation == "CREATE_TAG" &&
+                            queueItem.payload.contains("OfflineTag")
+                    },
+                )
+            }
         }
-    }
 
     @Test
-    fun `attempting to rename or delete an unsynced tag with null remoteId throws local validation exception`() = runTest {
-        // Tag inserted with NO remoteId
-        val tagId =
-            tagsDao.createATag(
-                Tag(
-                    localId = 0,
-                    name = "Unsynced",
-                    lastModified = 0L,
-                    remoteId = null,
-                ),
+    fun `attempting to rename or delete an unsynced tag with null remoteId throws local validation exception`() =
+        runTest {
+            // Tag inserted with NO remoteId
+            val tagId =
+                tagsDao.createATag(
+                    Tag(
+                        localId = 0,
+                        name = "Unsynced",
+                        lastModified = 0L,
+                        remoteId = null,
+                    ),
+                )
+
+            val renameError = executeAndGetErrorMessage {
+                localTagsRepo.renameATag(tagId, "NewName", viaSocket = false).toList()
+            }
+
+            val deleteError = executeAndGetErrorMessage {
+                localTagsRepo.deleteATag(tagId, viaSocket = false).toList()
+            }
+
+            assertTrue(
+                renameError.contains(
+                    "Failed requirement",
+                    ignoreCase = true,
+                ) || renameError.contains("null", ignoreCase = true),
+                "Expected require() to fail for rename with null remoteId, got: $renameError",
             )
 
-        val renameError = executeAndGetErrorMessage {
-            localTagsRepo.renameATag(tagId, "NewName", viaSocket = false).toList()
+            assertTrue(
+                deleteError.contains(
+                    "Failed requirement",
+                    ignoreCase = true,
+                ) || deleteError.contains("null", ignoreCase = true),
+                "Expected require() to fail for delete with null remoteId, got: $deleteError",
+            )
         }
-
-        val deleteError = executeAndGetErrorMessage {
-            localTagsRepo.deleteATag(tagId, viaSocket = false).toList()
-        }
-
-        assertTrue(
-            renameError.contains(
-                "Failed requirement",
-                ignoreCase = true,
-            ) ||
-                renameError.contains("null", ignoreCase = true),
-            "Expected require() to fail for rename with null remoteId, got: $renameError",
-        )
-
-        assertTrue(
-            deleteError.contains(
-                "Failed requirement",
-                ignoreCase = true,
-            ) ||
-                deleteError.contains("null", ignoreCase = true),
-            "Expected require() to fail for delete with null remoteId, got: $deleteError",
-        )
-    }
 
     @Test
     fun `renaming a synced tag correctly updates local DB and pushes changes`() = runTest {
@@ -218,60 +221,61 @@ class LocalTagsRepoImplTest {
     }
 
     @Test
-    fun `getTagsForLinksAsMap aggregates deeply nested cross table results into correct mapped collections`() = runTest {
-        val link1Id =
-            linksDao.addANewLink(
-                Link(
-                    url = "https://l1.com",
-                    title = "L1",
-                    linkType = LinkType.SAVED_LINK,
-                    idOfLinkedFolder = null,
-                    imgURL = "",
-                    note = "",
-                    lastModified = 0L,
-                    userAgent = "",
+    fun `getTagsForLinksAsMap aggregates deeply nested cross table results into correct mapped collections`() =
+        runTest {
+            val link1Id =
+                linksDao.addANewLink(
+                    Link(
+                        url = "https://l1.com",
+                        title = "L1",
+                        linkType = LinkType.SAVED_LINK,
+                        idOfLinkedFolder = null,
+                        imgURL = "",
+                        note = "",
+                        lastModified = 0L,
+                        userAgent = "",
+                    ),
+                )
+            val link2Id =
+                linksDao.addANewLink(
+                    Link(
+                        url = "https://l2.com",
+                        title = "L2",
+                        linkType = LinkType.SAVED_LINK,
+                        idOfLinkedFolder = null,
+                        imgURL = "",
+                        note = "",
+                        lastModified = 0L,
+                        userAgent = "",
+                    ),
+                )
+
+            val tag1Id = tagsDao.createATag(Tag(localId = 0, name = "Tag1", lastModified = 0L))
+            val tag2Id = tagsDao.createATag(Tag(localId = 0, name = "Tag2", lastModified = 0L))
+            val tag3Id = tagsDao.createATag(Tag(localId = 0, name = "Tag3", lastModified = 0L))
+
+            // Link 1 has Tag 1 and Tag 2
+            tagsDao.createLinkTags(
+                listOf(
+                    LinkTag(linkId = link1Id, tagId = tag1Id),
+                    LinkTag(linkId = link1Id, tagId = tag2Id),
                 ),
             )
-        val link2Id =
-            linksDao.addANewLink(
-                Link(
-                    url = "https://l2.com",
-                    title = "L2",
-                    linkType = LinkType.SAVED_LINK,
-                    idOfLinkedFolder = null,
-                    imgURL = "",
-                    note = "",
-                    lastModified = 0L,
-                    userAgent = "",
+
+            // Link 2 has Tag 3 only
+            tagsDao.createLinkTags(
+                listOf(
+                    LinkTag(linkId = link2Id, tagId = tag3Id),
                 ),
             )
 
-        val tag1Id = tagsDao.createATag(Tag(localId = 0, name = "Tag1", lastModified = 0L))
-        val tag2Id = tagsDao.createATag(Tag(localId = 0, name = "Tag2", lastModified = 0L))
-        val tag3Id = tagsDao.createATag(Tag(localId = 0, name = "Tag3", lastModified = 0L))
+            val linksMap = localTagsRepo.getTagsForLinksAsMap(listOf(link1Id, link2Id))
 
-        // Link 1 has Tag 1 and Tag 2
-        tagsDao.createLinkTags(
-            listOf(
-                LinkTag(linkId = link1Id, tagId = tag1Id),
-                LinkTag(linkId = link1Id, tagId = tag2Id),
-            ),
-        )
+            assertEquals(2, linksMap[link1Id]?.size, "Link 1 should have exactly 2 tags")
+            assertEquals(linksMap[link1Id]?.any { it.name == "Tag1" }, true)
+            assertEquals(linksMap[link1Id]?.any { it.name == "Tag2" }, true)
 
-        // Link 2 has Tag 3 only
-        tagsDao.createLinkTags(
-            listOf(
-                LinkTag(linkId = link2Id, tagId = tag3Id),
-            ),
-        )
-
-        val linksMap = localTagsRepo.getTagsForLinksAsMap(listOf(link1Id, link2Id))
-
-        assertEquals(2, linksMap[link1Id]?.size, "Link 1 should have exactly 2 tags")
-        assertEquals(linksMap[link1Id]?.any { it.name == "Tag1" }, true)
-        assertEquals(linksMap[link1Id]?.any { it.name == "Tag2" }, true)
-
-        assertEquals(1, linksMap[link2Id]?.size, "Link 2 should have exactly 1 tag")
-        assertEquals(linksMap[link2Id]?.any { it.name == "Tag3" }, true)
-    }
+            assertEquals(1, linksMap[link2Id]?.size, "Link 2 should have exactly 1 tag")
+            assertEquals(linksMap[link2Id]?.any { it.name == "Tag3" }, true)
+        }
 }

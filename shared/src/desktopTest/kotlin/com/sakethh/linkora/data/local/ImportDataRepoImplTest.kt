@@ -30,15 +30,15 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.test.runTest
 
 class ImportDataRepoImplTest {
     private lateinit var database: LocalDatabase
@@ -185,64 +185,70 @@ class ImportDataRepoImplTest {
     }
 
     @Test
-    fun `html import maps predefined folder names to specific link types without creating folders`() = runTest {
-        prePopulateSystemFolders()
+    fun `html import maps predefined folder names to specific link types without creating folders`() =
+        runTest {
+            prePopulateSystemFolders()
 
-        val html =
-            """
-            <dl>
-                <dt><h3>Saved Links</h3><dl><dt><a href="https://saved.com">Saved</a></dt></dl></dt>
-                <dt><h3>Important Links</h3><dl><dt><a href="https://important.com">Important</a></dt></dl></dt>
-            </dl>
-            """
-                .trimIndent()
+            val html =
+                """
+                <dl>
+                    <dt><h3>Saved Links</h3><dl><dt><a href="https://saved.com">Saved</a></dt></dl></dt>
+                    <dt><h3>Important Links</h3><dl><dt><a href="https://important.com">Important</a></dt></dl></dt>
+                </dl>
+                """
+                    .trimIndent()
 
-        importDataRepo.importDataFromHTML(html).toList()
+            importDataRepo.importDataFromHTML(html).toList()
 
-        val links = linksDao.getAllLinks()
-        val folders = foldersDao.getAllFoldersAsList()
+            val links = linksDao.getAllLinks()
+            val folders = foldersDao.getAllFoldersAsList()
 
-        assertEquals(2, links.size)
-        assertEquals(6, folders.size)
-    }
+            assertEquals(2, links.size)
+            assertEquals(6, folders.size)
+        }
 
     @Test
-    fun `html import correctly writes nested folders to database and assigns correct parent ids`() = runTest {
-        prePopulateSystemFolders()
+    fun `html import correctly writes nested folders to database and assigns correct parent ids`() =
+        runTest {
+            prePopulateSystemFolders()
 
-        val html =
-            """
-            <dl><dt><h3>Depth 1 Folder</h3><dl>
-                <dt><a href="https://link1.com">Link 1</a></dt>
-                <dt><h3>Depth 2 Folder</h3><dl>
-                    <dt><a href="https://link2.com">Link 2</a></dt>
-                </dl></dt>
-            </dl></dt></dl>
-            """
-                .trimIndent()
+            val html =
+                """
+                <dl><dt><h3>Depth 1 Folder</h3><dl>
+                    <dt><a href="https://link1.com">Link 1</a></dt>
+                    <dt><h3>Depth 2 Folder</h3><dl>
+                        <dt><a href="https://link2.com">Link 2</a></dt>
+                    </dl></dt>
+                </dl></dt></dl>
+                """
+                    .trimIndent()
 
-        importDataRepo.importDataFromHTML(html).toList()
+            importDataRepo.importDataFromHTML(html).toList()
 
-        val folders = foldersDao.getAllFoldersAsList()
-        val links = linksDao.getAllLinks()
+            val folders = foldersDao.getAllFoldersAsList()
+            val links = linksDao.getAllLinks()
 
-        // 4 system folders + 2 new nested folders
-        assertEquals(6, folders.size)
-        assertEquals(2, links.size)
+            // 4 system folders + 2 new nested folders
+            assertEquals(6, folders.size)
+            assertEquals(2, links.size)
 
-        val depth1 = folders.find { it.name == "Depth 1 Folder" }
-        val depth2 = folders.find { it.name == "Depth 2 Folder" }
+            val depth1 = folders.find { it.name == "Depth 1 Folder" }
+            val depth2 = folders.find { it.name == "Depth 2 Folder" }
 
-        assertTrue(depth1 != null && depth1.parentFolderId == null)
-        assertTrue(depth2 != null && depth2.parentFolderId == depth1.localId)
+            assertTrue(depth1 != null && depth1.parentFolderId == null)
+            assertTrue(depth2 != null && depth2.parentFolderId == depth1.localId)
 
-        assertTrue(
-            links.any { it.url == "https://link1.com" && it.idOfLinkedFolder == depth1.localId },
-        )
-        assertTrue(
-            links.any { it.url == "https://link2.com" && it.idOfLinkedFolder == depth2.localId },
-        )
-    }
+            assertTrue(
+                links.any {
+                    it.url == "https://link1.com" && it.idOfLinkedFolder == depth1.localId
+                },
+            )
+            assertTrue(
+                links.any {
+                    it.url == "https://link2.com" && it.idOfLinkedFolder == depth2.localId
+                },
+            )
+        }
 
     @Test
     fun `json import separates non folder links and writes them to database`() = runTest {
@@ -250,30 +256,30 @@ class ImportDataRepoImplTest {
             JSONExportSchema(
                 schemaVersion = JSONExportSchema.VERSION,
                 links =
-                listOf(
-                    Link(
-                        localId = 10,
-                        linkType = LinkType.SAVED_LINK,
-                        url = "https://a.com",
-                        title = "A",
-                        idOfLinkedFolder = null,
-                        imgURL = "",
-                        note = "",
-                        lastModified = 0,
-                        userAgent = "",
+                    listOf(
+                        Link(
+                            localId = 10,
+                            linkType = LinkType.SAVED_LINK,
+                            url = "https://a.com",
+                            title = "A",
+                            idOfLinkedFolder = null,
+                            imgURL = "",
+                            note = "",
+                            lastModified = 0,
+                            userAgent = "",
+                        ),
+                        Link(
+                            localId = 20,
+                            linkType = LinkType.IMPORTANT_LINK,
+                            url = "https://b.com",
+                            title = "B",
+                            idOfLinkedFolder = null,
+                            imgURL = "",
+                            note = "",
+                            lastModified = 0,
+                            userAgent = "",
+                        ),
                     ),
-                    Link(
-                        localId = 20,
-                        linkType = LinkType.IMPORTANT_LINK,
-                        url = "https://b.com",
-                        title = "B",
-                        idOfLinkedFolder = null,
-                        imgURL = "",
-                        note = "",
-                        lastModified = 0,
-                        userAgent = "",
-                    ),
-                ),
                 folders = emptyList(),
                 panels = PanelForJSONExportSchema(emptyList(), emptyList()),
             )
@@ -287,145 +293,148 @@ class ImportDataRepoImplTest {
     }
 
     @Test
-    fun `json import recreates nested folder hierarchy in database and reassigns link ids`() = runTest {
-        val schema =
-            JSONExportSchema(
-                schemaVersion = JSONExportSchema.VERSION,
-                links =
-                listOf(
-                    Link(
-                        localId = 1,
-                        linkType = LinkType.FOLDER_LINK,
-                        url = "https://1.com",
-                        title = "1",
-                        idOfLinkedFolder = 10,
-                        imgURL = "",
-                        note = "",
-                        lastModified = 0,
-                        userAgent = "",
-                    ),
-                ),
-                folders =
-                listOf(
-                    Folder(
-                        localId = 10,
-                        name = "D1",
-                        parentFolderId = null,
-                        note = "",
-                        isArchived = false,
-                        lastModified = 0,
-                    ),
-                    Folder(
-                        localId = 11,
-                        name = "D2",
-                        parentFolderId = 10,
-                        note = "",
-                        isArchived = false,
-                        lastModified = 0,
-                    ),
-                ),
-                panels = PanelForJSONExportSchema(emptyList(), emptyList()),
-            )
-
-        importDataRepo.importDataFromObj(schema).toList()
-
-        val folders = foldersDao.getAllFoldersAsList()
-        val links = linksDao.getAllLinks()
-
-        assertEquals(2, folders.size)
-        assertEquals(1, links.size)
-
-        val d1 = folders.find { it.name == "D1" }
-        val d2 = folders.find { it.name == "D2" }
-
-        assertTrue(d1 != null && d1.parentFolderId == null)
-        assertTrue(d2 != null && d2.parentFolderId == d1.localId)
-        assertEquals(links.first().idOfLinkedFolder, d1.localId)
-    }
-
-    @Test
-    fun `json import maps tags to database and associates them with freshly inserted links`() = runTest {
-        val schema =
-            JSONExportSchema(
-                schemaVersion = JSONExportSchema.VERSION,
-                links =
-                listOf(
-                    Link(
-                        localId = 50,
-                        linkType = LinkType.SAVED_LINK,
-                        url = "https://tagged.com",
-                        title = "Tagged",
-                        idOfLinkedFolder = null,
-                        imgURL = "",
-                        note = "",
-                        lastModified = 0,
-                        userAgent = "",
-                    ),
-                ),
-                folders = emptyList(),
-                panels = PanelForJSONExportSchema(emptyList(), emptyList()),
-                tags = listOf(Tag(localId = 5, name = "Test Tag")),
-                linkTags = listOf(LinkTag(linkId = 50, tagId = 5)),
-            )
-
-        importDataRepo.importDataFromObj(schema).toList()
-
-        val dbTags = tagsDao.getAllTagsAsList()
-        val dbLinkTags = tagsDao.getAllTagLinksAsList()
-        val dbLinks = linksDao.getAllLinks()
-
-        assertEquals(1, dbTags.size)
-        assertEquals(1, dbLinkTags.size)
-        assertEquals(dbTags.first().name, "Test Tag")
-        assertEquals(dbLinkTags.first().tagId, dbTags.first().localId)
-        assertEquals(dbLinkTags.first().linkId, dbLinks.first().localId)
-    }
-
-    @Test
-    fun `json import maps panels and connects them to nested database folders correctly`() = runTest {
-        val schema =
-            JSONExportSchema(
-                schemaVersion = JSONExportSchema.VERSION,
-                links = emptyList(),
-                folders =
-                listOf(
-                    Folder(
-                        localId = 10,
-                        name = "Panel Base",
-                        parentFolderId = null,
-                        note = "",
-                        isArchived = false,
-                        lastModified = 0,
-                    ),
-                ),
-                panels =
-                PanelForJSONExportSchema(
-                    panels = listOf(Panel(localId = 5, panelName = "Test Panel")),
-                    panelFolders =
-                    listOf(
-                        PanelFolder(
-                            localId = 1,
-                            folderId = 10,
-                            connectedPanelId = 5,
-                            panelPosition = 0,
-                            folderName = "Panel Base",
+    fun `json import recreates nested folder hierarchy in database and reassigns link ids`() =
+        runTest {
+            val schema =
+                JSONExportSchema(
+                    schemaVersion = JSONExportSchema.VERSION,
+                    links =
+                        listOf(
+                            Link(
+                                localId = 1,
+                                linkType = LinkType.FOLDER_LINK,
+                                url = "https://1.com",
+                                title = "1",
+                                idOfLinkedFolder = 10,
+                                imgURL = "",
+                                note = "",
+                                lastModified = 0,
+                                userAgent = "",
+                            ),
                         ),
-                    ),
-                ),
-            )
+                    folders =
+                        listOf(
+                            Folder(
+                                localId = 10,
+                                name = "D1",
+                                parentFolderId = null,
+                                note = "",
+                                isArchived = false,
+                                lastModified = 0,
+                            ),
+                            Folder(
+                                localId = 11,
+                                name = "D2",
+                                parentFolderId = 10,
+                                note = "",
+                                isArchived = false,
+                                lastModified = 0,
+                            ),
+                        ),
+                    panels = PanelForJSONExportSchema(emptyList(), emptyList()),
+                )
 
-        importDataRepo.importDataFromObj(schema).toList()
+            importDataRepo.importDataFromObj(schema).toList()
 
-        val dbPanels = panelsDao.getAllThePanelsAsAList()
-        val dbPanelFolders = panelsDao.getAllThePanelFoldersAsAList()
-        val dbFolders = foldersDao.getAllFoldersAsList()
+            val folders = foldersDao.getAllFoldersAsList()
+            val links = linksDao.getAllLinks()
 
-        assertEquals(1, dbPanels.size)
-        assertEquals(1, dbPanelFolders.size)
-        assertEquals(dbPanels.first().panelName, "Test Panel")
-        assertEquals(dbPanelFolders.first().folderId, dbFolders.first().localId)
-        assertEquals(dbPanelFolders.first().connectedPanelId, dbPanels.first().localId)
-    }
+            assertEquals(2, folders.size)
+            assertEquals(1, links.size)
+
+            val d1 = folders.find { it.name == "D1" }
+            val d2 = folders.find { it.name == "D2" }
+
+            assertTrue(d1 != null && d1.parentFolderId == null)
+            assertTrue(d2 != null && d2.parentFolderId == d1.localId)
+            assertEquals(links.first().idOfLinkedFolder, d1.localId)
+        }
+
+    @Test
+    fun `json import maps tags to database and associates them with freshly inserted links`() =
+        runTest {
+            val schema =
+                JSONExportSchema(
+                    schemaVersion = JSONExportSchema.VERSION,
+                    links =
+                        listOf(
+                            Link(
+                                localId = 50,
+                                linkType = LinkType.SAVED_LINK,
+                                url = "https://tagged.com",
+                                title = "Tagged",
+                                idOfLinkedFolder = null,
+                                imgURL = "",
+                                note = "",
+                                lastModified = 0,
+                                userAgent = "",
+                            ),
+                        ),
+                    folders = emptyList(),
+                    panels = PanelForJSONExportSchema(emptyList(), emptyList()),
+                    tags = listOf(Tag(localId = 5, name = "Test Tag")),
+                    linkTags = listOf(LinkTag(linkId = 50, tagId = 5)),
+                )
+
+            importDataRepo.importDataFromObj(schema).toList()
+
+            val dbTags = tagsDao.getAllTagsAsList()
+            val dbLinkTags = tagsDao.getAllTagLinksAsList()
+            val dbLinks = linksDao.getAllLinks()
+
+            assertEquals(1, dbTags.size)
+            assertEquals(1, dbLinkTags.size)
+            assertEquals(dbTags.first().name, "Test Tag")
+            assertEquals(dbLinkTags.first().tagId, dbTags.first().localId)
+            assertEquals(dbLinkTags.first().linkId, dbLinks.first().localId)
+        }
+
+    @Test
+    fun `json import maps panels and connects them to nested database folders correctly`() =
+        runTest {
+            val schema =
+                JSONExportSchema(
+                    schemaVersion = JSONExportSchema.VERSION,
+                    links = emptyList(),
+                    folders =
+                        listOf(
+                            Folder(
+                                localId = 10,
+                                name = "Panel Base",
+                                parentFolderId = null,
+                                note = "",
+                                isArchived = false,
+                                lastModified = 0,
+                            ),
+                        ),
+                    panels =
+                        PanelForJSONExportSchema(
+                            panels = listOf(Panel(localId = 5, panelName = "Test Panel")),
+                            panelFolders =
+                                listOf(
+                                    PanelFolder(
+                                        localId = 1,
+                                        folderId = 10,
+                                        connectedPanelId = 5,
+                                        panelPosition = 0,
+                                        folderName = "Panel Base",
+                                    ),
+                                ),
+                        ),
+                )
+
+            importDataRepo.importDataFromObj(schema).toList()
+
+            val dbPanels = panelsDao.getAllThePanelsAsAList()
+            val dbPanelFolders = panelsDao.getAllThePanelFoldersAsAList()
+            val dbFolders = foldersDao.getAllFoldersAsList()
+
+            assertEquals(1, dbPanels.size)
+            assertEquals(1, dbPanelFolders.size)
+            assertEquals(dbPanels.first().panelName, "Test Panel")
+            assertEquals(dbPanelFolders.first().folderId, dbFolders.first().localId)
+            assertEquals(dbPanelFolders.first().connectedPanelId, dbPanels.first().localId)
+        }
 
     @Test
     fun `remote push is executed only when server configuration allows it`() = runTest {

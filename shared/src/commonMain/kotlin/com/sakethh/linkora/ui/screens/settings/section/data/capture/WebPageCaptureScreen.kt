@@ -74,29 +74,36 @@ fun WebPageCaptureScreen() {
     val preferences by dataSettingsScreenVM.preferencesAsFlow.collectAsStateWithLifecycle()
 
     val localFocusManager = LocalFocusManager.current
-    var whitelistDomains by rememberSaveable(preferences.webCaptureWhitelistDomains) {
-        mutableStateOf(preferences.webCaptureWhitelistDomains)
-    }
-    var blacklistDomains by rememberSaveable(preferences.webCaptureBlacklistDomains) {
-        mutableStateOf(preferences.webCaptureBlacklistDomains)
-    }
-    var webCaptureLocation by rememberSaveable(preferences.webCapturesLocation) {
-        mutableStateOf(preferences.webCapturesLocation)
-    }
+    var whitelistDomains by
+        rememberSaveable(preferences.webCaptureWhitelistDomains) {
+            mutableStateOf(preferences.webCaptureWhitelistDomains)
+        }
+    var blacklistDomains by
+        rememberSaveable(preferences.webCaptureBlacklistDomains) {
+            mutableStateOf(preferences.webCaptureBlacklistDomains)
+        }
+    var webCaptureLocation by
+        rememberSaveable(preferences.webCapturesLocation) {
+            mutableStateOf(preferences.webCapturesLocation)
+        }
     val platform = LocalPlatform.current
-    var maxConcurrentWebCaptureCount by rememberSaveable(preferences.webCaptureMaxConcurrency) {
-        mutableIntStateOf(preferences.webCaptureMaxConcurrency)
-    }
+    var maxConcurrentWebCaptureCount by
+        rememberSaveable(preferences.webCaptureMaxConcurrency) {
+            mutableIntStateOf(preferences.webCaptureMaxConcurrency)
+        }
 
-    val webCaptureState by dataSettingsScreenVM.webCaptureAllLinksState.collectAsStateWithLifecycle()
+    val webCaptureState by
+        dataSettingsScreenVM.webCaptureAllLinksState.collectAsStateWithLifecycle()
     val localizedStrings = LocalizedStrings.current
     SettingsSectionScaffold(
         topAppBarText = Navigation.Settings.Data.WebPageCapturesScreen.toString(),
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
-            modifier = Modifier.animateContentSize().fillMaxSize()
-                .addEdgeToEdgeScaffoldPadding(paddingValues)
-                .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
+            modifier =
+                Modifier.animateContentSize()
+                    .fillMaxSize()
+                    .addEdgeToEdgeScaffoldPadding(paddingValues)
+                    .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
             verticalArrangement = Arrangement.spacedBy(30.dp),
         ) {
             item {
@@ -112,7 +119,11 @@ fun WebPageCaptureScreen() {
                         isSwitchNeeded = true,
                         isSwitchEnabled = preferences.useWebCaptures,
                         onSwitchStateChange = {
-                            if (preferences.webCapturesLocation.isBlank() && platform !is Platform.Android.TV) return@SettingComponentParam
+                            if (
+                                preferences.webCapturesLocation.isBlank() &&
+                                    platform !is Platform.Android.TV
+                            )
+                                return@SettingComponentParam
 
                             dataSettingsScreenVM.changeSettingPreferenceValue(
                                 preferenceKey = AppPreferences.USE_WEB_CAPTURES,
@@ -121,7 +132,7 @@ fun WebPageCaptureScreen() {
                             if (it) {
                                 dataSettingsScreenVM.initWebCapture(
                                     preferences = preferences,
-                                    onCompletion = {}
+                                    onCompletion = {},
                                 )
                             } else {
                                 dataSettingsScreenVM.nukeWebCapture()
@@ -131,9 +142,16 @@ fun WebPageCaptureScreen() {
                         shouldFilledIconBeUsed = false,
                     ),
                 )
-                if (preferences.webCapturesLocation.isNotBlank() || platform is Platform.Android.TV) {
+                if (
+                    preferences.webCapturesLocation.isNotBlank() || platform is Platform.Android.TV
+                ) {
                     VerticalInfoCard(
-                        info = localizedStrings.WebCapturesLocationDesc.replaceActual(if (platform is Platform.Android.TV) "Documents/Linkora/${ExportLocationType.WEB_CAPTURE.dirRef}" else preferences.webCapturesLocation),
+                        info =
+                            localizedStrings.WebCapturesLocationDesc.replaceActual(
+                                if (platform is Platform.Android.TV)
+                                    "Documents/Linkora/${ExportLocationType.WEB_CAPTURE.dirRef}"
+                                else preferences.webCapturesLocation,
+                            ),
                         paddingValues = PaddingValues(start = 15.dp, end = 15.dp, top = 15.dp),
                     )
                 }
@@ -150,8 +168,10 @@ fun WebPageCaptureScreen() {
                         trailingIcon = {
                             if (platform !is Platform.Android.TV) {
                                 FilledTonalIconButton(
-                                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                        .pressScaleEffect().padding(end = 5.dp),
+                                    modifier =
+                                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                            .pressScaleEffect()
+                                            .padding(end = 5.dp),
                                     onClick = {
                                         dataSettingsScreenVM.changeExportLocation(
                                             exportLocation = webCaptureLocation,
@@ -161,11 +181,12 @@ fun WebPageCaptureScreen() {
                                     },
                                 ) {
                                     Icon(
-                                        imageVector = if (platform is Platform.Android) {
-                                            Icons.Default.FolderOpen
-                                        } else {
-                                            Icons.Default.Save
-                                        },
+                                        imageVector =
+                                            if (platform is Platform.Android) {
+                                                Icons.Default.FolderOpen
+                                            } else {
+                                                Icons.Default.Save
+                                            },
                                         contentDescription = null,
                                     )
                                 }
@@ -183,16 +204,23 @@ fun WebPageCaptureScreen() {
                         onValueChange = {
                             webCaptureLocation = it
                         },
-                        modifier = Modifier.padding(horizontal = 15.dp).fillMaxWidth()
-                            .highlightOnFocused().clickable(onClick = {
-                                if (platform is Platform.Android.TV) {
-                                    dataSettingsScreenVM.changeExportLocation(
-                                        exportLocation = webCaptureLocation,
-                                        platform = platform,
-                                        exportLocationType = ExportLocationType.WEB_CAPTURE,
-                                    )
-                                }
-                            }, indication = null, interactionSource = null),
+                        modifier =
+                            Modifier.padding(horizontal = 15.dp)
+                                .fillMaxWidth()
+                                .highlightOnFocused()
+                                .clickable(
+                                    onClick = {
+                                        if (platform is Platform.Android.TV) {
+                                            dataSettingsScreenVM.changeExportLocation(
+                                                exportLocation = webCaptureLocation,
+                                                platform = platform,
+                                                exportLocationType = ExportLocationType.WEB_CAPTURE,
+                                            )
+                                        }
+                                    },
+                                    indication = null,
+                                    interactionSource = null,
+                                ),
                     )
                     Spacer(modifier = Modifier.height(150.dp))
                 }
@@ -313,11 +341,14 @@ fun WebPageCaptureScreen() {
                             },
                             trailingIcon = {
                                 FilledTonalIconButton(
-                                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                        .pressScaleEffect().padding(end = 5.dp),
+                                    modifier =
+                                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                            .pressScaleEffect()
+                                            .padding(end = 5.dp),
                                     onClick = {
                                         dataSettingsScreenVM.changeSettingPreferenceValue(
-                                            preferenceKey = AppPreferences.WEB_CAPTURE_WHITELIST_DOMAINS,
+                                            preferenceKey =
+                                                AppPreferences.WEB_CAPTURE_WHITELIST_DOMAINS,
                                             newValue = whitelistDomains,
                                         )
                                         localFocusManager.clearFocus()
@@ -357,11 +388,14 @@ fun WebPageCaptureScreen() {
                             },
                             trailingIcon = {
                                 FilledTonalIconButton(
-                                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                        .pressScaleEffect().padding(end = 5.dp),
+                                    modifier =
+                                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                            .pressScaleEffect()
+                                            .padding(end = 5.dp),
                                     onClick = {
                                         dataSettingsScreenVM.changeSettingPreferenceValue(
-                                            preferenceKey = AppPreferences.WEB_CAPTURE_BLACKLIST_DOMAINS,
+                                            preferenceKey =
+                                                AppPreferences.WEB_CAPTURE_BLACKLIST_DOMAINS,
                                             newValue = blacklistDomains,
                                         )
                                         localFocusManager.clearFocus()
@@ -424,7 +458,8 @@ fun WebPageCaptureScreen() {
                                 isSwitchEnabled = preferences.webCaptureRetainAllVersions,
                                 onSwitchStateChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey = AppPreferences.WEB_CAPTURE_RETAIN_ALL_VERSIONS,
+                                        preferenceKey =
+                                            AppPreferences.WEB_CAPTURE_RETAIN_ALL_VERSIONS,
                                         newValue = !preferences.webCaptureRetainAllVersions,
                                     )
                                 },
@@ -469,8 +504,10 @@ fun WebPageCaptureScreen() {
                         textStyle = MaterialTheme.typography.titleSmall,
                         trailingIcon = {
                             FilledTonalIconButton(
-                                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                    .pressScaleEffect().padding(end = 5.dp),
+                                modifier =
+                                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                        .pressScaleEffect()
+                                        .padding(end = 5.dp),
                                 onClick = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
                                         preferenceKey = AppPreferences.WEB_CAPTURE_MAX_CONCURRENCY,
@@ -500,16 +537,18 @@ fun WebPageCaptureScreen() {
                         },
                         value = maxConcurrentWebCaptureCount.toString(),
                         onValueChange = {
-                            maxConcurrentWebCaptureCount = try {
-                                it.toInt()
-                            } catch (_: Exception) {
-                                0
-                            } catch (_: Error) {
-                                0
-                            }.coerceAtLeast(minimumValue = 1)
+                            maxConcurrentWebCaptureCount =
+                                try {
+                                        it.toInt()
+                                    } catch (_: Exception) {
+                                        0
+                                    } catch (_: Error) {
+                                        0
+                                    }
+                                    .coerceAtLeast(minimumValue = 1)
                         },
-                        modifier = Modifier.padding(horizontal = 15.dp, vertical = 5.dp)
-                            .fillMaxWidth(),
+                        modifier =
+                            Modifier.padding(horizontal = 15.dp, vertical = 5.dp).fillMaxWidth(),
                     )
                 }
                 item {
@@ -520,9 +559,10 @@ fun WebPageCaptureScreen() {
                             WorkerState.ENQUEUED -> {
                                 if (platform is Platform.Android) {
                                     Column(
-                                        modifier = Modifier.padding(horizontal = 15.dp)
-                                            .fillMaxWidth()
-                                            .wrapContentHeight(),
+                                        modifier =
+                                            Modifier.padding(horizontal = 15.dp)
+                                                .fillMaxWidth()
+                                                .wrapContentHeight(),
                                         verticalArrangement = Arrangement.spacedBy(12.dp),
                                     ) {
                                         Text(
@@ -535,8 +575,10 @@ fun WebPageCaptureScreen() {
 
                             WorkerState.IN_PROGRESS -> {
                                 Column(
-                                    modifier = Modifier.padding(horizontal = 15.dp).fillMaxWidth()
-                                        .wrapContentHeight(),
+                                    modifier =
+                                        Modifier.padding(horizontal = 15.dp)
+                                            .fillMaxWidth()
+                                            .wrapContentHeight(),
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
                                 ) {
                                     Text(
@@ -552,13 +594,21 @@ fun WebPageCaptureScreen() {
                                             modifier = Modifier.fillMaxWidth(0.85f),
                                             progress = {
                                                 val total =
-                                                    DataSettingsScreenVM.onGoingWebCaptureState.total
-                                                if (total == 0) 0f else DataSettingsScreenVM.onGoingWebCaptureState.currentIteration.toFloat() / total
+                                                    DataSettingsScreenVM.onGoingWebCaptureState
+                                                        .total
+                                                if (total == 0) 0f
+                                                else
+                                                    DataSettingsScreenVM.onGoingWebCaptureState
+                                                        .currentIteration
+                                                        .toFloat() / total
                                             },
                                         )
                                         IconButton(
-                                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-                                            onClick = { dataSettingsScreenVM.cancelBulkWebCapture() },
+                                            modifier =
+                                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                                            onClick = {
+                                                dataSettingsScreenVM.cancelBulkWebCapture()
+                                            },
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Default.Cancel,
@@ -567,10 +617,14 @@ fun WebPageCaptureScreen() {
                                         }
                                     }
                                     Text(
-                                        text = localizedStrings.CapturedCount.replaceActual(
-                                            DataSettingsScreenVM.onGoingWebCaptureState.currentIteration.toString(),
-                                            DataSettingsScreenVM.onGoingWebCaptureState.total.toString()
-                                        ),
+                                        text =
+                                            localizedStrings.CapturedCount.replaceActual(
+                                                DataSettingsScreenVM.onGoingWebCaptureState
+                                                    .currentIteration
+                                                    .toString(),
+                                                DataSettingsScreenVM.onGoingWebCaptureState.total
+                                                    .toString(),
+                                            ),
                                         style = MaterialTheme.typography.titleSmall,
                                     )
                                 }
@@ -613,13 +667,17 @@ private fun AssetStripOption(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier.fillMaxWidth().clickable(
-            onClick = {
-                onCheckedChange(!checked)
-            },
-            indication = null,
-            interactionSource = null,
-        ).pointerHoverIcon(icon = PointerIcon.Hand),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clickable(
+                    onClick = {
+                        onCheckedChange(!checked)
+                    },
+                    indication = null,
+                    interactionSource = null,
+                )
+                .pointerHoverIcon(icon = PointerIcon.Hand),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Checkbox(checked = checked, onCheckedChange = onCheckedChange)

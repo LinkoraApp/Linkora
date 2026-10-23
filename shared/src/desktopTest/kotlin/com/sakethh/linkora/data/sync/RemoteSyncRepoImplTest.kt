@@ -44,15 +44,15 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertTrue
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertTrue
 
 class RemoteSyncRepoImplTest {
     private lateinit var localFoldersRepo: LocalFoldersRepo
@@ -158,108 +158,109 @@ class RemoteSyncRepoImplTest {
     }
 
     @Test
-    fun `pushNonSyncedDataToServer sweeps all local tables and constructs exact DTO payloads for the queue`() = runTest {
-        val folder =
-            Folder(
-                name = "UnsyncedFolder",
-                note = "",
-                parentFolderId = null,
-                localId = 1L,
-                remoteId = null,
-                isArchived = false,
-                lastModified = 1000L,
-            )
-        val tag = Tag(localId = 2L, name = "UnsyncedTag", lastModified = 1000L)
-        val link =
-            Link(
-                url = "https://x.com",
-                title = "L",
-                linkType = LinkType.SAVED_LINK,
-                idOfLinkedFolder = null,
-                imgURL = "",
-                note = "",
-                localId = 3L,
-                mediaType = MediaType.IMAGE,
-                lastModified = 1000L,
-                userAgent = "",
-            )
-        val panel = Panel(localId = 4L, panelName = "UnsyncedPanel", lastModified = 1000L)
-        val panelFolder =
-            PanelFolder(
-                localId = 5L,
-                folderId = 1L,
-                connectedPanelId = 4L,
-                panelPosition = 0,
-                folderName = "PF",
-                lastModified = 1000L,
-            )
+    fun `pushNonSyncedDataToServer sweeps all local tables and constructs exact DTO payloads for the queue`() =
+        runTest {
+            val folder =
+                Folder(
+                    name = "UnsyncedFolder",
+                    note = "",
+                    parentFolderId = null,
+                    localId = 1L,
+                    remoteId = null,
+                    isArchived = false,
+                    lastModified = 1000L,
+                )
+            val tag = Tag(localId = 2L, name = "UnsyncedTag", lastModified = 1000L)
+            val link =
+                Link(
+                    url = "https://x.com",
+                    title = "L",
+                    linkType = LinkType.SAVED_LINK,
+                    idOfLinkedFolder = null,
+                    imgURL = "",
+                    note = "",
+                    localId = 3L,
+                    mediaType = MediaType.IMAGE,
+                    lastModified = 1000L,
+                    userAgent = "",
+                )
+            val panel = Panel(localId = 4L, panelName = "UnsyncedPanel", lastModified = 1000L)
+            val panelFolder =
+                PanelFolder(
+                    localId = 5L,
+                    folderId = 1L,
+                    connectedPanelId = 4L,
+                    panelPosition = 0,
+                    folderName = "PF",
+                    lastModified = 1000L,
+                )
 
-        coEvery { localFoldersRepo.getUnSyncedFolders() } returns listOf(folder)
-        coEvery { tagsDao.getUnsyncedTags() } returns listOf(tag)
-        coEvery { localLinksRepo.getUnSyncedLinks() } returns listOf(link)
-        coEvery { localPanelsRepo.getUnSyncedPanels() } returns listOf(panel)
-        coEvery { localPanelsRepo.getUnSyncedPanelFolders() } returns listOf(panelFolder)
-        coEvery { tagsDao.getTags(any()) } returns emptyList() // No tags connected to the link
-        coEvery { pendingSyncQueueRepo.getAllItemsFromQueue() } returns
-            emptyList() // Prevent loop in pushPendingSyncQueueToServer
+            coEvery { localFoldersRepo.getUnSyncedFolders() } returns listOf(folder)
+            coEvery { tagsDao.getUnsyncedTags() } returns listOf(tag)
+            coEvery { localLinksRepo.getUnSyncedLinks() } returns listOf(link)
+            coEvery { localPanelsRepo.getUnSyncedPanels() } returns listOf(panel)
+            coEvery { localPanelsRepo.getUnSyncedPanelFolders() } returns listOf(panelFolder)
+            coEvery { tagsDao.getTags(any()) } returns emptyList() // No tags connected to the link
+            coEvery { pendingSyncQueueRepo.getAllItemsFromQueue() } returns
+                emptyList() // Prevent loop in pushPendingSyncQueueToServer
 
-        val channel = Channel<Result<Unit>>(Channel.UNLIMITED)
+            val channel = Channel<Result<Unit>>(Channel.UNLIMITED)
 
-        with(remoteSyncRepoImpl) {
-            channel.pushNonSyncedDataToServer()
-        }
+            with(remoteSyncRepoImpl) {
+                channel.pushNonSyncedDataToServer()
+            }
 
-        coVerify(exactly = 1) {
-            pendingSyncQueueRepo.addInQueue(
-                match {
-                    it.operation == SyncServerRoute.CREATE_FOLDER.name &&
-                        it.payload.contains(
-                            "UnsyncedFolder",
-                        )
-                },
-            )
+            coVerify(exactly = 1) {
+                pendingSyncQueueRepo.addInQueue(
+                    match {
+                        it.operation == SyncServerRoute.CREATE_FOLDER.name &&
+                            it.payload.contains(
+                                "UnsyncedFolder",
+                            )
+                    },
+                )
+            }
+            coVerify(exactly = 1) {
+                pendingSyncQueueRepo.addInQueue(
+                    match {
+                        it.operation == SyncServerRoute.CREATE_TAG.name &&
+                            it.payload.contains(
+                                "UnsyncedTag",
+                            )
+                    },
+                )
+            }
+            coVerify(exactly = 1) {
+                pendingSyncQueueRepo.addInQueue(
+                    match {
+                        it.operation == SyncServerRoute.CREATE_A_NEW_LINK.name &&
+                            it.payload.contains(
+                                "https://x.com",
+                            )
+                    },
+                )
+            }
+            coVerify(exactly = 1) {
+                pendingSyncQueueRepo.addInQueue(
+                    match {
+                        it.operation == SyncServerRoute.ADD_A_NEW_PANEL.name &&
+                            it.payload.contains(
+                                "UnsyncedPanel",
+                            )
+                    },
+                )
+            }
+            coVerify(exactly = 1) {
+                pendingSyncQueueRepo.addInQueue(
+                    match {
+                        it.operation == SyncServerRoute.ADD_A_NEW_FOLDER_IN_A_PANEL.name &&
+                            it.payload.contains(
+                                "connectedPanelId\":4",
+                            )
+                    },
+                )
+            }
         }
-        coVerify(exactly = 1) {
-            pendingSyncQueueRepo.addInQueue(
-                match {
-                    it.operation == SyncServerRoute.CREATE_TAG.name &&
-                        it.payload.contains(
-                            "UnsyncedTag",
-                        )
-                },
-            )
-        }
-        coVerify(exactly = 1) {
-            pendingSyncQueueRepo.addInQueue(
-                match {
-                    it.operation == SyncServerRoute.CREATE_A_NEW_LINK.name &&
-                        it.payload.contains(
-                            "https://x.com",
-                        )
-                },
-            )
-        }
-        coVerify(exactly = 1) {
-            pendingSyncQueueRepo.addInQueue(
-                match {
-                    it.operation == SyncServerRoute.ADD_A_NEW_PANEL.name &&
-                        it.payload.contains(
-                            "UnsyncedPanel",
-                        )
-                },
-            )
-        }
-        coVerify(exactly = 1) {
-            pendingSyncQueueRepo.addInQueue(
-                match {
-                    it.operation == SyncServerRoute.ADD_A_NEW_FOLDER_IN_A_PANEL.name &&
-                        it.payload.contains(
-                            "connectedPanelId\":4",
-                        )
-                },
-            )
-        }
-    }
 
     @Test
     fun `deleteEverything completely wipes the local SQLite database via utils repo`() = runTest {

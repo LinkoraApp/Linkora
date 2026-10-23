@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DriveFileRenameOutline
@@ -48,8 +47,7 @@ fun IndividualMenuComponent(
 
     Row(
         modifier =
-            Modifier
-                .focusGroup()
+            Modifier.focusGroup()
                 .highlightOnFocused()
                 .background(
                     if (isSelected && !Platform.Android.onMobile()) {

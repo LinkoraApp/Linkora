@@ -32,10 +32,10 @@ class AutoSaveLinkService : Service() {
 
     private fun toast(msg: String) = mainHandler.post {
         Toast.makeText(
-            applicationContext,
-            msg,
-            Toast.LENGTH_SHORT,
-        )
+                applicationContext,
+                msg,
+                Toast.LENGTH_SHORT,
+            )
             .show()
     }
 
@@ -50,7 +50,9 @@ class AutoSaveLinkService : Service() {
             showToast = ::toast,
             localizationRepo = DependencyContainer.localizationRepo,
         )
-    private val localizedStrings get() = intentActivityVM.localizedStrings.value
+    private val localizedStrings
+        get() = intentActivityVM.localizedStrings.value
+
     private var areSnapshotsEnabled = false
 
     override fun onStartCommand(
@@ -69,8 +71,7 @@ class AutoSaveLinkService : Service() {
                 .setSmallIcon(R.drawable.notification_icon)
                 .setContentTitle(localizedStrings.AutoSavingTheLinkNotifyLabel)
                 .setContentText(
-                    localizedStrings.AutoSavingTheLinkNotifyLabel
-                        .replaceActual(url),
+                    localizedStrings.AutoSavingTheLinkNotifyLabel.replaceActual(url),
                 )
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .build()
@@ -107,8 +108,8 @@ class AutoSaveLinkService : Service() {
                     .collectLatest {
                         withContext(Dispatchers.Main) {
                             it.onSuccess {
-                                toast(localizedStrings.AutoSavedTheLinkSuccessfully)
-                            }
+                                    toast(localizedStrings.AutoSavedTheLinkSuccessfully)
+                                }
                                 .onFailure {
                                     it.printStackTrace()
                                     toast(it.message.toString())

@@ -66,44 +66,49 @@ class DataSettingsScreenVM(
     private val webCapture: NativeUtils.WebCapture,
     private val localizationRepo: LocalizationRepo.Local,
     webCaptureDatabaseManager: WebCaptureDatabaseManager,
-) : SettingsScreenViewModel(
-    preferencesRepository,
-    nativeUtils,
-    permissionManager,
-    webCapture,
-    webCaptureDatabaseManager,
-    localizationRepo
-) {
+) :
+    SettingsScreenViewModel(
+        preferencesRepository,
+        nativeUtils,
+        permissionManager,
+        webCapture,
+        webCaptureDatabaseManager,
+        localizationRepo,
+    ) {
     val importExportProgressLogs = mutableStateListOf<String>()
 
     private var importExportJob: Job? = null
 
-    val refreshAllLinksState = combine(
-        snapshotFlow {
-            refreshLinksState.value
-        },
-        nativeUtils.isAnyRefreshingEnqueued(),
-    ) { onGoingRefreshLinksState, enqueued ->
-        when {
-            enqueued == true && platform is Platform.Android -> WorkerState.ENQUEUED
-            onGoingRefreshLinksState.isInRefreshingState -> WorkerState.IN_PROGRESS
-            else -> WorkerState.IDLE
-        }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), WorkerState.IDLE)
+    val refreshAllLinksState =
+        combine(
+                snapshotFlow {
+                    refreshLinksState.value
+                },
+                nativeUtils.isAnyRefreshingEnqueued(),
+            ) { onGoingRefreshLinksState, enqueued ->
+                when {
+                    enqueued == true && platform is Platform.Android -> WorkerState.ENQUEUED
+                    onGoingRefreshLinksState.isInRefreshingState -> WorkerState.IN_PROGRESS
+                    else -> WorkerState.IDLE
+                }
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), WorkerState.IDLE)
 
     // i dont think i can come up with a better name than this
-    val webCaptureAllLinksState = combine(
-        snapshotFlow {
-            onGoingWebCaptureState
-        },
-        webCapture.isWebCaptureWorkerEnqueued(),
-    ) { onGoingWebCaptureState, enqueued ->
-        when {
-            enqueued == true && platform is Platform.Android -> WorkerState.ENQUEUED
-            onGoingWebCaptureState.isInProgress -> WorkerState.IN_PROGRESS
-            else -> WorkerState.IDLE
-        }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), WorkerState.IDLE)
+    val webCaptureAllLinksState =
+        combine(
+                snapshotFlow {
+                    onGoingWebCaptureState
+                },
+                webCapture.isWebCaptureWorkerEnqueued(),
+            ) { onGoingWebCaptureState, enqueued ->
+                when {
+                    enqueued == true && platform is Platform.Android -> WorkerState.ENQUEUED
+                    onGoingWebCaptureState.isInProgress -> WorkerState.IN_PROGRESS
+                    else -> WorkerState.IDLE
+                }
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), WorkerState.IDLE)
 
     fun importDataFromAFile(
         importFileType: ImportFileType,
@@ -114,35 +119,39 @@ class DataSettingsScreenVM(
         onStart()
         AppVM.pauseSnapshots = true
         importExportJob?.cancel()
-        importExportJob = viewModelScope.launch(
-            Dispatchers.Default + CoroutineExceptionHandler { _, throwable ->
-                throwable.pushSnackbar(viewModelScope)
-            },
-        ) {
-            if (importFileType == FileType.JSON) {
-                when (importFileSelectionMethod.first) {
-                    ImportFileSelectionMethod.FilePicker -> fileManager.importFromJSONObj()
+        importExportJob =
+            viewModelScope.launch(
+                Dispatchers.Default +
+                    CoroutineExceptionHandler { _, throwable ->
+                        throwable.pushSnackbar(viewModelScope)
+                    },
+            ) {
+                if (importFileType == FileType.JSON) {
+                    when (importFileSelectionMethod.first) {
+                        ImportFileSelectionMethod.FilePicker -> fileManager.importFromJSONObj()
 
-                    ImportFileSelectionMethod.FileLocationString -> fileManager.importFromJSONObj(
-                        fileLocation = importFileSelectionMethod.second,
-                    )
-                }.collectData { data ->
-                    importDataRepo.importDataFromObj(data)
+                        ImportFileSelectionMethod.FileLocationString ->
+                            fileManager.importFromJSONObj(
+                                fileLocation = importFileSelectionMethod.second,
+                            )
+                    }.collectData { data ->
+                        importDataRepo.importDataFromObj(data)
+                    }
+                }
+
+                if (importFileType == FileType.HTML) {
+                    when (importFileSelectionMethod.first) {
+                        ImportFileSelectionMethod.FilePicker -> fileManager.importFromHTMLString()
+
+                        ImportFileSelectionMethod.FileLocationString ->
+                            fileManager.importFromHTMLString(
+                                fileLocation = importFileSelectionMethod.second,
+                            )
+                    }.collectData { data ->
+                        importDataRepo.importDataFromHTML(data)
+                    }
                 }
             }
-
-            if (importFileType == FileType.HTML) {
-                when (importFileSelectionMethod.first) {
-                    ImportFileSelectionMethod.FilePicker -> fileManager.importFromHTMLString()
-
-                    ImportFileSelectionMethod.FileLocationString -> fileManager.importFromHTMLString(
-                        fileLocation = importFileSelectionMethod.second,
-                    )
-                }.collectData { data ->
-                    importDataRepo.importDataFromHTML(data)
-                }
-            }
-        }
         importExportJob?.invokeOnCompletion { cause ->
             AppVM.pauseSnapshots = false
             AppVM.forceSnapshot()
@@ -154,29 +163,33 @@ class DataSettingsScreenVM(
 
     suspend fun <T, S> Flow<Result<T>>.collectData(onSuccess: suspend (T) -> Flow<Result<S>>) {
         this.flatMapLatest { result ->
-            when (result) {
-                is Result.Failure -> flowOf(result)
+                when (result) {
+                    is Result.Failure -> flowOf(result)
 
-                is Result.Loading -> flowOf(result)
+                    is Result.Loading -> flowOf(result)
 
-                is Result.Success -> {
-                    onSuccess(result.data)
+                    is Result.Success -> {
+                        onSuccess(result.data)
+                    }
                 }
             }
-        }.collectLatest {
-            it.onLoading { importLogItem ->
-                importExportProgressLogs.add(importLogItem)
-            }.onSuccess {
-                pushUIEvent(
-                    UIEvent.Type.ShowSnackbar(
-                        localizedStrings.SuccessfullyImportedTheData,
-                    ),
-                )
-            }.pushSnackbarOnFailure()
-        }
+            .collectLatest {
+                it.onLoading { importLogItem ->
+                        importExportProgressLogs.add(importLogItem)
+                    }
+                    .onSuccess {
+                        pushUIEvent(
+                            UIEvent.Type.ShowSnackbar(
+                                localizedStrings.SuccessfullyImportedTheData,
+                            ),
+                        )
+                    }
+                    .pushSnackbarOnFailure()
+            }
     }
 
-    suspend fun isStoragePermissionGranted(): Boolean = permissionManager.isStorageAccessPermitted() is PermissionStatus.Granted
+    suspend fun isStoragePermissionGranted(): Boolean =
+        permissionManager.isStorageAccessPermitted() is PermissionStatus.Granted
 
     fun exportDataToAFile(
         platform: Platform,
@@ -197,33 +210,38 @@ class DataSettingsScreenVM(
                 }
             }
             if (exportFileType == ExportFileType.JSON) {
-                exportDataRepo.rawExportDataAsJSON()
-            } else {
-                exportDataRepo.rawExportDataAsHTML()
-            }.collectLatest {
-                it.onLoading { exportLogItem ->
-                    importExportProgressLogs.add(exportLogItem)
-                }.onSuccess { (rawExportString) ->
-                    try {
-                        fileManager.writeRawExportStringToFile(
-                            exportLocation = preferencesAsFlow.value.currentExportLocation,
-                            exportFileType = exportFileType,
-                            rawExportString = rawExportString,
-                            onCompletion = {
-                                pushUIEvent(
-                                    UIEvent.Type.ShowSnackbar(
-                                        localizedStrings.ExportedSuccessfully,
-                                    ),
+                    exportDataRepo.rawExportDataAsJSON()
+                } else {
+                    exportDataRepo.rawExportDataAsHTML()
+                }
+                .collectLatest {
+                    it.onLoading { exportLogItem ->
+                            importExportProgressLogs.add(exportLogItem)
+                        }
+                        .onSuccess { (rawExportString) ->
+                            try {
+                                fileManager.writeRawExportStringToFile(
+                                    exportLocation = preferencesAsFlow.value.currentExportLocation,
+                                    exportFileType = exportFileType,
+                                    rawExportString = rawExportString,
+                                    onCompletion = {
+                                        pushUIEvent(
+                                            UIEvent.Type.ShowSnackbar(
+                                                localizedStrings.ExportedSuccessfully,
+                                            ),
+                                        )
+                                    },
+                                    exportLocationType = ExportLocationType.EXPORT,
                                 )
-                            },
-                            exportLocationType = ExportLocationType.EXPORT,
-                        )
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        pushUIEvent(UIEvent.Type.ShowSnackbar(message = e.message.toString()))
-                    }
-                }.pushSnackbarOnFailure()
-            }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                pushUIEvent(
+                                    UIEvent.Type.ShowSnackbar(message = e.message.toString()),
+                                )
+                            }
+                        }
+                        .pushSnackbarOnFailure()
+                }
         }
         importExportJob?.invokeOnCompletion { cause ->
             onCompletion()
@@ -242,63 +260,75 @@ class DataSettingsScreenVM(
     ) {
         AppVM.pauseSnapshots = true
         var remoteOperationFailed: Boolean? = null
-        viewModelScope.launch {
-            remoteSyncRepo.deleteEverything(deleteOnRemote = deleteEverythingFromRemote)
-                .collectLatest {
-                    it.onFailure {
-                        remoteOperationFailed = true
+        viewModelScope
+            .launch {
+                remoteSyncRepo
+                    .deleteEverything(deleteOnRemote = deleteEverythingFromRemote)
+                    .collectLatest {
+                        it.onFailure {
+                            remoteOperationFailed = true
+                        }
+                        it.onSuccess {
+                            remoteOperationFailed = it.isRemoteSuccessful() == false
+                        }
                     }
-                    it.onSuccess {
-                        remoteOperationFailed = it.isRemoteSuccessful() == false
-                    }
-                }
-        }.invokeOnCompletion {
-            viewModelScope.launch {
-                pushUIEvent(
-                    UIEvent.Type.ShowSnackbar(
-                        if (remoteOperationFailed == null || !remoteOperationFailed) {
-                            localizedStrings.DeletedEntireDataPermanently
-                        } else {
-                            localizedStrings.RemoteDataDeletionFailure
-                        },
-                    ),
-                )
             }
-            AppVM.pauseSnapshots = false
-            onCompletion()
-        }
+            .invokeOnCompletion {
+                viewModelScope.launch {
+                    pushUIEvent(
+                        UIEvent.Type.ShowSnackbar(
+                            if (remoteOperationFailed == null || !remoteOperationFailed) {
+                                localizedStrings.DeletedEntireDataPermanently
+                            } else {
+                                localizedStrings.RemoteDataDeletionFailure
+                            },
+                        ),
+                    )
+                }
+                AppVM.pauseSnapshots = false
+                onCompletion()
+            }
     }
 
     companion object {
-        val refreshLinksState = mutableStateOf(
-            RefreshLinksState(
-                isInRefreshingState = false,
-                currentIteration = 0,
-                total = 0,
-            ),
-        )
-        var onGoingWebCaptureState by mutableStateOf(
-            OnGoingWebCaptureState(
-                currentIteration = 0,
-                isInProgress = false,
-                total = 0,
-            ),
-        )
+        val refreshLinksState =
+            mutableStateOf(
+                RefreshLinksState(
+                    isInRefreshingState = false,
+                    currentIteration = 0,
+                    total = 0,
+                ),
+            )
+        var onGoingWebCaptureState by
+            mutableStateOf(
+                OnGoingWebCaptureState(
+                    currentIteration = 0,
+                    isInProgress = false,
+                    total = 0,
+                ),
+            )
     }
 
     fun refreshAllLinks() {
         AppVM.pauseSnapshots = true
-        viewModelScope.launch {
-            if (platform is Platform.Android && permissionManager.permittedToShowNotification() is PermissionStatus.NeedsRequest) return@launch
+        viewModelScope
+            .launch {
+                if (
+                    platform is Platform.Android &&
+                        permissionManager.permittedToShowNotification() is
+                            PermissionStatus.NeedsRequest
+                )
+                    return@launch
 
-            nativeUtils.onRefreshAllLinks(
-                localLinksRepo = linksRepo,
-                preferencesRepository = preferencesRepository,
-                refreshLinksRepo = refreshLinksRepo,
-            )
-        }.invokeOnCompletion {
-            AppVM.pauseSnapshots = false
-        }
+                nativeUtils.onRefreshAllLinks(
+                    localLinksRepo = linksRepo,
+                    preferencesRepository = preferencesRepository,
+                    refreshLinksRepo = refreshLinksRepo,
+                )
+            }
+            .invokeOnCompletion {
+                AppVM.pauseSnapshots = false
+            }
     }
 
     fun cancelRefreshingAllLinks() {
@@ -309,8 +339,16 @@ class DataSettingsScreenVM(
 
     fun captureAllWebPages() {
         viewModelScope.launch {
-            if (preferencesAsFlow.value.webCapturesLocation.isBlank() && platform !is Platform.Android.TV) return@launch
-            if (platform is Platform.Android && permissionManager.permittedToShowNotification() is PermissionStatus.NeedsRequest) return@launch
+            if (
+                preferencesAsFlow.value.webCapturesLocation.isBlank() &&
+                    platform !is Platform.Android.TV
+            )
+                return@launch
+            if (
+                platform is Platform.Android &&
+                    permissionManager.permittedToShowNotification() is PermissionStatus.NeedsRequest
+            )
+                return@launch
 
             webCapture.onCaptureAllWebPages(
                 preferences = preferencesAsFlow.value,
@@ -330,13 +368,15 @@ class DataSettingsScreenVM(
         onCompletion: () -> Unit,
     ) {
         onStart()
-        viewModelScope.launch {
-            linksRepo.forceSetDefaultFolderToInternalIds().collectLatest {
-                it.pushSnackbarOnFailure()
+        viewModelScope
+            .launch {
+                linksRepo.forceSetDefaultFolderToInternalIds().collectLatest {
+                    it.pushSnackbarOnFailure()
+                }
             }
-        }.invokeOnCompletion {
-            onCompletion()
-        }
+            .invokeOnCompletion {
+                onCompletion()
+            }
     }
 
     fun deleteDuplicates(
@@ -344,30 +384,33 @@ class DataSettingsScreenVM(
         onCompletion: () -> Unit,
     ) {
         AppVM.pauseSnapshots = true
-        viewModelScope.launch {
-            linksRepo.deleteDuplicateLinks().collectLatest {
-                it.onSuccess {
-                    onCompletion()
-                    pushUIEvent(
-                        UIEvent.Type.ShowSnackbar(
-                            localizedStrings.DeletedDuplicatedLinksSuccessfully + it.getRemoteOnlyFailureMsg(
-                                localizedStrings.RemoteExecutionFailed
+        viewModelScope
+            .launch {
+                linksRepo.deleteDuplicateLinks().collectLatest {
+                    it.onSuccess {
+                        onCompletion()
+                        pushUIEvent(
+                            UIEvent.Type.ShowSnackbar(
+                                localizedStrings.DeletedDuplicatedLinksSuccessfully +
+                                    it.getRemoteOnlyFailureMsg(
+                                        localizedStrings.RemoteExecutionFailed,
+                                    ),
                             ),
-                        ),
-                    )
-                }
-                it.onLoading {
-                    onStart()
-                }
-                it.onFailure {
-                    onCompletion()
-                    pushUIEvent(UIEvent.Type.ShowSnackbar(it.message.toString()))
+                        )
+                    }
+                    it.onLoading {
+                        onStart()
+                    }
+                    it.onFailure {
+                        onCompletion()
+                        pushUIEvent(UIEvent.Type.ShowSnackbar(it.message.toString()))
+                    }
                 }
             }
-        }.invokeOnCompletion {
-            AppVM.pauseSnapshots = false
-            AppVM.forceSnapshot()
-        }
+            .invokeOnCompletion {
+                AppVM.pauseSnapshots = false
+                AppVM.forceSnapshot()
+            }
     }
 
     fun changeExportLocation(
@@ -378,20 +421,23 @@ class DataSettingsScreenVM(
     ) {
         viewModelScope.launch {
             try {
-                val newExportLocation = if (platform == Platform.Desktop) {
-                    exportLocation
-                } else {
-                    fileManager.pickADirectory() ?: throw NullPointerException(
-                        localizedStrings.InvalidExportDir,
-                    )
-                }
+                val newExportLocation =
+                    if (platform == Platform.Desktop) {
+                        exportLocation
+                    } else {
+                        fileManager.pickADirectory()
+                            ?: throw NullPointerException(
+                                localizedStrings.InvalidExportDir,
+                            )
+                    }
 
                 preferencesRepository.changePreferenceValue(
-                    preferenceKey = when (exportLocationType) {
-                        ExportLocationType.EXPORT -> AppPreferences.EXPORT_LOCATION
-                        ExportLocationType.SNAPSHOT -> AppPreferences.BACKUP_LOCATION
-                        ExportLocationType.WEB_CAPTURE -> AppPreferences.WEB_CAPTURES_LOCATION
-                    },
+                    preferenceKey =
+                        when (exportLocationType) {
+                            ExportLocationType.EXPORT -> AppPreferences.EXPORT_LOCATION
+                            ExportLocationType.SNAPSHOT -> AppPreferences.BACKUP_LOCATION
+                            ExportLocationType.WEB_CAPTURE -> AppPreferences.WEB_CAPTURES_LOCATION
+                        },
                     newValue = newExportLocation,
                 )
             } catch (e: Exception) {

@@ -10,11 +10,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PanelsDao {
-    @Query("SELECT MAX(localId) FROM panel")
-    suspend fun getLatestPanelID(): Long
+    @Query("SELECT MAX(localId) FROM panel") suspend fun getLatestPanelID(): Long
 
-    @Query("SELECT MAX(localId) FROM panel_folder")
-    suspend fun getLatestPanelFolderID(): Long
+    @Query("SELECT MAX(localId) FROM panel_folder") suspend fun getLatestPanelFolderID(): Long
 
     @Insert suspend fun addANewPanel(panel: Panel): Long
 
@@ -35,8 +33,7 @@ interface PanelsDao {
 
     @Insert suspend fun addMultiplePanelFolders(panelFolders: List<PanelFolder>)
 
-    @Query("DELETE FROM panel WHERE localId = :id")
-    suspend fun deleteAPanel(id: Long)
+    @Query("DELETE FROM panel WHERE localId = :id") suspend fun deleteAPanel(id: Long)
 
     @Query("UPDATE panel SET panelName = :newName WHERE localId = :panelId")
     suspend fun updateAPanelName(
@@ -64,20 +61,16 @@ interface PanelsDao {
     @Query("DELETE FROM panel_folder WHERE folderId = :folderID")
     suspend fun deleteAFolderFromAllPanels(folderID: Long)
 
-    @Query("SELECT * FROM panel")
-    fun getAllThePanels(): Flow<List<Panel>>
+    @Query("SELECT * FROM panel") fun getAllThePanels(): Flow<List<Panel>>
 
-    @Query("SELECT * FROM panel")
-    suspend fun getAllThePanelsAsAList(): List<Panel>
+    @Query("SELECT * FROM panel") suspend fun getAllThePanelsAsAList(): List<Panel>
 
-    @Query("SELECT EXISTS(SELECT 1 FROM panel)")
-    suspend fun doesPanelsTableHaveData(): Boolean
+    @Query("SELECT EXISTS(SELECT 1 FROM panel)") suspend fun doesPanelsTableHaveData(): Boolean
 
     @Query("SELECT * FROM panel_folder")
     suspend fun getAllThePanelFoldersAsAList(): List<PanelFolder>
 
-    @Query("SELECT * FROM panel_folder")
-    fun getAllThePanelFoldersAsAFlow(): Flow<List<PanelFolder>>
+    @Query("SELECT * FROM panel_folder") fun getAllThePanelFoldersAsAFlow(): Flow<List<PanelFolder>>
 
     @Query("SELECT * FROM panel_folder WHERE connectedPanelId = :panelId")
     fun getAllTheFoldersFromAPanel(panelId: Long): Flow<List<PanelFolder>>

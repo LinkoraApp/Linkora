@@ -37,6 +37,10 @@ import com.sakethh.linkora.utils.pushSnackbar
 import com.sakethh.linkora.worker.SnapshotWorker
 import getCertificateInfo
 import getFileNameWithTimestamp
+import java.io.ByteArrayInputStream
+import java.io.File
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -45,14 +49,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import java.io.ByteArrayInputStream
-import java.io.File
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
 
 actual class FileManager(
     private val context: Context,
-    private val localizedStrings: () -> LocalizedStrings
+    private val localizedStrings: () -> LocalizedStrings,
 ) {
     private suspend fun writeFileToSelectedDir(
         exportLocation: String,
@@ -61,25 +61,27 @@ actual class FileManager(
         byteArray: ByteArray,
         onCompletion: suspend (String) -> Unit,
     ) {
-        val (newFile, exportFileName) = createNewFile(
-            context = context,
-            exportLocation = exportLocation,
-            exportFileType = exportFileType,
-            exportLocationType = exportLocationType,
-        )
-        val isSuccess = withContext(Dispatchers.IO) {
-            try {
-                newFile?.uri?.let { fileUri ->
-                    context.contentResolver.openOutputStream(fileUri)?.use { outputStream ->
-                        outputStream.write(byteArray)
+        val (newFile, exportFileName) =
+            createNewFile(
+                context = context,
+                exportLocation = exportLocation,
+                exportFileType = exportFileType,
+                exportLocationType = exportLocationType,
+            )
+        val isSuccess =
+            withContext(Dispatchers.IO) {
+                try {
+                    newFile?.uri?.let { fileUri ->
+                        context.contentResolver.openOutputStream(fileUri)?.use { outputStream ->
+                            outputStream.write(byteArray)
+                        }
                     }
+                    true
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    false
                 }
-                true
-            } catch (e: Exception) {
-                e.printStackTrace()
-                false
             }
-        }
         if (isSuccess) {
             onCompletion(exportFileName)
         } else {
@@ -94,15 +96,16 @@ actual class FileManager(
         rawExportString: RawExportString,
         onCompletion: suspend (String) -> Unit,
     ) {
-        val isOnTV = with(context) {
-            onTV()
-        }
+        val isOnTV =
+            with(context) {
+                onTV()
+            }
         if (isOnTV) {
             writeFileToPublicDir(
                 exportFileType = exportFileType,
                 exportLocationType = exportLocationType,
                 rawExportString = rawExportString,
-                onCompletion = onCompletion
+                onCompletion = onCompletion,
             )
         } else {
             writeFileToSelectedDir(
@@ -120,13 +123,14 @@ actual class FileManager(
         exportLocationType: ExportLocationType,
         rawExportString: RawExportString,
         onCompletion: suspend (String) -> Unit,
-    ) = withContext(Dispatchers.IO) {
-        val defaultFolder = getDefaultFolder(exportLocationType)
-        val exportFileName = getFileNameWithTimestamp(exportFileType, exportLocationType)
-        val file = File(defaultFolder, exportFileName)
-        file.writeText(rawExportString)
-        onCompletion(exportFileName)
-    }
+    ) =
+        withContext(Dispatchers.IO) {
+            val defaultFolder = getDefaultFolder(exportLocationType)
+            val exportFileName = getFileNameWithTimestamp(exportFileType, exportLocationType)
+            val file = File(defaultFolder, exportFileName)
+            file.writeText(rawExportString)
+            onCompletion(exportFileName)
+        }
 
     actual suspend fun saveSyncServerCertificateInternally(
         certificate: ByteArray,
@@ -147,8 +151,10 @@ actual class FileManager(
             DependencyContainer.snapshotRepo.addASnapshot(Snapshot(content = rawExportString))
 
         val parameters =
-            Data.Builder().putLong(key = "rawExportStringID", value = rawExportStringID)
-                .putString(key = "fileType", value = fileType.name).build()
+            Data.Builder()
+                .putLong(key = "rawExportStringID", value = rawExportStringID)
+                .putString(key = "fileType", value = fileType.name)
+                .build()
         snapshotWorker.setInputData(parameters)
         WorkManager.getInstance(context).enqueue(snapshotWorker.build())
     }
@@ -168,52 +174,64 @@ actual class FileManager(
     private suspend fun deleteAutoBackupsViaSAF(
         backupLocation: String,
         threshold: Int,
-        onCompletion: (Int) -> Unit
+        onCompletion: (Int) -> Unit,
     ) {
         withContext(Dispatchers.IO) {
-            DocumentFile.fromTreeUri(context, backupLocation.toUri())?.listFiles()?.filter {
-                it.name?.startsWith("LinkoraSnapshot-") == true
-            }?.let { snapshots ->
-                val snapshotsCount = snapshots.count()
-                if (snapshotsCount > threshold) {
-                    snapshots.sortedBy {
-                        it.lastModified()
-                    }.take(snapshotsCount - threshold).apply {
-                        forEach {
-                            it.delete()
-                        }
-                        onCompletion(count())
-                    }
-                } else {
-                    onCompletion(0)
+            DocumentFile.fromTreeUri(context, backupLocation.toUri())
+                ?.listFiles()
+                ?.filter {
+                    it.name?.startsWith("LinkoraSnapshot-") == true
                 }
-            }
+                ?.let { snapshots ->
+                    val snapshotsCount = snapshots.count()
+                    if (snapshotsCount > threshold) {
+                        snapshots
+                            .sortedBy {
+                                it.lastModified()
+                            }
+                            .take(snapshotsCount - threshold)
+                            .apply {
+                                forEach {
+                                    it.delete()
+                                }
+                                onCompletion(count())
+                            }
+                    } else {
+                        onCompletion(0)
+                    }
+                }
         }
     }
 
     private suspend fun deleteAutoBackupsViaPOSIX(
         backupFolder: File,
         threshold: Int,
-        onCompletion: (Int) -> Unit
+        onCompletion: (Int) -> Unit,
     ) {
         withContext(Dispatchers.IO) {
-            backupFolder.listFiles()?.filter {
-                it.name.startsWith("LinkoraSnapshot-")
-            }?.let { snapshots ->
-                val snapshotsCount = snapshots.count()
-                if (snapshotsCount > threshold) {
-                    snapshots.sortedBy {
-                        it.lastModified()
-                    }.take(snapshotsCount - threshold).apply {
-                        forEach {
-                            it.delete()
-                        }
-                        onCompletion(count())
-                    }
-                } else {
-                    onCompletion(0)
+            backupFolder
+                .listFiles()
+                ?.filter {
+                    it.name.startsWith("LinkoraSnapshot-")
                 }
-            }
+                ?.let { snapshots ->
+                    val snapshotsCount = snapshots.count()
+                    if (snapshotsCount > threshold) {
+                        snapshots
+                            .sortedBy {
+                                it.lastModified()
+                            }
+                            .take(snapshotsCount - threshold)
+                            .apply {
+                                forEach {
+                                    it.delete()
+                                }
+                                onCompletion(count())
+                            }
+                    } else {
+                        onCompletion(0)
+                    }
+                }
         }
     }
 
@@ -223,20 +241,21 @@ actual class FileManager(
         onCompletion: (Int) -> Unit,
     ) {
         try {
-            val isOnTV = with(context) {
-                onTV()
-            }
+            val isOnTV =
+                with(context) {
+                    onTV()
+                }
             if (isOnTV) {
                 deleteAutoBackupsViaPOSIX(
                     backupFolder = getDefaultFolder(ExportLocationType.SNAPSHOT),
                     threshold = threshold,
-                    onCompletion = onCompletion
+                    onCompletion = onCompletion,
                 )
             } else {
                 deleteAutoBackupsViaSAF(
                     backupLocation = backupLocation,
                     threshold = threshold,
-                    onCompletion = onCompletion
+                    onCompletion = onCompletion,
                 )
             }
         } catch (e: Exception) {
@@ -248,20 +267,23 @@ actual class FileManager(
     suspend fun importFile(importFileType: ImportFileType): String? {
         AndroidUIEvent.pushUIEvent(
             AndroidUIEvent.Type.ImportAFile(
-                fileType = when (importFileType) {
-                    ImportFileType.JSON -> "application/json"
-                    ImportFileType.HTML -> "text/html"
-                    else -> "*/*"
-                },
+                fileType =
+                    when (importFileType) {
+                        ImportFileType.JSON -> "application/json"
+                        ImportFileType.HTML -> "text/html"
+                        else -> "*/*"
+                    },
             ),
         )
 
-        val importEvent = try {
-            AndroidUIEvent.androidUIEventChannel.first() as? AndroidUIEvent.Type.UriOfTheFileForImporting
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return null
-        }
+        val importEvent =
+            try {
+                AndroidUIEvent.androidUIEventChannel.first()
+                    as? AndroidUIEvent.Type.UriOfTheFileForImporting
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return null
+            }
 
         val uri = importEvent?.uri ?: return null
 
@@ -290,61 +312,75 @@ actual class FileManager(
 
         emit(
             Result.Loading(
-                message = if (!basedOnNewExportSchema) {
-                    "This JSON file is based on the legacy schema."
-                } else {
-                    "This JSON file is based on latest schema."
-                },
+                message =
+                    if (!basedOnNewExportSchema) {
+                        "This JSON file is based on the legacy schema."
+                    } else {
+                        "This JSON file is based on latest schema."
+                    },
             ),
         )
 
-        val jsonObj = if (!basedOnNewExportSchema) {
-            Json.decodeFromString<LegacyExportSchema>(jsonContent).asJSONExportSchema(
-                userAgent = DependencyContainer.preferencesRepo.getPreferences().primaryJsoupUserAgent,
-            )
-        } else {
-            Utils.json.decodeFromString<JSONExportSchema>(jsonContent).run {
-                JSONExportSchema(
-                    schemaVersion = schemaVersion,
-                    links = links.map {
-                        it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
-                    },
-                    folders = folders.map {
-                        it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
-                    },
-                    panels = PanelForJSONExportSchema(
-                        panels = panels.panels.map {
-                            it.copy(
-                                remoteId = null,
-                                lastModified = currentSystemEpochSeconds
-                            )
-                        },
-                        panelFolders = panels.panelFolders.map {
-                            it.copy(
-                                remoteId = null,
-                                lastModified = currentSystemEpochSeconds
-                            )
-                        },
-                    ),
-                    tags = tags.map {
-                        it.copy(
-                            remoteId = null,
-                            lastModified = currentSystemEpochSeconds,
-                        )
-                    },
-                    linkTags = linkTags.map {
-                        it.copy(
-                            remoteId = null,
-                            lastModified = currentSystemEpochSeconds,
-                        )
-                    },
-                )
+        val jsonObj =
+            if (!basedOnNewExportSchema) {
+                Json.decodeFromString<LegacyExportSchema>(jsonContent)
+                    .asJSONExportSchema(
+                        userAgent =
+                            DependencyContainer.preferencesRepo
+                                .getPreferences()
+                                .primaryJsoupUserAgent,
+                    )
+            } else {
+                Utils.json.decodeFromString<JSONExportSchema>(jsonContent).run {
+                    JSONExportSchema(
+                        schemaVersion = schemaVersion,
+                        links =
+                            links.map {
+                                it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
+                            },
+                        folders =
+                            folders.map {
+                                it.copy(remoteId = null, lastModified = currentSystemEpochSeconds)
+                            },
+                        panels =
+                            PanelForJSONExportSchema(
+                                panels =
+                                    panels.panels.map {
+                                        it.copy(
+                                            remoteId = null,
+                                            lastModified = currentSystemEpochSeconds,
+                                        )
+                                    },
+                                panelFolders =
+                                    panels.panelFolders.map {
+                                        it.copy(
+                                            remoteId = null,
+                                            lastModified = currentSystemEpochSeconds,
+                                        )
+                                    },
+                            ),
+                        tags =
+                            tags.map {
+                                it.copy(
+                                    remoteId = null,
+                                    lastModified = currentSystemEpochSeconds,
+                                )
+                            },
+                        linkTags =
+                            linkTags.map {
+                                it.copy(
+                                    remoteId = null,
+                                    lastModified = currentSystemEpochSeconds,
+                                )
+                            },
+                    )
+                }
             }
-        }
         emit(Result.Success(jsonObj))
-    }.catch {
-        emit(Result.Failure(it))
     }
+        .catch {
+            emit(Result.Failure(it))
+        }
 
     actual suspend fun importFromHTMLString(): Flow<Result<String>> = flow {
         val importContent =
@@ -353,9 +389,10 @@ actual class FileManager(
 
         emit(Result.Loading(message = "Reading the file"))
         emit(Result.Success(importContent))
-    }.catch {
-        emit(Result.Failure(it))
     }
+        .catch {
+            emit(Result.Failure(it))
+        }
 
     actual suspend fun getSyncServerCertificate(
         onCompletion: (certInfo: String) -> Unit,
@@ -367,7 +404,9 @@ actual class FileManager(
         )
         var certInfo = ""
         return try {
-            val (uri) = AndroidUIEvent.androidUIEventChannel.first() as AndroidUIEvent.Type.UriOfTheFileForImporting
+            val (uri) =
+                AndroidUIEvent.androidUIEventChannel.first()
+                    as AndroidUIEvent.Type.UriOfTheFileForImporting
             if (uri == null) {
                 return null
             }
@@ -376,11 +415,14 @@ actual class FileManager(
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
                     val factory = CertificateFactory.getInstance("X.509")
                     val inputStreamBytes = inputStream.readBytes()
-                    certInfo = getCertificateInfo(
-                        factory = factory,
-                        inputStream = ByteArrayInputStream(inputStreamBytes),
-                    )
-                    (factory.generateCertificate(ByteArrayInputStream(inputStreamBytes)) as X509Certificate).encoded
+                    certInfo =
+                        getCertificateInfo(
+                            factory = factory,
+                            inputStream = ByteArrayInputStream(inputStreamBytes),
+                        )
+                    (factory.generateCertificate(ByteArrayInputStream(inputStreamBytes))
+                            as X509Certificate)
+                        .encoded
                 }
             }
         } catch (e: Exception) {
@@ -392,19 +434,23 @@ actual class FileManager(
     }
 
     // these two operations aren't called on android
-    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> = emptyFlow()
+    actual suspend fun importFromJSONObj(fileLocation: String): Flow<Result<JSONExportSchema>> =
+        emptyFlow()
 
-    actual suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>> = emptyFlow()
+    actual suspend fun importFromHTMLString(fileLocation: String): Flow<Result<String>> =
+        emptyFlow()
 
     actual suspend fun openWebCaptureFolder(link: String) {
         val captureFolderUUID =
-            DependencyContainer.webCaptureRepo.getFolderNameByLink(link) ?: return pushUIEvent(
-                UIEvent.Type.ShowSnackbar(localizedStrings().NoWebpageFoundForLink)
-            )
+            DependencyContainer.webCaptureRepo.getFolderNameByLink(link)
+                ?: return pushUIEvent(
+                    UIEvent.Type.ShowSnackbar(localizedStrings().NoWebpageFoundForLink),
+                )
 
-        val isOnTV = with(context) {
-            onTV()
-        }
+        val isOnTV =
+            with(context) {
+                onTV()
+            }
         val intent = Intent(Intent.ACTION_VIEW)
 
         if (isOnTV) {
@@ -413,24 +459,27 @@ actual class FileManager(
 
             if (!captureFolder.exists()) {
                 pushUIEvent(
-                    UIEvent.Type.ShowSnackbar(localizedStrings().NoWebpageFoundForLink)
+                    UIEvent.Type.ShowSnackbar(localizedStrings().NoWebpageFoundForLink),
                 )
                 return
             }
 
             intent.setDataAndType(
                 captureFolder.absolutePath.toUri(),
-                DocumentsContract.Document.MIME_TYPE_DIR
+                DocumentsContract.Document.MIME_TYPE_DIR,
             )
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
         } else {
             val rootFolderUri =
                 DependencyContainer.preferencesRepo.getPreferences().webCapturesLocation
 
-            val captureFolderUri = DocumentFile.fromTreeUri(context, rootFolderUri.toUri())
-                ?.findFile(captureFolderUUID)?.uri ?: return pushUIEvent(
-                UIEvent.Type.ShowSnackbar(localizedStrings().NoWebpageFoundForLink)
-            )
+            val captureFolderUri =
+                DocumentFile.fromTreeUri(context, rootFolderUri.toUri())
+                    ?.findFile(captureFolderUUID)
+                    ?.uri
+                    ?: return pushUIEvent(
+                        UIEvent.Type.ShowSnackbar(localizedStrings().NoWebpageFoundForLink),
+                    )
 
             intent.setDataAndType(captureFolderUri, DocumentsContract.Document.MIME_TYPE_DIR)
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -443,7 +492,9 @@ actual class FileManager(
             val clip = ClipData.newPlainText(localizedStrings().FolderName, captureFolderUUID)
             clipboard.setPrimaryClip(clip)
             pushUIEvent(
-                UIEvent.Type.ShowSnackbar(localizedStrings().CouldntOpenWebpageFolder_CopiedToClipBoard)
+                UIEvent.Type.ShowSnackbar(
+                    localizedStrings().CouldntOpenWebpageFolder_CopiedToClipBoard,
+                ),
             )
         }
     }

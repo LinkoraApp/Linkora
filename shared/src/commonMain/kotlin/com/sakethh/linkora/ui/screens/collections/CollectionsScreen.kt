@@ -146,7 +146,7 @@ fun CollectionsScreen(
     val isDetailVisible = scaffoldNavigator.scaffoldValue.primary == PaneAdaptedValue.Expanded
     val isDetailEmpty =
         currentDetailEntry == null ||
-                currentDetailEntry?.destination?.hasRoute<CollectionNavigation.Empty>() == true
+            currentDetailEntry?.destination?.hasRoute<CollectionNavigation.Empty>() == true
 
     LaunchedEffect(isDetailVisible, isDetailEmpty) {
         CollectionsScreenVM.inCollectionsListPane = !isDetailVisible || isDetailEmpty
@@ -174,13 +174,14 @@ fun CollectionsScreen(
     val isRootFoldersListAtTheEnd = retain {
         derivedStateOf {
             (rootFoldersListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) >=
-                    (rootFoldersListState.layoutInfo.totalItemsCount - Constants.TRIGGER_THRESHOLD_AT_THE_END)
+                (rootFoldersListState.layoutInfo.totalItemsCount -
+                    Constants.TRIGGER_THRESHOLD_AT_THE_END)
         }
     }
     val isTagsListAtTheEnd = retain {
         derivedStateOf {
             (tagsListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) >=
-                    (tagsListState.layoutInfo.totalItemsCount - Constants.TRIGGER_THRESHOLD_AT_THE_END)
+                (tagsListState.layoutInfo.totalItemsCount - Constants.TRIGGER_THRESHOLD_AT_THE_END)
         }
     }
 
@@ -194,8 +195,8 @@ fun CollectionsScreen(
 
     LaunchedEffect(Unit) {
         snapshotFlow {
-            rootFoldersListState.firstVisibleItemIndex
-        }
+                rootFoldersListState.firstVisibleItemIndex
+            }
             .debounce(500)
             .distinctUntilChanged()
             .collectLatest {
@@ -205,8 +206,8 @@ fun CollectionsScreen(
 
     LaunchedEffect(Unit) {
         snapshotFlow {
-            tagsListState.firstVisibleItemIndex
-        }
+                tagsListState.firstVisibleItemIndex
+            }
             .debounce(500)
             .distinctUntilChanged()
             .collectLatest {
@@ -291,7 +292,7 @@ fun CollectionsScreen(
                             coroutineScope.launch {
                                 if (detailNavController.currentDestination != null) {
                                     detailNavController.popBackStack<CollectionNavigation.Empty>(
-                                        inclusive = false
+                                        inclusive = false,
                                     )
                                 }
                                 pendingDetailDestination = collectionDetailPaneInfo
@@ -300,7 +301,8 @@ fun CollectionsScreen(
                                 )
                             }
                         },
-                        isSelected = lastDetailDestination?.currentFolder?.localId == Constants.ALL_LINKS_ID,
+                        isSelected =
+                            lastDetailDestination?.currentFolder?.localId == Constants.ALL_LINKS_ID,
                     )
                     ItemDivider()
                     DefaultFolderComponent(
@@ -322,7 +324,7 @@ fun CollectionsScreen(
                             coroutineScope.launch {
                                 if (detailNavController.currentDestination != null) {
                                     detailNavController.popBackStack<CollectionNavigation.Empty>(
-                                        inclusive = false
+                                        inclusive = false,
                                     )
                                 }
                                 pendingDetailDestination = collectionDetailPaneInfo
@@ -332,7 +334,8 @@ fun CollectionsScreen(
                             }
                         },
                         isSelected =
-                            lastDetailDestination?.currentFolder?.localId == Constants.SAVED_LINKS_ID,
+                            lastDetailDestination?.currentFolder?.localId ==
+                                Constants.SAVED_LINKS_ID,
                     )
                     DefaultFolderComponent(
                         name = localizedStrings.ImportantLinks,
@@ -353,7 +356,7 @@ fun CollectionsScreen(
                             coroutineScope.launch {
                                 if (detailNavController.currentDestination != null) {
                                     detailNavController.popBackStack<CollectionNavigation.Empty>(
-                                        inclusive = false
+                                        inclusive = false,
                                     )
                                 }
                                 pendingDetailDestination = collectionDetailPaneInfo
@@ -363,7 +366,8 @@ fun CollectionsScreen(
                             }
                         },
                         isSelected =
-                            lastDetailDestination?.currentFolder?.localId == Constants.IMPORTANT_LINKS_ID,
+                            lastDetailDestination?.currentFolder?.localId ==
+                                Constants.IMPORTANT_LINKS_ID,
                     )
                     DefaultFolderComponent(
                         name = localizedStrings.Archive,
@@ -384,7 +388,7 @@ fun CollectionsScreen(
                             coroutineScope.launch {
                                 if (detailNavController.currentDestination != null) {
                                     detailNavController.popBackStack<CollectionNavigation.Empty>(
-                                        inclusive = false
+                                        inclusive = false,
                                     )
                                 }
                                 pendingDetailDestination = collectionDetailPaneInfo
@@ -393,13 +397,14 @@ fun CollectionsScreen(
                                 )
                             }
                         },
-                        isSelected = lastDetailDestination?.currentFolder?.localId == Constants.ARCHIVE_ID,
+                        isSelected =
+                            lastDetailDestination?.currentFolder?.localId == Constants.ARCHIVE_ID,
                     )
                     Spacer(modifier = Modifier.height(15.dp))
 
                     Row(
-                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                            .fillMaxWidth(),
+                        modifier =
+                            Modifier.background(MaterialTheme.colorScheme.surface).fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
@@ -418,42 +423,51 @@ fun CollectionsScreen(
                                     }
                                     val indicatorWidth by animateDpAsState(txtWidth)
                                     Column(
-                                        modifier = Modifier.padding(start = 7.5.dp, end = 7.5.dp)
-                                            .highlightOnFocused()
-                                            .clickable(
-                                                interactionSource = remember { MutableInteractionSource() },
-                                                indication = null,
-                                                onClick = {
-                                                    coroutineScope.launch {
-                                                        collectionPagerState.animateScrollToPage(
-                                                            collectionRef
-                                                        )
-                                                    }
-                                                },
-                                            )
-                                            .pointerHoverIcon(PointerIcon.Hand)
+                                        modifier =
+                                            Modifier.padding(start = 7.5.dp, end = 7.5.dp)
+                                                .highlightOnFocused()
+                                                .clickable(
+                                                    interactionSource =
+                                                        remember { MutableInteractionSource() },
+                                                    indication = null,
+                                                    onClick = {
+                                                        coroutineScope.launch {
+                                                            collectionPagerState
+                                                                .animateScrollToPage(
+                                                                    collectionRef,
+                                                                )
+                                                        }
+                                                    },
+                                                )
+                                                .pointerHoverIcon(PointerIcon.Hand),
                                     ) {
                                         Text(
                                             text = collectionType,
                                             style = MaterialTheme.typography.titleMedium,
-                                            modifier = Modifier.onGloballyPositioned { layoutCoordinates ->
-                                                txtWidth = with(localDensity) {
-                                                    layoutCoordinates.size.width.toDp()
-                                                }
-                                            },
-                                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
-                                            fontSize = if (isSelected) 20.sp else 14.sp
+                                            modifier =
+                                                Modifier.onGloballyPositioned { layoutCoordinates ->
+                                                    txtWidth =
+                                                        with(localDensity) {
+                                                            layoutCoordinates.size.width.toDp()
+                                                        }
+                                                },
+                                            color =
+                                                if (isSelected) MaterialTheme.colorScheme.primary
+                                                else MaterialTheme.colorScheme.secondary,
+                                            fontSize = if (isSelected) 20.sp else 14.sp,
                                         )
                                         Spacer(modifier = Modifier.height(5.dp))
                                         AnimatedVisibility(
                                             visible = isSelected,
                                             enter = fadeIn(),
-                                            exit = fadeOut()
+                                            exit = fadeOut(),
                                         ) {
                                             Box(
-                                                contentAlignment = Alignment.Center
+                                                contentAlignment = Alignment.Center,
                                             ) {
-                                                TabRowDefaults.PrimaryIndicator(width = indicatorWidth)
+                                                TabRowDefaults.PrimaryIndicator(
+                                                    width = indicatorWidth,
+                                                )
                                             }
                                         }
                                     }
@@ -483,7 +497,9 @@ fun CollectionsScreen(
                             when (currentPage) {
                                 0 -> {
                                     item {
-                                        AnimatedVisibility(!rootFolders.isRetrieving && isRootFoldersEmpty) {
+                                        AnimatedVisibility(
+                                            !rootFolders.isRetrieving && isRootFoldersEmpty,
+                                        ) {
                                             DataEmptyScreen(
                                                 text = localizedStrings.NoFoldersFound,
                                                 paddingValues =
@@ -512,9 +528,11 @@ fun CollectionsScreen(
                                                     note = folder.note,
                                                     onClick = {
                                                         if (
-                                                            CollectionsScreenVM.selectedFoldersViaLongClick.contains(
-                                                                folder
-                                                            )
+                                                            CollectionsScreenVM
+                                                                .selectedFoldersViaLongClick
+                                                                .contains(
+                                                                    folder,
+                                                                )
                                                         ) {
                                                             return@FolderComponentParam
                                                         }
@@ -522,28 +540,41 @@ fun CollectionsScreen(
                                                             CollectionDetailPaneInfo(
                                                                 currentFolder = folder,
                                                                 currentTag = null,
-                                                                collectionType = CollectionType.FOLDER,
+                                                                collectionType =
+                                                                    CollectionType.FOLDER,
                                                             )
                                                         coroutineScope.launch {
-                                                            if (detailNavController.currentDestination != null) {
-                                                                detailNavController.popBackStack<CollectionNavigation.Empty>(
+                                                            if (
+                                                                detailNavController
+                                                                    .currentDestination != null
+                                                            ) {
+                                                                detailNavController.popBackStack<
+                                                                    CollectionNavigation.Empty,
+                                                                >(
                                                                     inclusive = false,
                                                                 )
                                                             }
                                                             pendingDetailDestination =
                                                                 collectionDetailPaneInfo
                                                             scaffoldNavigator.navigateTo(
-                                                                pane = ListDetailPaneScaffoldRole.Detail,
+                                                                pane =
+                                                                    ListDetailPaneScaffoldRole
+                                                                        .Detail,
                                                             )
                                                         }
                                                     },
                                                     onLongClick = {
-                                                        if (!CollectionsScreenVM.isSelectionEnabled.value) {
-                                                            CollectionsScreenVM.isSelectionEnabled.value =
-                                                                true
-                                                            CollectionsScreenVM.selectedFoldersViaLongClick.add(
-                                                                folder
-                                                            )
+                                                        if (
+                                                            !CollectionsScreenVM.isSelectionEnabled
+                                                                .value
+                                                        ) {
+                                                            CollectionsScreenVM.isSelectionEnabled
+                                                                .value = true
+                                                            CollectionsScreenVM
+                                                                .selectedFoldersViaLongClick
+                                                                .add(
+                                                                    folder,
+                                                                )
                                                         }
                                                     },
                                                     onMoreIconClick = {
@@ -554,10 +585,15 @@ fun CollectionsScreen(
                                                         )
                                                     },
                                                     isCurrentlyInDetailsView =
-                                                        remember(lastDetailDestination?.currentFolder?.localId) {
+                                                        remember(
+                                                            lastDetailDestination
+                                                                ?.currentFolder
+                                                                ?.localId,
+                                                        ) {
                                                             mutableStateOf(
-                                                                lastDetailDestination?.currentFolder?.localId ==
-                                                                        folder.localId,
+                                                                lastDetailDestination
+                                                                    ?.currentFolder
+                                                                    ?.localId == folder.localId,
                                                             )
                                                         },
                                                     showMoreIcon =
@@ -566,25 +602,36 @@ fun CollectionsScreen(
                                                         },
                                                     isSelectedForSelection =
                                                         rememberSaveable(
-                                                            CollectionsScreenVM.isSelectionEnabled.value,
-                                                            CollectionsScreenVM.selectedFoldersViaLongClick.size,
+                                                            CollectionsScreenVM.isSelectionEnabled
+                                                                .value,
+                                                            CollectionsScreenVM
+                                                                .selectedFoldersViaLongClick
+                                                                .size,
                                                         ) {
                                                             mutableStateOf(
-                                                                CollectionsScreenVM.isSelectionEnabled.value &&
-                                                                        CollectionsScreenVM.selectedFoldersViaLongClick
-                                                                            .contains(folder),
+                                                                CollectionsScreenVM
+                                                                    .isSelectionEnabled
+                                                                    .value &&
+                                                                    CollectionsScreenVM
+                                                                        .selectedFoldersViaLongClick
+                                                                        .contains(folder),
                                                             )
                                                         },
-                                                    showCheckBox = CollectionsScreenVM.isSelectionEnabled,
+                                                    showCheckBox =
+                                                        CollectionsScreenVM.isSelectionEnabled,
                                                     onCheckBoxChanged = { bool ->
                                                         if (bool) {
-                                                            CollectionsScreenVM.selectedFoldersViaLongClick.add(
-                                                                folder
-                                                            )
+                                                            CollectionsScreenVM
+                                                                .selectedFoldersViaLongClick
+                                                                .add(
+                                                                    folder,
+                                                                )
                                                         } else {
-                                                            CollectionsScreenVM.selectedFoldersViaLongClick.remove(
-                                                                folder
-                                                            )
+                                                            CollectionsScreenVM
+                                                                .selectedFoldersViaLongClick
+                                                                .remove(
+                                                                    folder,
+                                                                )
                                                         }
                                                     },
                                                     path = null,
@@ -623,7 +670,9 @@ fun CollectionsScreen(
                                         items(
                                             tags,
                                             key = {
-                                                "Collection-Screen-Tags-Page:$pageKey+" + "ID:" + it.localId
+                                                "Collection-Screen-Tags-Page:$pageKey+" +
+                                                    "ID:" +
+                                                    it.localId
                                             },
                                         ) { currentTag ->
                                             FolderComponent(
@@ -639,15 +688,22 @@ fun CollectionsScreen(
                                                                 collectionType = CollectionType.TAG,
                                                             )
                                                         coroutineScope.launch {
-                                                            if (detailNavController.currentDestination != null) {
-                                                                detailNavController.popBackStack<CollectionNavigation.Empty>(
+                                                            if (
+                                                                detailNavController
+                                                                    .currentDestination != null
+                                                            ) {
+                                                                detailNavController.popBackStack<
+                                                                    CollectionNavigation.Empty,
+                                                                >(
                                                                     inclusive = false,
                                                                 )
                                                             }
                                                             pendingDetailDestination =
                                                                 collectionDetailPaneInfo
                                                             scaffoldNavigator.navigateTo(
-                                                                pane = ListDetailPaneScaffoldRole.Detail,
+                                                                pane =
+                                                                    ListDetailPaneScaffoldRole
+                                                                        .Detail,
                                                             )
                                                         }
                                                     },
@@ -655,7 +711,7 @@ fun CollectionsScreen(
                                                     onMoreIconClick = {
                                                         coroutineScope.pushUIEvent(
                                                             UIEvent.Type.ShowTagMenuBtmSheet(
-                                                                selectedTag = currentTag
+                                                                selectedTag = currentTag,
                                                             ),
                                                         )
                                                     },
@@ -792,10 +848,12 @@ fun CollectionsScreen(
                     LaunchedEffect(pendingDetailDestination) {
                         pendingDetailDestination?.let { destination ->
 
-                            // on mobile, detailPane isn't composed until scaffoldNavigator#navigateTo is
+                            // on mobile, detailPane isn't composed until
+                            // scaffoldNavigator#navigateTo is
                             // called,
                             // so NavHost graph isn't set yet, wait for it
-                            snapshotFlow { detailNavController.currentDestination }.first { it != null }
+                            snapshotFlow { detailNavController.currentDestination }
+                                .first { it != null }
                             detailNavController.navigate(
                                 CollectionNavigation.Pane(Utils.json.encodeToString(destination)),
                             )
@@ -834,7 +892,11 @@ fun CollectionsScreen(
     PlatformSpecificBackHandler {
         if (CollectionsScreenVM.isSelectionEnabled.value) {
             coroutineScope.launch {
-                pushUIEvent(UIEvent.Type.ShowSnackbar(localizedStrings.FinishOrCancelTransferToNavigateBack))
+                pushUIEvent(
+                    UIEvent.Type.ShowSnackbar(
+                        localizedStrings.FinishOrCancelTransferToNavigateBack,
+                    ),
+                )
             }
         } else {
             navController.navigateUp()
@@ -877,7 +939,9 @@ private fun DefaultFolderComponent(
                     },
                 )
                 .then(
-                    if (isSelected && supportsWideDisplay() && localPlatform !is Platform.Android.TV) {
+                    if (
+                        isSelected && supportsWideDisplay() && localPlatform !is Platform.Android.TV
+                    ) {
                         Modifier.border(
                             width = 2.5.dp,
                             color = MaterialTheme.colorScheme.primary,

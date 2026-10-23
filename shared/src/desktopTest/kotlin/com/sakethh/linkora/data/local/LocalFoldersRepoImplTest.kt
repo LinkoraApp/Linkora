@@ -23,6 +23,10 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emptyFlow
@@ -31,10 +35,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertTrue
 
 class LocalFoldersRepoImplTest {
     private lateinit var database: LocalDatabase
@@ -71,10 +71,10 @@ class LocalFoldersRepoImplTest {
                 every { serverBaseUrl } returns "https://server.linkora.com"
                 every { serverSecurityToken } returns "mock-auth-token"
                 every { correlation } returns
-                        Correlation(
-                            id = "test-correlation-id",
-                            clientName = "test-correlation-client",
-                        )
+                    Correlation(
+                        id = "test-correlation-id",
+                        clientName = "test-correlation-client",
+                    )
             }
         coEvery { preferencesRepository.getPreferences() } returns mockPrefs
 
@@ -106,7 +106,8 @@ class LocalFoldersRepoImplTest {
     }
 
     @Test
-    fun `inserting folder with blank name is intercepted locally and outputs validation failure`() = runTest {
+    fun `inserting folder with blank name is intercepted locally and outputs validation failure`() =
+        runTest {
             val blankFolder =
                 Folder(
                     name = "",
@@ -118,7 +119,8 @@ class LocalFoldersRepoImplTest {
             localFoldersRepo
                 .insertANewFolder(
                     blankFolder,
-                ).collect {
+                )
+                .collect {
                     it.onFailure {
                         assert(it is Folder.BlankFolderName)
                     }
@@ -126,7 +128,8 @@ class LocalFoldersRepoImplTest {
         }
 
     @Test
-    fun `doesThisRootFolderExists correctly queries database for existing names regardless of Flow loading states`() = runTest {
+    fun `doesThisRootFolderExists correctly queries database for existing names regardless of Flow loading states`() =
+        runTest {
             val rootFolder =
                 Folder(
                     name = "TargetFolder",
@@ -149,7 +152,8 @@ class LocalFoldersRepoImplTest {
         }
 
     @Test
-    fun `deleting a folder triggers recursive array deque wipe of deep child folders links and panel associations`() = runTest {
+    fun `deleting a folder triggers recursive array deque wipe of deep child folders links and panel associations`() =
+        runTest {
             val rootId =
                 foldersDao.insertANewFolder(
                     Folder(
@@ -196,9 +200,10 @@ class LocalFoldersRepoImplTest {
         }
 
     @Test
-    fun `network failure during remote folder creation caches payload directly into pending sync queue`() = runTest {
+    fun `network failure during remote folder creation caches payload directly into pending sync queue`() =
+        runTest {
             coEvery { remoteFoldersRepo.createFolder(any()) } returns
-                    flowOf(Result.Failure(Exception("Network Timeout")))
+                flowOf(Result.Failure(Exception("Network Timeout")))
 
             val newFolder =
                 Folder(
@@ -215,14 +220,15 @@ class LocalFoldersRepoImplTest {
                 pendingSyncQueueRepo.addInQueue(
                     match { queueItem ->
                         queueItem.operation == "CREATE_FOLDER" &&
-                                queueItem.payload.contains("OfflineFolder")
+                            queueItem.payload.contains("OfflineFolder")
                     },
                 )
             }
         }
 
     @Test
-    fun `viaSocket flag bypasses remote operations completely even if push to server is configured`() = runTest {
+    fun `viaSocket flag bypasses remote operations completely even if push to server is configured`() =
+        runTest {
             val folder =
                 Folder(
                     name = "SocketFolder",

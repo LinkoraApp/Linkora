@@ -70,14 +70,15 @@ constructor(
     val showDialogBox: Boolean,
     val sheetState: SheetState,
     val onHide: () -> Unit,
-    val onSave: (
-        newTitle: String,
-        newNote: String,
-        newImageUrl: String,
-        newUrl: String,
-        selectedTags: List<Tag>,
-        onCompletion: () -> Unit,
-    ) -> Unit,
+    val onSave:
+        (
+            newTitle: String,
+            newNote: String,
+            newImageUrl: String,
+            newUrl: String,
+            selectedTags: List<Tag>,
+            onCompletion: () -> Unit,
+        ) -> Unit,
     val existingTitle: String,
     val existingNote: String,
     val existingImageUrl: String,
@@ -98,29 +99,33 @@ fun RenameLinkDialog(renameLinkDialogParam: RenameLinkDialogParam) {
         var selectedTags by rememberDeserializableMutableObject {
             mutableStateOf(renameLinkDialogParam.selectedTags)
         }
-        var newTitle by rememberSaveable(renameLinkDialogParam.existingTitle) {
-            mutableStateOf(renameLinkDialogParam.existingTitle)
-        }
-        var newNote by rememberSaveable(renameLinkDialogParam.existingNote) {
-            mutableStateOf(renameLinkDialogParam.existingNote)
-        }
-        var newImageURL by rememberSaveable(renameLinkDialogParam.existingImageUrl) {
-            mutableStateOf(renameLinkDialogParam.existingImageUrl)
-        }
-        var newUrl by rememberSaveable(renameLinkDialogParam.existingUrl) {
-            mutableStateOf(renameLinkDialogParam.existingUrl)
-        }
+        var newTitle by
+            rememberSaveable(renameLinkDialogParam.existingTitle) {
+                mutableStateOf(renameLinkDialogParam.existingTitle)
+            }
+        var newNote by
+            rememberSaveable(renameLinkDialogParam.existingNote) {
+                mutableStateOf(renameLinkDialogParam.existingNote)
+            }
+        var newImageURL by
+            rememberSaveable(renameLinkDialogParam.existingImageUrl) {
+                mutableStateOf(renameLinkDialogParam.existingImageUrl)
+            }
+        var newUrl by
+            rememberSaveable(renameLinkDialogParam.existingUrl) {
+                mutableStateOf(renameLinkDialogParam.existingUrl)
+            }
         var showProgressBar by rememberSaveable { mutableStateOf(false) }
 
         val content: ComposableContent = {
             Column(
-                Modifier
-                    .wrapContentSize()
+                Modifier.wrapContentSize()
                     .animateContentSize()
                     .padding(
                         bottom = 15.dp,
                         top = if (Platform.Android.onMobile()) 0.dp else 15.dp,
-                    ).fillMaxWidth()
+                    )
+                    .fillMaxWidth()
                     .verticalScroll(rememberScrollState()),
             ) {
                 Row(
@@ -134,7 +139,8 @@ fun RenameLinkDialog(renameLinkDialogParam: RenameLinkDialogParam) {
                         fontSize = 22.sp,
                         lineHeight = 27.sp,
                         textAlign = TextAlign.Start,
-                        modifier = Modifier.fillMaxWidth(if (!Platform.Android.onMobile()) 0.85f else 1f),
+                        modifier =
+                            Modifier.fillMaxWidth(if (!Platform.Android.onMobile()) 0.85f else 1f),
                     )
                     if (!Platform.Android.onMobile() && !showProgressBar) {
                         IconButton(
@@ -215,7 +221,9 @@ fun RenameLinkDialog(renameLinkDialogParam: RenameLinkDialogParam) {
                         modifier = Modifier.padding(start = 15.dp, top = 15.dp, bottom = 10.dp),
                     )
                     TagSelectionComponent(
-                        showCreateNewTagSheet = { coroutineScope.pushUIEvent(UIEvent.Type.ShowCreateTagBtmSheet) },
+                        showCreateNewTagSheet = {
+                            coroutineScope.pushUIEvent(UIEvent.Type.ShowCreateTagBtmSheet)
+                        },
                         paddingValues = PaddingValues(start = 15.dp, end = 15.dp),
                         allTags = renameLinkDialogParam.allTags.value,
                         selectedTags = selectedTags,
@@ -246,8 +254,7 @@ fun RenameLinkDialog(renameLinkDialogParam: RenameLinkDialogParam) {
                 Spacer(modifier = Modifier.height(10.dp))
                 Button(
                     modifier =
-                        Modifier
-                            .padding(start = 15.dp, end = 15.dp)
+                        Modifier.padding(start = 15.dp, end = 15.dp)
                             .pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxWidth()
                             .pressScaleEffect()
@@ -273,8 +280,7 @@ fun RenameLinkDialog(renameLinkDialogParam: RenameLinkDialogParam) {
                 Spacer(modifier = Modifier.height(2.dp))
                 OutlinedButton(
                     modifier =
-                        Modifier
-                            .padding(start = 15.dp, end = 15.dp)
+                        Modifier.padding(start = 15.dp, end = 15.dp)
                             .pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxWidth()
                             .pressScaleEffect()
@@ -296,17 +302,20 @@ fun RenameLinkDialog(renameLinkDialogParam: RenameLinkDialogParam) {
                 modifier = Modifier.imePadding(),
                 properties = ModalBottomSheetProperties(shouldDismissOnBackPress = false),
                 onDismissRequest = { if (!showProgressBar) renameLinkDialogParam.onHide() },
-            ) { content() }
+            ) {
+                content()
+            }
         } else {
             BasicAlertDialog(
                 modifier =
-                    Modifier
-                        .wrapContentSize()
+                    Modifier.wrapContentSize()
                         .clip(RoundedCornerShape(10.dp))
                         .background(AlertDialogDefaults.containerColor),
                 properties = DialogProperties(usePlatformDefaultWidth = false),
                 onDismissRequest = { if (!showProgressBar) renameLinkDialogParam.onHide() },
-            ) { content() }
+            ) {
+                content()
+            }
         }
     }
 }

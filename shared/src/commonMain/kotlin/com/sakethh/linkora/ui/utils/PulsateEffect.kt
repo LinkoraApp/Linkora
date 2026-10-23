@@ -25,9 +25,9 @@ fun Modifier.pressScaleEffect(targetValue: Float = 0.98f) = composed {
             targetValue = if (composableState.value == OnClickState.IDLE) 1.0f else targetValue,
         )
     this.graphicsLayer {
-        scaleX = scaleValue.value
-        scaleY = scaleValue.value
-    }
+            scaleX = scaleValue.value
+            scaleY = scaleValue.value
+        }
         .pointerInput(composableState.value) {
             awaitPointerEventScope {
                 composableState.value =

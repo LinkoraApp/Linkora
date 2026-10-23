@@ -103,13 +103,13 @@ fun GeneralSettingsScreen() {
             settingsScreenViewModel.generalSection(
                 onAndroidMobile,
                 preferences,
-                localizedStrings
+                localizedStrings,
             )
         }
     val isLinkoraTopAppBarEnabled by
-    rememberSaveable(preferences.useLinkoraTopDecoratorOnDesktop) {
-        mutableStateOf(preferences.useLinkoraTopDecoratorOnDesktop)
-    }
+        rememberSaveable(preferences.useLinkoraTopDecoratorOnDesktop) {
+            mutableStateOf(preferences.useLinkoraTopDecoratorOnDesktop)
+        }
     var tempSelectedAppIcon by rememberSaveable {
         mutableStateOf(preferences.selectedAppIcon)
     }
@@ -119,9 +119,10 @@ fun GeneralSettingsScreen() {
     val fontsEntries = retain {
         Font.entries.toPersistentList()
     }
-    val initialRouteEntries = retain(localizedStrings) {
-        initialRoutePairs(localizedStrings)
-    }
+    val initialRouteEntries =
+        retain(localizedStrings) {
+            initialRoutePairs(localizedStrings)
+        }
     SettingsSectionScaffold(
         topAppBarText = localizedStrings.General,
     ) { paddingValues, topAppBarScrollBehaviour ->
@@ -146,8 +147,7 @@ fun GeneralSettingsScreen() {
                             isSwitchEnabled = isLinkoraTopAppBarEnabled,
                             onSwitchStateChange = {
                                 settingsScreenViewModel.changeSettingPreferenceValue(
-                                    preferenceKey =
-                                        AppPreferences.DESKTOP_TOP_DECORATOR,
+                                    preferenceKey = AppPreferences.DESKTOP_TOP_DECORATOR,
                                     newValue = it,
                                 )
                             },
@@ -218,7 +218,7 @@ fun GeneralSettingsScreen() {
             if (platform is Platform.Android) {
                 item {
                     HorizontalDivider(
-                        modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp)
+                        modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp),
                     )
                 }
                 item {
@@ -238,7 +238,8 @@ fun GeneralSettingsScreen() {
                                     Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                                         .highlightOnFocused()
                                         .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
+                                            interactionSource =
+                                                remember { MutableInteractionSource() },
                                             indication = null,
                                             onClick = {
                                                 showIconSwitchDialogBox = true
@@ -260,7 +261,8 @@ fun GeneralSettingsScreen() {
                                                     Modifier.fillMaxSize()
                                                         .border(
                                                             width = 5.dp,
-                                                            color = MaterialTheme.colorScheme.primary,
+                                                            color =
+                                                                MaterialTheme.colorScheme.primary,
                                                             shape = CircleShape,
                                                         ),
                                             )
@@ -332,7 +334,8 @@ fun GeneralSettingsScreen() {
                         modifier =
                             Modifier.pressScaleEffect()
                                 .pointerHoverIcon(icon = PointerIcon.Hand)
-                                .fillMaxWidth().highlightOnFocused(shape = ButtonDefaults.shape),
+                                .fillMaxWidth()
+                                .highlightOnFocused(shape = ButtonDefaults.shape),
                     ) {
                         Text(
                             text = localizedStrings.Confirm,
@@ -352,7 +355,8 @@ fun GeneralSettingsScreen() {
                         modifier =
                             Modifier.pressScaleEffect()
                                 .pointerHoverIcon(icon = PointerIcon.Hand)
-                                .fillMaxWidth().highlightOnFocused(shape = ButtonDefaults.shape),
+                                .fillMaxWidth()
+                                .highlightOnFocused(shape = ButtonDefaults.shape),
                     ) {
                         Text(
                             text = localizedStrings.Cancel,
@@ -407,9 +411,10 @@ fun GeneralSettingsScreen() {
         )
     }
     if (showInitialNavigationChangerDialogBox) {
-        var selectedRoute by rememberSerializable(preferences.initialRouteId) {
-            mutableStateOf(preferences.initialRouteId.toInitialRoutePair(localizedStrings))
-        }
+        var selectedRoute by
+            rememberSerializable(preferences.initialRouteId) {
+                mutableStateOf(preferences.initialRouteId.toInitialRoutePair(localizedStrings))
+            }
 
         SwitchDialogBox(
             title = localizedStrings.SelectTheInitialScreen,
@@ -432,7 +437,7 @@ fun GeneralSettingsScreen() {
             },
             entryLabel = {
                 it.first
-            }
+            },
         )
     }
     if (showFontFamilySwitcherDialogBox) {
@@ -478,8 +483,10 @@ private fun <T> SwitchDialogBox(
         confirmButton = {
             Button(
                 onClick = onConfirm,
-                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
-                    .highlightOnFocused(shape = ButtonDefaults.shape),
+                modifier =
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        .fillMaxWidth()
+                        .highlightOnFocused(shape = ButtonDefaults.shape),
             ) {
                 Text(
                     text = localizedStrings.Confirm,
@@ -490,8 +497,10 @@ private fun <T> SwitchDialogBox(
         dismissButton = {
             OutlinedButton(
                 onClick = onDismissRequest,
-                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).fillMaxWidth()
-                    .highlightOnFocused(shape = ButtonDefaults.shape),
+                modifier =
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        .fillMaxWidth()
+                        .highlightOnFocused(shape = ButtonDefaults.shape),
             ) {
                 Text(
                     text = localizedStrings.Cancel,

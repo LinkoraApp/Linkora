@@ -9,10 +9,10 @@ sealed interface Platform {
 
         companion object {
             @Composable
-            fun onMobile(): Boolean = LocalPlatform.current !is TV && LocalPlatform.current is Mobile
+            fun onMobile(): Boolean =
+                LocalPlatform.current !is TV && LocalPlatform.current is Mobile
 
-            @Composable
-            fun onTV(): Boolean = LocalPlatform.current is TV
+            @Composable fun onTV(): Boolean = LocalPlatform.current is TV
         }
 
         data object TV : Android

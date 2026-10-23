@@ -38,7 +38,6 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sakethh.linkora.di.DependencyContainer
-import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.theme.LinkoraTheme
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.AndroidConstants
@@ -58,7 +57,8 @@ class CrashLogActivity : ComponentActivity() {
             val localizedStrings by retain {
                 // yeah
                 DependencyContainer.localizationRepo.localizedStrings
-            }.collectAsStateWithLifecycle()
+            }
+                .collectAsStateWithLifecycle()
             val crashLogs = retain {
                 intent?.getStringExtra(AndroidConstants.CRASH_LOG_KEY)
                     ?: localizedStrings.NothingFound
@@ -67,99 +67,105 @@ class CrashLogActivity : ComponentActivity() {
             val context = LocalContext.current
             val isSystemInDarkTheme = isSystemInDarkTheme()
             val preferences by preferencesRepo.preferencesAsFlow.collectAsStateWithLifecycle()
-            val colorScheme = retain(isSystemInDarkTheme, preferences) {
-                getAppColorScheme(preferences, context, isSystemInDarkTheme)
-            }
+            val colorScheme =
+                retain(isSystemInDarkTheme, preferences) {
+                    getAppColorScheme(preferences, context, isSystemInDarkTheme)
+                }
             LinkoraTheme(
                 colorScheme = colorScheme,
-                preferredFont = preferences.selectedFont
+                preferredFont = preferences.selectedFont,
             ) {
                 Surface {
-                    Scaffold(bottomBar = {
-                        Column(
-                            modifier = Modifier
-                                .background(BottomAppBarDefaults.containerColor)
-                                .navigationBarsPadding()
-                                .fillMaxWidth()
-                                .padding(15.dp)
-                        ) {
-                            FilledTonalButton(
-                                onClick = {
-                                    localClipboardManager.setText(AnnotatedString(crashLogs))
-                                    finishAndRemoveTask()
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .pressScaleEffect()
+                    Scaffold(
+                        bottomBar = {
+                            Column(
+                                modifier =
+                                    Modifier.background(BottomAppBarDefaults.containerColor)
+                                        .navigationBarsPadding()
+                                        .fillMaxWidth()
+                                        .padding(15.dp),
                             ) {
-                                Text(
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontSize = 16.sp,
-                                    text = localizedStrings.CopyCrashLog
-                                )
-                            }
-                            Button(
-                                onClick = {
-                                    val subject =
-                                        Uri.encode("Linkora ${Constants.APP_VERSION_NAME} Crashed")
-                                    val body = Uri.encode(crashLogs)
+                                FilledTonalButton(
+                                    onClick = {
+                                        localClipboardManager.setText(AnnotatedString(crashLogs))
+                                        finishAndRemoveTask()
+                                    },
+                                    modifier = Modifier.fillMaxWidth().pressScaleEffect(),
+                                ) {
+                                    Text(
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontSize = 16.sp,
+                                        text = localizedStrings.CopyCrashLog,
+                                    )
+                                }
+                                Button(
+                                    onClick = {
+                                        val subject =
+                                            Uri.encode(
+                                                "Linkora ${Constants.APP_VERSION_NAME} Crashed",
+                                            )
+                                        val body = Uri.encode(crashLogs)
 
-                                    val emailUri =
-                                        "mailto:${AndroidConstants.LINKORA_MAIL_ADDR}?subject=$subject&body=$body".toUri()
-                                    val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                                        data = emailUri
-                                        putExtra(Intent.EXTRA_EMAIL, arrayOf(AndroidConstants.LINKORA_MAIL_ADDR))
-                                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    }
+                                        val emailUri =
+                                            "mailto:${AndroidConstants.LINKORA_MAIL_ADDR}?subject=$subject&body=$body"
+                                                .toUri()
+                                        val emailIntent =
+                                            Intent(Intent.ACTION_SENDTO).apply {
+                                                data = emailUri
+                                                putExtra(
+                                                    Intent.EXTRA_EMAIL,
+                                                    arrayOf(AndroidConstants.LINKORA_MAIL_ADDR),
+                                                )
+                                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                            }
 
-                                    try {
-                                        localContext.startActivity(emailIntent)
-                                    } catch (_: ActivityNotFoundException) {
-                                        Toast.makeText(
-                                            localContext,
-                                            localizedStrings.EmailAppNotFound,
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .pressScaleEffect()
-                            ) {
-                                Text(
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontSize = 16.sp,
-                                    text = localizedStrings.ReportCrash
-                                )
+                                        try {
+                                            localContext.startActivity(emailIntent)
+                                        } catch (_: ActivityNotFoundException) {
+                                            Toast.makeText(
+                                                    localContext,
+                                                    localizedStrings.EmailAppNotFound,
+                                                    Toast.LENGTH_SHORT,
+                                                )
+                                                .show()
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth().pressScaleEffect(),
+                                ) {
+                                    Text(
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontSize = 16.sp,
+                                        text = localizedStrings.ReportCrash,
+                                    )
+                                }
                             }
-                        }
-                    }) { paddingValues ->
+                        },
+                    ) { paddingValues ->
                         Column(
-                            modifier = Modifier
-                                .addEdgeToEdgeScaffoldPadding(paddingValues)
-                                .fillMaxSize()
-                                .padding(15.dp)
-                                .verticalScroll(rememberScrollState())
-                                .statusBarsPadding()
-                                .navigationBarsPadding(),
-                            verticalArrangement = Arrangement.Center
+                            modifier =
+                                Modifier.addEdgeToEdgeScaffoldPadding(paddingValues)
+                                    .fillMaxSize()
+                                    .padding(15.dp)
+                                    .verticalScroll(rememberScrollState())
+                                    .statusBarsPadding()
+                                    .navigationBarsPadding(),
+                            verticalArrangement = Arrangement.Center,
                         ) {
                             Text(
                                 fontSize = 24.sp,
                                 style = MaterialTheme.typography.titleLarge,
                                 text = localizedStrings.LinkoraCrashed,
-                                modifier = Modifier
-                                    .padding(top = 25.dp)
+                                modifier = Modifier.padding(top = 25.dp),
                             )
                             Text(
                                 fontSize = 16.sp,
                                 style = MaterialTheme.typography.titleMedium,
                                 text = crashLogs,
                                 softWrap = false,
-                                modifier = Modifier
-                                    .horizontalScroll(rememberScrollState())
-                                    .padding(bottom = 25.dp, top = 25.dp)
-                                    .fillMaxSize()
+                                modifier =
+                                    Modifier.horizontalScroll(rememberScrollState())
+                                        .padding(bottom = 25.dp, top = 25.dp)
+                                        .fillMaxSize(),
                             )
                         }
                     }

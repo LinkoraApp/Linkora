@@ -36,26 +36,27 @@ import com.sakethh.linkora.utils.onTV
 import com.sakethh.linkora.worker.AllLinksWebCaptureWorker
 import com.sakethh.linkora.worker.RefreshAllLinksWorker
 import com.sakethh.linkora.worker.WebCaptureWorker
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.RandomAccessFile
+import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.RandomAccessFile
-import java.util.UUID
 
 actual class NativeUtils(
     private val context: Context,
 ) {
     actual fun onShare(url: String) {
-        val intent = Intent().apply {
-            action = Intent.ACTION_SEND
-            putExtra(Intent.EXTRA_TEXT, url)
-            type = "text/plain"
-        }
+        val intent =
+            Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, url)
+                type = "text/plain"
+            }
         val shareIntent = Intent.createChooser(intent, null)
         shareIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         context.startActivity(shareIntent)
@@ -67,9 +68,13 @@ actual class NativeUtils(
         refreshLinksRepo: RefreshLinksRepo,
     ) {
         val workManager = WorkManager.getInstance(context)
-        val request = OneTimeWorkRequestBuilder<RefreshAllLinksWorker>().setConstraints(
-            Constraints(requiredNetworkType = NetworkType.CONNECTED),
-        ).setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST).build()
+        val request =
+            OneTimeWorkRequestBuilder<RefreshAllLinksWorker>()
+                .setConstraints(
+                    Constraints(requiredNetworkType = NetworkType.CONNECTED),
+                )
+                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                .build()
 
         preferencesRepository.changePreferenceValue(
             preferenceKey = AppPreferences.REFRESH_ALL_LINKS_WORKER_UUID,
@@ -105,26 +110,31 @@ actual class NativeUtils(
     actual fun cancelRefreshingLinks() {
         RefreshAllLinksWorker.cancelLinksRefreshing(
             context,
-            refreshLinksWorkerTag = DependencyContainer.preferencesRepo.getPreferences().refreshLinksWorkerTag,
+            refreshLinksWorkerTag =
+                DependencyContainer.preferencesRepo.getPreferences().refreshLinksWorkerTag,
         )
     }
 
     actual class DataSyncingNotificationService(
         private val context: Context,
-        private val localizedStrings: () -> LocalizedStrings
+        private val localizedStrings: () -> LocalizedStrings,
     ) {
         private val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         actual fun showNotification() {
             val notification =
-                NotificationCompat.Builder(context, "1").setSmallIcon(R.drawable.notification_icon)
+                NotificationCompat.Builder(context, "1")
+                    .setSmallIcon(R.drawable.notification_icon)
                     .setContentTitle(localizedStrings().SyncingDataLabel)
                     .setProgress(
                         0,
                         0,
                         true,
-                    ).setPriority(NotificationCompat.PRIORITY_LOW).setSilent(true).build()
+                    )
+                    .setPriority(NotificationCompat.PRIORITY_LOW)
+                    .setSilent(true)
+                    .build()
 
             notificationManager.notify(1, notification)
         }
@@ -177,30 +187,34 @@ actual class NativeUtils(
         actual suspend fun saveHTMLPage(
             nativeFolderPath: String,
             url: String,
-        ): Result<Boolean> = withContext(Dispatchers.IO) {
-            val workerUUID = UUID.randomUUID()
+        ): Result<Boolean> =
+            withContext(Dispatchers.IO) {
+                val workerUUID = UUID.randomUUID()
 
-            val captureData =
-                workDataOf(
-                    WebCaptureWorker.LINK to url,
-                    WebCaptureWorker.WORKER_ID to workerUUID.toString(),
+                val captureData =
+                    workDataOf(
+                        WebCaptureWorker.LINK to url,
+                        WebCaptureWorker.WORKER_ID to workerUUID.toString(),
+                    )
+
+                val workManager = WorkManager.getInstance(context)
+                val request =
+                    OneTimeWorkRequestBuilder<WebCaptureWorker>()
+                        .setConstraints(
+                            Constraints(requiredNetworkType = NetworkType.CONNECTED),
+                        )
+                        .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                        .setInputData(captureData)
+                        .setId(workerUUID)
+                        .build()
+
+                workManager.enqueueUniqueWork(
+                    UUID.randomUUID().toString(),
+                    ExistingWorkPolicy.REPLACE,
+                    request,
                 )
-
-            val workManager = WorkManager.getInstance(context)
-            val request = OneTimeWorkRequestBuilder<WebCaptureWorker>().setConstraints(
-                Constraints(requiredNetworkType = NetworkType.CONNECTED),
-            ).setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-                .setInputData(captureData)
-                .setId(workerUUID)
-                .build()
-
-            workManager.enqueueUniqueWork(
-                UUID.randomUUID().toString(),
-                ExistingWorkPolicy.REPLACE,
-                request,
-            )
-            Result.Success(true)
-        }
+                Result.Success(true)
+            }
 
         actual suspend fun onCaptureAllWebPages(
             preferences: AppPreferences,
@@ -211,9 +225,13 @@ actual class NativeUtils(
             webCaptureRepo.deleteAllProcessedIds()
 
             val workManager = WorkManager.getInstance(context)
-            val request = OneTimeWorkRequestBuilder<AllLinksWebCaptureWorker>().setConstraints(
-                Constraints(requiredNetworkType = NetworkType.CONNECTED),
-            ).setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST).build()
+            val request =
+                OneTimeWorkRequestBuilder<AllLinksWebCaptureWorker>()
+                    .setConstraints(
+                        Constraints(requiredNetworkType = NetworkType.CONNECTED),
+                    )
+                    .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                    .build()
 
             DependencyContainer.preferencesRepo.changePreferenceValue(
                 preferenceKey = AppPreferences.WEB_CAPTURE_ALL_LINKS_WORKER_UUID,
@@ -232,9 +250,13 @@ actual class NativeUtils(
         }
 
         actual fun isWebCaptureWorkerEnqueued(): Flow<Boolean?> = channelFlow {
-            val workerId = DependencyContainer.preferencesRepo.readPreferenceValue(
-                preferenceKey = AppPreferences.WEB_CAPTURE_ALL_LINKS_WORKER_UUID,
-            ) ?: DependencyContainer.preferencesRepo.getPreferences().allLinksWebCaptureWorkerTag
+            val workerId =
+                DependencyContainer.preferencesRepo.readPreferenceValue(
+                    preferenceKey = AppPreferences.WEB_CAPTURE_ALL_LINKS_WORKER_UUID,
+                )
+                    ?: DependencyContainer.preferencesRepo
+                        .getPreferences()
+                        .allLinksWebCaptureWorkerTag
 
             WorkManager.getInstance(context)
                 .getWorkInfoByIdFlow(UUID.fromString(workerId))
@@ -255,35 +277,37 @@ actual class NativeUtils(
             androidDesktopWebCapture.nuke()
         }
 
-        private val captureDBFiles = listOf(
-            "${WebCaptureDatabase.NAME}.db",
-            "${WebCaptureDatabase.NAME}.db-wal",
-            "${WebCaptureDatabase.NAME}.db-shm",
-            "${WebCaptureDatabase.NAME}.db.lck",
-            "${WebCaptureDatabase.NAME}.db-journal",
-        )
+        private val captureDBFiles =
+            listOf(
+                "${WebCaptureDatabase.NAME}.db",
+                "${WebCaptureDatabase.NAME}.db-wal",
+                "${WebCaptureDatabase.NAME}.db-shm",
+                "${WebCaptureDatabase.NAME}.db.lck",
+                "${WebCaptureDatabase.NAME}.db-journal",
+            )
 
         private suspend fun checkAndFixDBPermissions(
             dbFilePath: String,
             webCaptureDatabaseManager: WebCaptureDatabaseManager,
             initPath: String,
-            onAccessError: suspend () -> Unit
-        ) = withContext(Dispatchers.IO) {
-            try {
-                RandomAccessFile(dbFilePath, "r").use { it.close() }
-            } catch (e: FileNotFoundException) {
-                if (e.message?.contains("EACCES") == true) {
-                    onAccessError()
+            onAccessError: suspend () -> Unit,
+        ) =
+            withContext(Dispatchers.IO) {
+                try {
+                    RandomAccessFile(dbFilePath, "r").use { it.close() }
+                } catch (e: FileNotFoundException) {
+                    if (e.message?.contains("EACCES") == true) {
+                        onAccessError()
+                    }
+                } finally {
+                    webCaptureDatabaseManager.initAndGetDatabase(initPath)
                 }
-            } finally {
-                webCaptureDatabaseManager.initAndGetDatabase(initPath)
             }
-        }
 
         private fun recreateDB(
             dbFilePath: String,
             readExistingDb: (File) -> Unit,
-            deleteExistingFiles: () -> Unit
+            deleteExistingFiles: () -> Unit,
         ) {
             val tempDbFile = File(context.cacheDir, "temp_db_restore.db")
 
@@ -305,12 +329,14 @@ actual class NativeUtils(
 
         private suspend fun prepareExternalDatabaseViaSAF(
             captureLocation: String,
-            webCaptureDatabaseManager: WebCaptureDatabaseManager
+            webCaptureDatabaseManager: WebCaptureDatabaseManager,
         ) {
-            val rawDirPath = getPOSIXPathFromSafUri(
-                context.applicationContext,
-                captureLocation.toUri()
-            ).toString()
+            val rawDirPath =
+                getPOSIXPathFromSafUri(
+                        context.applicationContext,
+                        captureLocation.toUri(),
+                    )
+                    .toString()
             val dbFilePath = "$rawDirPath/${WebCaptureDatabase.NAME}.db"
 
             checkAndFixDBPermissions(
@@ -328,26 +354,25 @@ actual class NativeUtils(
                             val existingDbDoc =
                                 webCaptureFolder.findFile("${WebCaptureDatabase.NAME}.db")
                             if (existingDbDoc != null && existingDbDoc.exists()) {
-                                context.contentResolver.openInputStream(existingDbDoc.uri)
-                                    ?.use { input ->
-                                        tempFile.outputStream()
-                                            .use { output -> input.copyTo(output) }
-                                    }
+                                context.contentResolver.openInputStream(existingDbDoc.uri)?.use {
+                                    input ->
+                                    tempFile.outputStream().use { output -> input.copyTo(output) }
+                                }
                             }
                         },
                         deleteExistingFiles = {
                             captureDBFiles.forEach { fileName ->
                                 webCaptureFolder.findFile(fileName)?.delete()
                             }
-                        }
+                        },
                     )
-                }
+                },
             )
         }
 
         private suspend fun prepareExternalDatabaseViaPOSIX(
             webCaptureFolder: File,
-            webCaptureDatabaseManager: WebCaptureDatabaseManager
+            webCaptureDatabaseManager: WebCaptureDatabaseManager,
         ) {
             val dbFilePath = "${webCaptureFolder.absolutePath}/${WebCaptureDatabase.NAME}.db"
             val defaultPath = getDefaultFolder(ExportLocationType.WEB_CAPTURE).absolutePath
@@ -370,27 +395,29 @@ actual class NativeUtils(
                             captureDBFiles.forEach { fileName ->
                                 File(webCaptureFolder, fileName).delete()
                             }
-                        }
+                        },
                     )
-                }
+                },
             )
         }
 
         actual suspend fun prepareExternalDatabase(
             captureLocation: String,
             webCaptureDatabaseManager: WebCaptureDatabaseManager,
-        ): Unit = withContext(Dispatchers.IO) {
-            val isOnTV = with(context) {
-                onTV()
+        ): Unit =
+            withContext(Dispatchers.IO) {
+                val isOnTV =
+                    with(context) {
+                        onTV()
+                    }
+                if (isOnTV) {
+                    prepareExternalDatabaseViaPOSIX(
+                        getDefaultFolder(ExportLocationType.WEB_CAPTURE),
+                        webCaptureDatabaseManager,
+                    )
+                } else {
+                    prepareExternalDatabaseViaSAF(captureLocation, webCaptureDatabaseManager)
+                }
             }
-            if (isOnTV) {
-                prepareExternalDatabaseViaPOSIX(
-                    getDefaultFolder(ExportLocationType.WEB_CAPTURE),
-                    webCaptureDatabaseManager
-                )
-            } else {
-                prepareExternalDatabaseViaSAF(captureLocation, webCaptureDatabaseManager)
-            }
-        }
     }
 }

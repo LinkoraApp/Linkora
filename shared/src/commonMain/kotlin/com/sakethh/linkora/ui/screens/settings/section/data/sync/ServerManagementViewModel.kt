@@ -35,10 +35,12 @@ open class ServerManagementViewModel(
     private val fileManager: FileManager,
     private val permissionManager: PermissionManager,
     private val network: Network,
-    private val localizationRepo: LocalizationRepo.Local
+    private val localizationRepo: LocalizationRepo.Local,
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
-    val localizedStrings get() = localizationRepo.localizedStrings.value
+    val localizedStrings
+        get() = localizationRepo.localizedStrings.value
+
     val serverSetupState =
         mutableStateOf(
             ServerSetupState(
@@ -61,14 +63,14 @@ open class ServerManagementViewModel(
 
                 networkRepo.testServerConnection(serverUrl, token).collectLatest {
                     it.onSuccess {
-                        serverSetupState.value =
-                            ServerSetupState(
-                                isConnecting = false,
-                                isConnectedSuccessfully = true,
-                                isError = false,
-                            )
-                        permissionManager.permittedToShowNotification()
-                    }
+                            serverSetupState.value =
+                                ServerSetupState(
+                                    isConnecting = false,
+                                    isConnectedSuccessfully = true,
+                                    isError = false,
+                                )
+                            permissionManager.permittedToShowNotification()
+                        }
                         .onFailure { exception ->
                             serverSetupState.value =
                                 ServerSetupState(
@@ -145,8 +147,8 @@ open class ServerManagementViewModel(
             if (preferences.canReadFromServer()) {
                 remoteSyncRepo.applyUpdatesFromRemote(timeStampAfter()).collectLatest {
                     it.onLoading {
-                        dataSyncLogs.add(it)
-                    }
+                            dataSyncLogs.add(it)
+                        }
                         .onSuccess {
                             AppVM.readSocketEvents(remoteSyncRepo, preferences)
                         }
@@ -169,8 +171,8 @@ open class ServerManagementViewModel(
                                 onCompletion()
                             }
                             it.onFailure {
-                                cancel()
-                            }
+                                    cancel()
+                                }
                                 .pushSnackbarOnFailure()
                         }
                 }

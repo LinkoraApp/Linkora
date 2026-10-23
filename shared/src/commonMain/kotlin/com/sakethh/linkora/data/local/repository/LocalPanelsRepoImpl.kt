@@ -76,19 +76,20 @@ class LocalPanelsRepoImpl(
                     PendingSyncQueue(
                         operation = SyncServerRoute.ADD_A_NEW_PANEL.name,
                         payload =
-                        Json.encodeToString(
-                            AddANewPanelDTO(
-                                panel.panelName,
-                                offlineSyncItemId = newPanelId!!,
-                                eventTimestamp = eventTimestamp,
-                                correlation = preferences.correlation,
+                            Json.encodeToString(
+                                AddANewPanelDTO(
+                                    panel.panelName,
+                                    offlineSyncItemId = newPanelId!!,
+                                    eventTimestamp = eventTimestamp,
+                                    correlation = preferences.correlation,
+                                ),
                             ),
-                        ),
                     ),
                 )
             },
         ) {
-            newPanelId = panelsDao.addANewPanel(panel.copy(localId = 0, lastModified = eventTimestamp))
+            newPanelId =
+                panelsDao.addANewPanel(panel.copy(localId = 0, lastModified = eventTimestamp))
             newPanelId
         }
     }
@@ -126,13 +127,13 @@ class LocalPanelsRepoImpl(
                         PendingSyncQueue(
                             operation = SyncServerRoute.DELETE_A_PANEL.name,
                             payload =
-                            Json.encodeToString(
-                                IDBasedDTO(
-                                    id = remotePanelId,
-                                    eventTimestamp = eventTimestamp,
-                                    correlation = preferences.correlation,
+                                Json.encodeToString(
+                                    IDBasedDTO(
+                                        id = remotePanelId,
+                                        eventTimestamp = eventTimestamp,
+                                        correlation = preferences.correlation,
+                                    ),
                                 ),
-                            ),
                         ),
                     )
                 }
@@ -176,14 +177,14 @@ class LocalPanelsRepoImpl(
                     PendingSyncQueue(
                         operation = SyncServerRoute.UPDATE_A_PANEL_NAME.name,
                         payload =
-                        Json.encodeToString(
-                            UpdatePanelNameDTO(
-                                newName,
-                                panelId,
-                                eventTimestamp = eventTimestamp,
-                                correlation = preferences.correlation,
+                            Json.encodeToString(
+                                UpdatePanelNameDTO(
+                                    newName,
+                                    panelId,
+                                    eventTimestamp = eventTimestamp,
+                                    correlation = preferences.correlation,
+                                ),
                             ),
-                        ),
                     ),
                 )
             },
@@ -216,7 +217,8 @@ class LocalPanelsRepoImpl(
             },
             performRemoteOperation = !viaSocket,
             remoteOperation = {
-                if (newPanelFolderId == null) return@performLocalOperationWithRemoteSyncFlow emptyFlow()
+                if (newPanelFolderId == null)
+                    return@performLocalOperationWithRemoteSyncFlow emptyFlow()
                 require(remoteIdOfFolder != null && remoteIdOfConnectedPanel != null)
                 remotePanelsRepo.addANewFolderInAPanel(
                     AddANewPanelFolderDTO(
@@ -251,17 +253,17 @@ class LocalPanelsRepoImpl(
                     PendingSyncQueue(
                         operation = SyncServerRoute.ADD_A_NEW_FOLDER_IN_A_PANEL.name,
                         payload =
-                        Json.encodeToString(
-                            AddANewPanelFolderDTO(
-                                folderId = panelFolder.folderId,
-                                panelPosition = panelFolder.panelPosition,
-                                folderName = panelFolder.folderName,
-                                connectedPanelId = panelFolder.connectedPanelId,
-                                offlineSyncItemId = newPanelFolderId!!,
-                                eventTimestamp = eventTimestamp,
-                                correlation = preferences.correlation,
+                            Json.encodeToString(
+                                AddANewPanelFolderDTO(
+                                    folderId = panelFolder.folderId,
+                                    panelPosition = panelFolder.panelPosition,
+                                    folderName = panelFolder.folderName,
+                                    connectedPanelId = panelFolder.connectedPanelId,
+                                    offlineSyncItemId = newPanelFolderId!!,
+                                    eventTimestamp = eventTimestamp,
+                                    correlation = preferences.correlation,
+                                ),
                             ),
-                        ),
                     ),
                 )
             },
@@ -318,14 +320,14 @@ class LocalPanelsRepoImpl(
                         PendingSyncQueue(
                             operation = SyncServerRoute.DELETE_A_FOLDER_FROM_A_PANEL.name,
                             payload =
-                            Json.encodeToString(
-                                DeleteAFolderFromAPanelDTO(
-                                    panelId = remotePanelId,
-                                    folderID = remoteFolderId,
-                                    eventTimestamp = eventTimestamp,
-                                    correlation = preferences.correlation,
+                                Json.encodeToString(
+                                    DeleteAFolderFromAPanelDTO(
+                                        panelId = remotePanelId,
+                                        folderID = remoteFolderId,
+                                        eventTimestamp = eventTimestamp,
+                                        correlation = preferences.correlation,
+                                    ),
                                 ),
-                            ),
                         ),
                     )
                 }
@@ -341,21 +343,28 @@ class LocalPanelsRepoImpl(
 
     override suspend fun isPanelsTableEmpty(): Boolean = !panelsDao.doesPanelsTableHaveData()
 
-    override suspend fun getAllThePanelFoldersAsAList(): List<PanelFolder> = panelsDao.getAllThePanelFoldersAsAList()
+    override suspend fun getAllThePanelFoldersAsAList(): List<PanelFolder> =
+        panelsDao.getAllThePanelFoldersAsAList()
 
-    override fun getAllThePanelFoldersAsAFlow(): Flow<List<PanelFolder>> = panelsDao.getAllThePanelFoldersAsAFlow()
+    override fun getAllThePanelFoldersAsAFlow(): Flow<List<PanelFolder>> =
+        panelsDao.getAllThePanelFoldersAsAFlow()
 
-    override fun getAllTheFoldersFromAPanel(panelId: Long): Flow<List<PanelFolder>> = panelsDao.getAllTheFoldersFromAPanel(panelId)
+    override fun getAllTheFoldersFromAPanel(panelId: Long): Flow<List<PanelFolder>> =
+        panelsDao.getAllTheFoldersFromAPanel(panelId)
 
     override suspend fun getPanel(panelId: Long): Panel = panelsDao.getPanel(panelId)
 
-    override suspend fun getPanelFolder(localId: Long): PanelFolder = panelsDao.getPanelFolder(localId)
+    override suspend fun getPanelFolder(localId: Long): PanelFolder =
+        panelsDao.getPanelFolder(localId)
 
-    override suspend fun getLocalPanelId(remoteId: Long): Long? = panelsDao.getLocalPanelId(remoteId)
+    override suspend fun getLocalPanelId(remoteId: Long): Long? =
+        panelsDao.getLocalPanelId(remoteId)
 
-    override suspend fun getRemotePanelId(localId: Long): Long? = panelsDao.getRemoteIdOfPanel(localId)
+    override suspend fun getRemotePanelId(localId: Long): Long? =
+        panelsDao.getRemoteIdOfPanel(localId)
 
-    override suspend fun getLocalPanelFolderId(remoteId: Long): Long? = panelsDao.getLocalPanelFolderId(remoteId)
+    override suspend fun getLocalPanelFolderId(remoteId: Long): Long? =
+        panelsDao.getLocalPanelFolderId(remoteId)
 
     override suspend fun updateAFolderName(
         folderID: Long,
@@ -370,7 +379,8 @@ class LocalPanelsRepoImpl(
         panelsDao.addMultiplePanels(panels)
     }
 
-    override suspend fun getUnSyncedPanelFolders(): List<PanelFolder> = panelsDao.getUnSyncedPanelFolders()
+    override suspend fun getUnSyncedPanelFolders(): List<PanelFolder> =
+        panelsDao.getUnSyncedPanelFolders()
 
     override suspend fun getUnSyncedPanels(): List<Panel> = panelsDao.getUnSyncedPanels()
 }

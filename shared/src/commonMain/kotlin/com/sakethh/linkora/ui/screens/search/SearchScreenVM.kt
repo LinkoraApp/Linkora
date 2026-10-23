@@ -50,10 +50,12 @@ class SearchScreenVM(
     private val localDatabaseUtilsRepo: LocalDatabaseUtilsRepo,
     private val localTagsRepo: LocalTagsRepo,
     private val preferencesRepository: PreferencesRepository,
-    private val localizationRepo: LocalizationRepo.Local
+    private val localizationRepo: LocalizationRepo.Local,
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
-    val localizedStrings get() = localizationRepo.localizedStrings.value
+    val localizedStrings
+        get() = localizationRepo.localizedStrings.value
+
     private val _searchQuery = mutableStateOf("")
     val searchQuery = _searchQuery
 
@@ -183,7 +185,9 @@ class SearchScreenVM(
                             }
 
                         val sortNum =
-                            if (sortOption == Sorting.NEW_TO_OLD || sortOption == Sorting.OLD_TO_NEW) {
+                            if (
+                                sortOption == Sorting.NEW_TO_OLD || sortOption == Sorting.OLD_TO_NEW
+                            ) {
                                 item.tagLocalId ?: item.folderLocalId ?: item.linkLocalId ?: 0L
                             } else {
                                 0L
@@ -201,19 +205,19 @@ class SearchScreenVM(
     init {
         viewModelScope.launch {
             hexadCombine(
-                snapshotFlow { _searchQuery.value },
-                preferencesAsFlow.map {
-                    it.selectedSortingType
-                },
-                preferencesAsFlow.map {
-                    it.forceShuffleLinks
-                },
-                snapshotFlow { _appliedFolderFilters.toList() },
-                snapshotFlow { _appliedLinkFilters.toList() },
-                snapshotFlow { _appliedTagFiltering.value },
-            ) { query, _, _, _, _, _ ->
-                query
-            }
+                    snapshotFlow { _searchQuery.value },
+                    preferencesAsFlow.map {
+                        it.selectedSortingType
+                    },
+                    preferencesAsFlow.map {
+                        it.forceShuffleLinks
+                    },
+                    snapshotFlow { _appliedFolderFilters.toList() },
+                    snapshotFlow { _appliedLinkFilters.toList() },
+                    snapshotFlow { _appliedTagFiltering.value },
+                ) { query, _, _, _, _, _ ->
+                    query
+                }
                 .collectLatest { query ->
                     searchResultsPaginator.cancelAndReset()
 
@@ -222,7 +226,8 @@ class SearchScreenVM(
                     }
 
                     if (query.isNotBlank()) {
-                        retrieveNextSearchPage() // will always start as a "new instance", since we canceled
+                        retrieveNextSearchPage() // will always start as a "new instance", since we
+                        // canceled
                         // and reset the state above
                     } else {
                         _searchResultsState.update { it.copy(isRetrieving = false) }
@@ -272,24 +277,30 @@ class SearchScreenVM(
             localLinksRepo
                 .addANewLink(
                     link =
-                    link.copy(
-                        linkType = LinkType.HISTORY_LINK,
-                        idOfLinkedFolder = null,
-                    ),
+                        link.copy(
+                            linkType = LinkType.HISTORY_LINK,
+                            idOfLinkedFolder = null,
+                        ),
                     linkSaveConfig =
-                    LinkSaveConfig(
-                        forceAutoDetectTitle = false,
-                        forceSaveWithoutRetrievingData = true,
-                        useProxy = preferences.useProxy,
-                        skipSavingIfExists = preferences.skipSavingExistingLink,
-                        forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
-                    ),
+                        LinkSaveConfig(
+                            forceAutoDetectTitle = false,
+                            forceSaveWithoutRetrievingData = true,
+                            useProxy = preferences.useProxy,
+                            skipSavingIfExists = preferences.skipSavingExistingLink,
+                            forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
+                        ),
                     selectedTagIds = tagIds,
                 )
                 .collectLatest {
                     it.onSuccess {
                         if (!it.isRemoteSuccessful()) {
-                            pushUIEvent(UIEvent.Type.ShowSnackbar(it.getRemoteOnlyFailureMsg(localizedStrings.RemoteExecutionFailed)))
+                            pushUIEvent(
+                                UIEvent.Type.ShowSnackbar(
+                                    it.getRemoteOnlyFailureMsg(
+                                        localizedStrings.RemoteExecutionFailed,
+                                    ),
+                                ),
+                            )
                         }
                     }
                     it.pushSnackbarOnFailure()
@@ -312,15 +323,15 @@ class SearchScreenVM(
             coroutineScope = viewModelScope,
             onRetrieve = { lastSeenId, lastSeenString ->
                 combine(
-                    preferencesAsFlow.map {
-                        it.selectedSortingType
-                    },
-                    preferencesAsFlow.map {
-                        it.forceShuffleLinks
-                    },
-                ) { selectedSortingType, forceShuffleLinks ->
-                    forceShuffleLinks to selectedSortingType
-                }
+                        preferencesAsFlow.map {
+                            it.selectedSortingType
+                        },
+                        preferencesAsFlow.map {
+                            it.forceShuffleLinks
+                        },
+                    ) { selectedSortingType, forceShuffleLinks ->
+                        forceShuffleLinks to selectedSortingType
+                    }
                     .flatMapLatest { (forceShuffleLinks, selectedSortingType) ->
                         localLinksRepo
                             .getLinks(
@@ -345,7 +356,9 @@ class SearchScreenVM(
                                                 result.data.map { link ->
                                                     LinkTagsPair(
                                                         link = link,
-                                                        tags = tagsForLinks[link.localId] ?: emptyList(),
+                                                        tags =
+                                                            tagsForLinks[link.localId]
+                                                                ?: emptyList(),
                                                     )
                                                 }
                                             Result.Success(pairs)

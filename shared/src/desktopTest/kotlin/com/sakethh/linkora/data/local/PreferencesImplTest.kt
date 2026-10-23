@@ -8,13 +8,13 @@ import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import kotlinx.coroutines.test.runTest
 import java.lang.reflect.Modifier
 import kotlin.math.abs
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlinx.coroutines.test.runTest
 
 class PreferencesImplTest {
 
@@ -92,80 +92,83 @@ class PreferencesImplTest {
 
     @Suppress("UNCHECKED_CAST")
     @Test
-    fun `every PreferenceKey must be mapped in updateStateMemory to trigger a StateFlow mutation`() = runTest {
-        val companion = AppPreferences.Companion
-        val keys =
-            companion::class
-                .java
-                .declaredMethods
-                .mapNotNull { method ->
-                    method.isAccessible = true
-                    try {
-                        method.invoke(companion) as? PreferenceKey<*>
-                    } catch (e: Exception) {
-                        null
+    fun `every PreferenceKey must be mapped in updateStateMemory to trigger a StateFlow mutation`() =
+        runTest {
+            val companion = AppPreferences.Companion
+            val keys =
+                companion::class
+                    .java
+                    .declaredMethods
+                    .mapNotNull { method ->
+                        method.isAccessible = true
+                        try {
+                            method.invoke(companion) as? PreferenceKey<*>
+                        } catch (e: Exception) {
+                            null
+                        }
                     }
-                }
-                .filter { it.key !in ignoredStateKeys }
+                    .filter { it.key !in ignoredStateKeys }
 
-        assertTrue(
-            keys.isNotEmpty(),
-            "Reflection failed to extract keys from Companion object.",
-        )
+            assertTrue(
+                keys.isNotEmpty(),
+                "Reflection failed to extract keys from Companion object.",
+            )
 
-        val unmappedKeys = mutableListOf<String>()
+            val unmappedKeys = mutableListOf<String>()
 
-        for (key in keys) {
-            var isMapped = false
+            for (key in keys) {
+                var isMapped = false
 
-            try {
-                val baseState = preferencesImpl.getPreferences()
-                preferencesImpl.changePreferenceValue(
-                    key as PreferenceKey<Any>,
-                    generateTestValue(key, 1),
-                )
-                if (preferencesImpl.getPreferences() != baseState) isMapped = true
-            } catch (e: Exception) {
-                isMapped = true
-            }
-
-            if (!isMapped) {
                 try {
                     val baseState = preferencesImpl.getPreferences()
                     preferencesImpl.changePreferenceValue(
                         key as PreferenceKey<Any>,
-                        generateTestValue(key, 2),
+                        generateTestValue(key, 1),
                     )
                     if (preferencesImpl.getPreferences() != baseState) isMapped = true
                 } catch (e: Exception) {
                     isMapped = true
                 }
+
+                if (!isMapped) {
+                    try {
+                        val baseState = preferencesImpl.getPreferences()
+                        preferencesImpl.changePreferenceValue(
+                            key as PreferenceKey<Any>,
+                            generateTestValue(key, 2),
+                        )
+                        if (preferencesImpl.getPreferences() != baseState) isMapped = true
+                    } catch (e: Exception) {
+                        isMapped = true
+                    }
+                }
+
+                if (!isMapped) {
+                    unmappedKeys.add(key.key)
+                }
             }
 
-            if (!isMapped) {
-                unmappedKeys.add(key.key)
-            }
+            assertTrue(
+                unmappedKeys.isEmpty(),
+                "CRITICAL BUG: The following Keys are MISSING from the 'when' block in PreferencesImpl.updateStateMemory(), meaning their UI states will never update:\n" +
+                    unmappedKeys.joinToString("\n"),
+            )
         }
 
-        assertTrue(
-            unmappedKeys.isEmpty(),
-            "CRITICAL BUG: The following Keys are MISSING from the 'when' block in PreferencesImpl.updateStateMemory(), meaning their UI states will never update:\n" +
-                unmappedKeys.joinToString("\n"),
-        )
-    }
-
     @Test
-    fun `loadPersistedPreferences accurately delegates to disk reader and pushes result to Flow`() = runTest {
-        val diskData = AppPreferences(useDarkTheme = false, primaryJsoupUserAgent = "DiskAgent123")
-        coEvery { platformPreference.readAllPreferences() } returns diskData
+    fun `loadPersistedPreferences accurately delegates to disk reader and pushes result to Flow`() =
+        runTest {
+            val diskData =
+                AppPreferences(useDarkTheme = false, primaryJsoupUserAgent = "DiskAgent123")
+            coEvery { platformPreference.readAllPreferences() } returns diskData
 
-        preferencesImpl.loadPersistedPreferences()
+            preferencesImpl.loadPersistedPreferences()
 
-        assertEquals(diskData, preferencesImpl.getPreferences())
-        assertEquals(diskData, preferencesImpl.preferencesAsFlow.value)
+            assertEquals(diskData, preferencesImpl.getPreferences())
+            assertEquals(diskData, preferencesImpl.preferencesAsFlow.value)
 
-        coVerify(exactly = 1) { platformPreference.readAllPreferences() }
-    }
+            coVerify(exactly = 1) { platformPreference.readAllPreferences() }
+        }
 
     @Test
     fun `changePreferenceValue accurately delegates write operation to disk writer`() = runTest {
@@ -186,10 +189,11 @@ class PreferencesImplTest {
         coVerify(exactly = 1) { platformPreference.readPreferenceValue(AppPreferences.DARK_THEME) }
     }
 
-    private fun generateTestValue(key: PreferenceKey<*>, variant: Int): Any = when (key) {
-        is PreferenceKey.BooleanPreferencesKey -> variant == 1
-        is PreferenceKey.StringPreferencesKey -> "automated_test_string_$variant"
-        is PreferenceKey.IntPreferencesKey -> variant * 100
-        is PreferenceKey.LongPreferencesKey -> variant * 100L
-    }
+    private fun generateTestValue(key: PreferenceKey<*>, variant: Int): Any =
+        when (key) {
+            is PreferenceKey.BooleanPreferencesKey -> variant == 1
+            is PreferenceKey.StringPreferencesKey -> "automated_test_string_$variant"
+            is PreferenceKey.IntPreferencesKey -> variant * 100
+            is PreferenceKey.LongPreferencesKey -> variant * 100L
+        }
 }

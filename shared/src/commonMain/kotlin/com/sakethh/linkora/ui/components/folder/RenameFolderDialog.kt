@@ -60,11 +60,12 @@ constructor(
     val showDialogBox: Boolean,
     val sheetState: SheetState,
     val onHide: () -> Unit,
-    val onSave: (
-        newTitle: String,
-        newNote: String,
-        onCompletion: () -> Unit,
-    ) -> Unit,
+    val onSave:
+        (
+            newTitle: String,
+            newNote: String,
+            onCompletion: () -> Unit,
+        ) -> Unit,
     val existingFolderName: String,
     val existingNote: String,
 )
@@ -75,23 +76,25 @@ fun RenameFolderDialog(renameFolderDialogParam: RenameFolderDialogParam) {
     val localizedStrings = LocalizedStrings.current
 
     if (renameFolderDialogParam.showDialogBox) {
-        var newFolderName by rememberSaveable(renameFolderDialogParam.existingFolderName) {
-            mutableStateOf(renameFolderDialogParam.existingFolderName)
-        }
-        var newNote by rememberSaveable(renameFolderDialogParam.existingNote) {
-            mutableStateOf(renameFolderDialogParam.existingNote)
-        }
+        var newFolderName by
+            rememberSaveable(renameFolderDialogParam.existingFolderName) {
+                mutableStateOf(renameFolderDialogParam.existingFolderName)
+            }
+        var newNote by
+            rememberSaveable(renameFolderDialogParam.existingNote) {
+                mutableStateOf(renameFolderDialogParam.existingNote)
+            }
         var showProgressBar by rememberSaveable { mutableStateOf(false) }
 
         val content: ComposableContent = {
             Column(
-                Modifier
-                    .wrapContentSize()
+                Modifier.wrapContentSize()
                     .animateContentSize()
                     .padding(
                         bottom = 15.dp,
                         top = if (Platform.Android.onMobile()) 0.dp else 15.dp,
-                    ).fillMaxWidth()
+                    )
+                    .fillMaxWidth()
                     .verticalScroll(rememberScrollState()),
             ) {
                 Row(
@@ -100,12 +103,16 @@ fun RenameFolderDialog(renameFolderDialogParam: RenameFolderDialogParam) {
                     modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp),
                 ) {
                     Text(
-                        text = localizedStrings.RenameFolder.replaceActual(renameFolderDialogParam.existingFolderName),
+                        text =
+                            localizedStrings.RenameFolder.replaceActual(
+                                renameFolderDialogParam.existingFolderName,
+                            ),
                         style = MaterialTheme.typography.titleMedium,
                         fontSize = 22.sp,
                         lineHeight = 27.sp,
                         textAlign = TextAlign.Start,
-                        modifier = Modifier.fillMaxWidth(if (!Platform.Android.onMobile()) 0.85f else 1f),
+                        modifier =
+                            Modifier.fillMaxWidth(if (!Platform.Android.onMobile()) 0.85f else 1f),
                     )
                     if (!Platform.Android.onMobile() && !showProgressBar) {
                         IconButton(
@@ -158,8 +165,7 @@ fun RenameFolderDialog(renameFolderDialogParam: RenameFolderDialogParam) {
                 Spacer(modifier = Modifier.height(10.dp))
                 Button(
                     modifier =
-                        Modifier
-                            .padding(start = 15.dp, end = 15.dp)
+                        Modifier.padding(start = 15.dp, end = 15.dp)
                             .pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxWidth()
                             .pressScaleEffect()
@@ -182,8 +188,7 @@ fun RenameFolderDialog(renameFolderDialogParam: RenameFolderDialogParam) {
                 Spacer(modifier = Modifier.height(2.dp))
                 OutlinedButton(
                     modifier =
-                        Modifier
-                            .padding(start = 15.dp, end = 15.dp)
+                        Modifier.padding(start = 15.dp, end = 15.dp)
                             .pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxWidth()
                             .pressScaleEffect()
@@ -205,17 +210,20 @@ fun RenameFolderDialog(renameFolderDialogParam: RenameFolderDialogParam) {
                 modifier = Modifier.imePadding(),
                 properties = ModalBottomSheetProperties(shouldDismissOnBackPress = false),
                 onDismissRequest = { if (!showProgressBar) renameFolderDialogParam.onHide() },
-            ) { content() }
+            ) {
+                content()
+            }
         } else {
             BasicAlertDialog(
                 modifier =
-                    Modifier
-                        .wrapContentSize()
+                    Modifier.wrapContentSize()
                         .clip(RoundedCornerShape(10.dp))
                         .background(AlertDialogDefaults.containerColor),
                 properties = DialogProperties(usePlatformDefaultWidth = false),
                 onDismissRequest = { if (!showProgressBar) renameFolderDialogParam.onHide() },
-            ) { content() }
+            ) {
+                content()
+            }
         }
     }
 }

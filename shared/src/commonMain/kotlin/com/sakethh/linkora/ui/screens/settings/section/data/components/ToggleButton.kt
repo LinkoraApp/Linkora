@@ -25,12 +25,12 @@ fun ToggleButton(
 ) {
     Box(
         modifier =
-        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-            .clip(shape)
-            .highlightOnFocused(shape)
-            .clickable { onCheckedChange(!checked) }
-            .background(MaterialTheme.colorScheme.primary.copy(if (checked) 1f else 0.125f))
-            .padding(10.dp),
+            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                .clip(shape)
+                .highlightOnFocused(shape)
+                .clickable { onCheckedChange(!checked) }
+                .background(MaterialTheme.colorScheme.primary.copy(if (checked) 1f else 0.125f))
+                .padding(10.dp),
         contentAlignment = Alignment.Center,
     ) {
         content()

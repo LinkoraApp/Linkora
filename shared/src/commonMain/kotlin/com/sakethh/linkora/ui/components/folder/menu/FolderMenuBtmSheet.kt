@@ -56,7 +56,10 @@ fun FolderMenuBtmSheet(
         menuBtmSheetParam.showProgressBarDuringRemoteSave.value,
         menuBtmSheetParam.btmModalSheetState.isVisible,
     ) {
-        if (menuBtmSheetParam.showProgressBarDuringRemoteSave.value && !menuBtmSheetParam.btmModalSheetState.isVisible) {
+        if (
+            menuBtmSheetParam.showProgressBarDuringRemoteSave.value &&
+                !menuBtmSheetParam.btmModalSheetState.isVisible
+        ) {
             menuBtmSheetParam.btmModalSheetState.expand()
         }
     }
@@ -75,7 +78,8 @@ fun FolderMenuBtmSheet(
                 if (menuBtmSheetParam.btmModalSheetState.isVisible) {
                     menuBtmSheetParam.btmModalSheetState.hide()
                 }
-            }.invokeOnCompletion {
+            }
+            .invokeOnCompletion {
                 menuBtmSheetParam.onDismiss()
             }
     }
@@ -88,10 +92,10 @@ fun FolderMenuBtmSheet(
                 if (onAndroidMobile) {
                     Modifier
                 } else {
-                    Modifier
-                        .verticalScroll(
+                    Modifier.verticalScroll(
                             rememberScrollState(),
-                        ).focusGroup()
+                        )
+                        .focusGroup()
                 },
         ) {
             if (onAndroidMobile) {
@@ -102,7 +106,8 @@ fun FolderMenuBtmSheet(
                                 if (menuBtmSheetParam.btmModalSheetState.isVisible) {
                                     menuBtmSheetParam.btmModalSheetState.hide()
                                 }
-                            }.invokeOnCompletion {
+                            }
+                            .invokeOnCompletion {
                                 showNote = true
                                 coroutineScope.launch {
                                     menuBtmSheetParam.btmModalSheetState.show()
@@ -139,8 +144,10 @@ fun FolderMenuBtmSheet(
                         menuBtmSheetParam.onArchive()
                         hideContent()
                     },
-                    elementName = if (isArchived) localizedStrings.UnArchive else localizedStrings.Archive,
-                    elementImageVector = if (isArchived) Icons.Outlined.Unarchive else Icons.Outlined.Archive,
+                    elementName =
+                        if (isArchived) localizedStrings.UnArchive else localizedStrings.Archive,
+                    elementImageVector =
+                        if (isArchived) Icons.Outlined.Unarchive else Icons.Outlined.Archive,
                 )
             }
 
@@ -163,7 +170,8 @@ fun FolderMenuBtmSheet(
                             if (menuBtmSheetParam.btmModalSheetState.isVisible) {
                                 menuBtmSheetParam.btmModalSheetState.hide()
                             }
-                        }.invokeOnCompletion {
+                        }
+                        .invokeOnCompletion {
                             menuBtmSheetParam.onDismiss()
                         }
                 },

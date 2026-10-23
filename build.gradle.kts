@@ -1,3 +1,5 @@
+import com.diffplug.gradle.spotless.SpotlessExtension
+
 plugins {
     // this is necessary to avoid the plugins to be loaded multiple times
     // in each subproject's classloader
@@ -11,7 +13,7 @@ plugins {
     alias(libs.plugins.stability.analyzer) apply false
     id("androidx.room3") version "3.0.1" apply false
     alias(libs.plugins.jetbrains.kotlin.jvm) apply false
-    id("com.diffplug.spotless") version "8.8.0"
+    alias(libs.plugins.spotless) apply false
     id("org.jetbrains.kotlinx.atomicfu") version "0.33.0"
     alias(libs.plugins.android.lint) apply false
     alias(libs.plugins.kotlin.android) apply false
@@ -25,7 +27,9 @@ tasks.register("installGitHooks") {
                 providers
                     .exec {
                         commandLine("git", "config", "core.hooksPath")
-                    }.standardOutput.asText
+                    }
+                    .standardOutput
+                    .asText
                     .get()
                     .trim()
             } catch (e: Exception) {
@@ -38,55 +42,31 @@ tasks.register("installGitHooks") {
         providers
             .exec {
                 commandLine("git", "config", "core.hooksPath", ".githooks")
-            }.result
+            }
+            .result
             .get()
         file(".githooks").listFiles()?.forEach { it.setExecutable(true) }
         println("Git hooks installed successfully.")
     }
 }
 
-tasks.named("build") {
-    dependsOn("installGitHooks")
-}
-
-configure<com.diffplug.gradle.spotless.SpotlessExtension> {
-    val files = project.findProperty("spotlessFiles") as? String
-    val targetFiles = files?.split("\n")?.map { it.trim() }?.filter { it.isNotEmpty() }
-
-    kotlin {
-        if (targetFiles != null) {
-            target(targetFiles)
-        } else {
-            target("**/src/**/*.kt")
+allprojects {
+    apply { plugin(rootProject.libs.plugins.spotless.get().pluginId) }
+    configure<SpotlessExtension> {
+        kotlin {
+            target("**/*.kt")
+            targetExclude("**/build/**", "**/build-generated/**", "**/bin/**")
+            ktfmt().kotlinlangStyle()
         }
 
-        targetExclude("**/build/**", "**/build-generated/**", "**/bin/**")
-
-        trimTrailingWhitespace()
-        endWithNewline()
-        leadingTabsToSpaces(4)
-
-        ktlint("1.8.0").editorConfigOverride(
-            mapOf(
-                "ktlint_standard_function-naming" to "disabled",
-                "ktlint_standard_filename" to "disabled",
-                "ktlint_standard_package-name" to "disabled",
-                "ktlint_standard_max-line-length" to "disabled",
-                "ktlint_standard_no-consecutive-comments" to "disabled",
-                "ktlint_standard_enum-entry-name-case" to "disabled",
-                "ktlint_standard_backing-property-naming" to "disabled",
-                "ktlint_standard_trailing-comma-on-call-site" to "disabled",
-                "ktlint_standard_trailing-comma-on-declaration-site" to "disabled",
-                "ktlint_standard_wrapping" to "disabled",
-                "ktlint_standard_indent" to "disabled",
-                "ktlint_class_signature_rule_force_multiline_when_parameter_count_greater_or_equal_than" to "2",
-            ),
-        )
+        kotlinGradle {
+            target("**/*.gradle.kts")
+            targetExclude("**/build/**")
+            ktfmt().kotlinlangStyle()
+        }
     }
+}
 
-    kotlinGradle {
-        target("**/*.gradle.kts")
-        targetExclude("**/build/**")
-        ktlint("1.8.0")
-    }
+tasks.named("build") {
+    dependsOn("installGitHooks")
 }

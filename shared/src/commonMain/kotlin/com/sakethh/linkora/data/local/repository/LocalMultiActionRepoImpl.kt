@@ -75,14 +75,14 @@ class LocalMultiActionRepoImpl(
                     PendingSyncQueue(
                         operation = SyncServerRoute.ARCHIVE_MULTIPLE_ITEMS.name,
                         payload =
-                        Json.encodeToString(
-                            ArchiveMultipleItemsDTO(
-                                linkIds = linkIds,
-                                folderIds = folderIds,
-                                eventTimestamp = eventTimestamp,
-                                correlation = preferences.correlation,
+                            Json.encodeToString(
+                                ArchiveMultipleItemsDTO(
+                                    linkIds = linkIds,
+                                    folderIds = folderIds,
+                                    eventTimestamp = eventTimestamp,
+                                    correlation = preferences.correlation,
+                                ),
                             ),
-                        ),
                     ),
                 )
             },
@@ -128,14 +128,14 @@ class LocalMultiActionRepoImpl(
                     PendingSyncQueue(
                         operation = SyncServerRoute.DELETE_MULTIPLE_ITEMS.name,
                         payload =
-                        Json.encodeToString(
-                            DeleteMultipleItemsDTO(
-                                linkIds = remoteLinkIds,
-                                folderIds = remoteFolderIds,
-                                eventTimestamp = eventTimestamp,
-                                correlation = preferences.correlation,
+                            Json.encodeToString(
+                                DeleteMultipleItemsDTO(
+                                    linkIds = remoteLinkIds,
+                                    folderIds = remoteFolderIds,
+                                    eventTimestamp = eventTimestamp,
+                                    correlation = preferences.correlation,
+                                ),
                             ),
-                        ),
                     ),
                 )
             },
@@ -189,16 +189,16 @@ class LocalMultiActionRepoImpl(
                     PendingSyncQueue(
                         operation = SyncServerRoute.MOVE_EXISTING_ITEMS.name,
                         payload =
-                        Json.encodeToString(
-                            MoveItemsDTO(
-                                folderIds = folderIds,
-                                linkIds = linkIds,
-                                linkType = linkType,
-                                newParentFolderId = newParentFolderId,
-                                eventTimestamp = eventTimeStamp,
-                                correlation = preferences.correlation,
+                            Json.encodeToString(
+                                MoveItemsDTO(
+                                    folderIds = folderIds,
+                                    linkIds = linkIds,
+                                    linkType = linkType,
+                                    newParentFolderId = newParentFolderId,
+                                    eventTimestamp = eventTimeStamp,
+                                    correlation = preferences.correlation,
+                                ),
                             ),
-                        ),
                     ),
                 )
             },
@@ -272,16 +272,16 @@ class LocalMultiActionRepoImpl(
                     PendingSyncQueue(
                         operation = SyncServerRoute.COPY_EXISTING_ITEMS.name,
                         payload =
-                        Json.encodeToString(
-                            CopyItemsDTO(
-                                folders = copiedFolders,
-                                linkIds = copiedLinksIds.toMap(),
-                                linkType = linkType,
-                                newParentFolderId = newParentFolderId,
-                                eventTimestamp = eventTimeStamp,
-                                correlation = preferences.correlation,
+                            Json.encodeToString(
+                                CopyItemsDTO(
+                                    folders = copiedFolders,
+                                    linkIds = copiedLinksIds.toMap(),
+                                    linkType = linkType,
+                                    newParentFolderId = newParentFolderId,
+                                    eventTimestamp = eventTimeStamp,
+                                    correlation = preferences.correlation,
+                                ),
                             ),
-                        ),
                     ),
                 )
             },
@@ -326,13 +326,13 @@ class LocalMultiActionRepoImpl(
         val copyFoldersDeque = ArrayDeque<Pair<Folder, Long>>()
         copyFoldersDeque.addAll(folders.map { it to destinationParentFolderId })
 
-    /*
-    data class CopyFolderDTO(
-        val currentFolder: CurrentFolder,
-        val links: List<FolderLink>,
-        val childFolders: List<CopyFolderDTO>
-    )
-     * */
+        /*
+        data class CopyFolderDTO(
+            val currentFolder: CurrentFolder,
+            val links: List<FolderLink>,
+            val childFolders: List<CopyFolderDTO>
+        )
+         * */
 
         while (copyFoldersDeque.isNotEmpty()) {
             val (currentFolder, newParentId) = copyFoldersDeque.removeLast()
@@ -365,45 +365,50 @@ class LocalMultiActionRepoImpl(
                 copyFoldersDTO.add(
                     CopyFolderDTO(
                         currentFolder =
-                        CurrentFolder(
-                            newlyCopiedLocalId = newIdOfCopiedCurrentFolder,
-                            parentOfNewlyCopiedLocalId = newParentId,
-                            sourceRemoteId = currentFolder.remoteId,
-                            sourceRemoteParentId =
-                            if (parentFolderId == null) {
-                                null
-                            } else {
-                                foldersDao.getRemoteFolderId(parentFolderId)
-                            },
-                            isRootFolderForTheDestination = newParentId == destinationParentFolderId,
-                        ),
-                        links =
-                        linksIdsOfCopiedFolder
-                            .mapIndexed { index, newLocalId ->
-                                val remoteId =
-                                    linksOfCurrentFolder[index].remoteId ?: return@mapIndexed null
-                                val parentFolderId = linksOfCurrentFolder[index].idOfLinkedFolder
-
-                                val remoteParentId =
+                            CurrentFolder(
+                                newlyCopiedLocalId = newIdOfCopiedCurrentFolder,
+                                parentOfNewlyCopiedLocalId = newParentId,
+                                sourceRemoteId = currentFolder.remoteId,
+                                sourceRemoteParentId =
                                     if (parentFolderId == null) {
                                         null
                                     } else {
                                         foldersDao.getRemoteFolderId(parentFolderId)
-                                    }
+                                    },
+                                isRootFolderForTheDestination =
+                                    newParentId == destinationParentFolderId,
+                            ),
+                        links =
+                            linksIdsOfCopiedFolder
+                                .mapIndexed { index, newLocalId ->
+                                    val remoteId =
+                                        linksOfCurrentFolder[index].remoteId
+                                            ?: return@mapIndexed null
+                                    val parentFolderId =
+                                        linksOfCurrentFolder[index].idOfLinkedFolder
 
-                                FolderLink(
-                                    newlyCopiedLocalId = newLocalId,
-                                    sourceRemoteId = remoteId,
-                                    sourceRemoteParentId = remoteParentId,
-                                    isRootFolderForTheDestination =
-                                    false, // this doesn't matter for a link since it's already
-                                    // embedded with the folder
-                                    parentOfNewlyCopiedLocalId =
-                                    -45454, // this doesn't matter for a link since it's already
-                                    // embedded with the folder
-                                )
-                            }
-                            .filterNotNull(),
+                                    val remoteParentId =
+                                        if (parentFolderId == null) {
+                                            null
+                                        } else {
+                                            foldersDao.getRemoteFolderId(parentFolderId)
+                                        }
+
+                                    FolderLink(
+                                        newlyCopiedLocalId = newLocalId,
+                                        sourceRemoteId = remoteId,
+                                        sourceRemoteParentId = remoteParentId,
+                                        isRootFolderForTheDestination =
+                                            false, // this doesn't matter for a link since it's
+                                        // already
+                                        // embedded with the folder
+                                        parentOfNewlyCopiedLocalId =
+                                            -45454, // this doesn't matter for a link since it's
+                                        // already
+                                        // embedded with the folder
+                                    )
+                                }
+                                .filterNotNull(),
                     ),
                 )
             }
@@ -412,7 +417,8 @@ class LocalMultiActionRepoImpl(
                 val tagsForCurrentLinksBatch =
                     localTagsRepo.getTagsForLinksAsMap(linksOfCurrentFolder.map { it.localId })
 
-                val linkIdsMap = linksOfCurrentFolder.map { it.localId }.zip(linksIdsOfCopiedFolder).toMap()
+                val linkIdsMap =
+                    linksOfCurrentFolder.map { it.localId }.zip(linksIdsOfCopiedFolder).toMap()
 
                 val newLinkTags = tagsForCurrentLinksBatch.flatMap { (oldLinkId, tags) ->
                     val newLinkId = linkIdsMap[oldLinkId]
@@ -479,14 +485,14 @@ class LocalMultiActionRepoImpl(
                     PendingSyncQueue(
                         operation = SyncServerRoute.UNARCHIVE_MULTIPLE_ITEMS.name,
                         payload =
-                        Json.encodeToString(
-                            MarkItemsRegularDTO(
-                                foldersIds = folderIds,
-                                linkIds = linkIds,
-                                eventTimestamp = eventTimestamp,
-                                correlation = preferences.correlation,
+                            Json.encodeToString(
+                                MarkItemsRegularDTO(
+                                    foldersIds = folderIds,
+                                    linkIds = linkIds,
+                                    eventTimestamp = eventTimestamp,
+                                    correlation = preferences.correlation,
+                                ),
                             ),
-                        ),
                     ),
                 )
             },

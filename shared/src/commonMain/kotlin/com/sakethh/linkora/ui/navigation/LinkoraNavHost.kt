@@ -52,10 +52,10 @@ fun LinkoraNavHost(
     val specificPanelManagerScreenVM: SpecificPanelManagerScreenVM =
         linkoraViewModel(
             factory =
-            SpecificPanelManagerVMFactory.create(
-                onAndroidMobile = Platform.Android.onMobile(),
-                currentBackStackEntryFlow = localNavController.currentBackStackEntryFlow,
-            ),
+                SpecificPanelManagerVMFactory.create(
+                    onAndroidMobile = Platform.Android.onMobile(),
+                    currentBackStackEntryFlow = localNavController.currentBackStackEntryFlow,
+                ),
         )
 
     NavHost(
@@ -84,7 +84,9 @@ fun LinkoraNavHost(
         composable<Navigation.Collection.CollectionDetailScreen> { navBackStackEntry ->
             val collectionDetailPaneInfo =
                 navBackStackEntry.toRoute<CollectionNavigation.Pane>().run {
-                    Utils.json.decodeFromString<CollectionDetailPaneInfo>(this.collectionDetailPaneInfo)
+                    Utils.json.decodeFromString<CollectionDetailPaneInfo>(
+                        this.collectionDetailPaneInfo,
+                    )
                 }
             CollectionDetailScreen(collectionDetailPaneInfo = collectionDetailPaneInfo)
         }
@@ -112,26 +114,28 @@ fun LinkoraNavHost(
         composable<Navigation.Home.PanelsManagerScreen> {
             PanelsManagerScreen(
                 specificPanelManagerScreenParam =
-                SpecificPanelManagerScreenParam(
-                    foldersOfTheSelectedPanel =
-                    specificPanelManagerScreenVM.foldersOfTheSelectedPanel,
-                    foldersToIncludeInPanel = specificPanelManagerScreenVM.foldersToIncludeInPanel,
-                    foldersSearchQuery = specificPanelManagerScreenVM.foldersSearchQuery.value,
-                    performAction = specificPanelManagerScreenVM::performAction,
-                ),
+                    SpecificPanelManagerScreenParam(
+                        foldersOfTheSelectedPanel =
+                            specificPanelManagerScreenVM.foldersOfTheSelectedPanel,
+                        foldersToIncludeInPanel =
+                            specificPanelManagerScreenVM.foldersToIncludeInPanel,
+                        foldersSearchQuery = specificPanelManagerScreenVM.foldersSearchQuery.value,
+                        performAction = specificPanelManagerScreenVM::performAction,
+                    ),
                 performAction = specificPanelManagerScreenVM::performAction,
             )
         }
         composable<Navigation.Home.SpecificPanelManagerScreen> {
             SpecificPanelManagerScreen(
                 specificPanelManagerScreenParam =
-                SpecificPanelManagerScreenParam(
-                    foldersOfTheSelectedPanel =
-                    specificPanelManagerScreenVM.foldersOfTheSelectedPanel,
-                    foldersToIncludeInPanel = specificPanelManagerScreenVM.foldersToIncludeInPanel,
-                    foldersSearchQuery = specificPanelManagerScreenVM.foldersSearchQuery.value,
-                    performAction = specificPanelManagerScreenVM::performAction,
-                ),
+                    SpecificPanelManagerScreenParam(
+                        foldersOfTheSelectedPanel =
+                            specificPanelManagerScreenVM.foldersOfTheSelectedPanel,
+                        foldersToIncludeInPanel =
+                            specificPanelManagerScreenVM.foldersToIncludeInPanel,
+                        foldersSearchQuery = specificPanelManagerScreenVM.foldersSearchQuery.value,
+                        performAction = specificPanelManagerScreenVM::performAction,
+                    ),
             )
         }
         composable<Navigation.Settings.AboutScreen> {

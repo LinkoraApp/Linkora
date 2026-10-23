@@ -49,8 +49,7 @@ fun DeleteAllDataDialog(
             if (!isDeletionInProgress.value) {
                 Button(
                     modifier =
-                        Modifier
-                            .pointerHoverIcon(icon = PointerIcon.Hand)
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxWidth()
                             .pressScaleEffect(),
                     onClick = {
@@ -76,8 +75,7 @@ fun DeleteAllDataDialog(
             if (!isDeletionInProgress.value) {
                 OutlinedButton(
                     modifier =
-                        Modifier
-                            .pointerHoverIcon(icon = PointerIcon.Hand)
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxWidth()
                             .pressScaleEffect(),
                     onClick = deleteAllDataDialogParam.onDismiss,
@@ -92,7 +90,9 @@ fun DeleteAllDataDialog(
         },
         title = {
             Text(
-                text = if (isDeletionInProgress.value) localizedStrings.DeletionInProgress else localizedStrings.AreYouSureDeleteEverything,
+                text =
+                    if (isDeletionInProgress.value) localizedStrings.DeletionInProgress
+                    else localizedStrings.AreYouSureDeleteEverything,
                 style = MaterialTheme.typography.titleMedium,
                 fontSize = 22.sp,
                 lineHeight = 27.sp,
@@ -103,8 +103,7 @@ fun DeleteAllDataDialog(
             if (!isDeletionInProgress.value && preferences.canPushToServer()) {
                 Row(
                     modifier =
-                        Modifier
-                            .pointerHoverIcon(icon = PointerIcon.Hand)
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxWidth()
                             .clickable {
                                 if (!isDeletionInProgress.value) {
@@ -129,6 +128,8 @@ fun DeleteAllDataDialog(
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
         },
-        onDismissRequest = { if (!isDeletionInProgress.value) deleteAllDataDialogParam.onDismiss() },
+        onDismissRequest = {
+            if (!isDeletionInProgress.value) deleteAllDataDialogParam.onDismiss()
+        },
     )
 }

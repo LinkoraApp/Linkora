@@ -38,8 +38,7 @@ fun FolderNonMobileMenu(
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(
             modifier =
-                Modifier
-                    .fillMaxWidth(0.5f)
+                Modifier.fillMaxWidth(0.5f)
                     .padding(start = 15.dp, bottom = 15.dp)
                     .wrapContentHeight(),
         ) {

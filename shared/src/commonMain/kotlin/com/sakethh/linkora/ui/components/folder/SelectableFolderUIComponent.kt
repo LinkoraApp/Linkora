@@ -3,7 +3,6 @@ package com.sakethh.linkora.ui.components.folder
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -43,8 +42,7 @@ fun SelectableFolderUIComponent(
     Column {
         Row(
             modifier =
-                Modifier
-                    .highlightOnFocused()
+                Modifier.highlightOnFocused()
                     .clickable(
                         interactionSource = interactionSource,
                         indication = null,
@@ -67,8 +65,7 @@ fun SelectableFolderUIComponent(
                 imageVector = imageVector,
                 contentDescription = null,
                 modifier =
-                    Modifier
-                        .padding(
+                    Modifier.padding(
                             end = 20.dp,
                             bottom = 20.dp,
                             top = if (forBtmSheetUI) 0.dp else 20.dp,
@@ -90,8 +87,7 @@ fun SelectableFolderUIComponent(
                 maxLines = if (forBtmSheetUI) 6 else 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier =
-                    Modifier
-                        .fillMaxWidth(if (isComponentSelected) 0.80f else 1f)
+                    Modifier.fillMaxWidth(if (isComponentSelected) 0.80f else 1f)
                         .padding(end = if (isComponentSelected) 10.dp else 0.dp),
             )
 

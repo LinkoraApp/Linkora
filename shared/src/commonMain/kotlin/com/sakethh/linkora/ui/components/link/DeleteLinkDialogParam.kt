@@ -36,8 +36,7 @@ fun DeleteLinkDialog(deleteLinkDialogParam: DeleteLinkDialogParam) {
             if (!isDeletionInProgress.value) {
                 Button(
                     modifier =
-                        Modifier
-                            .pointerHoverIcon(icon = PointerIcon.Hand)
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxWidth()
                             .pressScaleEffect(),
                     onClick = {
@@ -60,8 +59,7 @@ fun DeleteLinkDialog(deleteLinkDialogParam: DeleteLinkDialogParam) {
             if (!isDeletionInProgress.value) {
                 OutlinedButton(
                     modifier =
-                        Modifier
-                            .pointerHoverIcon(icon = PointerIcon.Hand)
+                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxWidth()
                             .pressScaleEffect(),
                     onClick = deleteLinkDialogParam.onDismiss,

@@ -93,7 +93,8 @@ fun LogsScreen(
                 modifier =
                     Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                         .padding(it)
-                        .highlightOnFocused(shape = ButtonDefaults.shape).clickable(
+                        .highlightOnFocused(shape = ButtonDefaults.shape)
+                        .clickable(
                             onClick = {},
                             indication = null,
                             interactionSource =

@@ -34,72 +34,97 @@ class LinkoraApp : Application() {
     override fun onCreate() {
         super.onCreate()
         LinkoraSDK.set(
-            linkoraSdk = LinkoraSDK(
-                platform = currentAndroidPlatform(),
-                nativeUtils = NativeUtils(applicationContext),
-                fileManager = FileManager(
-                    applicationContext,
-                    localizedStrings = {
-                        DependencyContainer.localizationRepo.localizedStrings.value
-                    }
-                ),
-                permissionManager = PermissionManager(applicationContext),
-                localDatabase = run {
-                    val dbFile = applicationContext.getDatabasePath(LocalDatabase.NAME)
-                    Room.databaseBuilder<LocalDatabase>(
-                        applicationContext,
-                        name = dbFile.absolutePath,
-                    ).setDriver(BundledSQLiteDriver()).setQueryCoroutineContext(Dispatchers.IO)
-                        .addMigrations(
-                            LocalDatabase.MIGRATION_1_2,
-                            LocalDatabase.MIGRATION_2_3,
-                            LocalDatabase.MIGRATION_3_4,
-                            LocalDatabase.MIGRATION_4_5,
-                            LocalDatabase.MIGRATION_5_6,
-                            LocalDatabase.MIGRATION_6_7,
-                            LocalDatabase.MIGRATION_7_8,
-                            LocalDatabase.MIGRATION_8_9,
-                            LocalDatabase.MIGRATION_9_10,
-                            LocalDatabase.MIGRATION_10_11,
-                            LocalDatabase.MIGRATION_11_12,
-                            LocalDatabase.MIGRATION_12_13,
-                            LocalDatabase.MIGRATION_13_14,
-                            LocalDatabase.MIGRATION_14_15,
-                        ).build()
-                },
-                dataSyncingNotificationService = NativeUtils.DataSyncingNotificationService(
-                    applicationContext,
-                    localizedStrings = {
-                        DependencyContainer.localizationRepo.localizedStrings.value
-                    }
-                ),
-                network = Network(applicationContext, localizedStrings = {
-                    DependencyContainer.localizationRepo.localizedStrings.value
-                }),
-                platformPreference = PlatformPreference(
-                    dataStore = PreferenceDataStoreFactory.createWithPath(
-                        produceFile = {
-                            applicationContext.filesDir.resolve(Constants.DATA_STORE_NAME).absolutePath.toPath()
+            linkoraSdk =
+                LinkoraSDK(
+                    platform = currentAndroidPlatform(),
+                    nativeUtils = NativeUtils(applicationContext),
+                    fileManager =
+                        FileManager(
+                            applicationContext,
+                            localizedStrings = {
+                                DependencyContainer.localizationRepo.localizedStrings.value
+                            },
+                        ),
+                    permissionManager = PermissionManager(applicationContext),
+                    localDatabase =
+                        run {
+                            val dbFile = applicationContext.getDatabasePath(LocalDatabase.NAME)
+                            Room.databaseBuilder<LocalDatabase>(
+                                    applicationContext,
+                                    name = dbFile.absolutePath,
+                                )
+                                .setDriver(BundledSQLiteDriver())
+                                .setQueryCoroutineContext(Dispatchers.IO)
+                                .addMigrations(
+                                    LocalDatabase.MIGRATION_1_2,
+                                    LocalDatabase.MIGRATION_2_3,
+                                    LocalDatabase.MIGRATION_3_4,
+                                    LocalDatabase.MIGRATION_4_5,
+                                    LocalDatabase.MIGRATION_5_6,
+                                    LocalDatabase.MIGRATION_6_7,
+                                    LocalDatabase.MIGRATION_7_8,
+                                    LocalDatabase.MIGRATION_8_9,
+                                    LocalDatabase.MIGRATION_9_10,
+                                    LocalDatabase.MIGRATION_10_11,
+                                    LocalDatabase.MIGRATION_11_12,
+                                    LocalDatabase.MIGRATION_12_13,
+                                    LocalDatabase.MIGRATION_13_14,
+                                    LocalDatabase.MIGRATION_14_15,
+                                )
+                                .build()
                         },
-                    ),
+                    dataSyncingNotificationService =
+                        NativeUtils.DataSyncingNotificationService(
+                            applicationContext,
+                            localizedStrings = {
+                                DependencyContainer.localizationRepo.localizedStrings.value
+                            },
+                        ),
+                    network =
+                        Network(
+                            applicationContext,
+                            localizedStrings = {
+                                DependencyContainer.localizationRepo.localizedStrings.value
+                            },
+                        ),
+                    platformPreference =
+                        PlatformPreference(
+                            dataStore =
+                                PreferenceDataStoreFactory.createWithPath(
+                                    produceFile = {
+                                        applicationContext.filesDir
+                                            .resolve(Constants.DATA_STORE_NAME)
+                                            .absolutePath
+                                            .toPath()
+                                    },
+                                ),
+                        ),
+                    webCapture = NativeUtils.WebCapture(applicationContext),
+                    webCaptureDatabaseManager =
+                        WebCaptureDatabaseManager(
+                            databaseBuilder = { webCaptureDirUri ->
+                                val folderPath =
+                                    if (with(applicationContext) { onTV() }) {
+                                        getDefaultFolder(ExportLocationType.WEB_CAPTURE)
+                                            .absolutePath
+                                    } else {
+                                        getPOSIXPathFromSafUri(
+                                            applicationContext,
+                                            webCaptureDirUri.toUri(),
+                                        )
+                                    }
+                                val dbFilePath = "$folderPath/${WebCaptureDatabase.NAME}.db"
+                                Room.databaseBuilder<WebCaptureDatabase>(
+                                        name = dbFilePath,
+                                        context = applicationContext,
+                                    )
+                                    .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+                                    .setDriver(BundledSQLiteDriver())
+                                    .setQueryCoroutineContext(Dispatchers.IO)
+                                    .build()
+                            },
+                        ),
                 ),
-                webCapture = NativeUtils.WebCapture(applicationContext),
-                webCaptureDatabaseManager = WebCaptureDatabaseManager(databaseBuilder = { webCaptureDirUri ->
-                    val folderPath = if (with(applicationContext) { onTV() }) {
-                        getDefaultFolder(ExportLocationType.WEB_CAPTURE).absolutePath
-                    } else {
-                        getPOSIXPathFromSafUri(applicationContext, webCaptureDirUri.toUri())
-                    }
-                    val dbFilePath = "$folderPath/${WebCaptureDatabase.NAME}.db"
-                    Room.databaseBuilder<WebCaptureDatabase>(
-                        name = dbFilePath,
-                        context = applicationContext,
-                    )
-                        .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
-                        .setDriver(BundledSQLiteDriver()).setQueryCoroutineContext(Dispatchers.IO)
-                        .build()
-                }),
-            ),
         )
         runBlocking {
             DependencyContainer.preferencesRepo.loadPersistedPreferences()
@@ -110,7 +135,7 @@ class LinkoraApp : Application() {
             val crashLogActivityIntent = Intent(this, CrashLogActivity::class.java)
             crashLogActivityIntent.putExtra(
                 AndroidConstants.CRASH_LOG_KEY,
-                throwable.stackTraceToString()
+                throwable.stackTraceToString(),
             )
             crashLogActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(crashLogActivityIntent)
@@ -120,11 +145,12 @@ class LinkoraApp : Application() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationChannel = NotificationChannel(
-                "1",
-                "Data Syncing",
-                NotificationManager.IMPORTANCE_HIGH,
-            )
+            val notificationChannel =
+                NotificationChannel(
+                    "1",
+                    "Data Syncing",
+                    NotificationManager.IMPORTANCE_HIGH,
+                )
             notificationChannel.description =
                 "Used to notify about the data syncing status, link refreshes, and auto-save status."
             val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager

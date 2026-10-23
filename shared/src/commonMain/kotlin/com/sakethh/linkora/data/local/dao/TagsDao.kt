@@ -34,8 +34,7 @@ interface TagsDao {
         linkId: Long,
     )
 
-    @Query("DELETE FROM tags WHERE localId = :id ")
-    suspend fun deleteATag(id: Long)
+    @Query("DELETE FROM tags WHERE localId = :id ") suspend fun deleteATag(id: Long)
 
     @Query("UPDATE tags SET name = :newName WHERE localId = :tagId")
     suspend fun renameATag(
@@ -43,8 +42,7 @@ interface TagsDao {
         newName: String,
     )
 
-    @Query("SELECT MAX(localId) FROM tags")
-    suspend fun getLastInsertedIdFromTags(): Long
+    @Query("SELECT MAX(localId) FROM tags") suspend fun getLastInsertedIdFromTags(): Long
 
     @Query(
         """SELECT * FROM tags
@@ -107,14 +105,11 @@ interface TagsDao {
         pageSize: Int,
     ): Flow<List<Tag>>
 
-    @Query("SELECT * FROM tags")
-    suspend fun getAllTagsAsList(): List<Tag>
+    @Query("SELECT * FROM tags") suspend fun getAllTagsAsList(): List<Tag>
 
-    @Query("SELECT * FROM link_tags")
-    suspend fun getAllTagLinksAsList(): List<LinkTag>
+    @Query("SELECT * FROM link_tags") suspend fun getAllTagLinksAsList(): List<LinkTag>
 
-    @Query("SELECT * FROM link_tags")
-    fun getAllLinkTags(): Flow<List<LinkTag>>
+    @Query("SELECT * FROM link_tags") fun getAllLinkTags(): Flow<List<LinkTag>>
 
     @Query(
         "SELECT tags.* FROM tags INNER JOIN link_tags ON tags.localId = link_tags.tagId WHERE link_tags.linkId = :linkId",
@@ -177,6 +172,5 @@ interface TagsDao {
     @Query("SELECT remoteId FROM tags WHERE localId = :localId")
     suspend fun getRemoteTagId(localId: Long): Long?
 
-    @Query("SELECT * FROM tags WHERE remoteId IS NULL")
-    suspend fun getUnsyncedTags(): List<Tag>
+    @Query("SELECT * FROM tags WHERE remoteId IS NULL") suspend fun getUnsyncedTags(): List<Tag>
 }

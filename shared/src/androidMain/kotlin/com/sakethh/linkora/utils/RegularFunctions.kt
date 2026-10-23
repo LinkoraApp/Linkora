@@ -21,9 +21,9 @@ import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
 import com.sakethh.linkora.ui.theme.DarkColors
 import com.sakethh.linkora.ui.theme.LightColors
 import getFileNameWithTimestamp
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.File
 
 suspend fun createNewFile(
     context: Context,
@@ -51,46 +51,50 @@ suspend fun createPOSIXOwnedFile(
     context: Context,
     folderUriString: String,
     exportFileType: ExportFileType,
-    exportLocationType: ExportLocationType
-): String? = try {
-    val fileName = getFileNameWithTimestamp(
-        exportFileType = exportFileType,
-        exportLocationType = exportLocationType,
-    )
-    val uri = folderUriString.toUri()
-    val posixPath = getPOSIXPathFromSafUri(context, uri)
-    if (posixPath != null) {
-        withContext(Dispatchers.IO) {
-            val file = File(posixPath, fileName)
-            file.createNewFile()
-            file.absolutePath
+    exportLocationType: ExportLocationType,
+): String? =
+    try {
+        val fileName =
+            getFileNameWithTimestamp(
+                exportFileType = exportFileType,
+                exportLocationType = exportLocationType,
+            )
+        val uri = folderUriString.toUri()
+        val posixPath = getPOSIXPathFromSafUri(context, uri)
+        if (posixPath != null) {
+            withContext(Dispatchers.IO) {
+                val file = File(posixPath, fileName)
+                file.createNewFile()
+                file.absolutePath
+            }
+        } else {
+            null
         }
-    } else {
+    } catch (e: Exception) {
+        e.printStackTrace()
         null
     }
-} catch (e: Exception) {
-    e.printStackTrace()
-    null
-}
 
 suspend fun createPOSIXOwnedFile(
     folder: File,
     exportFileType: ExportFileType,
-    exportLocationType: ExportLocationType
-): String? = try {
-    val fileName = getFileNameWithTimestamp(
-        exportFileType = exportFileType,
-        exportLocationType = exportLocationType,
-    )
-    withContext(Dispatchers.IO) {
-        val file = File(folder, fileName)
-        file.createNewFile()
-        file.absolutePath
+    exportLocationType: ExportLocationType,
+): String? =
+    try {
+        val fileName =
+            getFileNameWithTimestamp(
+                exportFileType = exportFileType,
+                exportLocationType = exportLocationType,
+            )
+        withContext(Dispatchers.IO) {
+            val file = File(folder, fileName)
+            file.createNewFile()
+            file.absolutePath
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
     }
-} catch (e: Exception) {
-    e.printStackTrace()
-    null
-}
 
 fun getPOSIXPathFromSafUri(context: Context, uri: Uri): String? {
     if (uri.authority != "com.android.externalstorage.documents") {
@@ -99,9 +103,10 @@ fun getPOSIXPathFromSafUri(context: Context, uri: Uri): String? {
 
     val rawDocId = runCatching {
         DocumentsContract.getDocumentId(uri)
-    }.getOrElse {
-        DocumentsContract.getTreeDocumentId(uri)
     }
+        .getOrElse {
+            DocumentsContract.getTreeDocumentId(uri)
+        }
 
     val decodedDocId = Uri.decode(rawDocId)
     val split = decodedDocId.split(":")
@@ -136,7 +141,7 @@ fun getPOSIXPathFromSafUri(context: Context, uri: Uri): String? {
 fun getAppColorScheme(
     preferences: AppPreferences,
     context: Context,
-    isSystemInDarkTheme: Boolean
+    isSystemInDarkTheme: Boolean,
 ): ColorScheme {
     val darkColors =
         DarkColors.copy(
@@ -166,8 +171,8 @@ fun getAppColorScheme(
                                     )
                                 } else {
                                     dynamicDarkColorScheme(
-                                        context,
-                                    )
+                                            context,
+                                        )
                                         .surface
                                 },
                         )
@@ -179,8 +184,8 @@ fun getAppColorScheme(
             } else {
                 if (preferences.useDarkTheme) {
                     dynamicDarkColorScheme(
-                        context,
-                    )
+                            context,
+                        )
                         .copy(
                             background =
                                 if (preferences.useAmoledTheme) {
@@ -197,8 +202,8 @@ fun getAppColorScheme(
                                     )
                                 } else {
                                     dynamicDarkColorScheme(
-                                        context,
-                                    )
+                                            context,
+                                        )
                                         .surface
                                 },
                         )
@@ -217,18 +222,21 @@ fun getAppColorScheme(
     }
 }
 
-fun getDefaultFolder(exportLocationType: ExportLocationType): File = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+fun getDefaultFolder(exportLocationType: ExportLocationType): File =
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
         File(
-            Environment.getExternalStorageDirectory(),
-            "Linkora/${exportLocationType.dirRef}"
-        ).apply {
-            mkdirs()
-        }
+                Environment.getExternalStorageDirectory(),
+                "Linkora/${exportLocationType.dirRef}",
+            )
+            .apply {
+                mkdirs()
+            }
     } else {
         File(
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS),
-            "Linkora/${exportLocationType.dirRef}"
-        ).apply {
-            mkdirs()
-        }
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS),
+                "Linkora/${exportLocationType.dirRef}",
+            )
+            .apply {
+                mkdirs()
+            }
     }

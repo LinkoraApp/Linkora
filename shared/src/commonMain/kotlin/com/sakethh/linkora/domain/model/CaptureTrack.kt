@@ -13,10 +13,11 @@ data class CaptureTrack(
             inAllLinksWorker: Boolean,
             linkId: Long?,
             link: String? = null,
-        ): String = if (inAllLinksWorker) {
-            "all_"
-        } else {
-            "individual_"
-        } + (linkId ?: link)
+        ): String =
+            if (inAllLinksWorker) {
+                "all_"
+            } else {
+                "individual_"
+            } + (linkId ?: link)
     }
 }

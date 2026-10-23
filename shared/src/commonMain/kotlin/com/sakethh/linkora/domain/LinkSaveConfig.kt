@@ -8,12 +8,13 @@ data class LinkSaveConfig(
     val forceSaveIfRetrievalFails: Boolean,
 ) {
     companion object {
-        fun forceSaveWithoutRetrieving(): LinkSaveConfig = LinkSaveConfig(
-            forceAutoDetectTitle = false,
-            forceSaveWithoutRetrievingData = true,
-            useProxy = false,
-            skipSavingIfExists = true,
-            forceSaveIfRetrievalFails = true,
-        )
+        fun forceSaveWithoutRetrieving(): LinkSaveConfig =
+            LinkSaveConfig(
+                forceAutoDetectTitle = false,
+                forceSaveWithoutRetrievingData = true,
+                useProxy = false,
+                skipSavingIfExists = true,
+                forceSaveIfRetrievalFails = true,
+            )
     }
 }

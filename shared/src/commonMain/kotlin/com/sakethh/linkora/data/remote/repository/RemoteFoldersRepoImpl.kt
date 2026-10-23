@@ -21,95 +21,111 @@ class RemoteFoldersRepoImpl(
     private val baseUrl: suspend () -> String,
     private val authToken: suspend () -> String,
 ) : RemoteFoldersRepo {
-    override suspend fun createFolder(addFolderDTO: AddFolderDTO): Flow<Result<NewItemResponseDTO>> = postFlow<AddFolderDTO, NewItemResponseDTO>(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.CREATE_FOLDER.name,
-        outgoingBody = addFolderDTO,
-    )
+    override suspend fun createFolder(
+        addFolderDTO: AddFolderDTO,
+    ): Flow<Result<NewItemResponseDTO>> =
+        postFlow<AddFolderDTO, NewItemResponseDTO>(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.CREATE_FOLDER.name,
+            outgoingBody = addFolderDTO,
+        )
 
-    override suspend fun updateFolder(folderDTO: FolderDTO): Flow<Result<TimeStampBasedResponse>> = postFlow(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.UPDATE_FOLDER.name,
-        outgoingBody = folderDTO,
-    )
+    override suspend fun updateFolder(folderDTO: FolderDTO): Flow<Result<TimeStampBasedResponse>> =
+        postFlow(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.UPDATE_FOLDER.name,
+            outgoingBody = folderDTO,
+        )
 
-    override suspend fun deleteFolder(idBasedDTO: IDBasedDTO): Flow<Result<TimeStampBasedResponse>> = postFlow(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.DELETE_FOLDER.name,
-        outgoingBody = idBasedDTO,
-    )
+    override suspend fun deleteFolder(
+        idBasedDTO: IDBasedDTO,
+    ): Flow<Result<TimeStampBasedResponse>> =
+        postFlow(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.DELETE_FOLDER.name,
+            outgoingBody = idBasedDTO,
+        )
 
-    override suspend fun markAsArchive(idBasedDTO: IDBasedDTO): Flow<Result<TimeStampBasedResponse>> = postFlow(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.MARK_FOLDER_AS_ARCHIVE.name,
-        outgoingBody = idBasedDTO,
-    )
+    override suspend fun markAsArchive(
+        idBasedDTO: IDBasedDTO,
+    ): Flow<Result<TimeStampBasedResponse>> =
+        postFlow(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.MARK_FOLDER_AS_ARCHIVE.name,
+            outgoingBody = idBasedDTO,
+        )
 
     override suspend fun markAsRegularFolder(
         idBasedDTO: IDBasedDTO,
-    ): Flow<Result<TimeStampBasedResponse>> = postFlow(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.MARK_AS_REGULAR_FOLDER.name,
-        outgoingBody = idBasedDTO,
-    )
+    ): Flow<Result<TimeStampBasedResponse>> =
+        postFlow(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.MARK_AS_REGULAR_FOLDER.name,
+            outgoingBody = idBasedDTO,
+        )
 
     override suspend fun changeParentFolder(
         changeParentFolderDTO: ChangeParentFolderDTO,
-    ): Flow<Result<TimeStampBasedResponse>> = postFlow(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.CHANGE_PARENT_FOLDER.name,
-        outgoingBody = changeParentFolderDTO,
-    )
+    ): Flow<Result<TimeStampBasedResponse>> =
+        postFlow(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.CHANGE_PARENT_FOLDER.name,
+            outgoingBody = changeParentFolderDTO,
+        )
 
     override suspend fun updateFolderName(
         updateFolderNameDTO: UpdateFolderNameDTO,
-    ): Flow<Result<TimeStampBasedResponse>> = postFlow(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.UPDATE_FOLDER_NAME.name,
-        outgoingBody = updateFolderNameDTO,
-    )
+    ): Flow<Result<TimeStampBasedResponse>> =
+        postFlow(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.UPDATE_FOLDER_NAME.name,
+            outgoingBody = updateFolderNameDTO,
+        )
 
     override suspend fun updateFolderNote(
         updateFolderNoteDTO: UpdateFolderNoteDTO,
-    ): Flow<Result<TimeStampBasedResponse>> = postFlow(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.UPDATE_FOLDER_NOTE.name,
-        outgoingBody = updateFolderNoteDTO,
-    )
+    ): Flow<Result<TimeStampBasedResponse>> =
+        postFlow(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.UPDATE_FOLDER_NOTE.name,
+            outgoingBody = updateFolderNoteDTO,
+        )
 
     override suspend fun deleteFolderNote(
         idBasedDTO: IDBasedDTO,
-    ): Flow<Result<TimeStampBasedResponse>> = postFlow(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.DELETE_FOLDER_NOTE.name,
-        outgoingBody = idBasedDTO,
-    )
+    ): Flow<Result<TimeStampBasedResponse>> =
+        postFlow(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.DELETE_FOLDER_NOTE.name,
+            outgoingBody = idBasedDTO,
+        )
 
     override suspend fun markSelectedFoldersAsRoot(
         markSelectedFoldersAsRootDTO: MarkSelectedFoldersAsRootDTO,
-    ): Flow<Result<TimeStampBasedResponse>> = postFlow(
-        syncServerClient = syncServerClient,
-        baseUrl = baseUrl,
-        authToken = authToken,
-        endPoint = SyncServerRoute.MARK_FOLDERS_AS_ROOT.name,
-        outgoingBody = markSelectedFoldersAsRootDTO,
-    )
+    ): Flow<Result<TimeStampBasedResponse>> =
+        postFlow(
+            syncServerClient = syncServerClient,
+            baseUrl = baseUrl,
+            authToken = authToken,
+            endPoint = SyncServerRoute.MARK_FOLDERS_AS_ROOT.name,
+            outgoingBody = markSelectedFoldersAsRootDTO,
+        )
 }

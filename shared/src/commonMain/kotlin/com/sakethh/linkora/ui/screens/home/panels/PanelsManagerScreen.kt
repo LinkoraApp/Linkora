@@ -126,7 +126,7 @@ fun PanelsManagerScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = ""
+                                contentDescription = "",
                             )
                         }
                     },

@@ -57,7 +57,9 @@ interface LocalFoldersRepo {
         sortOption: String,
     ): Flow<List<Folder>>
 
-    suspend fun getChildFoldersOfThisParentIDAsFlow(parentFolderID: Long?): Flow<Result<List<Folder>>>
+    suspend fun getChildFoldersOfThisParentIDAsFlow(
+        parentFolderID: Long?,
+    ): Flow<Result<List<Folder>>>
 
     suspend fun markFolderAsArchive(
         folderID: Long,

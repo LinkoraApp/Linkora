@@ -67,10 +67,7 @@ compose.desktop {
             modules("jdk.unsupported.desktop")
 
             jvmArgs +=
-                if (org.gradle.internal.os.OperatingSystem
-                        .current()
-                        .isWindows
-                ) {
+                if (org.gradle.internal.os.OperatingSystem.current().isWindows) {
                     "-Djava.library.path=%APPDIR%;\$APPDIR/resources;\$APPDIR/resources/windows-x64;\$APPDIR/resources/windows-arm64"
                 } else {
                     "-Djava.library.path=\$APPDIR/resources:\$APPDIR/resources/linux-x64"

@@ -17,22 +17,23 @@ enum class EdgeType {
 fun Modifier.fadedEdges(
     colorScheme: ColorScheme,
     edgeType: EdgeType = EdgeType.BOTTOM,
-): Modifier = this.graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen).drawWithContent {
-    drawContent()
-    drawRect(
-        Brush.verticalGradient(
-            if (edgeType == EdgeType.BOTTOM) {
-                listOf(
-                    colorScheme.surface,
-                    Color.Transparent,
-                )
-            } else {
-                listOf(
-                    Color.Transparent,
-                    colorScheme.surface,
-                )
-            },
-        ),
-        blendMode = BlendMode.DstIn,
-    )
-}
+): Modifier =
+    this.graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen).drawWithContent {
+        drawContent()
+        drawRect(
+            Brush.verticalGradient(
+                if (edgeType == EdgeType.BOTTOM) {
+                    listOf(
+                        colorScheme.surface,
+                        Color.Transparent,
+                    )
+                } else {
+                    listOf(
+                        Color.Transparent,
+                        colorScheme.surface,
+                    )
+                },
+            ),
+            blendMode = BlendMode.DstIn,
+        )
+    }

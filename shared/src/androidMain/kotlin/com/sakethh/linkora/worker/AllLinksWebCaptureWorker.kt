@@ -26,6 +26,7 @@ import com.sakethh.linkora.utils.getOrCreateFolderUuid
 import com.sakethh.linkora.utils.isAllowedByWebCapturePolicies
 import com.sakethh.linkora.utils.onTV
 import com.sakethh.linkora.utils.prepareWebCaptureFolder
+import java.util.UUID
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
@@ -34,7 +35,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
-import java.util.UUID
 
 class AllLinksWebCaptureWorker(
     appContext: Context,
@@ -45,22 +45,31 @@ class AllLinksWebCaptureWorker(
 
         fun cancelWork(appContext: Context) {
             WorkManager.getInstance(appContext)
-                .cancelWorkById(UUID.fromString(DependencyContainer.preferencesRepo.getPreferences().allLinksWebCaptureWorkerTag))
-            DataSettingsScreenVM.onGoingWebCaptureState = OnGoingWebCaptureState(
-                isInProgress = false,
-                currentIteration = 0,
-                total = 0,
-            )
+                .cancelWorkById(
+                    UUID.fromString(
+                        DependencyContainer.preferencesRepo
+                            .getPreferences()
+                            .allLinksWebCaptureWorkerTag,
+                    ),
+                )
+            DataSettingsScreenVM.onGoingWebCaptureState =
+                OnGoingWebCaptureState(
+                    isInProgress = false,
+                    currentIteration = 0,
+                    total = 0,
+                )
         }
     }
 
     private var webCaptureNotificationService = WebCaptureNotificationService(appContext)
 
-    override suspend fun getForegroundInfo(): ForegroundInfo = ForegroundInfo(
-        1,
-        NotificationCompat.Builder(applicationContext, "1")
-            .setSmallIcon(R.drawable.notification_icon).build(),
-    )
+    override suspend fun getForegroundInfo(): ForegroundInfo =
+        ForegroundInfo(
+            1,
+            NotificationCompat.Builder(applicationContext, "1")
+                .setSmallIcon(R.drawable.notification_icon)
+                .build(),
+        )
 
     private val androidDesktopWebCapture = AndroidDesktopWebCapture()
 
@@ -74,18 +83,21 @@ class AllLinksWebCaptureWorker(
         val preferences = DependencyContainer.preferencesRepo.getPreferences()
 
         try {
-            LinkoraSDK.getInstance().webCapture.init(
-                options = KaptureOptions(
-                    userAgent = preferences.primaryJsoupUserAgent,
-                    includeCss = preferences.webCaptureSaveCss,
-                    includeImages = preferences.webCaptureSaveImages,
-                    includeJs = preferences.webCaptureExecuteJs,
-                    includeAudio = preferences.webCaptureSaveAudio,
-                    includeVideo = preferences.webCaptureSaveVideo,
-                    includeFonts = preferences.webCaptureSaveFonts,
-                    includeMetadata = preferences.webCaptureSaveMetadata,
+            LinkoraSDK.getInstance()
+                .webCapture
+                .init(
+                    options =
+                        KaptureOptions(
+                            userAgent = preferences.primaryJsoupUserAgent,
+                            includeCss = preferences.webCaptureSaveCss,
+                            includeImages = preferences.webCaptureSaveImages,
+                            includeJs = preferences.webCaptureExecuteJs,
+                            includeAudio = preferences.webCaptureSaveAudio,
+                            includeVideo = preferences.webCaptureSaveVideo,
+                            includeFonts = preferences.webCaptureSaveFonts,
+                            includeMetadata = preferences.webCaptureSaveMetadata,
+                        ),
                 )
-            )
         } catch (_: Exception) {
             return@coroutineScope Result.failure()
         }
@@ -97,31 +109,40 @@ class AllLinksWebCaptureWorker(
                 DependencyContainer.webCaptureRepo.getAllLinksCaptureProcessedLinkIds().toSet()
             val linksToCapture = allLinks.filter { "all_${it.localId}" !in processedIds }
 
-            val whitelist = preferences.webCaptureWhitelistDomains.split(",").map { it.trim() }
-                .filter { it.isNotBlank() }
-            val blacklist = preferences.webCaptureBlacklistDomains.split(",").map { it.trim() }
-                .filter { it.isNotBlank() }
+            val whitelist =
+                preferences.webCaptureWhitelistDomains
+                    .split(",")
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
+            val blacklist =
+                preferences.webCaptureBlacklistDomains
+                    .split(",")
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
 
-            DataSettingsScreenVM.onGoingWebCaptureState = OnGoingWebCaptureState(
-                isInProgress = true,
-                currentIteration = 0,
-                total = linksToCapture.size,
-            )
+            DataSettingsScreenVM.onGoingWebCaptureState =
+                OnGoingWebCaptureState(
+                    isInProgress = true,
+                    currentIteration = 0,
+                    total = linksToCapture.size,
+                )
 
             if (linksToCapture.isEmpty()) return@coroutineScope Result.success()
 
             var processedCount = 0
 
-            linksToCapture.asFlow()
+            linksToCapture
+                .asFlow()
                 .flatMapMerge(concurrency = preferences.webCaptureMaxConcurrency) { link ->
                     flow {
                         if (!link.url.isAllowedByWebCapturePolicies(whitelist, blacklist)) {
                             DependencyContainer.webCaptureRepo.insertAProcessedId(
                                 CaptureTrack(
-                                    capturedLinkId = CaptureTrack.getCaptureLinkId(
-                                        inAllLinksWorker = true,
-                                        linkId = link.localId,
-                                    ),
+                                    capturedLinkId =
+                                        CaptureTrack.getCaptureLinkId(
+                                            inAllLinksWorker = true,
+                                            linkId = link.localId,
+                                        ),
                                 ),
                             )
                             emit(link.localId)
@@ -130,47 +151,53 @@ class AllLinksWebCaptureWorker(
 
                         val folderUuid = webCaptureRepo.getOrCreateFolderUuid(link.url)
 
-                        val isOnTV = with(applicationContext) {
-                            onTV()
-                        }
+                        val isOnTV =
+                            with(applicationContext) {
+                                onTV()
+                            }
 
-                        val captureFilePOSIXPath = if (isOnTV) {
-                            val baseCaptureDir = getDefaultFolder(ExportLocationType.WEB_CAPTURE)
+                        val captureFilePOSIXPath =
+                            if (isOnTV) {
+                                val baseCaptureDir =
+                                    getDefaultFolder(ExportLocationType.WEB_CAPTURE)
 
-                            val linkWebCaptureFolder = baseCaptureDir.prepareWebCaptureFolder(
-                                folderUuid = folderUuid,
-                                saveAsVersions = preferences.webCaptureSaveAsVersions,
-                                retainAllVersions = preferences.webCaptureRetainAllVersions,
-                                maxVersions = preferences.webCaptureMaxVersions,
-                            )
+                                val linkWebCaptureFolder =
+                                    baseCaptureDir.prepareWebCaptureFolder(
+                                        folderUuid = folderUuid,
+                                        saveAsVersions = preferences.webCaptureSaveAsVersions,
+                                        retainAllVersions = preferences.webCaptureRetainAllVersions,
+                                        maxVersions = preferences.webCaptureMaxVersions,
+                                    )
 
-                            createPOSIXOwnedFile(
-                                folder = linkWebCaptureFolder,
-                                exportFileType = ExportFileType.HTML,
-                                exportLocationType = ExportLocationType.WEB_CAPTURE
-                            ) ?: return@flow
-                        } else {
-                            val baseCaptureDir = DocumentFile.fromTreeUri(
-                                applicationContext,
-                                preferences.webCapturesLocation.toUri(),
-                            ) ?: return@flow
+                                createPOSIXOwnedFile(
+                                    folder = linkWebCaptureFolder,
+                                    exportFileType = ExportFileType.HTML,
+                                    exportLocationType = ExportLocationType.WEB_CAPTURE,
+                                ) ?: return@flow
+                            } else {
+                                val baseCaptureDir =
+                                    DocumentFile.fromTreeUri(
+                                        applicationContext,
+                                        preferences.webCapturesLocation.toUri(),
+                                    ) ?: return@flow
 
-                            val linkWebCaptureFolder = baseCaptureDir.prepareWebCaptureFolder(
-                                folderUuid = folderUuid,
-                                saveAsVersions = preferences.webCaptureSaveAsVersions,
-                                retainAllVersions = preferences.webCaptureRetainAllVersions,
-                                maxVersions = preferences.webCaptureMaxVersions,
-                            )
+                                val linkWebCaptureFolder =
+                                    baseCaptureDir.prepareWebCaptureFolder(
+                                        folderUuid = folderUuid,
+                                        saveAsVersions = preferences.webCaptureSaveAsVersions,
+                                        retainAllVersions = preferences.webCaptureRetainAllVersions,
+                                        maxVersions = preferences.webCaptureMaxVersions,
+                                    )
 
-                            val folderUri = linkWebCaptureFolder?.uri?.toString() ?: return@flow
+                                val folderUri = linkWebCaptureFolder?.uri?.toString() ?: return@flow
 
-                            createPOSIXOwnedFile(
-                                context = applicationContext,
-                                folderUriString = folderUri,
-                                exportFileType = ExportFileType.HTML,
-                                exportLocationType = ExportLocationType.WEB_CAPTURE
-                            ) ?: return@flow
-                        }
+                                createPOSIXOwnedFile(
+                                    context = applicationContext,
+                                    folderUriString = folderUri,
+                                    exportFileType = ExportFileType.HTML,
+                                    exportLocationType = ExportLocationType.WEB_CAPTURE,
+                                ) ?: return@flow
+                            }
 
                         try {
                             androidDesktopWebCapture.saveHTMLPage(
@@ -185,26 +212,32 @@ class AllLinksWebCaptureWorker(
 
                         DependencyContainer.webCaptureRepo.insertAProcessedId(
                             CaptureTrack(
-                                capturedLinkId = CaptureTrack.getCaptureLinkId(
-                                    inAllLinksWorker = true,
-                                    linkId = link.localId,
-                                ),
+                                capturedLinkId =
+                                    CaptureTrack.getCaptureLinkId(
+                                        inAllLinksWorker = true,
+                                        linkId = link.localId,
+                                    ),
                             ),
                         )
                         emit(link.localId)
                     }
-                }.onEach {
+                }
+                .onEach {
                     if (isStopped) {
                         cleanup()
                         cancel()
                     }
-                }.catch {
+                }
+                .catch {
                     linkoraLog("AllLinksWebCaptureWorker Crashed")
                     it.printStackTrace()
-                }.collect {
+                }
+                .collect {
                     processedCount++
                     DataSettingsScreenVM.onGoingWebCaptureState =
-                        DataSettingsScreenVM.onGoingWebCaptureState.copy(currentIteration = processedCount)
+                        DataSettingsScreenVM.onGoingWebCaptureState.copy(
+                            currentIteration = processedCount,
+                        )
                     webCaptureNotificationService.showNotification()
                     linkoraLog("processedWebpagesCount = $processedCount")
                 }
@@ -218,11 +251,12 @@ class AllLinksWebCaptureWorker(
     }
 
     private fun cleanup() {
-        DataSettingsScreenVM.onGoingWebCaptureState = OnGoingWebCaptureState(
-            isInProgress = false,
-            currentIteration = 0,
-            total = 0,
-        )
+        DataSettingsScreenVM.onGoingWebCaptureState =
+            OnGoingWebCaptureState(
+                isInProgress = false,
+                currentIteration = 0,
+                total = 0,
+            )
         webCaptureNotificationService.clearNotifications()
     }
 }

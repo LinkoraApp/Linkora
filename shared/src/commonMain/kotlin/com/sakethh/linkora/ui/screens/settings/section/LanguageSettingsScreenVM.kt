@@ -29,7 +29,9 @@ class LanguageSettingsScreenVM(
     private val nativeUtils: NativeUtils,
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.preferencesAsFlow
-    private val localizedStrings get() = localizationRepoLocal.localizedStrings.value
+    private val localizedStrings
+        get() = localizationRepoLocal.localizedStrings.value
+
     private val _availableLanguages = MutableStateFlow(emptyList<LocalizedLanguage>())
     val availableLanguages = _availableLanguages.asStateFlow()
 
@@ -37,11 +39,11 @@ class LanguageSettingsScreenVM(
         viewModelScope.launch {
             preferencesRepository.changePreferenceValue(
                 preferenceKey = AppPreferences.APP_LANGUAGE_CODE,
-                newValue = languageCode
+                newValue = languageCode,
             )
             preferencesRepository.changePreferenceValue(
                 preferenceKey = AppPreferences.APP_LANGUAGE_NAME,
-                newValue = languageName
+                newValue = languageName,
             )
             localizationRepoLocal.loadLanguage(languageCode)
         }
@@ -133,16 +135,18 @@ class LanguageSettingsScreenVM(
                     it.onSuccess {
                         pushUIEvent(
                             UIEvent.Type.ShowSnackbar(
-                                localizedStrings.DeletedTheStringsPack
-                                    .replaceActual(
-                                        language.languageName.inDoubleQuotes(),
-                                    ),
+                                localizedStrings.DeletedTheStringsPack.replaceActual(
+                                    language.languageName.inDoubleQuotes(),
+                                ),
                             ),
                         )
-                        if (language.languageCode == preferencesAsFlow.value.preferredAppLanguageCode) {
+                        if (
+                            language.languageCode ==
+                                preferencesAsFlow.value.preferredAppLanguageCode
+                        ) {
                             loadLocalizedStrings(
                                 languageCode = Constants.DEFAULT_APP_LANGUAGE_CODE,
-                                languageName = Constants.DEFAULT_APP_LANGUAGE_NAME
+                                languageName = Constants.DEFAULT_APP_LANGUAGE_NAME,
                             )
                         }
                     }
@@ -164,10 +168,9 @@ class LanguageSettingsScreenVM(
                             pushUIEvent(
                                 UIEvent.Type.ShowSnackbar(
                                     message =
-                                        localizedStrings.DownloadedLanguageStrings
-                                            .replaceActual(
-                                                language.languageName.inDoubleQuotes(),
-                                            ),
+                                        localizedStrings.DownloadedLanguageStrings.replaceActual(
+                                            language.languageName.inDoubleQuotes(),
+                                        ),
                                 ),
                             )
                         }

@@ -87,9 +87,8 @@ fun AboutScreen() {
         mutableStateOf(false)
     }
     SettingsSectionScaffold(topAppBarText = localizedStrings.About) {
-            paddingValues,
-            topAppBarScrollBehaviour,
-        ->
+        paddingValues,
+        topAppBarScrollBehaviour ->
         LazyColumn(
             modifier =
                 Modifier.fillMaxSize()
@@ -129,14 +128,15 @@ fun AboutScreen() {
                                     } else {
                                         retrievedAppVersionData.value = githubReleaseDTO
                                         isOnLatestUpdate =
-                                            githubReleaseDTO.releaseName != Constants.APP_VERSION_NAME
+                                            githubReleaseDTO.releaseName !=
+                                                Constants.APP_VERSION_NAME
                                         isOnLatestUpdate =
-                                            Constants.APP_VERSION_NAME == githubReleaseDTO.releaseName
+                                            Constants.APP_VERSION_NAME ==
+                                                githubReleaseDTO.releaseName
                                     }
                                     shouldVersionCheckerDialogAppear.value = false
                                     shouldBtmModalSheetBeVisible.value =
-                                        !isOnLatestUpdate &&
-                                                githubReleaseDTO != null
+                                        !isOnLatestUpdate && githubReleaseDTO != null
                                 },
                             )
                         },
@@ -148,9 +148,13 @@ fun AboutScreen() {
                                 1.dp,
                                 contentColorFor(MaterialTheme.colorScheme.surface),
                             ),
-                        colors = CardDefaults.cardColors(containerColor = AlertDialogDefaults.containerColor),
-                        modifier = Modifier.fillMaxWidth()
-                            .padding(start = 15.dp, end = 15.dp, top = 15.dp),
+                        colors =
+                            CardDefaults.cardColors(
+                                containerColor = AlertDialogDefaults.containerColor,
+                            ),
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .padding(start = 15.dp, end = 15.dp, top = 15.dp),
                     ) {
                         Row(
                             modifier =
@@ -174,8 +178,7 @@ fun AboutScreen() {
                                 )
                             }
                             Text(
-                                text =
-                                    localizedStrings.YouAreUsingLatestVersionOfLinkora,
+                                text = localizedStrings.YouAreUsingLatestVersionOfLinkora,
                                 style = MaterialTheme.typography.titleSmall,
                                 fontSize = 14.sp,
                                 lineHeight = 18.sp,
@@ -245,7 +248,8 @@ fun AboutScreen() {
                                     linkType = LinkType.HISTORY_LINK,
                                     title = localizedStrings.LinkoraOnDiscord,
                                     url = url,
-                                    imgURL = "https://cdn.discordapp.com/assets/og_img_discord_home.png",
+                                    imgURL =
+                                        "https://cdn.discordapp.com/assets/og_img_discord_home.png",
                                     note = localizedStrings.LinkoraOnDiscord,
                                     idOfLinkedFolder = null,
                                     userAgent = preferences.primaryJsoupUserAgent,
@@ -296,7 +300,8 @@ fun AboutScreen() {
                                     linkType = LinkType.HISTORY_LINK,
                                     title = localizedStrings.LinkoraOnGithub,
                                     url = url,
-                                    imgURL = "https://avatars.githubusercontent.com/u/183308434?s=280&v=4",
+                                    imgURL =
+                                        "https://avatars.githubusercontent.com/u/183308434?s=280&v=4",
                                     note = localizedStrings.LinkoraOnGithub,
                                     idOfLinkedFolder = null,
                                     userAgent = preferences.primaryJsoupUserAgent,
@@ -360,8 +365,7 @@ fun AboutScreen() {
 
                 SettingsAppInfoComponent(
                     hasDescription = true,
-                    description =
-                        localizedStrings.TrackRecentChangesAndUpdatesToLinkora,
+                    description = localizedStrings.TrackRecentChangesAndUpdatesToLinkora,
                     icon = Icons.Default.TrackChanges,
                     title = localizedStrings.Changelog,
                     onClick = {

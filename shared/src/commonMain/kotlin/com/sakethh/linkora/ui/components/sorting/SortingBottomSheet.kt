@@ -72,18 +72,24 @@ fun SortingBottomSheet(sortingBottomSheetParam: SortingBottomSheetParam) {
     val sortByContent: ComposableContent = {
         sortingBtmSheetVM.sortingBtmSheetData(localizedStrings).forEach {
             Row(
-                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                    .highlightOnFocused().clickable(onClick = {
-                        sortingBottomSheetParam.onSelected(
-                            it.sortingType,
-                            linksSortingSelectedState.value,
-                            foldersSortingSelectedState.value,
+                modifier =
+                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        .highlightOnFocused()
+                        .clickable(
+                            onClick = {
+                                sortingBottomSheetParam.onSelected(
+                                    it.sortingType,
+                                    linksSortingSelectedState.value,
+                                    foldersSortingSelectedState.value,
+                                )
+                                it.onClick()
+                                hideBtmSheet()
+                            },
                         )
-                        it.onClick()
-                        hideBtmSheet()
-                    })
-                    .pressScaleEffect()
-                    .padding(start = 15.dp).fillMaxWidth().wrapContentHeight(),
+                        .pressScaleEffect()
+                        .padding(start = 15.dp)
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -93,8 +99,9 @@ fun SortingBottomSheet(sortingBottomSheetParam: SortingBottomSheetParam) {
                     style = MaterialTheme.typography.titleSmall,
                     color =
                         if (
-                            it.sortingType == SortingType.valueOf(preferences.selectedSortingType) &&
-                            !didAnyCheckBoxStateChanged.value
+                            it.sortingType ==
+                                SortingType.valueOf(preferences.selectedSortingType) &&
+                                !didAnyCheckBoxStateChanged.value
                         ) {
                             MaterialTheme.colorScheme.primary
                         } else {
@@ -104,7 +111,7 @@ fun SortingBottomSheet(sortingBottomSheetParam: SortingBottomSheetParam) {
                 RadioButton(
                     selected =
                         it.sortingType.name == preferences.selectedSortingType &&
-                                !didAnyCheckBoxStateChanged.value,
+                            !didAnyCheckBoxStateChanged.value,
                     onClick = {
                         sortingBottomSheetParam.onSelected(
                             it.sortingType,
@@ -114,8 +121,8 @@ fun SortingBottomSheet(sortingBottomSheetParam: SortingBottomSheetParam) {
                         it.onClick()
                         hideBtmSheet()
                     },
-                    modifier = Modifier.padding(end = 5.dp)
-                        .pointerHoverIcon(icon = PointerIcon.Hand),
+                    modifier =
+                        Modifier.padding(end = 5.dp).pointerHoverIcon(icon = PointerIcon.Hand),
                 )
             }
         }
@@ -133,12 +140,17 @@ fun SortingBottomSheet(sortingBottomSheetParam: SortingBottomSheetParam) {
                 modifier = Modifier.padding(start = 15.dp),
             )
             val isFolderScreen =
-                sortingBottomSheetParam.sortingBtmSheetType == SortingBtmSheetType.REGULAR_FOLDER_SCREEN ||
-                        sortingBottomSheetParam.sortingBtmSheetType == SortingBtmSheetType.ARCHIVE_FOLDER_SCREEN
+                sortingBottomSheetParam.sortingBtmSheetType ==
+                    SortingBtmSheetType.REGULAR_FOLDER_SCREEN ||
+                    sortingBottomSheetParam.sortingBtmSheetType ==
+                        SortingBtmSheetType.ARCHIVE_FOLDER_SCREEN
             if (isFolderScreen) {
                 Spacer(modifier = Modifier.height(10.dp))
             }
-            if (isFolderScreen && (foldersSortingSelectedState.value || linksSortingSelectedState.value)) {
+            if (
+                isFolderScreen &&
+                    (foldersSortingSelectedState.value || linksSortingSelectedState.value)
+            ) {
                 Text(
                     text = localizedStrings.SortBy,
                     style = MaterialTheme.typography.titleMedium,
@@ -150,9 +162,9 @@ fun SortingBottomSheet(sortingBottomSheetParam: SortingBottomSheetParam) {
             }
             if (
                 sortingBottomSheetParam.sortingBtmSheetType !=
-                SortingBtmSheetType.REGULAR_FOLDER_SCREEN &&
-                sortingBottomSheetParam.sortingBtmSheetType !=
-                SortingBtmSheetType.ARCHIVE_FOLDER_SCREEN
+                    SortingBtmSheetType.REGULAR_FOLDER_SCREEN &&
+                    sortingBottomSheetParam.sortingBtmSheetType !=
+                        SortingBtmSheetType.ARCHIVE_FOLDER_SCREEN
             ) {
                 sortByContent()
             }

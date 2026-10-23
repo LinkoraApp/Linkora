@@ -9,7 +9,9 @@ interface WebCaptureRepo {
     suspend fun getAllLinksCaptureProcessedLinkIds(): List<String>
 
     suspend fun deleteAllProcessedIds()
+
     suspend fun deleteByWorkerId(id: String)
+
     suspend fun getAllWorkerIds(): List<String?>
 
     suspend fun insertMetadata(metadata: WebCaptureMetadata)

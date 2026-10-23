@@ -148,14 +148,13 @@ fun ServerSetupScreen() {
                     },
                     supportingText = {
                         Text(
-                            text =
-                                localizedStrings.ServerSetupInstruction,
+                            text = localizedStrings.ServerSetupInstruction,
                             style = MaterialTheme.typography.titleLarge,
                         )
                     },
                     readOnly =
                         serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully &&
-                                !serverManagementViewModel.serverSetupState.value.isConnecting,
+                            !serverManagementViewModel.serverSetupState.value.isConnecting,
                 )
             }
 
@@ -175,7 +174,7 @@ fun ServerSetupScreen() {
                     },
                     readOnly =
                         serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully &&
-                                !serverManagementViewModel.serverSetupState.value.isConnecting,
+                            !serverManagementViewModel.serverSetupState.value.isConnecting,
                     visualTransformation =
                         if (isSecurityTokenVisible.value) {
                             VisualTransformation.None
@@ -208,10 +207,9 @@ fun ServerSetupScreen() {
                 item {
                     Text(
                         text =
-                            localizedStrings.ServerCertificateAlreadyImported
-                                .replaceActual(
-                                    serverManagementViewModel.existingCertificateInfo.value,
-                                ),
+                            localizedStrings.ServerCertificateAlreadyImported.replaceActual(
+                                serverManagementViewModel.existingCertificateInfo.value,
+                            ),
                         style = MaterialTheme.typography.titleSmall,
                         modifier =
                             Modifier.padding(
@@ -237,10 +235,9 @@ fun ServerSetupScreen() {
                                 ),
                             text =
                                 if (importedCertInfo.value.isNotBlank()) {
-                                    localizedStrings.ImportedServerCertificate
-                                        .replaceActual(
-                                            importedCertInfo.value,
-                                        )
+                                    localizedStrings.ImportedServerCertificate.replaceActual(
+                                        importedCertInfo.value,
+                                    )
                                 } else if (isCertificateInProcessing.value) {
                                     localizedStrings.ProcessingCertificate
                                 } else {
@@ -264,8 +261,10 @@ fun ServerSetupScreen() {
                             ElevatedButton(
                                 onClick = {
                                     if (
-                                        !serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully &&
-                                        !serverManagementViewModel.serverSetupState.value.isConnecting
+                                        !serverManagementViewModel.serverSetupState.value
+                                            .isConnectedSuccessfully &&
+                                            !serverManagementViewModel.serverSetupState.value
+                                                .isConnecting
                                     ) {
                                         serverManagementViewModel.importSignedCertificate(
                                             onStart = {
@@ -299,12 +298,14 @@ fun ServerSetupScreen() {
                     Box(
                         modifier =
                             Modifier.then(
-                                if (preferences.skipCertCheckForSync) {
-                                    Modifier.background(MaterialTheme.colorScheme.errorContainer)
-                                } else {
-                                    Modifier
-                                },
-                            )
+                                    if (preferences.skipCertCheckForSync) {
+                                        Modifier.background(
+                                            MaterialTheme.colorScheme.errorContainer,
+                                        )
+                                    } else {
+                                        Modifier
+                                    },
+                                )
                                 .padding(
                                     top = 15.dp,
                                     bottom = 15.dp,
@@ -312,8 +313,7 @@ fun ServerSetupScreen() {
                     ) {
                         SettingComponent(
                             SettingComponentParam(
-                                title =
-                                    localizedStrings.ForceBypassCertificateChecking,
+                                title = localizedStrings.ForceBypassCertificateChecking,
                                 doesDescriptionExists = true,
                                 description =
                                     localizedStrings.ForceBypassCertificateCheckingDescription,
@@ -323,7 +323,8 @@ fun ServerSetupScreen() {
                                     if (
                                         !serverManagementViewModel.serverSetupState.value
                                             .isConnectedSuccessfully &&
-                                        !serverManagementViewModel.serverSetupState.value.isConnecting
+                                            !serverManagementViewModel.serverSetupState.value
+                                                .isConnecting
                                     ) {
                                         serverManagementViewModel.updateCertificateBypassRule(it)
                                     }
@@ -338,7 +339,9 @@ fun ServerSetupScreen() {
             item {
                 if (serverManagementViewModel.serverSetupState.value.isConnecting) {
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidthWithPadding())
-                } else if (serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully) {
+                } else if (
+                    serverManagementViewModel.serverSetupState.value.isConnectedSuccessfully
+                ) {
                     HorizontalInfoCard(
                         info = localizedStrings.ServerIsReachable,
                         paddingValues = PaddingValues(start = 15.dp, end = 15.dp),
@@ -358,8 +361,7 @@ fun ServerSetupScreen() {
                                 .highlightOnFocused(shape = ButtonDefaults.shape),
                     ) {
                         Text(
-                            text =
-                                localizedStrings.TestServerAvailability,
+                            text = localizedStrings.TestServerAvailability,
                             style = MaterialTheme.typography.titleMedium,
                         )
                     }
@@ -390,7 +392,8 @@ fun ServerSetupScreen() {
                     }
                     Column(
                         modifier =
-                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand).highlightOnFocused()
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .highlightOnFocused()
                                 .clickable(
                                     onClick = {
                                         selectedSyncType.value = syncType
@@ -433,7 +436,9 @@ fun ServerSetupScreen() {
                             serverConnection =
                                 ServerConnection(
                                     serverUrl =
-                                        serverUrl.value.substringBefore(SyncServerRoute.TEST_BEARER.name),
+                                        serverUrl.value.substringBefore(
+                                            SyncServerRoute.TEST_BEARER.name,
+                                        ),
                                     authToken = securityToken.value,
                                     syncType = selectedSyncType.value,
                                 ),
@@ -449,7 +454,8 @@ fun ServerSetupScreen() {
                     modifier =
                         Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                             .fillMaxWidthWithPadding()
-                            .pressScaleEffect().highlightOnFocused(shape = ButtonDefaults.shape),
+                            .pressScaleEffect()
+                            .highlightOnFocused(shape = ButtonDefaults.shape),
                 ) {
                     Text(
                         text = localizedStrings.UseThisConnection,

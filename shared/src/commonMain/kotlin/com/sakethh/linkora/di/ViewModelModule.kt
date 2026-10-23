@@ -26,95 +26,96 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(
         modelClass: KClass<T>,
         extras: CreationExtras,
-    ): T = when (modelClass) {
-        CollectionsScreenVM::class ->
-            CollectionsScreenVM(
-                localFoldersRepo = DependencyContainer.localFoldersRepo,
-                localLinksRepo = DependencyContainer.localLinksRepo,
-                localTagsRepo = DependencyContainer.localTagsRepo,
-                preferencesRepo = DependencyContainer.preferencesRepo,
-                localizationRepo = DependencyContainer.localizationRepo
-            )
-
-        SortingBtmSheetVM::class ->
-            SortingBtmSheetVM(
-                preferencesRepository = DependencyContainer.preferencesRepo,
-                nativeUtils = LinkoraSDK.getInstance().nativeUtils,
-                permissionManager = LinkoraSDK.getInstance().permissionManager,
-                webCapture = LinkoraSDK.getInstance().webCapture,
-                webCaptureDatabaseManager = LinkoraSDK.getInstance().webCaptureDatabaseManager,
-                localizationRepo = DependencyContainer.localizationRepo
-            )
-
-        SearchScreenVM::class ->
-            SearchScreenVM(
-                localLinksRepo = DependencyContainer.localLinksRepo,
-                localTagsRepo = DependencyContainer.localTagsRepo,
-                localDatabaseUtilsRepo = DependencyContainer.localDatabaseUtilsImpl,
-                preferencesRepository = DependencyContainer.preferencesRepo,
-                localizationRepo = DependencyContainer.localizationRepo
-            )
-
-        SettingsScreenViewModel::class ->
-            SettingsScreenViewModel(
-                preferencesRepository = DependencyContainer.preferencesRepo,
-                nativeUtils = LinkoraSDK.getInstance().nativeUtils,
-                permissionManager = LinkoraSDK.getInstance().permissionManager,
-                webCapture = LinkoraSDK.getInstance().webCapture,
-                webCaptureDatabaseManager = LinkoraSDK.getInstance().webCaptureDatabaseManager,
-                localizationRepo = DependencyContainer.localizationRepo
-            )
-
-        LanguageSettingsScreenVM::class ->
-            DependencyContainer.localizationRepo.let { localizationRepo ->
-                LanguageSettingsScreenVM(
-                    preferencesRepository = DependencyContainer.preferencesRepo,
-                    localizationRepoLocal = localizationRepo,
-                    localizationRepoRemote = localizationRepo,
-                    nativeUtils = LinkoraSDK.getInstance().nativeUtils,
+    ): T =
+        when (modelClass) {
+            CollectionsScreenVM::class ->
+                CollectionsScreenVM(
+                    localFoldersRepo = DependencyContainer.localFoldersRepo,
+                    localLinksRepo = DependencyContainer.localLinksRepo,
+                    localTagsRepo = DependencyContainer.localTagsRepo,
+                    preferencesRepo = DependencyContainer.preferencesRepo,
+                    localizationRepo = DependencyContainer.localizationRepo,
                 )
-            }
 
-        AboutSettingsScreenVM::class ->
-            AboutSettingsScreenVM(
-                localLinksRepo = DependencyContainer.localLinksRepo,
-                gitHubReleasesRepo = DependencyContainer.gitHubReleasesRepo,
-                localizationRepo = DependencyContainer.localizationRepo
-            )
+            SortingBtmSheetVM::class ->
+                SortingBtmSheetVM(
+                    preferencesRepository = DependencyContainer.preferencesRepo,
+                    nativeUtils = LinkoraSDK.getInstance().nativeUtils,
+                    permissionManager = LinkoraSDK.getInstance().permissionManager,
+                    webCapture = LinkoraSDK.getInstance().webCapture,
+                    webCaptureDatabaseManager = LinkoraSDK.getInstance().webCaptureDatabaseManager,
+                    localizationRepo = DependencyContainer.localizationRepo,
+                )
 
-        ServerManagementViewModel::class ->
-            ServerManagementViewModel(
-                DependencyContainer.networkRepo,
-                DependencyContainer.preferencesRepo,
-                DependencyContainer.remoteSyncRepo,
-                fileManager = LinkoraSDK.getInstance().fileManager,
-                permissionManager = LinkoraSDK.getInstance().permissionManager,
-                network = LinkoraSDK.getInstance().network,
-                localizationRepo = DependencyContainer.localizationRepo
-            )
+            SearchScreenVM::class ->
+                SearchScreenVM(
+                    localLinksRepo = DependencyContainer.localLinksRepo,
+                    localTagsRepo = DependencyContainer.localTagsRepo,
+                    localDatabaseUtilsRepo = DependencyContainer.localDatabaseUtilsImpl,
+                    preferencesRepository = DependencyContainer.preferencesRepo,
+                    localizationRepo = DependencyContainer.localizationRepo,
+                )
 
-        DataSettingsScreenVM::class ->
-            DataSettingsScreenVM(
-                platform = LinkoraSDK.getInstance().platform,
-                exportDataRepo = DependencyContainer.exportDataRepo,
-                importDataRepo = DependencyContainer.importDataRepo,
-                linksRepo = DependencyContainer.localLinksRepo,
-                preferencesRepository = DependencyContainer.preferencesRepo,
-                remoteSyncRepo = DependencyContainer.remoteSyncRepo,
-                nativeUtils = LinkoraSDK.getInstance().nativeUtils,
-                fileManager = LinkoraSDK.getInstance().fileManager,
-                permissionManager = LinkoraSDK.getInstance().permissionManager,
-                refreshLinksRepo = DependencyContainer.refreshLinksRepo,
-                webCaptureRepo = DependencyContainer.webCaptureRepo,
-                webCapture = LinkoraSDK.getInstance().webCapture,
-                webCaptureDatabaseManager = LinkoraSDK.getInstance().webCaptureDatabaseManager,
-                localizationRepo = DependencyContainer.localizationRepo
-            )
+            SettingsScreenViewModel::class ->
+                SettingsScreenViewModel(
+                    preferencesRepository = DependencyContainer.preferencesRepo,
+                    nativeUtils = LinkoraSDK.getInstance().nativeUtils,
+                    permissionManager = LinkoraSDK.getInstance().permissionManager,
+                    webCapture = LinkoraSDK.getInstance().webCapture,
+                    webCaptureDatabaseManager = LinkoraSDK.getInstance().webCaptureDatabaseManager,
+                    localizationRepo = DependencyContainer.localizationRepo,
+                )
 
-        else ->
-            error(
-                "Not sure how to create an instance of ${modelClass.simpleName}, maybe it's available in *AssistedFactory",
-            )
-    }
-        as T
+            LanguageSettingsScreenVM::class ->
+                DependencyContainer.localizationRepo.let { localizationRepo ->
+                    LanguageSettingsScreenVM(
+                        preferencesRepository = DependencyContainer.preferencesRepo,
+                        localizationRepoLocal = localizationRepo,
+                        localizationRepoRemote = localizationRepo,
+                        nativeUtils = LinkoraSDK.getInstance().nativeUtils,
+                    )
+                }
+
+            AboutSettingsScreenVM::class ->
+                AboutSettingsScreenVM(
+                    localLinksRepo = DependencyContainer.localLinksRepo,
+                    gitHubReleasesRepo = DependencyContainer.gitHubReleasesRepo,
+                    localizationRepo = DependencyContainer.localizationRepo,
+                )
+
+            ServerManagementViewModel::class ->
+                ServerManagementViewModel(
+                    DependencyContainer.networkRepo,
+                    DependencyContainer.preferencesRepo,
+                    DependencyContainer.remoteSyncRepo,
+                    fileManager = LinkoraSDK.getInstance().fileManager,
+                    permissionManager = LinkoraSDK.getInstance().permissionManager,
+                    network = LinkoraSDK.getInstance().network,
+                    localizationRepo = DependencyContainer.localizationRepo,
+                )
+
+            DataSettingsScreenVM::class ->
+                DataSettingsScreenVM(
+                    platform = LinkoraSDK.getInstance().platform,
+                    exportDataRepo = DependencyContainer.exportDataRepo,
+                    importDataRepo = DependencyContainer.importDataRepo,
+                    linksRepo = DependencyContainer.localLinksRepo,
+                    preferencesRepository = DependencyContainer.preferencesRepo,
+                    remoteSyncRepo = DependencyContainer.remoteSyncRepo,
+                    nativeUtils = LinkoraSDK.getInstance().nativeUtils,
+                    fileManager = LinkoraSDK.getInstance().fileManager,
+                    permissionManager = LinkoraSDK.getInstance().permissionManager,
+                    refreshLinksRepo = DependencyContainer.refreshLinksRepo,
+                    webCaptureRepo = DependencyContainer.webCaptureRepo,
+                    webCapture = LinkoraSDK.getInstance().webCapture,
+                    webCaptureDatabaseManager = LinkoraSDK.getInstance().webCaptureDatabaseManager,
+                    localizationRepo = DependencyContainer.localizationRepo,
+                )
+
+            else ->
+                error(
+                    "Not sure how to create an instance of ${modelClass.simpleName}, maybe it's available in *AssistedFactory",
+                )
+        }
+            as T
 }

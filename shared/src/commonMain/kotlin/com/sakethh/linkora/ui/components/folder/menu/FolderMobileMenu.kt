@@ -54,7 +54,9 @@ fun FolderMobileMenu(
         MenuNonImageHeader(
             onClick = {
                 localClipBoardManager.setText(AnnotatedString(currentFolder.name))
-                coroutineScope.pushUIEvent(UIEvent.Type.ShowSnackbar(localizedStrings.CopiedTitleToTheClipboard))
+                coroutineScope.pushUIEvent(
+                    UIEvent.Type.ShowSnackbar(localizedStrings.CopiedTitleToTheClipboard),
+                )
             },
             leadingIcon = Icons.Outlined.Folder,
             text = currentFolder.name,
@@ -79,17 +81,19 @@ fun FolderMobileMenu(
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 20.sp,
                     modifier =
-                        Modifier
-                            .fillMaxWidth()
+                        Modifier.fillMaxWidth()
                             .pointerHoverIcon(icon = PointerIcon.Hand)
-                            .combinedClickable(onClick = {}, onLongClick = {
-                                localClipBoardManager.setText(AnnotatedString(note))
-                                coroutineScope.pushUIEvent(
-                                    UIEvent.Type.ShowSnackbar(
-                                        localizedStrings.CopiedNoteToTheClipboard
+                            .combinedClickable(
+                                onClick = {},
+                                onLongClick = {
+                                    localClipBoardManager.setText(AnnotatedString(note))
+                                    coroutineScope.pushUIEvent(
+                                        UIEvent.Type.ShowSnackbar(
+                                            localizedStrings.CopiedNoteToTheClipboard,
+                                        ),
                                     )
-                                )
-                            })
+                                },
+                            )
                             .padding(start = 20.dp, end = 25.dp),
                     textAlign = TextAlign.Start,
                     lineHeight = 24.sp,

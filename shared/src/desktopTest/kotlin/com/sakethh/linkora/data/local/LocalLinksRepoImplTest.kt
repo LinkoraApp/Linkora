@@ -29,16 +29,15 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.test.runTest
 
 class LocalLinksRepoImplTest {
     private lateinit var database: LocalDatabase
@@ -77,10 +76,10 @@ class LocalLinksRepoImplTest {
                 every { serverBaseUrl } returns "https://server.linkora.com"
                 every { serverSecurityToken } returns "mock-auth-token"
                 every { correlation } returns
-                        Correlation(
-                            id = "test-correlation-id",
-                            clientName = "test-client",
-                        )
+                    Correlation(
+                        id = "test-correlation-id",
+                        clientName = "test-client",
+                    )
             }
         coEvery { preferencesRepository.getPreferences() } returns mockPrefs
 
@@ -136,7 +135,8 @@ class LocalLinksRepoImplTest {
     }
 
     @Test
-    fun `adding exact duplicate link when skipSavingIfExists is enabled outputs existence failure`() = runTest {
+    fun `adding exact duplicate link when skipSavingIfExists is enabled outputs existence failure`() =
+        runTest {
             val link =
                 Link(
                     url = "https://duplicate.com",
@@ -162,9 +162,10 @@ class LocalLinksRepoImplTest {
         }
 
     @Test
-    fun `network failure during remote link creation explicitly captures dto to pending sync queue`() = runTest {
+    fun `network failure during remote link creation explicitly captures dto to pending sync queue`() =
+        runTest {
             coEvery { remoteLinksRepo.addANewLink(any()) } returns
-                    flowOf(Result.Failure(Exception("Network Timeout")))
+                flowOf(Result.Failure(Exception("Network Timeout")))
 
             val link =
                 Link(
@@ -188,14 +189,15 @@ class LocalLinksRepoImplTest {
                 pendingSyncQueueRepo.addInQueue(
                     match { queueItem ->
                         queueItem.operation == "CREATE_A_NEW_LINK" &&
-                                queueItem.payload.contains("https://offline.com")
+                            queueItem.payload.contains("https://offline.com")
                     },
                 )
             }
         }
 
     @Test
-    fun `viaSocket flag entirely bypasses remote repo execution during link modifications`() = runTest {
+    fun `viaSocket flag entirely bypasses remote repo execution during link modifications`() =
+        runTest {
             val linkId =
                 linksDao.addANewLink(
                     Link(
@@ -220,7 +222,8 @@ class LocalLinksRepoImplTest {
         }
 
     @Test
-    fun `updating a link strictly prunes removed tags and attaches newly selected ones via cross tables`() = runTest {
+    fun `updating a link strictly prunes removed tags and attaches newly selected ones via cross tables`() =
+        runTest {
             val linkId =
                 linksDao.addANewLink(
                     Link(
@@ -255,7 +258,8 @@ class LocalLinksRepoImplTest {
                     tags = listOf(tagsDao.getATag(t1Id), tagsDao.getATag(t3Id)),
                 )
 
-            localLinksRepo.updateALink(linksDao.getLink(linkId), updatedPair, viaSocket = true)
+            localLinksRepo
+                .updateALink(linksDao.getLink(linkId), updatedPair, viaSocket = true)
                 .toList()
 
             val currentTags = tagsDao.getTags(linkId)
@@ -270,7 +274,8 @@ class LocalLinksRepoImplTest {
         }
 
     @Test
-    fun `delete duplicate links scans deeply across categories and aggressively purges clones keeping one intact`() = runTest {
+    fun `delete duplicate links scans deeply across categories and aggressively purges clones keeping one intact`() =
+        runTest {
             linksDao.addANewLink(
                 Link(
                     url = "https://dup.com",

@@ -42,19 +42,20 @@ data class Link(
     val mediaType: MediaType = MediaType.IMAGE,
     val lastModified: Long = getSystemEpochSeconds(),
 ) {
-    @Ignore
-    @Transient
-    val date: String? = epochToReadableDateTime(lastModified)
+    @Ignore @Transient val date: String? = epochToReadableDateTime(lastModified)
 
-    @Ignore
-    @Transient
-    var path: List<Folder>? = null
+    @Ignore @Transient var path: List<Folder>? = null
 
     class Invalid : ThrowableLink()
+
     class LinkExistsInSelectedFolder : ThrowableLink()
+
     class LinkExistsInSavedLinks : ThrowableLink()
+
     class LinkExistsInHistory : ThrowableLink()
+
     class LinkExistsInImportantLinks : ThrowableLink()
+
     class LinkExistsInArchivedLinks : ThrowableLink()
 
     open class ThrowableLink : Throwable()

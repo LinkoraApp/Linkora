@@ -23,16 +23,17 @@ interface LocalizationDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addNewLanguages(languages: List<LocalizedLanguage>)
 
-    @Query("SELECT * from localized_languages")
-    fun getAllLanguages(): Flow<List<LocalizedLanguage>>
+    @Query("SELECT * from localized_languages") fun getAllLanguages(): Flow<List<LocalizedLanguage>>
 
-    @Query("SELECT stringName, stringValue FROM localized_strings WHERE languageCode = :languageCode")
+    @Query(
+        "SELECT stringName, stringValue FROM localized_strings WHERE languageCode = :languageCode",
+    )
     suspend fun getLocalizedPairs(
-        languageCode: String
+        languageCode: String,
     ): Map<
         @MapColumn(columnName = "stringName")
         String,
         @MapColumn(columnName = "stringValue")
-        String
-        >
+        String,
+    >
 }

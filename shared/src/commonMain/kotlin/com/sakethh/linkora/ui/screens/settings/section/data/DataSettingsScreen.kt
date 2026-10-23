@@ -161,25 +161,30 @@ fun DataSettingsScreen() {
     var labelForAlertDialogWithProgress by rememberSaveable {
         mutableStateOf("")
     }
-    val exportLocation = rememberSaveable(preferences.currentExportLocation) {
-        mutableStateOf(preferences.currentExportLocation)
-    }
+    val exportLocation =
+        rememberSaveable(preferences.currentExportLocation) {
+            mutableStateOf(preferences.currentExportLocation)
+        }
 
     val localFocusManager = LocalFocusManager.current
 
-    var maxConcurrentRefreshCount by rememberSaveable(preferences.maxConcurrentRefreshCount) {
-        mutableIntStateOf(preferences.maxConcurrentRefreshCount)
-    }
+    var maxConcurrentRefreshCount by
+        rememberSaveable(preferences.maxConcurrentRefreshCount) {
+            mutableIntStateOf(preferences.maxConcurrentRefreshCount)
+        }
 
-    val refreshAllLinksState by dataSettingsScreenVM.refreshAllLinksState.collectAsStateWithLifecycle()
+    val refreshAllLinksState by
+        dataSettingsScreenVM.refreshAllLinksState.collectAsStateWithLifecycle()
     val isOnTV = Platform.Android.onTV()
     SettingsSectionScaffold(
         topAppBarText = localizedStrings.Data,
     ) { paddingValues, topAppBarScrollBehaviour ->
         LazyColumn(
-            modifier = Modifier.animateContentSize().fillMaxSize()
-                .addEdgeToEdgeScaffoldPadding(paddingValues)
-                .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
+            modifier =
+                Modifier.animateContentSize()
+                    .fillMaxSize()
+                    .addEdgeToEdgeScaffoldPadding(paddingValues)
+                    .nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
             verticalArrangement = Arrangement.spacedBy(30.dp),
         ) {
             item {
@@ -206,19 +211,26 @@ fun DataSettingsScreen() {
                             )
                             Spacer(modifier = Modifier.width(5.dp))
                             Text(
-                                text = if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) {
-                                    localizedStrings.FileLocationLabel
-                                } else {
-                                    localizedStrings.FilePickerLabel
-                                },
+                                text =
+                                    if (
+                                        importFileSelectionMethod.value ==
+                                            ImportFileSelectionMethod.FileLocationString.name
+                                    ) {
+                                        localizedStrings.FileLocationLabel
+                                    } else {
+                                        localizedStrings.FilePickerLabel
+                                    },
                                 style = MaterialTheme.typography.titleLarge,
                             )
                             Spacer(modifier = Modifier.width(5.dp))
                             FilledTonalIconButton(
-                                modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                    .size(24.dp),
+                                modifier =
+                                    Modifier.pointerHoverIcon(icon = PointerIcon.Hand).size(24.dp),
                                 onClick = {
-                                    if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) {
+                                    if (
+                                        importFileSelectionMethod.value ==
+                                            ImportFileSelectionMethod.FileLocationString.name
+                                    ) {
                                         importFileSelectionMethod.value =
                                             ImportFileSelectionMethod.FilePicker.name
                                     } else {
@@ -230,13 +242,18 @@ fun DataSettingsScreen() {
                                 Icon(
                                     imageVector = Icons.Default.SwitchLeft,
                                     contentDescription = null,
-                                    modifier = Modifier.rotate(
-                                        if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) {
-                                            0f
-                                        } else {
-                                            180f
-                                        },
-                                    ),
+                                    modifier =
+                                        Modifier.rotate(
+                                            if (
+                                                importFileSelectionMethod.value ==
+                                                    ImportFileSelectionMethod.FileLocationString
+                                                        .name
+                                            ) {
+                                                0f
+                                            } else {
+                                                180f
+                                            },
+                                        ),
                                 )
                             }
                         }
@@ -258,18 +275,19 @@ fun DataSettingsScreen() {
                             isIconNeeded = true,
                             title = localizedStrings.ImportUsingJsonFile,
                             doesDescriptionExists = true,
-                            description =
-                                localizedStrings.ImportUsingJsonFileDesc,
+                            description = localizedStrings.ImportUsingJsonFileDesc,
                             isSwitchNeeded = false,
                             isSwitchEnabled = false,
                             onSwitchStateChange = {
-                                if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) {
+                                if (
+                                    importFileSelectionMethod.value ==
+                                        ImportFileSelectionMethod.FileLocationString.name
+                                ) {
                                     selectedImportFormat.value = ImportFileType.JSON.name
                                     showFileLocationPickerDialog.value = true
                                     return@SettingComponentParam
                                 }
-                                dataOperationTitle.value =
-                                    localizedStrings.ImportUsingJsonFile
+                                dataOperationTitle.value = localizedStrings.ImportUsingJsonFile
                                 dataSettingsScreenVM.importDataFromAFile(
                                     importFileType = ImportFileType.JSON,
                                     onStart = {
@@ -278,7 +296,8 @@ fun DataSettingsScreen() {
                                     onCompletion = {
                                         isImportExportProgressUIVisible = false
                                     },
-                                    importFileSelectionMethod = ImportFileSelectionMethod.FilePicker to "",
+                                    importFileSelectionMethod =
+                                        ImportFileSelectionMethod.FilePicker to "",
                                 )
                             },
                             icon = Icons.Default.DataObject,
@@ -293,18 +312,19 @@ fun DataSettingsScreen() {
                             isIconNeeded = true,
                             title = localizedStrings.ImportDataFromHtmlFile,
                             doesDescriptionExists = true,
-                            description =
-                                localizedStrings.ImportDataFromHtmlFileDesc,
+                            description = localizedStrings.ImportDataFromHtmlFileDesc,
                             isSwitchNeeded = false,
                             isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
-                                if (importFileSelectionMethod.value == ImportFileSelectionMethod.FileLocationString.name) {
+                                if (
+                                    importFileSelectionMethod.value ==
+                                        ImportFileSelectionMethod.FileLocationString.name
+                                ) {
                                     selectedImportFormat.value = ImportFileType.HTML.name
                                     showFileLocationPickerDialog.value = true
                                     return@SettingComponentParam
                                 }
-                                dataOperationTitle.value =
-                                    localizedStrings.ImportDataFromHtmlFile
+                                dataOperationTitle.value = localizedStrings.ImportDataFromHtmlFile
                                 dataSettingsScreenVM.importDataFromAFile(
                                     importFileType = ImportFileType.HTML,
                                     onStart = {
@@ -313,7 +333,8 @@ fun DataSettingsScreen() {
                                     onCompletion = {
                                         isImportExportProgressUIVisible = false
                                     },
-                                    importFileSelectionMethod = ImportFileSelectionMethod.FilePicker to "",
+                                    importFileSelectionMethod =
+                                        ImportFileSelectionMethod.FilePicker to "",
                                 )
                             },
                             icon = Icons.Default.Html,
@@ -345,10 +366,11 @@ fun DataSettingsScreen() {
                 item {
                     if (platform is Platform.Android.TV) {
                         HorizontalInfoCard(
-                            info = localizedStrings.ExportsLocationNoticeOnAndroidTV.replaceActual(
-                                ExportLocationType.EXPORT.dirRef
-                            ),
-                            paddingValues = PaddingValues(start = 15.dp, end = 15.dp)
+                            info =
+                                localizedStrings.ExportsLocationNoticeOnAndroidTV.replaceActual(
+                                    ExportLocationType.EXPORT.dirRef,
+                                ),
+                            paddingValues = PaddingValues(start = 15.dp, end = 15.dp),
                         )
                     } else {
                         TextField(
@@ -362,8 +384,10 @@ fun DataSettingsScreen() {
                             trailingIcon = {
                                 if (!isOnTV) {
                                     FilledTonalIconButton(
-                                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                            .pressScaleEffect().padding(end = 5.dp),
+                                        modifier =
+                                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                                .pressScaleEffect()
+                                                .padding(end = 5.dp),
                                         onClick = {
                                             dataSettingsScreenVM.changeExportLocation(
                                                 exportLocation = exportLocation.value,
@@ -373,11 +397,12 @@ fun DataSettingsScreen() {
                                         },
                                     ) {
                                         Icon(
-                                            imageVector = if (platform is Platform.Android) {
-                                                Icons.Default.FolderOpen
-                                            } else {
-                                                Icons.Default.Save
-                                            },
+                                            imageVector =
+                                                if (platform is Platform.Android) {
+                                                    Icons.Default.FolderOpen
+                                                } else {
+                                                    Icons.Default.Save
+                                                },
                                             contentDescription = null,
                                         )
                                     }
@@ -395,17 +420,23 @@ fun DataSettingsScreen() {
                             onValueChange = {
                                 exportLocation.value = it
                             },
-                            modifier = Modifier.padding(start = 15.dp, end = 15.dp).fillMaxWidth()
-                                .highlightOnFocused()
-                                .clickable(indication = null, interactionSource = null, onClick = {
-                                    if (isOnTV) {
-                                        dataSettingsScreenVM.changeExportLocation(
-                                            exportLocation = exportLocation.value,
-                                            platform = platform,
-                                            exportLocationType = ExportLocationType.EXPORT,
-                                        )
-                                    }
-                                }),
+                            modifier =
+                                Modifier.padding(start = 15.dp, end = 15.dp)
+                                    .fillMaxWidth()
+                                    .highlightOnFocused()
+                                    .clickable(
+                                        indication = null,
+                                        interactionSource = null,
+                                        onClick = {
+                                            if (isOnTV) {
+                                                dataSettingsScreenVM.changeExportLocation(
+                                                    exportLocation = exportLocation.value,
+                                                    platform = platform,
+                                                    exportLocationType = ExportLocationType.EXPORT,
+                                                )
+                                            }
+                                        },
+                                    ),
                         )
                     }
                 }
@@ -420,8 +451,7 @@ fun DataSettingsScreen() {
                             isSwitchNeeded = false,
                             isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
-                                dataOperationTitle.value =
-                                    localizedStrings.ExportingDataToJSON
+                                dataOperationTitle.value = localizedStrings.ExportingDataToJSON
                                 dataSettingsScreenVM.exportDataToAFile(
                                     platform = platform,
                                     exportFileType = ExportFileType.JSON,
@@ -449,8 +479,7 @@ fun DataSettingsScreen() {
                             isSwitchNeeded = false,
                             isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
-                                dataOperationTitle.value =
-                                    localizedStrings.ExportingDataToHTML
+                                dataOperationTitle.value = localizedStrings.ExportingDataToHTML
                                 dataSettingsScreenVM.exportDataToAFile(
                                     platform = platform,
                                     exportFileType = ExportFileType.HTML,
@@ -484,7 +513,9 @@ fun DataSettingsScreen() {
                         SettingSectionComponent(
                             SettingSectionComponentParam(
                                 onClick = {
-                                    navController.navigate(Navigation.Settings.Data.WebPageCapturesScreen)
+                                    navController.navigate(
+                                        Navigation.Settings.Data.WebPageCapturesScreen,
+                                    )
                                 },
                                 sectionTitle = localizedStrings.WebPageCaptures,
                                 sectionIcon = Icons.Default.Web,
@@ -513,11 +544,9 @@ fun DataSettingsScreen() {
                     SettingComponent(
                         SettingComponentParam(
                             isIconNeeded = true,
-                            title =
-                                localizedStrings.ConnectToALinkoraServer,
+                            title = localizedStrings.ConnectToALinkoraServer,
                             doesDescriptionExists = true,
-                            description =
-                                localizedStrings.ConnectToALinkoraServerDesc,
+                            description = localizedStrings.ConnectToALinkoraServerDesc,
                             isSwitchNeeded = false,
                             isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
@@ -533,8 +562,7 @@ fun DataSettingsScreen() {
                             isIconNeeded = true,
                             title = localizedStrings.ManageConnectedServer,
                             doesDescriptionExists = true,
-                            description =
-                                localizedStrings.ManageConnectedServerDesc,
+                            description = localizedStrings.ManageConnectedServerDesc,
                             isSwitchNeeded = false,
                             isSwitchEnabled = preferences.useAmoledTheme,
                             onSwitchStateChange = {
@@ -630,11 +658,9 @@ fun DataSettingsScreen() {
                 SettingComponent(
                     SettingComponentParam(
                         isIconNeeded = true,
-                        title =
-                            localizedStrings.DeleteDuplicateLinksFromAllCollections,
+                        title = localizedStrings.DeleteDuplicateLinksFromAllCollections,
                         doesDescriptionExists = true,
-                        description =
-                            localizedStrings.DeleteDuplicateLinksFromAllCollectionsDesc,
+                        description = localizedStrings.DeleteDuplicateLinksFromAllCollectionsDesc,
                         isSwitchNeeded = false,
                         isSwitchEnabled = preferences.useAmoledTheme,
                         onSwitchStateChange = {
@@ -666,11 +692,9 @@ fun DataSettingsScreen() {
                 SettingComponent(
                     SettingComponentParam(
                         isIconNeeded = true,
-                        title =
-                            localizedStrings.DeleteEntireDataPermanently,
+                        title = localizedStrings.DeleteEntireDataPermanently,
                         doesDescriptionExists = true,
-                        description =
-                            localizedStrings.DeleteEntireDataPermanentlyDesc,
+                        description = localizedStrings.DeleteEntireDataPermanentlyDesc,
                         isSwitchNeeded = false,
                         isSwitchEnabled = preferences.useAmoledTheme,
                         onSwitchStateChange = {
@@ -723,16 +747,18 @@ fun DataSettingsScreen() {
                     fontSize = 16.sp,
                     lineHeight = 20.sp,
                     textAlign = TextAlign.Start,
-                    modifier = Modifier.padding(
-                        top = 15.dp,
-                        start = 15.dp,
-                        end = 15.dp,
-                        bottom = if (refreshAllLinksState != WorkerState.IDLE) {
-                            0.dp
-                        } else {
-                            15.dp
-                        },
-                    ),
+                    modifier =
+                        Modifier.padding(
+                            top = 15.dp,
+                            start = 15.dp,
+                            end = 15.dp,
+                            bottom =
+                                if (refreshAllLinksState != WorkerState.IDLE) {
+                                    0.dp
+                                } else {
+                                    15.dp
+                                },
+                        ),
                 )
 
                 AnimatedContent(targetState = refreshAllLinksState) { state ->
@@ -741,12 +767,13 @@ fun DataSettingsScreen() {
                             if (platform !is Platform.Android) return@AnimatedContent
                             HorizontalInfoCard(
                                 info = localizedStrings.WorkManagerDesc,
-                                paddingValues = PaddingValues(
-                                    start = 20.dp,
-                                    end = 20.dp,
-                                    top = 15.dp,
-                                    bottom = 15.dp,
-                                ),
+                                paddingValues =
+                                    PaddingValues(
+                                        start = 20.dp,
+                                        end = 20.dp,
+                                        top = 15.dp,
+                                        bottom = 15.dp,
+                                    ),
                             )
                         }
 
@@ -765,12 +792,18 @@ fun DataSettingsScreen() {
                                     LinearProgressIndicator(
                                         modifier = Modifier.fillMaxWidth(0.85f),
                                         progress = {
-                                            DataSettingsScreenVM.refreshLinksState.value.currentIteration.toFloat() / DataSettingsScreenVM.refreshLinksState.value.total
+                                            DataSettingsScreenVM.refreshLinksState.value
+                                                .currentIteration
+                                                .toFloat() /
+                                                DataSettingsScreenVM.refreshLinksState.value.total
                                         },
                                     )
                                     IconButton(
-                                        modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
-                                        onClick = { dataSettingsScreenVM.cancelRefreshingAllLinks() },
+                                        modifier =
+                                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                                        onClick = {
+                                            dataSettingsScreenVM.cancelRefreshingAllLinks()
+                                        },
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Cancel,
@@ -779,27 +812,37 @@ fun DataSettingsScreen() {
                                     }
                                 }
                                 Text(
-                                    text = localizedStrings.NoOfLinksRefreshed
-                                        .replaceActual(
-                                            DataSettingsScreenVM.refreshLinksState.value.currentIteration.toString(),
-                                            DataSettingsScreenVM.refreshLinksState.value.total.toString(),
+                                    text =
+                                        localizedStrings.NoOfLinksRefreshed.replaceActual(
+                                            DataSettingsScreenVM.refreshLinksState.value
+                                                .currentIteration
+                                                .toString(),
+                                            DataSettingsScreenVM.refreshLinksState.value.total
+                                                .toString(),
                                         ),
                                     style = MaterialTheme.typography.titleSmall,
                                     modifier = Modifier.padding(start = 15.dp, end = 15.dp),
                                     lineHeight = 18.sp,
                                 )
                                 Card(
-                                    border = BorderStroke(
-                                        1.dp,
-                                        contentColorFor(MaterialTheme.colorScheme.surface),
-                                    ),
-                                    colors = CardDefaults.cardColors(containerColor = AlertDialogDefaults.containerColor),
-                                    modifier = Modifier.fillMaxWidth()
-                                        .padding(start = 15.dp, end = 15.dp, top = 20.dp),
+                                    border =
+                                        BorderStroke(
+                                            1.dp,
+                                            contentColorFor(MaterialTheme.colorScheme.surface),
+                                        ),
+                                    colors =
+                                        CardDefaults.cardColors(
+                                            containerColor = AlertDialogDefaults.containerColor,
+                                        ),
+                                    modifier =
+                                        Modifier.fillMaxWidth()
+                                            .padding(start = 15.dp, end = 15.dp, top = 20.dp),
                                 ) {
                                     Row(
-                                        modifier = Modifier.fillMaxWidth().wrapContentHeight()
-                                            .padding(top = 10.dp, bottom = 10.dp),
+                                        modifier =
+                                            Modifier.fillMaxWidth()
+                                                .wrapContentHeight()
+                                                .padding(top = 10.dp, bottom = 10.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                     ) {
                                         Icon(
@@ -808,11 +851,12 @@ fun DataSettingsScreen() {
                                             modifier = Modifier.padding(start = 10.dp, end = 10.dp),
                                         )
                                         Text(
-                                            text = if (platform is Platform.Android) {
-                                                localizedStrings.RefreshingLinksAndroidDesc
-                                            } else {
-                                                localizedStrings.RefreshingLinksDesktopDesc
-                                            },
+                                            text =
+                                                if (platform is Platform.Android) {
+                                                    localizedStrings.RefreshingLinksAndroidDesc
+                                                } else {
+                                                    localizedStrings.RefreshingLinksDesktopDesc
+                                                },
                                             style = MaterialTheme.typography.titleSmall,
                                             lineHeight = 18.sp,
                                             modifier = Modifier.padding(end = 15.dp),
@@ -825,15 +869,19 @@ fun DataSettingsScreen() {
                         WorkerState.IDLE -> {
                             Column(modifier = Modifier.fillMaxWidth()) {
                                 Column(
-                                    modifier = Modifier.padding(
-                                        start = 15.dp,
-                                        end = 15.dp,
-                                        bottom = 20.dp,
-                                    ).fillMaxWidth().border(
-                                        width = 1.dp,
-                                        color = MaterialTheme.colorScheme.outline.copy(0.5f),
-                                        shape = RoundedCornerShape(15.dp),
-                                    ),
+                                    modifier =
+                                        Modifier.padding(
+                                                start = 15.dp,
+                                                end = 15.dp,
+                                                bottom = 20.dp,
+                                            )
+                                            .fillMaxWidth()
+                                            .border(
+                                                width = 1.dp,
+                                                color =
+                                                    MaterialTheme.colorScheme.outline.copy(0.5f),
+                                                shape = RoundedCornerShape(15.dp),
+                                            ),
                                 ) {
                                     Text(
                                         text = localizedStrings.RefreshType,
@@ -845,64 +893,97 @@ fun DataSettingsScreen() {
                                     )
                                     for (refreshLinkType in RefreshLinkType.entries) {
                                         val isSelected =
-                                            refreshLinkType.name == preferences.selectedLinkRefreshType.name
+                                            refreshLinkType.name ==
+                                                preferences.selectedLinkRefreshType.name
                                         Row(
-                                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
-                                                .highlightOnFocused()
-                                                .clickable(
-                                                    interactionSource = remember { MutableInteractionSource() },
-                                                    indication = null,
-                                                    onClick = {
-                                                        dataSettingsScreenVM.changeSettingPreferenceValue(
-                                                            preferenceKey = AppPreferences.REFRESH_LINK_TYPE,
-                                                            newValue = refreshLinkType.name,
-                                                        )
-                                                    },
-                                                )
-                                                .fillMaxWidth().pressScaleEffect(),
+                                            modifier =
+                                                Modifier.pointerHoverIcon(PointerIcon.Hand)
+                                                    .highlightOnFocused()
+                                                    .clickable(
+                                                        interactionSource =
+                                                            remember { MutableInteractionSource() },
+                                                        indication = null,
+                                                        onClick = {
+                                                            dataSettingsScreenVM
+                                                                .changeSettingPreferenceValue(
+                                                                    preferenceKey =
+                                                                        AppPreferences
+                                                                            .REFRESH_LINK_TYPE,
+                                                                    newValue = refreshLinkType.name,
+                                                                )
+                                                        },
+                                                    )
+                                                    .fillMaxWidth()
+                                                    .pressScaleEffect(),
                                             verticalAlignment = Alignment.CenterVertically,
                                         ) {
                                             RadioButton(
                                                 selected = isSelected,
                                                 onClick = {
-                                                    dataSettingsScreenVM.changeSettingPreferenceValue(
-                                                        preferenceKey = AppPreferences.REFRESH_LINK_TYPE,
-                                                        newValue = refreshLinkType.name,
-                                                    )
+                                                    dataSettingsScreenVM
+                                                        .changeSettingPreferenceValue(
+                                                            preferenceKey =
+                                                                AppPreferences.REFRESH_LINK_TYPE,
+                                                            newValue = refreshLinkType.name,
+                                                        )
                                                 },
                                             )
                                             Text(
                                                 text = refreshLinkType.asLocalizedString(),
-                                                color = if (isSelected) MaterialTheme.colorScheme.primary else LocalContentColor.current,
-                                                style = if (isSelected) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall,
+                                                color =
+                                                    if (isSelected)
+                                                        MaterialTheme.colorScheme.primary
+                                                    else LocalContentColor.current,
+                                                style =
+                                                    if (isSelected)
+                                                        MaterialTheme.typography.titleLarge
+                                                    else MaterialTheme.typography.titleSmall,
                                             )
                                         }
                                     }
 
                                     TextField(
-                                        keyboardActions = KeyboardActions(onDone = {
-                                            dataSettingsScreenVM.changeSettingPreferenceValue(
-                                                preferenceKey = AppPreferences.MAX_CONCURRENT_REFRESH_COUNT,
-                                                newValue = maxConcurrentRefreshCount,
-                                            )
-                                            localFocusManager.clearFocus(force = true)
-                                        }),
-                                        keyboardOptions = KeyboardOptions(
-                                            keyboardType = KeyboardType.Number,
-                                            imeAction = ImeAction.Done
-                                        ),
+                                        keyboardActions =
+                                            KeyboardActions(
+                                                onDone = {
+                                                    dataSettingsScreenVM
+                                                        .changeSettingPreferenceValue(
+                                                            preferenceKey =
+                                                                AppPreferences
+                                                                    .MAX_CONCURRENT_REFRESH_COUNT,
+                                                            newValue = maxConcurrentRefreshCount,
+                                                        )
+                                                    localFocusManager.clearFocus(force = true)
+                                                },
+                                            ),
+                                        keyboardOptions =
+                                            KeyboardOptions(
+                                                keyboardType = KeyboardType.Number,
+                                                imeAction = ImeAction.Done,
+                                            ),
                                         textStyle = MaterialTheme.typography.titleSmall,
                                         trailingIcon = {
                                             if (!Platform.Android.onTV()) {
                                                 FilledTonalIconButton(
-                                                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                                                        .pressScaleEffect().padding(end = 5.dp)
-                                                        .highlightOnFocused(shape = IconButtonDefaults.filledShape),
+                                                    modifier =
+                                                        Modifier.pointerHoverIcon(
+                                                                icon = PointerIcon.Hand,
+                                                            )
+                                                            .pressScaleEffect()
+                                                            .padding(end = 5.dp)
+                                                            .highlightOnFocused(
+                                                                shape =
+                                                                    IconButtonDefaults.filledShape,
+                                                            ),
                                                     onClick = {
-                                                        dataSettingsScreenVM.changeSettingPreferenceValue(
-                                                            preferenceKey = AppPreferences.MAX_CONCURRENT_REFRESH_COUNT,
-                                                            newValue = maxConcurrentRefreshCount,
-                                                        )
+                                                        dataSettingsScreenVM
+                                                            .changeSettingPreferenceValue(
+                                                                preferenceKey =
+                                                                    AppPreferences
+                                                                        .MAX_CONCURRENT_REFRESH_COUNT,
+                                                                newValue =
+                                                                    maxConcurrentRefreshCount,
+                                                            )
                                                         localFocusManager.clearFocus(force = true)
                                                     },
                                                 ) {
@@ -922,19 +1003,23 @@ fun DataSettingsScreen() {
                                         },
                                         value = maxConcurrentRefreshCount.toString(),
                                         onValueChange = {
-                                            maxConcurrentRefreshCount = try {
-                                                it.toInt()
-                                            } catch (_: Exception) {
-                                                0
-                                            } catch (_: Error) {
-                                                0
-                                            }.coerceAtLeast(minimumValue = 1)
+                                            maxConcurrentRefreshCount =
+                                                try {
+                                                        it.toInt()
+                                                    } catch (_: Exception) {
+                                                        0
+                                                    } catch (_: Error) {
+                                                        0
+                                                    }
+                                                    .coerceAtLeast(minimumValue = 1)
                                         },
-                                        modifier = Modifier.padding(
-                                            start = 15.dp,
-                                            end = 15.dp,
-                                            bottom = 15.dp,
-                                        ).fillMaxWidth(),
+                                        modifier =
+                                            Modifier.padding(
+                                                    start = 15.dp,
+                                                    end = 15.dp,
+                                                    bottom = 15.dp,
+                                                )
+                                                .fillMaxWidth(),
                                     )
                                 }
                                 SettingComponent(
@@ -984,7 +1069,8 @@ fun DataSettingsScreen() {
                                 isImportExportProgressUIVisible = false
                                 showFileLocationPickerDialog.value = false
                             },
-                            importFileSelectionMethod = ImportFileSelectionMethod.FileLocationString to fileLocation.value,
+                            importFileSelectionMethod =
+                                ImportFileSelectionMethod.FileLocationString to fileLocation.value,
                         )
                     },
                 ) {
@@ -1066,15 +1152,15 @@ fun DataSettingsScreen() {
             deleteAllDataDialogParam =
                 DeleteAllDataDialogParam(
                     onDismiss = {
-                    shouldDeleteEntireDialogBoxAppear.value = false
-                },
-                onDeleteClick = { onCompletion, deleteEverythingFromRemote ->
-                    dataSettingsScreenVM.deleteEntireDatabase(
-                        deleteEverythingFromRemote,
-                        onCompletion,
-                    )
-                },
-                )
+                        shouldDeleteEntireDialogBoxAppear.value = false
+                    },
+                    onDeleteClick = { onCompletion, deleteEverythingFromRemote ->
+                        dataSettingsScreenVM.deleteEntireDatabase(
+                            deleteEverythingFromRemote,
+                            onCompletion,
+                        )
+                    },
+                ),
         )
     }
 
@@ -1083,8 +1169,10 @@ fun DataSettingsScreen() {
             onDismissRequest = {},
             content = {
                 Column(
-                    modifier = Modifier.clip(AlertDialogDefaults.shape)
-                        .background(AlertDialogDefaults.containerColor).padding(15.dp),
+                    modifier =
+                        Modifier.clip(AlertDialogDefaults.shape)
+                            .background(AlertDialogDefaults.containerColor)
+                            .padding(15.dp),
                     verticalArrangement = Arrangement.spacedBy(15.dp),
                 ) {
                     Text(
@@ -1098,7 +1186,11 @@ fun DataSettingsScreen() {
         )
     }
     PlatformSpecificBackHandler {
-        if (isImportExportProgressUIVisible || showAlertDialogWithProgress.value || shouldDeleteEntireDialogBoxAppear.value) {
+        if (
+            isImportExportProgressUIVisible ||
+                showAlertDialogWithProgress.value ||
+                shouldDeleteEntireDialogBoxAppear.value
+        ) {
             return@PlatformSpecificBackHandler
         } else {
             navController.navigateUp()

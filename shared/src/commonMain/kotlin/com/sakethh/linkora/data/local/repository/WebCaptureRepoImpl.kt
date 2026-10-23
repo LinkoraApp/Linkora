@@ -10,9 +10,11 @@ class WebCaptureRepoImpl(
     private val captureTrackDao: CaptureTrackDao,
     private val webCaptureMetadataDao: suspend () -> WebCaptureMetadataDao,
 ) : WebCaptureRepo {
-    override suspend fun insertAProcessedId(captureTrack: CaptureTrack) = captureTrackDao.insertAProcessedId(captureTrack)
+    override suspend fun insertAProcessedId(captureTrack: CaptureTrack) =
+        captureTrackDao.insertAProcessedId(captureTrack)
 
-    override suspend fun getAllLinksCaptureProcessedLinkIds(): List<String> = captureTrackDao.getAllLinksCaptureProcessedLinkIds()
+    override suspend fun getAllLinksCaptureProcessedLinkIds(): List<String> =
+        captureTrackDao.getAllLinksCaptureProcessedLinkIds()
 
     override suspend fun deleteAllProcessedIds() {
         captureTrackDao.deleteAllBulkCaptureIds()
@@ -28,7 +30,9 @@ class WebCaptureRepoImpl(
         webCaptureMetadataDao().insert(metadata)
     }
 
-    override suspend fun getFolderNameByLink(link: String): String? = webCaptureMetadataDao().getFolderNameByLink(link)
+    override suspend fun getFolderNameByLink(link: String): String? =
+        webCaptureMetadataDao().getFolderNameByLink(link)
 
-    override suspend fun getAllLinksFromMetadata(): List<String> = webCaptureMetadataDao().getAllLinks()
+    override suspend fun getAllLinksFromMetadata(): List<String> =
+        webCaptureMetadataDao().getAllLinks()
 }

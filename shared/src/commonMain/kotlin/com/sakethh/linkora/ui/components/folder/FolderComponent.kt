@@ -53,8 +53,7 @@ fun FolderComponent(folderComponentParam: FolderComponentParam) {
     val localizedStrings = LocalizedStrings.current
     Column(
         modifier =
-            Modifier
-                .pointerHoverIcon(icon = PointerIcon.Hand)
+            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                 .focusGroup()
                 .pointerInput(Unit) {
                     detectTapGestures(
@@ -108,8 +107,7 @@ fun FolderComponent(folderComponentParam: FolderComponentParam) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier =
-                    Modifier
-                        .weight(1f)
+                    Modifier.weight(1f)
                         .combinedClickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
@@ -146,7 +144,8 @@ fun FolderComponent(folderComponentParam: FolderComponentParam) {
                         maxLines = 3,
                         overflow = TextOverflow.Ellipsis,
                         lineHeight =
-                            if (!folderComponentParam.showMoreIcon.value) 20.sp else TextUnit.Unspecified,
+                            if (!folderComponentParam.showMoreIcon.value) 20.sp
+                            else TextUnit.Unspecified,
                     )
 
                     if (folderComponentParam.note.isNotEmpty()) {
@@ -164,8 +163,7 @@ fun FolderComponent(folderComponentParam: FolderComponentParam) {
             }
 
             if (
-                folderComponentParam.showMoreIcon.value &&
-                !folderComponentParam.showCheckBox.value
+                folderComponentParam.showMoreIcon.value && !folderComponentParam.showCheckBox.value
             ) {
                 Box(
                     modifier =

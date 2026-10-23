@@ -3,11 +3,11 @@ package com.sakethh.linkora.domain
 sealed interface Result<T> {
     data class Success<T>(
         val data: T,
-        val remoteExecResult: RemoteExecResult? = null
+        val remoteExecResult: RemoteExecResult? = null,
     ) : Result<T> {
         data class RemoteExecResult(
             val isRemoteExecutionSuccessful: Boolean,
-            val e: Throwable?
+            val e: Throwable?,
         )
     }
 

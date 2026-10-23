@@ -10,10 +10,7 @@ plugins {
 android {
     namespace = "com.sakethh.linkora"
 
-    compileSdk =
-        libs.versions.android.compileSdk
-            .get()
-            .toInt()
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     splits {
         abi {
@@ -27,15 +24,9 @@ android {
     defaultConfig {
         applicationId = "com.sakethh.linkora"
 
-        minSdk =
-            libs.versions.android.minSdk
-                .get()
-                .toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
 
-        targetSdk =
-            libs.versions.android.targetSdk
-                .get()
-                .toInt()
+        targetSdk = libs.versions.android.targetSdk.get().toInt()
 
         versionCode = 56
         versionName = "0.22.0"
@@ -81,9 +72,11 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
-    sourceSets["main"].res.srcDirs(
-        "src/main/res",
-    )
+    sourceSets["main"]
+        .res
+        .srcDirs(
+            "src/main/res",
+        )
 
     dependenciesInfo {
         includeInApk = false

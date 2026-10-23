@@ -19,7 +19,8 @@ object APPVMAssistedFactory {
                 localPanelsRepo = DependencyContainer.localPanelsRepo,
                 permissionManager = LinkoraSDK.getInstance().permissionManager,
                 fileManager = LinkoraSDK.getInstance().fileManager,
-                dataSyncingNotificationService = LinkoraSDK.getInstance().dataSyncingNotificationService,
+                dataSyncingNotificationService =
+                    LinkoraSDK.getInstance().dataSyncingNotificationService,
                 snapshotRepo = DependencyContainer.snapshotRepo,
                 nativeUtils = LinkoraSDK.getInstance().nativeUtils,
                 webCapture = LinkoraSDK.getInstance().webCapture,

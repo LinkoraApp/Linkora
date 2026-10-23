@@ -49,18 +49,19 @@ fun MobileBottomNavBar(
     onDoubleTap: (Navigation.Root) -> Unit,
 ) {
     val localNavController = LocalNavController.current
-    val mobileBottomNavBarUtils =
-        remember {
-            MobileBottomNavBarUtils()
-        }
+    val mobileBottomNavBarUtils = remember {
+        MobileBottomNavBarUtils()
+    }
     val currentBackStackEntryState by localNavController.currentBackStackEntryAsState()
     val navDestination = currentBackStackEntryState?.destination
     val inCollectionScreen = navDestination?.hasRoute<Navigation.Root.CollectionsScreen>() == true
     AnimatedVisibility(
         visible =
-            (!inCollectionScreen || (inCollectionScreen && CollectionsScreenVM.inCollectionsListPane)) && !supportsWideDisplay() &&
-                    inRootScreen == true &&
-                    !CollectionsScreenVM.isSelectionEnabled.value,
+            (!inCollectionScreen ||
+                (inCollectionScreen && CollectionsScreenVM.inCollectionsListPane)) &&
+                !supportsWideDisplay() &&
+                inRootScreen == true &&
+                !CollectionsScreenVM.isSelectionEnabled.value,
         exit = slideOutVertically(targetOffsetY = { it }),
         enter = slideInVertically(initialOffsetY = { it }),
     ) {
@@ -70,7 +71,10 @@ fun MobileBottomNavBar(
             }
             NavigationBar {
                 rootRouteList.forEach { navRouteItem ->
-                    if (!preferences.isHomeScreenEnabled && navRouteItem.toString() == Navigation.Root.HomeScreen.toString()) {
+                    if (
+                        !preferences.isHomeScreenEnabled &&
+                            navRouteItem.toString() == Navigation.Root.HomeScreen.toString()
+                    ) {
                         return@forEach
                     }
 
@@ -87,7 +91,8 @@ fun MobileBottomNavBar(
                             )
                             if (!isSelected) {
                                 localNavController.navigate(navRouteItem) {
-                                    // pop up to the initial route on every navigation via bottom nav bar
+                                    // pop up to the initial route on every navigation via bottom
+                                    // nav bar
                                     popUpTo(localNavController.graph.findStartDestination().id) {
                                         saveState = true
                                     }
@@ -98,23 +103,26 @@ fun MobileBottomNavBar(
                         },
                         icon = {
                             Icon(
-                                imageVector = if (isSelected) {
-                                    when (navRouteItem) {
-                                        Navigation.Root.HomeScreen -> Icons.Filled.Home
-                                        Navigation.Root.SearchScreen -> Icons.Filled.Search
-                                        Navigation.Root.CollectionsScreen -> Icons.Filled.Folder
-                                        Navigation.Root.SettingsScreen -> Icons.Filled.Settings
-                                        else -> return@NavigationBarItem
-                                    }
-                                } else {
-                                    when (navRouteItem) {
-                                        Navigation.Root.HomeScreen -> Icons.Outlined.Home
-                                        Navigation.Root.SearchScreen -> Icons.Outlined.Search
-                                        Navigation.Root.CollectionsScreen -> Icons.Outlined.Folder
-                                        Navigation.Root.SettingsScreen -> Icons.Outlined.Settings
-                                        else -> return@NavigationBarItem
-                                    }
-                                },
+                                imageVector =
+                                    if (isSelected) {
+                                        when (navRouteItem) {
+                                            Navigation.Root.HomeScreen -> Icons.Filled.Home
+                                            Navigation.Root.SearchScreen -> Icons.Filled.Search
+                                            Navigation.Root.CollectionsScreen -> Icons.Filled.Folder
+                                            Navigation.Root.SettingsScreen -> Icons.Filled.Settings
+                                            else -> return@NavigationBarItem
+                                        }
+                                    } else {
+                                        when (navRouteItem) {
+                                            Navigation.Root.HomeScreen -> Icons.Outlined.Home
+                                            Navigation.Root.SearchScreen -> Icons.Outlined.Search
+                                            Navigation.Root.CollectionsScreen ->
+                                                Icons.Outlined.Folder
+                                            Navigation.Root.SettingsScreen ->
+                                                Icons.Outlined.Settings
+                                            else -> return@NavigationBarItem
+                                        }
+                                    },
                                 contentDescription = null,
                             )
                         },
@@ -123,7 +131,8 @@ fun MobileBottomNavBar(
                                 text = navRouteItem.asLocalizedString(),
                                 style = MaterialTheme.typography.titleSmall,
                                 maxLines = 1,
-                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                fontWeight =
+                                    if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                             )
                         },
                     )
@@ -143,7 +152,10 @@ class MobileBottomNavBarUtils {
         onDoubleTapSucceeded: () -> Unit,
     ) {
         val currentMilli = Clock.System.now().epochSeconds
-        if (currentMilli - lastTapTime <= Constants.DOUBLE_TAP_DELAY && lastTappedRoute == currentRoute) {
+        if (
+            currentMilli - lastTapTime <= Constants.DOUBLE_TAP_DELAY &&
+                lastTappedRoute == currentRoute
+        ) {
             onDoubleTapSucceeded()
             lastTapTime = 0
             lastTappedRoute = null
@@ -154,56 +166,56 @@ class MobileBottomNavBarUtils {
     }
 
     /* the "HARD" way (the "Rube Goldberg" way); idk why i do this
-        private val searchItemTapTimes = MutableStateFlow(0)
+       private val searchItemTapTimes = MutableStateFlow(0)
 
-        var tappedNavRoute: Navigation.Root = Navigation.Root.HomeScreen
+       var tappedNavRoute: Navigation.Root = Navigation.Root.HomeScreen
 
-        fun incrementTapCount(currentRoute: Navigation.Root) {
-            if (searchItemTapTimes.value >= 2) return
+       fun incrementTapCount(currentRoute: Navigation.Root) {
+           if (searchItemTapTimes.value >= 2) return
 
-            tappedNavRoute = currentRoute
-            ++searchItemTapTimes.value
-        }
+           tappedNavRoute = currentRoute
+           ++searchItemTapTimes.value
+       }
 
-        init {
-            viewModelScope.launch {
-                startWatchingForDoubleTap()
-            }
-        }
+       init {
+           viewModelScope.launch {
+               startWatchingForDoubleTap()
+           }
+       }
 
-        private var doubleTapJob: Job? = null
+       private var doubleTapJob: Job? = null
 
-        private fun CoroutineScope.startWatchingForDoubleTap() {
-            doubleTapJob?.cancel()
+       private fun CoroutineScope.startWatchingForDoubleTap() {
+           doubleTapJob?.cancel()
 
-            doubleTapJob = launch {
-                searchItemTapTimes.filter {
-                    it == 1
-                }.collect {
-                    handleSecondTapIfConfirmed()
-                    doubleTapJob?.cancel()
-                }
-            }
-        }
+           doubleTapJob = launch {
+               searchItemTapTimes.filter {
+                   it == 1
+               }.collect {
+                   handleSecondTapIfConfirmed()
+                   doubleTapJob?.cancel()
+               }
+           }
+       }
 
-        private var secondTapJob: Job? = null
-        fun handleSecondTapIfConfirmed() {
-            secondTapJob?.cancel()
+       private var secondTapJob: Job? = null
+       fun handleSecondTapIfConfirmed() {
+           secondTapJob?.cancel()
 
-            secondTapJob = viewModelScope.launch {
-                withTimeoutOrNull(500L) {
-                    searchItemTapTimes.first { it == 2 }
-                }.run {
-                    if (this != null) {
-                        onDoubleTapSucceeded(tappedNavRoute)
-                    }
-                }
-                searchItemTapTimes.value = 0
-            }.also {
-                it.invokeOnCompletion {
-                    viewModelScope.startWatchingForDoubleTap()
-                }
-            }
-        }
-     */
+           secondTapJob = viewModelScope.launch {
+               withTimeoutOrNull(500L) {
+                   searchItemTapTimes.first { it == 2 }
+               }.run {
+                   if (this != null) {
+                       onDoubleTapSucceeded(tappedNavRoute)
+                   }
+               }
+               searchItemTapTimes.value = 0
+           }.also {
+               it.invokeOnCompletion {
+                   viewModelScope.startWatchingForDoubleTap()
+               }
+           }
+       }
+    */
 }

@@ -130,7 +130,7 @@ abstract class LocalDatabase : RoomDatabase() {
                     )
                     connection.executeSQL(
                         "INSERT INTO folders_table_new (folderName, infoForSaving, id) " +
-                                "SELECT folderName, infoForSaving, id FROM folders_table",
+                            "SELECT folderName, infoForSaving, id FROM folders_table",
                     )
                     connection.executeSQL("DROP TABLE folders_table")
                     connection.executeSQL("ALTER TABLE folders_table_new RENAME TO folders_table")
@@ -141,14 +141,14 @@ abstract class LocalDatabase : RoomDatabase() {
                     )
                     connection.executeSQL(
                         "INSERT INTO links_table_new (id, title, webURL, baseURL, imgURL, infoForSaving, " +
-                                "isLinkedWithSavedLinks, isLinkedWithFolders, keyOfLinkedFolder, " +
-                                "isLinkedWithImpFolder, keyOfImpLinkedFolder, " +
-                                "isLinkedWithArchivedFolder, keyOfArchiveLinkedFolder) " +
-                                "SELECT id, title, webURL, baseURL, imgURL, infoForSaving, " +
-                                "isLinkedWithSavedLinks, isLinkedWithFolders, keyOfLinkedFolder, " +
-                                "isLinkedWithImpFolder, keyOfImpLinkedFolder," +
-                                "isLinkedWithArchivedFolder, keyOfArchiveLinkedFolder " +
-                                "FROM links_table",
+                            "isLinkedWithSavedLinks, isLinkedWithFolders, keyOfLinkedFolder, " +
+                            "isLinkedWithImpFolder, keyOfImpLinkedFolder, " +
+                            "isLinkedWithArchivedFolder, keyOfArchiveLinkedFolder) " +
+                            "SELECT id, title, webURL, baseURL, imgURL, infoForSaving, " +
+                            "isLinkedWithSavedLinks, isLinkedWithFolders, keyOfLinkedFolder, " +
+                            "isLinkedWithImpFolder, keyOfImpLinkedFolder," +
+                            "isLinkedWithArchivedFolder, keyOfArchiveLinkedFolder " +
+                            "FROM links_table",
                     )
                     connection.executeSQL("DROP TABLE links_table")
                     connection.executeSQL("ALTER TABLE links_table_new RENAME TO links_table")
@@ -195,7 +195,9 @@ abstract class LocalDatabase : RoomDatabase() {
                     connection.executeSQL(
                         "CREATE UNIQUE INDEX IF NOT EXISTS `index_site_specific_user_agent_domain` ON `site_specific_user_agent` (`domain`)",
                     )
-                    connection.executeSQL("ALTER TABLE links_table ADD COLUMN userAgent TEXT DEFAULT NULL")
+                    connection.executeSQL(
+                        "ALTER TABLE links_table ADD COLUMN userAgent TEXT DEFAULT NULL",
+                    )
                     connection.executeSQL(
                         "ALTER TABLE archived_links_table ADD COLUMN userAgent TEXT DEFAULT NULL",
                     )
@@ -217,9 +219,9 @@ abstract class LocalDatabase : RoomDatabase() {
 
                     connection.executeSQL(
                         """
-                INSERT INTO panel (panelId, panelName)
-                SELECT id, shelfName FROM shelf
-                """
+                        INSERT INTO panel (panelId, panelName)
+                        SELECT id, shelfName FROM shelf
+                        """
                             .trimIndent(),
                     )
 
@@ -231,9 +233,9 @@ abstract class LocalDatabase : RoomDatabase() {
 
                     connection.executeSQL(
                         """
-                INSERT INTO panel_folder (folderId, panelPosition, folderName, connectedPanelId)
-                SELECT id, position, folderName, parentShelfID FROM home_screen_list_table
-                """
+                        INSERT INTO panel_folder (folderId, panelPosition, folderName, connectedPanelId)
+                        SELECT id, position, folderName, parentShelfID FROM home_screen_list_table
+                        """
                             .trimIndent(),
                     )
 
@@ -255,130 +257,130 @@ abstract class LocalDatabase : RoomDatabase() {
                     )
                     connection.executeSQL(
                         """
-                INSERT INTO links (
-                    remoteId,
-                    title,
-                    url,
-                    baseURL,
-                    imgURL,
-                    note,
-                    idOfLinkedFolder,
-                    userAgent,
-                    markedAsImportant,
-                    mediaType,
-                    linkType
-                )
-                SELECT
-                    NULL AS remoteId,
-                    title,
-                    webURL AS url,
-                    baseURL,
-                    imgURL,
-                    infoForSaving AS note,
-                    keyOfLinkedFolderV10 AS idOfLinkedFolder,
-                    userAgent,
-                    0 AS markedAsImportant,
-                    'IMAGE' AS mediaType,
-                    CASE
-                        WHEN keyOfLinkedFolderV10 IS NULL THEN 'SAVED_LINK'
-                        ELSE 'FOLDER_LINK'
-                    END AS linkType
-                FROM links_table;
-                """
+                        INSERT INTO links (
+                            remoteId,
+                            title,
+                            url,
+                            baseURL,
+                            imgURL,
+                            note,
+                            idOfLinkedFolder,
+                            userAgent,
+                            markedAsImportant,
+                            mediaType,
+                            linkType
+                        )
+                        SELECT
+                            NULL AS remoteId,
+                            title,
+                            webURL AS url,
+                            baseURL,
+                            imgURL,
+                            infoForSaving AS note,
+                            keyOfLinkedFolderV10 AS idOfLinkedFolder,
+                            userAgent,
+                            0 AS markedAsImportant,
+                            'IMAGE' AS mediaType,
+                            CASE
+                                WHEN keyOfLinkedFolderV10 IS NULL THEN 'SAVED_LINK'
+                                ELSE 'FOLDER_LINK'
+                            END AS linkType
+                        FROM links_table;
+                        """
                             .trimIndent(),
                     )
                     connection.executeSQL(
                         """
-                INSERT INTO links (
-                    remoteId,
-                    title,
-                    url,
-                    baseURL,
-                    imgURL,
-                    note,
-                    idOfLinkedFolder,
-                    userAgent,
-                    markedAsImportant,
-                    mediaType,
-                    linkType
-                )
-                SELECT
-                    NULL AS remoteId,
-                    title,
-                    webURL AS url,
-                    baseURL,
-                    imgURL,
-                    infoForSaving AS note,
-                    NULL AS idOfLinkedFolder,
-                    userAgent,
-                    0 AS markedAsImportant,
-                    'IMAGE' AS mediaType,
-                    'ARCHIVE_LINK' AS linkType
-                FROM archived_links_table;
-                """
+                        INSERT INTO links (
+                            remoteId,
+                            title,
+                            url,
+                            baseURL,
+                            imgURL,
+                            note,
+                            idOfLinkedFolder,
+                            userAgent,
+                            markedAsImportant,
+                            mediaType,
+                            linkType
+                        )
+                        SELECT
+                            NULL AS remoteId,
+                            title,
+                            webURL AS url,
+                            baseURL,
+                            imgURL,
+                            infoForSaving AS note,
+                            NULL AS idOfLinkedFolder,
+                            userAgent,
+                            0 AS markedAsImportant,
+                            'IMAGE' AS mediaType,
+                            'ARCHIVE_LINK' AS linkType
+                        FROM archived_links_table;
+                        """
                             .trimIndent(),
                     )
                     connection.executeSQL(
                         """
-                INSERT INTO links (
-                    remoteId,
-                    title,
-                    url,
-                    baseURL,
-                    imgURL,
-                    note,
-                    idOfLinkedFolder,
-                    userAgent,
-                    markedAsImportant,
-                    mediaType,
-                    linkType
-                )
-                SELECT
-                    NULL AS remoteId,
-                    title,
-                    webURL AS url,
-                    baseURL,
-                    imgURL,
-                    infoForSaving AS note,
-                    NULL AS idOfLinkedFolder,
-                    userAgent,
-                    1 AS markedAsImportant,
-                    'IMAGE' AS mediaType,
-                    'IMPORTANT_LINK' AS linkType
-                FROM important_links_table;
-                """
+                        INSERT INTO links (
+                            remoteId,
+                            title,
+                            url,
+                            baseURL,
+                            imgURL,
+                            note,
+                            idOfLinkedFolder,
+                            userAgent,
+                            markedAsImportant,
+                            mediaType,
+                            linkType
+                        )
+                        SELECT
+                            NULL AS remoteId,
+                            title,
+                            webURL AS url,
+                            baseURL,
+                            imgURL,
+                            infoForSaving AS note,
+                            NULL AS idOfLinkedFolder,
+                            userAgent,
+                            1 AS markedAsImportant,
+                            'IMAGE' AS mediaType,
+                            'IMPORTANT_LINK' AS linkType
+                        FROM important_links_table;
+                        """
                             .trimIndent(),
                     )
 
                     connection.executeSQL(
                         """
-                INSERT INTO links (
-                    remoteId,
-                    title,
-                    url,
-                    baseURL,
-                    imgURL,
-                    note,
-                    idOfLinkedFolder,
-                    userAgent,
-                    markedAsImportant,
-                    mediaType,
-                    linkType
-                )
-                SELECT
-                    NULL AS remoteId,
-                    title,
-                    webURL AS url,
-                    baseURL,
-                    imgURL,
-                    infoForSaving AS note,
-                    NULL AS idOfLinkedFolder,
-                    userAgent,
-                    0 AS markedAsImportant,
-                    'IMAGE' AS mediaType,
-                    'HISTORY_LINK' AS linkType
-                FROM recently_visited_table;
-                """
+                        INSERT INTO links (
+                            remoteId,
+                            title,
+                            url,
+                            baseURL,
+                            imgURL,
+                            note,
+                            idOfLinkedFolder,
+                            userAgent,
+                            markedAsImportant,
+                            mediaType,
+                            linkType
+                        )
+                        SELECT
+                            NULL AS remoteId,
+                            title,
+                            webURL AS url,
+                            baseURL,
+                            imgURL,
+                            infoForSaving AS note,
+                            NULL AS idOfLinkedFolder,
+                            userAgent,
+                            0 AS markedAsImportant,
+                            'IMAGE' AS mediaType,
+                            'HISTORY_LINK' AS linkType
+                        FROM recently_visited_table;
+                        """
                             .trimIndent(),
                     )
 
@@ -387,23 +389,23 @@ abstract class LocalDatabase : RoomDatabase() {
                     )
                     connection.executeSQL(
                         """
-                INSERT INTO folders (
-                    name,
-                    note,
-                    parentFolderId,
-                    localId,
-                    remoteId,
-                    isArchived
-                )
-                SELECT
-                    folderName AS name,
-                    infoForSaving AS note,
-                    parentFolderID AS parentFolderId,
-                    id AS localId,
-                    NULL AS remoteId,
-                    isFolderArchived AS isArchived
-                FROM folders_table;
-                """
+                        INSERT INTO folders (
+                            name,
+                            note,
+                            parentFolderId,
+                            localId,
+                            remoteId,
+                            isArchived
+                        )
+                        SELECT
+                            folderName AS name,
+                            infoForSaving AS note,
+                            parentFolderID AS parentFolderId,
+                            id AS localId,
+                            NULL AS remoteId,
+                            isFolderArchived AS isArchived
+                        FROM folders_table;
+                        """
                             .trimIndent(),
                     )
 
@@ -542,8 +544,12 @@ abstract class LocalDatabase : RoomDatabase() {
         val MIGRATION_13_14 =
             object : Migration(13, 14) {
                 override suspend fun migrate(connection: SQLiteConnection) {
-                    connection.executeSQL("CREATE INDEX IF NOT EXISTS idx_folders_name ON folders(name)")
-                    connection.executeSQL("CREATE INDEX IF NOT EXISTS idx_links_title ON links(title)")
+                    connection.executeSQL(
+                        "CREATE INDEX IF NOT EXISTS idx_folders_name ON folders(name)",
+                    )
+                    connection.executeSQL(
+                        "CREATE INDEX IF NOT EXISTS idx_links_title ON links(title)",
+                    )
                     connection.executeSQL("CREATE INDEX IF NOT EXISTS idx_tags_name ON tags(name)")
                 }
             }
@@ -551,7 +557,9 @@ abstract class LocalDatabase : RoomDatabase() {
         val MIGRATION_14_15 =
             object : Migration(14, 15) {
                 override suspend fun migrate(connection: SQLiteConnection) {
-                    connection.executeSQL("CREATE TABLE IF NOT EXISTS `CaptureTrack` (`capturedLinkId` TEXT NOT NULL, `captureWorkerId` TEXT, PRIMARY KEY(`capturedLinkId`))")
+                    connection.executeSQL(
+                        "CREATE TABLE IF NOT EXISTS `CaptureTrack` (`capturedLinkId` TEXT NOT NULL, `captureWorkerId` TEXT, PRIMARY KEY(`capturedLinkId`))",
+                    )
                 }
             }
     }

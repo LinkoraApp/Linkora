@@ -15,7 +15,7 @@ import com.sakethh.linkora.shared.generated.resources.semibold
 import com.sakethh.linkora.ui.domain.Font
 import org.jetbrains.compose.resources.Font
 
- val googleSansFlexFontFamily
+val googleSansFlexFontFamily
     @Composable
     get() =
         FontFamily(
@@ -23,28 +23,28 @@ import org.jetbrains.compose.resources.Font
                 Res.font.googleSansFlex,
                 weight = FontWeight.Normal,
                 variationSettings =
-                FontVariation.Settings(
-                    FontVariation.weight(460),
-                    FontVariation.width(102f),
-                ),
+                    FontVariation.Settings(
+                        FontVariation.weight(460),
+                        FontVariation.width(102f),
+                    ),
             ),
             Font(
                 Res.font.googleSansFlex,
                 weight = FontWeight.Medium,
                 variationSettings =
-                FontVariation.Settings(
-                    FontVariation.weight(560),
-                    FontVariation.width(102f),
-                ),
+                    FontVariation.Settings(
+                        FontVariation.weight(560),
+                        FontVariation.width(102f),
+                    ),
             ),
             Font(
                 Res.font.googleSansFlex,
                 weight = FontWeight.SemiBold,
                 variationSettings =
-                FontVariation.Settings(
-                    FontVariation.weight(660),
-                    FontVariation.width(102f),
-                ),
+                    FontVariation.Settings(
+                        FontVariation.weight(660),
+                        FontVariation.width(102f),
+                    ),
             ),
         )
 
