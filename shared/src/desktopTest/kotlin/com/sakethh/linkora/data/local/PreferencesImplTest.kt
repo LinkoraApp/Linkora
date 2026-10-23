@@ -2,7 +2,7 @@ package com.sakethh.linkora.data.local
 
 import com.sakethh.linkora.data.local.repository.PreferencesImpl
 import com.sakethh.linkora.domain.AppPreferences
-import com.sakethh.linkora.domain.PreferenceKey
+import com.sakethh.linkora.domain.Preference
 import com.sakethh.linkora.platform.PlatformPreference
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
@@ -47,7 +47,7 @@ class PreferencesImplTest {
         clearAllMocks()
         platformPreference = mockk(relaxed = true)
 
-        coEvery { platformPreference.readAllPreferences() } returns AppPreferences()
+        coEvery { platformPreference.readAllPreferencesFromDisk() } returns AppPreferences()
 
         preferencesImpl = PreferencesImpl(platformPreference)
     }
@@ -71,7 +71,7 @@ class PreferencesImplTest {
                 .mapNotNull { method ->
                     method.isAccessible = true
                     try {
-                        method.invoke(companion) as? PreferenceKey<*>
+                        method.invoke(companion) as? Preference<*>
                     } catch (e: Exception) {
                         null
                     }
@@ -102,7 +102,7 @@ class PreferencesImplTest {
                     .mapNotNull { method ->
                         method.isAccessible = true
                         try {
-                            method.invoke(companion) as? PreferenceKey<*>
+                            method.invoke(companion) as? Preference<*>
                         } catch (e: Exception) {
                             null
                         }
@@ -120,24 +120,25 @@ class PreferencesImplTest {
                 var isMapped = false
 
                 try {
-                    val baseState = preferencesImpl.getPreferences()
-                    preferencesImpl.changePreferenceValue(
-                        key as PreferenceKey<Any>,
+                    val baseState = preferencesImpl.getCurrentPreferencesState()
+                    preferencesImpl.writePreferenceToDisk(
+                        key as Preference<Any>,
                         generateTestValue(key, 1),
                     )
-                    if (preferencesImpl.getPreferences() != baseState) isMapped = true
+                    if (preferencesImpl.getCurrentPreferencesState() != baseState) isMapped = true
                 } catch (e: Exception) {
                     isMapped = true
                 }
 
                 if (!isMapped) {
                     try {
-                        val baseState = preferencesImpl.getPreferences()
-                        preferencesImpl.changePreferenceValue(
-                            key as PreferenceKey<Any>,
+                        val baseState = preferencesImpl.getCurrentPreferencesState()
+                        preferencesImpl.writePreferenceToDisk(
+                            key as Preference<Any>,
                             generateTestValue(key, 2),
                         )
-                        if (preferencesImpl.getPreferences() != baseState) isMapped = true
+                        if (preferencesImpl.getCurrentPreferencesState() != baseState)
+                            isMapped = true
                     } catch (e: Exception) {
                         isMapped = true
                     }
@@ -160,40 +161,43 @@ class PreferencesImplTest {
         runTest {
             val diskData =
                 AppPreferences(useDarkTheme = false, primaryJsoupUserAgent = "DiskAgent123")
-            coEvery { platformPreference.readAllPreferences() } returns diskData
+            coEvery { platformPreference.readAllPreferencesFromDisk() } returns diskData
 
-            preferencesImpl.loadPersistedPreferences()
+            preferencesImpl.readAllPreferencesFromDisk()
 
-            assertEquals(diskData, preferencesImpl.getPreferences())
-            assertEquals(diskData, preferencesImpl.preferencesAsFlow.value)
+            assertEquals(diskData, preferencesImpl.getCurrentPreferencesState())
+            assertEquals(diskData, preferencesImpl.currentPreferencesStateAsFlow.value)
 
-            coVerify(exactly = 1) { platformPreference.readAllPreferences() }
+            coVerify(exactly = 1) { platformPreference.readAllPreferencesFromDisk() }
         }
 
     @Test
     fun `changePreferenceValue accurately delegates write operation to disk writer`() = runTest {
-        preferencesImpl.changePreferenceValue(AppPreferences.DARK_THEME, false)
+        preferencesImpl.writePreferenceToDisk(AppPreferences.DARK_THEME, false)
 
         coVerify(exactly = 1) {
-            platformPreference.writePreferenceValue(AppPreferences.DARK_THEME, false)
+            platformPreference.writePreferenceToDisk(AppPreferences.DARK_THEME, false)
         }
     }
 
     @Test
     fun `readPreferenceValue directly requests value from platform disk layer`() = runTest {
-        coEvery { platformPreference.readPreferenceValue(AppPreferences.DARK_THEME) } returns false
+        coEvery { platformPreference.readPreferenceFromDisk(AppPreferences.DARK_THEME) } returns
+            false
 
-        val result = preferencesImpl.readPreferenceValue(AppPreferences.DARK_THEME)
+        val result = preferencesImpl.readPreferenceFromDisk(AppPreferences.DARK_THEME)
 
         assertEquals(false, result)
-        coVerify(exactly = 1) { platformPreference.readPreferenceValue(AppPreferences.DARK_THEME) }
+        coVerify(exactly = 1) {
+            platformPreference.readPreferenceFromDisk(AppPreferences.DARK_THEME)
+        }
     }
 
-    private fun generateTestValue(key: PreferenceKey<*>, variant: Int): Any =
+    private fun generateTestValue(key: Preference<*>, variant: Int): Any =
         when (key) {
-            is PreferenceKey.BooleanPreferencesKey -> variant == 1
-            is PreferenceKey.StringPreferencesKey -> "automated_test_string_$variant"
-            is PreferenceKey.IntPreferencesKey -> variant * 100
-            is PreferenceKey.LongPreferencesKey -> variant * 100L
+            is Preference.BooleanKey -> variant == 1
+            is Preference.StringKey -> "automated_test_string_$variant"
+            is Preference.IntKey -> variant * 100
+            is Preference.LongKey -> variant * 100L
         }
 }

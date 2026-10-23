@@ -9,7 +9,7 @@ import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.HostOS
 import com.sakethh.linkora.domain.PermissionStatus
-import com.sakethh.linkora.domain.PreferenceKey
+import com.sakethh.linkora.domain.Preference
 import com.sakethh.linkora.domain.RawExportString
 import com.sakethh.linkora.domain.RefreshLinkType
 import com.sakethh.linkora.domain.Result
@@ -248,27 +248,26 @@ actual class Network(private val localizedStrings: () -> LocalizedStrings) {
 }
 
 actual object PlatformPreference {
-    actual suspend fun <T> writePreferenceValue(
-        preferenceKey: PreferenceKey<T>,
+    actual suspend fun <T> writePreferenceToDisk(
+        preference: Preference<T>,
         newValue: T,
     ) {
-        localStorage[preferenceKey.key] = newValue.toString()
+        localStorage[preference.key] = newValue.toString()
     }
 
-    @Suppress("UNCHECKED_CAST")
-    actual suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T? {
-        val rawValue = localStorage.getItem(preferenceKey.key) ?: return null
+    actual suspend fun <T> readPreferenceFromDisk(preference: Preference<T>): T? {
+        val rawValue = localStorage.getItem(preference.key) ?: return null
 
-        return when (preferenceKey) {
-            is PreferenceKey.BooleanPreferencesKey -> rawValue.toBooleanStrictOrNull()
-            is PreferenceKey.LongPreferencesKey -> rawValue.toLongOrNull()
-            is PreferenceKey.StringPreferencesKey -> rawValue
-            is PreferenceKey.IntPreferencesKey -> rawValue.toIntOrNull()
+        return when (preference) {
+            is Preference.BooleanKey -> rawValue.toBooleanStrictOrNull()
+            is Preference.LongKey -> rawValue.toLongOrNull()
+            is Preference.StringKey -> rawValue
+            is Preference.IntKey -> rawValue.toIntOrNull()
         }
             as T?
     }
 
-    actual suspend fun readAllPreferences(): AppPreferences =
+    actual suspend fun readAllPreferencesFromDisk(): AppPreferences =
         AppPreferences(
             correlation =
                 localStorage.getItem(AppPreferences.SERVER_CORRELATION.key).let {

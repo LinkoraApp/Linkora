@@ -327,7 +327,7 @@ actual class FileManager(
                     .asJSONExportSchema(
                         userAgent =
                             DependencyContainer.preferencesRepo
-                                .getPreferences()
+                                .getCurrentPreferencesState()
                                 .primaryJsoupUserAgent,
                     )
             } else {
@@ -471,7 +471,7 @@ actual class FileManager(
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
         } else {
             val rootFolderUri =
-                DependencyContainer.preferencesRepo.getPreferences().webCapturesLocation
+                DependencyContainer.preferencesRepo.getCurrentPreferencesState().webCapturesLocation
 
             val captureFolderUri =
                 DocumentFile.fromTreeUri(context, rootFolderUri.toUri())

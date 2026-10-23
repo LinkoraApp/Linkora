@@ -43,7 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.AppPreferences
-import com.sakethh.linkora.domain.PreferenceKey
+import com.sakethh.linkora.domain.Preference
 import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.link.GridViewLinkComponent
 import com.sakethh.linkora.ui.components.link.ListViewLinkComponent
@@ -90,10 +90,10 @@ fun LayoutSettingsScreen() {
                             selectedLinkLayout = Layout.valueOf(preferences.selectedLinkLayout),
                             linkLayout = it,
                             changePreferenceValue = {
-                                preferenceKey: PreferenceKey<String>,
+                                preference: Preference<String>,
                                 newValue: String ->
                                 settingsScreenViewModel.changeSettingPreferenceValue(
-                                    preferenceKey = preferenceKey,
+                                    preference = preference,
                                     newValue = newValue,
                                 )
                             },
@@ -106,7 +106,7 @@ fun LayoutSettingsScreen() {
                             LinkViewPreferenceSwitch(
                                 onClick = {
                                     settingsScreenViewModel.changeSettingPreferenceValue(
-                                        preferenceKey =
+                                        preference =
                                             AppPreferences.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS,
                                         newValue = !preferences.showHostInLinkListView,
                                     )
@@ -122,8 +122,7 @@ fun LayoutSettingsScreen() {
                             LinkViewPreferenceSwitch(
                                 onClick = {
                                     settingsScreenViewModel.changeSettingPreferenceValue(
-                                        preferenceKey =
-                                            AppPreferences.NOTE_VISIBILITY_IN_LIST_VIEWS,
+                                        preference = AppPreferences.NOTE_VISIBILITY_IN_LIST_VIEWS,
                                         newValue = !preferences.showNoteInLinkView,
                                     )
                                 },
@@ -137,7 +136,7 @@ fun LayoutSettingsScreen() {
                             LinkViewPreferenceSwitch(
                                 onClick = {
                                     settingsScreenViewModel.changeSettingPreferenceValue(
-                                        preferenceKey = AppPreferences.SHOW_TAGS_IN_LINK_VIEW,
+                                        preference = AppPreferences.SHOW_TAGS_IN_LINK_VIEW,
                                         newValue = !preferences.showTagsInLinkView,
                                     )
                                 },
@@ -151,7 +150,7 @@ fun LayoutSettingsScreen() {
                             LinkViewPreferenceSwitch(
                                 onClick = {
                                     settingsScreenViewModel.changeSettingPreferenceValue(
-                                        preferenceKey = AppPreferences.SHOW_DATE_IN_LINK_VIEW,
+                                        preference = AppPreferences.SHOW_DATE_IN_LINK_VIEW,
                                         newValue = !preferences.showDateInLinkView,
                                     )
                                 },
@@ -228,10 +227,10 @@ fun LayoutSettingsScreen() {
                             selectedLinkLayout = Layout.valueOf(preferences.selectedLinkLayout),
                             linkLayout = it,
                             changePreferenceValue = {
-                                preferenceKey: PreferenceKey<String>,
+                                preference: Preference<String>,
                                 newValue: String ->
                                 settingsScreenViewModel.changeSettingPreferenceValue(
-                                    preferenceKey = preferenceKey,
+                                    preference = preference,
                                     newValue = newValue,
                                 )
                             },
@@ -323,10 +322,10 @@ fun LayoutSettingsScreen() {
                             selectedLinkLayout = Layout.valueOf(preferences.selectedLinkLayout),
                             linkLayout = it,
                             changePreferenceValue = {
-                                preferenceKey: PreferenceKey<String>,
+                                preference: Preference<String>,
                                 newValue: String ->
                                 settingsScreenViewModel.changeSettingPreferenceValue(
-                                    preferenceKey = preferenceKey,
+                                    preference = preference,
                                     newValue = newValue,
                                 )
                             },
@@ -422,7 +421,7 @@ private fun LinkViewRadioButtonComponent(
     selectedLinkLayout: Layout,
     linkLayout: Layout,
     paddingValues: PaddingValues = PaddingValues(0.dp),
-    changePreferenceValue: (preferenceKey: PreferenceKey<String>, newValue: String) -> Unit,
+    changePreferenceValue: (preference: Preference<String>, newValue: String) -> Unit,
 ) {
     val localizedStrings = LocalizedStrings.current
     Row(

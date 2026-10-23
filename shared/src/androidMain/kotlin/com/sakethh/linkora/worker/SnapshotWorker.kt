@@ -34,8 +34,8 @@ class SnapshotWorker(
                     // https://github.com/LinkoraApp/Linkora/issues/160
                     ""
                 } else {
-                    DependencyContainer.preferencesRepo.readPreferenceValue(
-                        preferenceKey = AppPreferences.BACKUP_LOCATION,
+                    DependencyContainer.preferencesRepo.readPreferenceFromDisk(
+                        preference = AppPreferences.BACKUP_LOCATION,
                     )
                         ?: return Result.failure().also {
                             val failureMsg =

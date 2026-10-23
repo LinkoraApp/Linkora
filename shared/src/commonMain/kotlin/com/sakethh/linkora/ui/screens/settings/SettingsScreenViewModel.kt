@@ -19,7 +19,7 @@ import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.MediaType
 import com.sakethh.linkora.domain.PermissionStatus
-import com.sakethh.linkora.domain.PreferenceKey
+import com.sakethh.linkora.domain.Preference
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.domain.model.tag.Tag
@@ -49,7 +49,7 @@ open class SettingsScreenViewModel(
     private val webCaptureDatabaseManager: WebCaptureDatabaseManager,
     private val localizationRepo: LocalizationRepo.Local,
 ) : ViewModel() {
-    val preferencesAsFlow = preferencesRepository.preferencesAsFlow
+    val preferencesAsFlow = preferencesRepository.currentPreferencesStateAsFlow
     val localizedStrings
         get() = localizationRepo.localizedStrings.value
 
@@ -70,14 +70,13 @@ open class SettingsScreenViewModel(
                     icon = Icons.Default.Search,
                     onSwitchStateChange = {
                         changeSettingPreferenceValue(
-                            preferenceKey = AppPreferences.AUTO_DETECT_TITLE_FOR_LINK,
+                            preference = AppPreferences.AUTO_DETECT_TITLE_FOR_LINK,
                             newValue = it,
                         )
 
                         if (it) {
                             changeSettingPreferenceValue(
-                                preferenceKey =
-                                    AppPreferences.FORCE_SAVE_WITHOUT_FETCHING_META_DATA,
+                                preference = AppPreferences.FORCE_SAVE_WITHOUT_FETCHING_META_DATA,
                                 newValue = false,
                             )
                         }
@@ -93,13 +92,13 @@ open class SettingsScreenViewModel(
                     icon = Icons.Default.PublicOff,
                     onSwitchStateChange = {
                         changeSettingPreferenceValue(
-                            preferenceKey = AppPreferences.FORCE_SAVE_WITHOUT_FETCHING_META_DATA,
+                            preference = AppPreferences.FORCE_SAVE_WITHOUT_FETCHING_META_DATA,
                             newValue = it,
                         )
 
                         if (it) {
                             changeSettingPreferenceValue(
-                                preferenceKey = AppPreferences.AUTO_DETECT_TITLE_FOR_LINK,
+                                preference = AppPreferences.AUTO_DETECT_TITLE_FOR_LINK,
                                 newValue = false,
                             )
                         }
@@ -115,7 +114,7 @@ open class SettingsScreenViewModel(
                     icon = Icons.Default.Block,
                     onSwitchStateChange = {
                         changeSettingPreferenceValue(
-                            preferenceKey = AppPreferences.SKIP_SAVING_EXISTING_LINK,
+                            preference = AppPreferences.SKIP_SAVING_EXISTING_LINK,
                             newValue = it,
                         )
                     },
@@ -135,8 +134,7 @@ open class SettingsScreenViewModel(
                     icon = Icons.Default.Image,
                     onSwitchStateChange = {
                         changeSettingPreferenceValue(
-                            preferenceKey =
-                                AppPreferences.ASSOCIATED_IMAGES_IN_LINK_MENU_VISIBILITY,
+                            preference = AppPreferences.ASSOCIATED_IMAGES_IN_LINK_MENU_VISIBILITY,
                             newValue = it,
                         )
                     },
@@ -153,7 +151,7 @@ open class SettingsScreenViewModel(
                 isSwitchEnabled = preferences.forceSaveIfRetrievalFails,
                 onSwitchStateChange = {
                     changeSettingPreferenceValue(
-                        preferenceKey = AppPreferences.FORCE_SAVE_LINKS,
+                        preference = AppPreferences.FORCE_SAVE_LINKS,
                         newValue = it,
                     )
                 },
@@ -177,7 +175,7 @@ open class SettingsScreenViewModel(
                                     PermissionStatus.Granted
                             ) {
                                 changeSettingPreferenceValue(
-                                    preferenceKey = AppPreferences.AUTO_SAVE_ON_SHARE_INTENT,
+                                    preference = AppPreferences.AUTO_SAVE_ON_SHARE_INTENT,
                                     newValue = it,
                                 )
                             } else {
@@ -204,7 +202,7 @@ open class SettingsScreenViewModel(
                 isSwitchEnabled = preferences.isHomeScreenEnabled,
                 onSwitchStateChange = {
                     changeSettingPreferenceValue(
-                        preferenceKey = AppPreferences.HOME_SCREEN_VISIBILITY,
+                        preference = AppPreferences.HOME_SCREEN_VISIBILITY,
                         newValue = it,
                     )
                 },
@@ -215,13 +213,13 @@ open class SettingsScreenViewModel(
     }
 
     fun <T> changeSettingPreferenceValue(
-        preferenceKey: PreferenceKey<T>,
+        preference: Preference<T>,
         newValue: T,
         onCompletion: () -> Unit = {},
     ) {
         viewModelScope
             .launch {
-                preferencesRepository.changePreferenceValue(preferenceKey, newValue)
+                preferencesRepository.writePreferenceToDisk(preference, newValue)
             }
             .invokeOnCompletion {
                 onCompletion()
@@ -580,7 +578,7 @@ open class SettingsScreenViewModel(
             LinkPref(
                 onClick = {
                     changeSettingPreferenceValue(
-                        preferenceKey = AppPreferences.TITLE_VISIBILITY_FOR_NON_LIST_VIEWS,
+                        preference = AppPreferences.TITLE_VISIBILITY_FOR_NON_LIST_VIEWS,
                         newValue = !preferences.showTitleInLinkGridView,
                     )
                 },
@@ -590,7 +588,7 @@ open class SettingsScreenViewModel(
             LinkPref(
                 onClick = {
                     changeSettingPreferenceValue(
-                        preferenceKey = AppPreferences.NOTE_VISIBILITY_IN_LIST_VIEWS,
+                        preference = AppPreferences.NOTE_VISIBILITY_IN_LIST_VIEWS,
                         newValue = !preferences.showNoteInLinkView,
                     )
                 },
@@ -600,7 +598,7 @@ open class SettingsScreenViewModel(
             LinkPref(
                 onClick = {
                     changeSettingPreferenceValue(
-                        preferenceKey = AppPreferences.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS,
+                        preference = AppPreferences.BASE_URL_VISIBILITY_FOR_NON_LIST_VIEWS,
                         newValue = !preferences.showHostInLinkListView,
                     )
                 },
@@ -610,7 +608,7 @@ open class SettingsScreenViewModel(
             LinkPref(
                 onClick = {
                     changeSettingPreferenceValue(
-                        preferenceKey = AppPreferences.SHOW_TAGS_IN_LINK_VIEW,
+                        preference = AppPreferences.SHOW_TAGS_IN_LINK_VIEW,
                         newValue = !preferences.showTagsInLinkView,
                     )
                 },
@@ -620,7 +618,7 @@ open class SettingsScreenViewModel(
             LinkPref(
                 onClick = {
                     changeSettingPreferenceValue(
-                        preferenceKey = AppPreferences.SHOW_DATE_IN_LINK_VIEW,
+                        preference = AppPreferences.SHOW_DATE_IN_LINK_VIEW,
                         newValue = !preferences.showDateInLinkView,
                     )
                 },
@@ -630,7 +628,7 @@ open class SettingsScreenViewModel(
             LinkPref(
                 onClick = {
                     changeSettingPreferenceValue(
-                        preferenceKey = AppPreferences.FADED_EDGE_VISIBILITY_FOR_NON_LIST_VIEWS,
+                        preference = AppPreferences.FADED_EDGE_VISIBILITY_FOR_NON_LIST_VIEWS,
                         newValue = !preferences.enableFadedEdgeForNonListViews,
                     )
                 },
@@ -640,7 +638,7 @@ open class SettingsScreenViewModel(
             LinkPref(
                 onClick = {
                     changeSettingPreferenceValue(
-                        preferenceKey = AppPreferences.SHOW_MENU_ON_GRID_LINK_CLICK,
+                        preference = AppPreferences.SHOW_MENU_ON_GRID_LINK_CLICK,
                         newValue = !preferences.showMenuOnGridLinkClick,
                     )
                 },
@@ -661,8 +659,8 @@ open class SettingsScreenViewModel(
             onCompletion = {
                 viewModelScope
                     .launch {
-                        preferencesRepository.changePreferenceValue(
-                            preferenceKey = AppPreferences.SELECTED_APP_ICON,
+                        preferencesRepository.writePreferenceToDisk(
+                            preference = AppPreferences.SELECTED_APP_ICON,
                             newValue = newIconCode,
                         )
                     }

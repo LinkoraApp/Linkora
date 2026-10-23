@@ -49,7 +49,7 @@ class LocalMultiActionRepoImpl(
         viaSocket: Boolean,
     ): Flow<Result<Unit>> {
         val eventTimestamp = getSystemEpochSeconds()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -104,7 +104,7 @@ class LocalMultiActionRepoImpl(
         val eventTimestamp = getSystemEpochSeconds()
         val remoteLinkIds = linksDao.getRemoteIds(linkIds)
         val remoteFolderIds = foldersDao.getRemoteIds(folderIds)
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -157,7 +157,7 @@ class LocalMultiActionRepoImpl(
         viaSocket: Boolean,
     ): Flow<Result<Unit>> {
         val eventTimeStamp = getSystemEpochSeconds()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -225,7 +225,7 @@ class LocalMultiActionRepoImpl(
 
         lateinit var copiedFolders: List<CopyFolderDTO>
 
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -399,13 +399,11 @@ class LocalMultiActionRepoImpl(
                                         sourceRemoteId = remoteId,
                                         sourceRemoteParentId = remoteParentId,
                                         isRootFolderForTheDestination =
-                                            false, // this doesn't matter for a link since it's
-                                        // already
-                                        // embedded with the folder
+                                            false, /* this doesn't matter for a link
+                                                   since it's already embedded with the folder*/
                                         parentOfNewlyCopiedLocalId =
-                                            -45454, // this doesn't matter for a link since it's
-                                        // already
-                                        // embedded with the folder
+                                            -45454, /* this doesn't matter for a link
+                                                    since it's already embedded with the folder*/
                                     )
                                 }
                                 .filterNotNull(),
@@ -450,7 +448,7 @@ class LocalMultiActionRepoImpl(
         viaSocket: Boolean,
     ): Flow<Result<Unit>> {
         val eventTimestamp = getSystemEpochSeconds()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()

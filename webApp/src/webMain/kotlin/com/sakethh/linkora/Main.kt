@@ -106,14 +106,15 @@ fun main() {
     )
 
     MainScope().launch {
-        DependencyContainer.preferencesRepo.loadPersistedPreferences()
-        val preferences = DependencyContainer.preferencesRepo.getPreferences()
+        DependencyContainer.preferencesRepo.readAllPreferencesFromDisk()
+        val preferences = DependencyContainer.preferencesRepo.getCurrentPreferencesState()
         DependencyContainer.localizationRepo.loadLanguage(preferences.preferredAppLanguageCode)
     }
 
     ComposeViewport {
         val preferences by
-            DependencyContainer.preferencesRepo.preferencesAsFlow.collectAsStateWithLifecycle()
+            DependencyContainer.preferencesRepo.currentPreferencesStateAsFlow
+                .collectAsStateWithLifecycle()
         val navController = rememberNavController()
         LaunchedEffect(Unit) {
             navController.bindToBrowserNavigation()

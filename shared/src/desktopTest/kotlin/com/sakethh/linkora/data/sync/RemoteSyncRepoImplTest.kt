@@ -105,9 +105,9 @@ class RemoteSyncRepoImplTest {
                         clientName = "test-client",
                     )
             }
-        coEvery { preferencesRepository.getPreferences() } returns mockPrefs
-        coEvery { preferencesRepository.readPreferenceValue<Long>(any()) } returns 0L
-        coEvery { preferencesRepository.changePreferenceValue<Long>(any(), any()) } returns Unit
+        coEvery { preferencesRepository.getCurrentPreferencesState() } returns mockPrefs
+        coEvery { preferencesRepository.readPreferenceFromDisk<Long>(any()) } returns 0L
+        coEvery { preferencesRepository.writePreferenceToDisk<Long>(any(), any()) } returns Unit
 
         mockkStatic("com.sakethh.linkora.utils.ExtensionsKt")
         every { any<AppPreferences>().canPushToServer() } returns true
@@ -278,14 +278,14 @@ class RemoteSyncRepoImplTest {
         coVerify(exactly = 1) { localDatabaseUtilsRepo.resetDatabase() }
 
         coVerify(exactly = 1) {
-            preferencesRepository.changePreferenceValue(
+            preferencesRepository.writePreferenceToDisk(
                 match { it.key == AppPreferences.LAST_SELECTED_PANEL_ID.key },
                 any<Long>(),
             )
         }
 
         coVerify(exactly = 1) {
-            preferencesRepository.changePreferenceValue(
+            preferencesRepository.writePreferenceToDisk(
                 match { it.key == AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key },
                 2000L,
             )

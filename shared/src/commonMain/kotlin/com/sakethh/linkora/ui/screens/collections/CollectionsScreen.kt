@@ -848,10 +848,11 @@ fun CollectionsScreen(
                     LaunchedEffect(pendingDetailDestination) {
                         pendingDetailDestination?.let { destination ->
 
-                            // on mobile, detailPane isn't composed until
-                            // scaffoldNavigator#navigateTo is
-                            // called,
-                            // so NavHost graph isn't set yet, wait for it
+                            /*
+                            on mobile, detailPane isn't composed until
+                            scaffoldNavigator#navigateTo is called,
+                            so NavHost graph isn't set yet, wait for it
+                            */
                             snapshotFlow { detailNavController.currentDestination }
                                 .first { it != null }
                             detailNavController.navigate(
@@ -866,7 +867,7 @@ fun CollectionsScreen(
         },
     )
 
-    /*
+    /* TODO: migrate to Nav3 and get rid of this yap
      * The worst thing (in our context, specifically this collection screen's)
      * about navigation compose/nav2 (excluding backstack owner) is NavHost,
      * it maintains its own `PredictiveBackHandler` (just deep dive in the source code of NavHost, you'll end up with internal function which has its own state of back handling),

@@ -76,7 +76,7 @@ class LocalFoldersRepoImplTest {
                         clientName = "test-correlation-client",
                     )
             }
-        coEvery { preferencesRepository.getPreferences() } returns mockPrefs
+        coEvery { preferencesRepository.getCurrentPreferencesState() } returns mockPrefs
 
         // Force the extension function to return true so the remote block actually executes
         mockkStatic("com.sakethh.linkora.utils.ExtensionsKt")

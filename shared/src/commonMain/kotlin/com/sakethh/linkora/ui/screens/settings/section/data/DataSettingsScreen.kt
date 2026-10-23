@@ -906,7 +906,7 @@ fun DataSettingsScreen() {
                                                         onClick = {
                                                             dataSettingsScreenVM
                                                                 .changeSettingPreferenceValue(
-                                                                    preferenceKey =
+                                                                    preference =
                                                                         AppPreferences
                                                                             .REFRESH_LINK_TYPE,
                                                                     newValue = refreshLinkType.name,
@@ -922,7 +922,7 @@ fun DataSettingsScreen() {
                                                 onClick = {
                                                     dataSettingsScreenVM
                                                         .changeSettingPreferenceValue(
-                                                            preferenceKey =
+                                                            preference =
                                                                 AppPreferences.REFRESH_LINK_TYPE,
                                                             newValue = refreshLinkType.name,
                                                         )
@@ -948,7 +948,7 @@ fun DataSettingsScreen() {
                                                 onDone = {
                                                     dataSettingsScreenVM
                                                         .changeSettingPreferenceValue(
-                                                            preferenceKey =
+                                                            preference =
                                                                 AppPreferences
                                                                     .MAX_CONCURRENT_REFRESH_COUNT,
                                                             newValue = maxConcurrentRefreshCount,
@@ -978,7 +978,7 @@ fun DataSettingsScreen() {
                                                     onClick = {
                                                         dataSettingsScreenVM
                                                             .changeSettingPreferenceValue(
-                                                                preferenceKey =
+                                                                preference =
                                                                     AppPreferences
                                                                         .MAX_CONCURRENT_REFRESH_COUNT,
                                                                 newValue =

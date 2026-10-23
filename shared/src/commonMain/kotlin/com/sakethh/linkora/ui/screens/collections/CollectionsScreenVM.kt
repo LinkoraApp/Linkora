@@ -62,15 +62,15 @@ class CollectionsScreenVM(
         get() = localizationRepo.localizedStrings.value
 
     val sortingType
-        get() = preferencesRepo.getPreferences().selectedSortingType
+        get() = preferencesRepo.getCurrentPreferencesState().selectedSortingType
 
     val shuffleLinks
-        get() = preferencesRepo.getPreferences().forceShuffleLinks
+        get() = preferencesRepo.getCurrentPreferencesState().forceShuffleLinks
 
-    val preferencesAsFlow = preferencesRepo.preferencesAsFlow
+    val preferencesAsFlow = preferencesRepo.currentPreferencesStateAsFlow
     var currentCollectionSource by
         mutableStateOf(
-            if (preferencesRepo.getPreferences().selectedCollectionSourceId == 0) {
+            if (preferencesRepo.getCurrentPreferencesState().selectedCollectionSourceId == 0) {
                 localizedStrings.Folders
             } else {
                 localizedStrings.Tags
@@ -78,7 +78,7 @@ class CollectionsScreenVM(
         )
     val collectionPagerState =
         PagerState(
-            currentPage = preferencesRepo.getPreferences().selectedCollectionSourceId,
+            currentPage = preferencesRepo.getCurrentPreferencesState().selectedCollectionSourceId,
             pageCount = { 2 },
         )
 
@@ -97,8 +97,8 @@ class CollectionsScreenVM(
                             localizedStrings.Tags
                         }
 
-                    preferencesRepo.changePreferenceValue(
-                        preferenceKey = AppPreferences.COLLECTION_SOURCE_ID,
+                    preferencesRepo.writePreferenceToDisk(
+                        preference = AppPreferences.COLLECTION_SOURCE_ID,
                         newValue = currentPage,
                     )
                 }
@@ -652,8 +652,7 @@ class CollectionsScreenVM(
             .launch {
                 if (link.linkType == LinkType.ARCHIVE_LINK) {
                     // we can also revert to the same folder from where it was originally archived,
-                    // but this
-                    // should be fine
+                    // but this should be fine
                     localLinksRepo
                         .updateALink(
                             link =

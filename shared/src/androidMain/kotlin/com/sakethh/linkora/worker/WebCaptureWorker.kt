@@ -68,7 +68,7 @@ class WebCaptureWorker(
     }
 
     override suspend fun doWork(): Result = coroutineScope {
-        val preferences = DependencyContainer.preferencesRepo.getPreferences()
+        val preferences = DependencyContainer.preferencesRepo.getCurrentPreferencesState()
 
         if (isStopped) {
             return@coroutineScope Result.success()
@@ -109,11 +109,11 @@ class WebCaptureWorker(
                     CaptureTrack.getCaptureLinkId(
                         inAllLinksWorker = false,
                         linkId = null,
-                        // we don't care about the link, we only care about the captureWorkerId on
-                        // Android;
-                        // this should generally be in its own table, so the data won't be scattered
-                        // around,
-                        // but for our case, this should be fine
+                        /*
+                        we don't care about the link, we only care about the captureWorkerId on Android;
+                        this should generally be in its own table, so the data won't be scattered around,
+                        but for our case, this should be fine
+                        */
                         link = UUID.randomUUID().toString(),
                     ),
                 captureWorkerId = captureWorkerId,

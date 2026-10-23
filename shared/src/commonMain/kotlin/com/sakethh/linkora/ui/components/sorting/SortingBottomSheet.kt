@@ -186,7 +186,7 @@ fun SortingBottomSheet(sortingBottomSheetParam: SortingBottomSheetParam) {
                     isSwitchEnabled = preferences.forceShuffleLinks,
                     onSwitchStateChange = {
                         sortingBtmSheetVM.changeSettingPreferenceValue(
-                            preferenceKey = AppPreferences.FORCE_SHUFFLE_LINKS,
+                            preference = AppPreferences.FORCE_SHUFFLE_LINKS,
                             newValue = it,
                             onCompletion = hideBtmSheet,
                         )

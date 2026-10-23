@@ -147,7 +147,7 @@ fun GeneralSettingsScreen() {
                             isSwitchEnabled = isLinkoraTopAppBarEnabled,
                             onSwitchStateChange = {
                                 settingsScreenViewModel.changeSettingPreferenceValue(
-                                    preferenceKey = AppPreferences.DESKTOP_TOP_DECORATOR,
+                                    preference = AppPreferences.DESKTOP_TOP_DECORATOR,
                                     newValue = it,
                                 )
                             },

@@ -80,7 +80,8 @@ class AutoSaveLinkService : Service() {
 
         CoroutineScope(Dispatchers.Default)
             .launch {
-                val preferences = intentActivityVM.preferencesRepository.getPreferences()
+                val preferences =
+                    intentActivityVM.preferencesRepository.getCurrentPreferencesState()
                 areSnapshotsEnabled = preferences.areSnapshotsEnabled
                 intentActivityVM.localLinksRepo
                     .addANewLink(

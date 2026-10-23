@@ -12,7 +12,7 @@ import com.fleeksoft.io.ByteArrayInputStream
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.HostOS
-import com.sakethh.linkora.domain.PreferenceKey
+import com.sakethh.linkora.domain.Preference
 import com.sakethh.linkora.domain.RefreshLinkType
 import com.sakethh.linkora.domain.SyncType
 import com.sakethh.linkora.domain.dto.server.Correlation
@@ -79,8 +79,8 @@ suspend fun readAllPreferences(
                 } else {
                     val randomCorrelation = Correlation.generateRandomCorrelation()
                     externalAction { platformPreference ->
-                        platformPreference.writePreferenceValue(
-                            preferenceKey = AppPreferences.SERVER_CORRELATION,
+                        platformPreference.writePreferenceToDisk(
+                            preference = AppPreferences.SERVER_CORRELATION,
                             newValue = Json.encodeToString(randomCorrelation),
                         )
                     }
@@ -225,43 +225,43 @@ suspend fun readAllPreferences(
                 ?: true,
     )
 
-suspend fun <T> writePreferenceValue(
+suspend fun <T> writePreferenceToDisk(
     dataStore: DataStore<Preferences>,
-    preferenceKey: PreferenceKey<T>,
+    preference: Preference<T>,
     newValue: T,
 ) {
-    dataStore.edit {
-        when (preferenceKey) {
-            is PreferenceKey.BooleanPreferencesKey -> {
-                it[booleanPreferencesKey(preferenceKey.key)] = newValue as Boolean
+    dataStore.edit { preferences ->
+        when (preference) {
+            is Preference.BooleanKey -> {
+                preferences[booleanPreferencesKey(preference.key)] = newValue as Boolean
             }
 
-            is PreferenceKey.LongPreferencesKey -> {
-                it[longPreferencesKey(preferenceKey.key)] = newValue as Long
+            is Preference.LongKey -> {
+                preferences[longPreferencesKey(preference.key)] = newValue as Long
             }
 
-            is PreferenceKey.StringPreferencesKey -> {
-                it[dsStringKey(preferenceKey.key)] = newValue as String
+            is Preference.StringKey -> {
+                preferences[dsStringKey(preference.key)] = newValue as String
             }
 
-            is PreferenceKey.IntPreferencesKey -> {
-                it[intPreferencesKey(preferenceKey.key)] = newValue as Int
+            is Preference.IntKey -> {
+                preferences[intPreferencesKey(preference.key)] = newValue as Int
             }
         }
     }
 }
 
-suspend fun <T> readPreferenceValue(
+suspend fun <T> readPreferenceFromDisk(
     dataStore: DataStore<Preferences>,
-    preferenceKey: PreferenceKey<T>,
+    preference: Preference<T>,
 ): T? {
     val preferences = dataStore.data.first()
 
-    return when (preferenceKey) {
-        is PreferenceKey.BooleanPreferencesKey -> preferences[dsBooleanKey(preferenceKey.key)]
-        is PreferenceKey.LongPreferencesKey -> preferences[dsLongKey(preferenceKey.key)]
-        is PreferenceKey.StringPreferencesKey -> preferences[dsStringKey(preferenceKey.key)]
-        is PreferenceKey.IntPreferencesKey -> preferences[dsIntKey(preferenceKey.key)]
+    return when (preference) {
+        is Preference.BooleanKey -> preferences[dsBooleanKey(preference.key)]
+        is Preference.LongKey -> preferences[dsLongKey(preference.key)]
+        is Preference.StringKey -> preferences[dsStringKey(preference.key)]
+        is Preference.IntKey -> preferences[dsIntKey(preference.key)]
     }
         as T?
 }

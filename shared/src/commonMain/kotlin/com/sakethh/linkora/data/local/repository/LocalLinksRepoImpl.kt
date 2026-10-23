@@ -97,7 +97,7 @@ class LocalLinksRepoImpl(
             } else {
                 emptyList()
             }
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -506,7 +506,7 @@ class LocalLinksRepoImpl(
     override suspend fun deleteALinkNote(linkId: Long): Flow<Result<Unit>> {
         val remoteId = getRemoteIdOfLink(linkId)
         val eventTimestamp = getSystemEpochSeconds()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -555,7 +555,7 @@ class LocalLinksRepoImpl(
     ): Flow<Result<Unit>> {
         val remoteId = getRemoteIdOfLink(linkId)
         val eventTimestamp = getSystemEpochSeconds()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -609,7 +609,7 @@ class LocalLinksRepoImpl(
     ): Flow<Result<Unit>> {
         val remoteId = getRemoteIdOfLink(linkId)
         val eventTimestamp = getSystemEpochSeconds()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -657,7 +657,7 @@ class LocalLinksRepoImpl(
     ): Flow<Result<Unit>> {
         val remoteId = getRemoteIdOfLink(linkId)
         val eventTimestamp = getSystemEpochSeconds()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -707,7 +707,7 @@ class LocalLinksRepoImpl(
     ): Flow<Result<Unit>> {
         val remoteId = getRemoteIdOfLink(linkId)
         val eventTimestamp = getSystemEpochSeconds()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -780,7 +780,7 @@ class LocalLinksRepoImpl(
                 null
             }
         val remoteId = getRemoteIdOfLink(link.localId)
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         val eventTimestamp = getSystemEpochSeconds()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
@@ -856,7 +856,7 @@ class LocalLinksRepoImpl(
         refreshLinkType: RefreshLinkType,
         useWebCapture: Boolean,
     ): Flow<Result<Unit>> {
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         val remoteId = getRemoteIdOfLink(link.localId)
         val eventTimestamp = getSystemEpochSeconds()
         val remoteLinkTagDTOs =
@@ -989,7 +989,7 @@ class LocalLinksRepoImpl(
     override suspend fun deleteDuplicateLinks(viaSocket: Boolean): Flow<Result<Unit>> {
         val eventTimestamp = getSystemEpochSeconds()
         val linksToBeDeleted = mutableListOf<Link>()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -1177,7 +1177,7 @@ class LocalLinksRepoImpl(
         val eventTimestamp = getSystemEpochSeconds()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
-                preferencesRepository.getPreferences().canPushToServer()
+                preferencesRepository.getCurrentPreferencesState().canPushToServer()
             },
             performRemoteOperation = !viaSocket,
             remoteOperation = {

@@ -77,7 +77,7 @@ class ShareToSaveActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val autoSave = runBlocking {
-            DependencyContainer.preferencesRepo.getPreferences().autoSaveOnShareIntent
+            DependencyContainer.preferencesRepo.getCurrentPreferencesState().autoSaveOnShareIntent
         }
         if (autoSave) {
             if (
@@ -201,7 +201,7 @@ class IntentActivityVM(
     val localizationRepo: LocalizationRepo.Local,
     showToast: (message: String) -> Unit,
 ) : ViewModel() {
-    val preferencesAsFlow = preferencesRepository.preferencesAsFlow
+    val preferencesAsFlow = preferencesRepository.currentPreferencesStateAsFlow
     val localizedStrings = localizationRepo.localizedStrings
 
     fun createADataSnapshot(onCompletion: () -> Unit) {

@@ -465,7 +465,9 @@ class RemoteSyncRepoImpl(
                     payload =
                         Json.encodeToString(
                             currentFolder
-                                .asAddFolderDTO(preferencesRepository.getPreferences().correlation)
+                                .asAddFolderDTO(
+                                    preferencesRepository.getCurrentPreferencesState().correlation,
+                                )
                                 .copy(offlineSyncItemId = currentFolder.localId),
                         ),
                 ),
@@ -494,7 +496,8 @@ class RemoteSyncRepoImpl(
                                 name = currentTag.name,
                                 eventTimestamp = currentTag.lastModified,
                                 offlineSyncItemId = currentTag.localId,
-                                correlation = preferencesRepository.getPreferences().correlation,
+                                correlation =
+                                    preferencesRepository.getCurrentPreferencesState().correlation,
                             ),
                         ),
                 ),
@@ -522,7 +525,9 @@ class RemoteSyncRepoImpl(
                                             it.remoteId ?: -45454
                                         },
                                     correlation =
-                                        preferencesRepository.getPreferences().correlation,
+                                        preferencesRepository
+                                            .getCurrentPreferencesState()
+                                            .correlation,
                                 )
                                 .copy(offlineSyncItemId = currentLink.localId),
                         ),
@@ -552,7 +557,8 @@ class RemoteSyncRepoImpl(
                                 panelName = currentPanel.panelName,
                                 offlineSyncItemId = currentPanel.localId,
                                 eventTimestamp = currentPanel.lastModified,
-                                correlation = preferencesRepository.getPreferences().correlation,
+                                correlation =
+                                    preferencesRepository.getCurrentPreferencesState().correlation,
                             ),
                         ),
                 ),
@@ -584,7 +590,8 @@ class RemoteSyncRepoImpl(
                                 connectedPanelId = currentPanelFolder.connectedPanelId,
                                 offlineSyncItemId = currentPanelFolder.localId,
                                 eventTimestamp = currentPanelFolder.lastModified,
-                                correlation = preferencesRepository.getPreferences().correlation,
+                                correlation =
+                                    preferencesRepository.getCurrentPreferencesState().correlation,
                             ),
                         ),
                 ),
@@ -604,7 +611,7 @@ class RemoteSyncRepoImpl(
     override suspend fun deleteEverything(deleteOnRemote: Boolean): Flow<Result<Unit>> =
         performLocalOperationWithRemoteSyncFlow<Unit, DeleteEverythingDTO>(
             canPushToServer = {
-                preferencesRepository.getPreferences().canPushToServer()
+                preferencesRepository.getCurrentPreferencesState().canPushToServer()
             },
             performRemoteOperation = deleteOnRemote,
             remoteOperation = {
@@ -615,7 +622,8 @@ class RemoteSyncRepoImpl(
                     endPoint = SyncServerRoute.DELETE_EVERYTHING.name,
                     outgoingBody =
                         DeleteEverythingDTO(
-                            correlation = preferencesRepository.getPreferences().correlation,
+                            correlation =
+                                preferencesRepository.getCurrentPreferencesState().correlation,
                         ),
                 )
             },
@@ -624,8 +632,8 @@ class RemoteSyncRepoImpl(
             },
         ) {
             localDatabaseUtilsRepo.resetDatabase()
-            preferencesRepository.changePreferenceValue(
-                preferenceKey = AppPreferences.LAST_SELECTED_PANEL_ID,
+            preferencesRepository.writePreferenceToDisk(
+                preference = AppPreferences.LAST_SELECTED_PANEL_ID,
                 newValue = Constants.DEFAULT_PANELS_ID,
             )
         }

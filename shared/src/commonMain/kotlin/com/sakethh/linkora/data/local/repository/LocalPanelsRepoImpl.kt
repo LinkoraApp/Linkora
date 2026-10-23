@@ -37,7 +37,7 @@ class LocalPanelsRepoImpl(
     ): Flow<Result<Long>> {
         var newPanelId: Long? = null
         val eventTimestamp = getSystemEpochSeconds()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -102,7 +102,7 @@ class LocalPanelsRepoImpl(
     ): Flow<Result<Unit>> {
         val remotePanelId = panelsDao.getRemoteIdOfPanel(id)
         val eventTimestamp = getSystemEpochSeconds()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -151,7 +151,7 @@ class LocalPanelsRepoImpl(
     ): Flow<Result<Unit>> {
         val remotePanelId = panelsDao.getRemoteIdOfPanel(panelId)
         val eventTimestamp = getSystemEpochSeconds()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -210,7 +210,7 @@ class LocalPanelsRepoImpl(
         val remoteIdOfFolder = foldersDao.getRemoteFolderId(panelFolder.folderId)
         val remoteIdOfConnectedPanel = panelsDao.getRemoteIdOfPanel(panelFolder.connectedPanelId)
         val eventTimestamp = getSystemEpochSeconds()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -294,7 +294,7 @@ class LocalPanelsRepoImpl(
         val remotePanelId = panelsDao.getRemoteIdOfPanel(panelId)
         val remoteFolderId = foldersDao.getRemoteFolderId(folderID)
         val eventTimestamp = getSystemEpochSeconds()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()

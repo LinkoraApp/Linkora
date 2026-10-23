@@ -55,11 +55,12 @@ object WebCaptureService {
             requestChannel
                 .receiveAsFlow()
                 .flatMapMerge(
-                    concurrency = preferencesRepository.getPreferences().webCaptureMaxConcurrency,
+                    concurrency =
+                        preferencesRepository.getCurrentPreferencesState().webCaptureMaxConcurrency,
                 ) { request ->
                     flow {
                         activeCapturesCount.emit(activeCapturesCount.value + 1)
-                        val prefs = preferencesRepository.getPreferences()
+                        val prefs = preferencesRepository.getCurrentPreferencesState()
                         try {
                             val baseCaptureDir = File(request.nativeFolderPath)
                             val folderUuid = webCaptureRepo.getOrCreateFolderUuid(request.url)

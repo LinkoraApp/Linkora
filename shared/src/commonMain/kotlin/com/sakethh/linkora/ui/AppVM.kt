@@ -17,7 +17,7 @@ import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.HostOS
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.PermissionStatus
-import com.sakethh.linkora.domain.PreferenceKey
+import com.sakethh.linkora.domain.Preference
 import com.sakethh.linkora.domain.SyncServerRoute
 import com.sakethh.linkora.domain.asLinkType
 import com.sakethh.linkora.domain.model.Folder
@@ -104,14 +104,14 @@ class AppVM(
     val onBoardingCompleted = mutableStateOf(false)
 
     fun <T> updatePreference(
-        key: PreferenceKey<T>,
+        key: Preference<T>,
         newValue: T,
         onCompletion: () -> Unit,
     ) {
         viewModelScope
             .launch {
-                preferencesRepository.changePreferenceValue(
-                    preferenceKey = key,
+                preferencesRepository.writePreferenceToDisk(
+                    preference = key,
                     newValue = newValue,
                 )
             }
@@ -123,7 +123,7 @@ class AppVM(
     val startDestination: Navigation.Root =
         nativeUtils.platformRunBlocking {
             val showOnboarding =
-                preferencesRepository.readPreferenceValue(
+                preferencesRepository.readPreferenceFromDisk(
                     AppPreferences.SHOULD_SHOW_ONBOARDING,
                 ) != false &&
                     linksRepo.isLinksTableEmpty() &&
@@ -194,8 +194,8 @@ class AppVM(
     }
 
     suspend fun getLastSyncedTime(): Long =
-        preferencesRepository.readPreferenceValue(
-            preferenceKey = AppPreferences.LAST_TIME_SYNCED_WITH_SERVER,
+        preferencesRepository.readPreferenceFromDisk(
+            preference = AppPreferences.LAST_TIME_SYNCED_WITH_SERVER,
         ) ?: 0
 
     var isAnySnapshotOngoing = snapshotFlow {
@@ -229,7 +229,7 @@ class AppVM(
 
         viewModelScope
             .launch {
-                val preferences = preferencesRepository.getPreferences()
+                val preferences = preferencesRepository.getCurrentPreferencesState()
                 readSocketEvents(remoteSyncRepo, preferences)
 
                 if (preferences.isServerConfigured()) {
@@ -340,8 +340,8 @@ class AppVM(
     fun markOnboardingComplete() {
         viewModelScope
             .launch {
-                preferencesRepository.changePreferenceValue(
-                    preferenceKey = AppPreferences.SHOULD_SHOW_ONBOARDING,
+                preferencesRepository.writePreferenceToDisk(
+                    preference = AppPreferences.SHOULD_SHOW_ONBOARDING,
                     newValue = false,
                 )
             }

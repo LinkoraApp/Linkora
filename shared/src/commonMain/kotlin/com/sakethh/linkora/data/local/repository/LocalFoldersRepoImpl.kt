@@ -43,7 +43,7 @@ class LocalFoldersRepoImpl(
         viaSocket: Boolean,
     ): Flow<Result<Long>> {
         var newLocalId: Long? = null
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -224,7 +224,7 @@ class LocalFoldersRepoImpl(
         viaSocket: Boolean,
     ): Flow<Result<Unit>> {
         val eventTimestamp = getSystemEpochSeconds()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -271,7 +271,7 @@ class LocalFoldersRepoImpl(
         viaSocket: Boolean,
     ): Flow<Result<Unit>> {
         val eventTimestamp = getSystemEpochSeconds()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -329,7 +329,7 @@ class LocalFoldersRepoImpl(
         viaSocket: Boolean,
     ): Flow<Result<Unit>> {
         val eventTimestamp = getSystemEpochSeconds()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -381,7 +381,7 @@ class LocalFoldersRepoImpl(
     ): Flow<Result<Unit>> {
         val eventTimestamp = getSystemEpochSeconds()
         val remoteId = getRemoteIdOfAFolder(folderID)
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -425,11 +425,11 @@ class LocalFoldersRepoImpl(
         folderID: Long,
         viaSocket: Boolean,
     ): Flow<Result<Unit>> {
-        // we need to hold the id because the local folder gets deleted first, so if we try to
-        // search
-        // after that, there will be nothing to search
+        /* we need to hold the id because the local folder gets deleted first,
+        so if we try to search after that, there will be nothing to search
+        */
         val remoteFolderId = getRemoteIdOfAFolder(folderID)
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         val eventTimestamp = getSystemEpochSeconds()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
@@ -515,7 +515,7 @@ class LocalFoldersRepoImpl(
         viaSocket: Boolean,
     ): Flow<Result<Unit>> {
         val eventTimestamp = getSystemEpochSeconds()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()

@@ -126,7 +126,6 @@ class ImportDataRepoImpl(
                         )
                         val updatedPanelFolders = mutableListOf<PanelFolder>()
 
-                        // no more recursion (OOM, SO 🤓☝️) boi
                         val foldersDeque = ArrayDeque<Pair<Folder, NewFolderIdOfParent>>()
                         foldersGroupedByParentIds[null]?.forEach {
                             foldersDeque.addLast(it to null)
@@ -269,9 +268,6 @@ class ImportDataRepoImpl(
                             return@immediateTransaction
                         }
 
-                        // while this is significantly better than the recursion implementation. i
-                        // liked
-                        // recursion impl more.
                         val htmlElementsDeque = ArrayDeque<Triple<Element, Long?, String?>>()
                         htmlElementsDeque.addLast(Triple(rootElement, null, null))
 
@@ -348,7 +344,7 @@ class ImportDataRepoImpl(
                                                         lastModified = eventTimestamp,
                                                         userAgent =
                                                             preferencesRepository
-                                                                .getPreferences()
+                                                                .getCurrentPreferencesState()
                                                                 .primaryJsoupUserAgent,
                                                     ),
                                                 )

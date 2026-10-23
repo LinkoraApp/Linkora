@@ -431,8 +431,8 @@ class DataSettingsScreenVM(
                             )
                     }
 
-                preferencesRepository.changePreferenceValue(
-                    preferenceKey =
+                preferencesRepository.writePreferenceToDisk(
+                    preference =
                         when (exportLocationType) {
                             ExportLocationType.EXPORT -> AppPreferences.EXPORT_LOCATION
                             ExportLocationType.SNAPSHOT -> AppPreferences.BACKUP_LOCATION
@@ -449,8 +449,8 @@ class DataSettingsScreenVM(
 
     fun updateAutoDeletionBackupsState(isEnabled: Boolean) {
         viewModelScope.launch {
-            preferencesRepository.changePreferenceValue(
-                preferenceKey = AppPreferences.BACKUP_AUTO_DELETION_ENABLED,
+            preferencesRepository.writePreferenceToDisk(
+                preference = AppPreferences.BACKUP_AUTO_DELETION_ENABLED,
                 newValue = isEnabled,
             )
         }
@@ -458,8 +458,8 @@ class DataSettingsScreenVM(
 
     fun updateAutoDeletionBackupsThreshold(count: Int) {
         viewModelScope.launch {
-            preferencesRepository.changePreferenceValue(
-                preferenceKey = AppPreferences.BACKUP_AUTO_DELETION_THRESHOLD,
+            preferencesRepository.writePreferenceToDisk(
+                preference = AppPreferences.BACKUP_AUTO_DELETION_THRESHOLD,
                 newValue = count,
             )
         }

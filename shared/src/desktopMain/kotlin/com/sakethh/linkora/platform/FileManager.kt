@@ -243,7 +243,7 @@ actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
                     Json.decodeFromString<LegacyExportSchema>(jsonContent)
                         .asJSONExportSchema(
                             DependencyContainer.preferencesRepo
-                                .getPreferences()
+                                .getCurrentPreferencesState()
                                 .primaryJsoupUserAgent,
                         )
                 } else {
@@ -392,7 +392,7 @@ actual class FileManager(private val localizedStrings: () -> LocalizedStrings) {
                 )
 
         val rootFolderPath =
-            DependencyContainer.preferencesRepo.getPreferences().webCapturesLocation
+            DependencyContainer.preferencesRepo.getCurrentPreferencesState().webCapturesLocation
         val captureFolder = File(rootFolderPath, captureFolderUUID)
 
         if (!captureFolder.exists() || !captureFolder.isDirectory) {

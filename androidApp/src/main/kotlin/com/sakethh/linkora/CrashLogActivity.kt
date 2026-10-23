@@ -66,7 +66,8 @@ class CrashLogActivity : ComponentActivity() {
             val localContext = LocalContext.current
             val context = LocalContext.current
             val isSystemInDarkTheme = isSystemInDarkTheme()
-            val preferences by preferencesRepo.preferencesAsFlow.collectAsStateWithLifecycle()
+            val preferences by
+                preferencesRepo.currentPreferencesStateAsFlow.collectAsStateWithLifecycle()
             val colorScheme =
                 retain(isSystemInDarkTheme, preferences) {
                     getAppColorScheme(preferences, context, isSystemInDarkTheme)

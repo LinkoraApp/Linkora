@@ -13,7 +13,7 @@ import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.HostOS
 import com.sakethh.linkora.domain.PermissionStatus
-import com.sakethh.linkora.domain.PreferenceKey
+import com.sakethh.linkora.domain.Preference
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
@@ -57,8 +57,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
 import readAllPreferences
-import readPreferenceValue
-import writePreferenceValue
+import readPreferenceFromDisk
+import writePreferenceToDisk
 
 actual val showFollowSystemThemeOption: Boolean = false
 
@@ -303,21 +303,21 @@ actual object PlatformPreference {
             },
         )
 
-    actual suspend fun <T> writePreferenceValue(
-        preferenceKey: PreferenceKey<T>,
+    actual suspend fun <T> writePreferenceToDisk(
+        preference: Preference<T>,
         newValue: T,
     ) {
-        writePreferenceValue(
+        writePreferenceToDisk(
             dataStore = dataStore,
-            preferenceKey = preferenceKey,
+            preference = preference,
             newValue = newValue,
         )
     }
 
-    actual suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T? =
-        readPreferenceValue(dataStore = dataStore, preferenceKey = preferenceKey)
+    actual suspend fun <T> readPreferenceFromDisk(preference: Preference<T>): T? =
+        readPreferenceFromDisk(dataStore = dataStore, preference = preference)
 
-    actual suspend fun readAllPreferences(): AppPreferences {
+    actual suspend fun readAllPreferencesFromDisk(): AppPreferences {
         val prefs = dataStore.data.first()
         return readAllPreferences(
             prefs,

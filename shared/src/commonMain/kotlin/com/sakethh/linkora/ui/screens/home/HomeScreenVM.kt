@@ -57,7 +57,7 @@ class HomeScreenVM(
 ) : ViewModel() {
     var currentPhaseOfTheDay by mutableStateOf("")
 
-    val preferencesAsFlow = preferencesRepository.preferencesAsFlow
+    val preferencesAsFlow = preferencesRepository.currentPreferencesStateAsFlow
     val localizedStrings
         get() = localizationRepo.localizedStrings.value
 
@@ -131,8 +131,8 @@ class HomeScreenVM(
 
         _activePanelAssociatedFoldersJob =
             viewModelScope.launch(Dispatchers.Default) {
-                preferencesRepository.changePreferenceValue(
-                    preferenceKey = AppPreferences.LAST_SELECTED_PANEL_ID,
+                preferencesRepository.writePreferenceToDisk(
+                    preference = AppPreferences.LAST_SELECTED_PANEL_ID,
                     newValue = panel.localId,
                 )
             }
@@ -153,7 +153,7 @@ class HomeScreenVM(
         viewModelScope.launch {
             selectedPanelData =
                 preferencesRepository
-                    .readPreferenceValue(preferenceKey = AppPreferences.LAST_SELECTED_PANEL_ID)
+                    .readPreferenceFromDisk(preference = AppPreferences.LAST_SELECTED_PANEL_ID)
                     .let {
                         try {
                             if (it === null || it == Constants.DEFAULT_PANELS_ID) throw Exception()
@@ -390,7 +390,7 @@ class HomeScreenVM(
         link: Link,
         selectedTags: List<Tag>?,
     ) {
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         viewModelScope.launch {
             localLinksRepo
                 .addANewLink(

@@ -48,7 +48,7 @@ class AllLinksWebCaptureWorker(
                 .cancelWorkById(
                     UUID.fromString(
                         DependencyContainer.preferencesRepo
-                            .getPreferences()
+                            .getCurrentPreferencesState()
                             .allLinksWebCaptureWorkerTag,
                     ),
                 )
@@ -80,7 +80,7 @@ class AllLinksWebCaptureWorker(
             return@coroutineScope Result.success()
         }
 
-        val preferences = DependencyContainer.preferencesRepo.getPreferences()
+        val preferences = DependencyContainer.preferencesRepo.getCurrentPreferencesState()
 
         try {
             LinkoraSDK.getInstance()

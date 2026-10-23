@@ -371,7 +371,7 @@ fun AddANewLinkDialogBox(
 
     DisposableEffect(Unit) {
         onDispose {
-            AddANewLinkDialogBox.cancelCollectionOfChildFolders()
+            AddANewLinkDialog.cancelCollectionOfChildFolders()
         }
     }
 }
@@ -761,7 +761,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                     .highlightOnFocused()
                     .clickable(
                         onClick = {
-                            AddANewLinkDialogBox.updateTagSectionVisibility(
+                            AddANewLinkDialog.updateTagSectionVisibility(
                                 show = !preferences.showTagsInAddNewLinkDialogBox,
                             )
                         },
@@ -772,7 +772,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
             IconButton(
                 modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(start = 5.dp),
                 onClick = {
-                    AddANewLinkDialogBox.updateTagSectionVisibility(
+                    AddANewLinkDialog.updateTagSectionVisibility(
                         show = !preferences.showTagsInAddNewLinkDialogBox,
                     )
                 },
@@ -858,7 +858,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                     onClick = {
                         if (!isDataExtractingForTheLink.value) {
                             isDropDownMenuIconClicked.value = !isDropDownMenuIconClicked.value
-                            AddANewLinkDialogBox.subFoldersList.clear()
+                            AddANewLinkDialog.subFoldersList.clear()
                         }
                     },
                 ) {
@@ -879,7 +879,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                     onClick = {
                         if (!isDataExtractingForTheLink.value) {
                             isDropDownMenuIconClicked.value = !isDropDownMenuIconClicked.value
-                            AddANewLinkDialogBox.subFoldersList.clear()
+                            AddANewLinkDialog.subFoldersList.clear()
                         }
                     },
                 ) {
@@ -961,8 +961,8 @@ private fun BottomPartOfAddANewLinkDialogBox(
                                     },
                                 folderName = it.name,
                                 onSubDirectoryIconClick = {
-                                    AddANewLinkDialogBox.changeParentFolderId(it.localId)
-                                    AddANewLinkDialogBox.subFoldersList.add(it)
+                                    AddANewLinkDialog.changeParentFolderId(it.localId)
+                                    AddANewLinkDialog.subFoldersList.add(it)
                                     showChildFoldersBtmSheet.value = true
                                     coroutineScope.launch {
                                         childFoldersBtmSheetState.expand()
@@ -1257,12 +1257,12 @@ private fun BottomPartOfAddANewLinkDialogBox(
     )
 
     if (showChildFoldersBtmSheet.value) {
-        val childFolders = AddANewLinkDialogBox.childFolders.collectAsStateWithLifecycle()
+        val childFolders = AddANewLinkDialog.childFolders.collectAsStateWithLifecycle()
         ModalBottomSheet(
             sheetGesturesEnabled = !Platform.Android.onTV(),
             sheetState = childFoldersBtmSheetState,
             onDismissRequest = {
-                AddANewLinkDialogBox.subFoldersList.clear()
+                AddANewLinkDialog.subFoldersList.clear()
                 showChildFoldersBtmSheet.value = false
             },
         ) {
@@ -1272,7 +1272,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                         Text(
                             text =
                                 try {
-                                    AddANewLinkDialogBox.subFoldersList.last().name
+                                    AddANewLinkDialog.subFoldersList.last().name
                                 } catch (e: Exception) {
                                     e.printStackTrace()
                                     ""
@@ -1299,7 +1299,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                                 )
                             }
                             itemsIndexed(
-                                AddANewLinkDialogBox.subFoldersList.toMutableStateList(),
+                                AddANewLinkDialog.subFoldersList.toMutableStateList(),
                             ) { index, subFolder ->
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowRight,
@@ -1312,28 +1312,26 @@ private fun BottomPartOfAddANewLinkDialogBox(
                                     modifier =
                                         Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                                             .clickable {
-                                                AddANewLinkDialogBox.changeParentFolderId(
+                                                AddANewLinkDialog.changeParentFolderId(
                                                     subFolder.localId,
                                                 )
                                                 selectedFolderForSavingTheLink.value = subFolder
                                                 if (
-                                                    AddANewLinkDialogBox.subFoldersList.indexOf(
+                                                    AddANewLinkDialog.subFoldersList.indexOf(
                                                         subFolder,
                                                     ) !=
-                                                        AddANewLinkDialogBox.subFoldersList.indexOf(
-                                                            AddANewLinkDialogBox.subFoldersList
-                                                                .last(),
+                                                        AddANewLinkDialog.subFoldersList.indexOf(
+                                                            AddANewLinkDialog.subFoldersList.last(),
                                                         )
                                                 ) {
-                                                    AddANewLinkDialogBox.subFoldersList.removeAll(
-                                                        AddANewLinkDialogBox.subFoldersList
+                                                    AddANewLinkDialog.subFoldersList.removeAll(
+                                                        AddANewLinkDialog.subFoldersList
                                                             .toList()
                                                             .subList(
                                                                 fromIndex =
-                                                                    AddANewLinkDialogBox
-                                                                        .subFoldersList
+                                                                    AddANewLinkDialog.subFoldersList
                                                                         .indexOf(
-                                                                            AddANewLinkDialogBox
+                                                                            AddANewLinkDialog
                                                                                 .subFoldersList
                                                                                 .find {
                                                                                     it.localId ==
@@ -1343,8 +1341,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                                                                                 },
                                                                         ) + 1,
                                                                 toIndex =
-                                                                    AddANewLinkDialogBox
-                                                                        .subFoldersList
+                                                                    AddANewLinkDialog.subFoldersList
                                                                         .size,
                                                             )
                                                             .toSet(),
@@ -1364,7 +1361,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                             onItemClick = {
                                 selectedFolderForSavingTheLink.value = it
                                 isDropDownMenuIconClicked.value = false
-                                AddANewLinkDialogBox.subFoldersList.clear()
+                                AddANewLinkDialog.subFoldersList.clear()
                                 coroutineScope.launch {
                                     childFoldersBtmSheetState.hide()
                                 }
@@ -1381,8 +1378,8 @@ private fun BottomPartOfAddANewLinkDialogBox(
                             folderName = it.name,
                             onSubDirectoryIconClick = {
                                 selectedFolderForSavingTheLink.value = it
-                                AddANewLinkDialogBox.subFoldersList.add(it)
-                                AddANewLinkDialogBox.changeParentFolderId(
+                                AddANewLinkDialog.subFoldersList.add(it)
+                                AddANewLinkDialog.changeParentFolderId(
                                     selectedFolderForSavingTheLink.value.localId,
                                 )
                                 coroutineScope.launch {
@@ -1446,7 +1443,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                                     .highlightOnFocused(shape = ButtonDefaults.shape),
                             onClick = {
                                 isDropDownMenuIconClicked.value = false
-                                AddANewLinkDialogBox.subFoldersList.clear()
+                                AddANewLinkDialog.subFoldersList.clear()
                                 coroutineScope.launch {
                                     childFoldersBtmSheetState.hide()
                                 }
@@ -1463,7 +1460,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                         Spacer(Modifier.height(5.dp))
                     }
                 }
-                if (AddANewLinkDialogBox.childFolders.value.isNotEmpty()) {
+                if (AddANewLinkDialog.childFolders.value.isNotEmpty()) {
                     item {
                         FilledTonalButton(
                             modifier =
@@ -1651,7 +1648,8 @@ private fun FolderSelectorComponent(
     }
 }
 
-object AddANewLinkDialogBox {
+// TODO: get rid of this
+private object AddANewLinkDialog {
 
     val subFoldersList = mutableStateListOf<Folder>()
 
@@ -1668,8 +1666,8 @@ object AddANewLinkDialogBox {
     fun updateTagSectionVisibility(show: Boolean) {
         updateTagSectionVisibilityJob?.cancel()
         updateTagSectionVisibilityJob = addANewLinkDialogBoxScope.launch {
-            DependencyContainer.preferencesRepo.changePreferenceValue(
-                preferenceKey = AppPreferences.SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK,
+            DependencyContainer.preferencesRepo.writePreferenceToDisk(
+                preference = AppPreferences.SHOW_TAGS_BY_DEFAULT_IN_ADD_LINK,
                 newValue = show,
             )
         }

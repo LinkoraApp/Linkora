@@ -26,7 +26,7 @@ object RefreshAllLinksService {
     }
 
     fun invoke(localLinksRepo: LocalLinksRepo) {
-        val preferences = DependencyContainer.preferencesRepo.getPreferences()
+        val preferences = DependencyContainer.preferencesRepo.getCurrentPreferencesState()
 
         linksRefreshJob =
             CoroutineScope(PlatformIODispatcher).launch {

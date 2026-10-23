@@ -124,10 +124,11 @@ fun Modifier.bottomNavPaddingAcrossPlatforms(): Modifier =
         this.padding(bottom = 10.dp)
     }
 
-// keeps the nav bar (what's it actually called?) transparent while still applying padding on top,
-// end, bottom;
-// kinda a hacky workaround, but there doesn't seem to be any clear documentation on how to handle
-// this properly
+/*
+keeps the nav bar (what's it actually called?) transparent while still applying padding on top, end, bottom;
+kinda a hacky workaround, but there doesn't seem to be any clear documentation on how to handle
+this properly
+*/
 fun Modifier.addEdgeToEdgeScaffoldPadding(paddingValues: PaddingValues) =
     this.padding(
             top = paddingValues.calculateTopPadding(),
@@ -318,15 +319,15 @@ fun AppPreferences.canReadFromServer(): Boolean =
     }
 
 suspend fun AppPreferences.lastSyncedLocally(preferencesRepository: PreferencesRepository): Long =
-    preferencesRepository.readPreferenceValue(
-        preferenceKey = AppPreferences.LAST_TIME_SYNCED_WITH_SERVER,
+    preferencesRepository.readPreferenceFromDisk(
+        preference = AppPreferences.LAST_TIME_SYNCED_WITH_SERVER,
     ) ?: 0
 
 suspend fun PreferencesRepository.updateLastSyncedWithServerTimeStamp(newValue: Long) {
     val preferenceKey = AppPreferences.LAST_TIME_SYNCED_WITH_SERVER
-    if ((this.readPreferenceValue(preferenceKey) ?: 0) < newValue) {
-        this.changePreferenceValue(
-            preferenceKey = preferenceKey,
+    if ((this.readPreferenceFromDisk(preferenceKey) ?: 0) < newValue) {
+        this.writePreferenceToDisk(
+            preference = preferenceKey,
             newValue = newValue,
         )
     }

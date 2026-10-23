@@ -76,12 +76,12 @@ actual class NativeUtils(
                 .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                 .build()
 
-        preferencesRepository.changePreferenceValue(
-            preferenceKey = AppPreferences.REFRESH_ALL_LINKS_WORKER_UUID,
+        preferencesRepository.writePreferenceToDisk(
+            preference = AppPreferences.REFRESH_ALL_LINKS_WORKER_UUID,
             newValue = request.id.toString(),
         )
-        preferencesRepository.changePreferenceValue(
-            preferenceKey = AppPreferences.REFRESHED_LINKS_COUNT,
+        preferencesRepository.writePreferenceToDisk(
+            preference = AppPreferences.REFRESHED_LINKS_COUNT,
             newValue = 0,
         )
         refreshLinksRepo.deleteAllIds()
@@ -93,7 +93,7 @@ actual class NativeUtils(
     }
 
     actual fun isAnyRefreshingEnqueued(): Flow<Boolean?> {
-        val preferences = DependencyContainer.preferencesRepo.getPreferences()
+        val preferences = DependencyContainer.preferencesRepo.getCurrentPreferencesState()
         return channelFlow {
             WorkManager.getInstance(context)
                 .getWorkInfoByIdFlow(UUID.fromString(preferences.refreshLinksWorkerTag))
@@ -111,7 +111,9 @@ actual class NativeUtils(
         RefreshAllLinksWorker.cancelLinksRefreshing(
             context,
             refreshLinksWorkerTag =
-                DependencyContainer.preferencesRepo.getPreferences().refreshLinksWorkerTag,
+                DependencyContainer.preferencesRepo
+                    .getCurrentPreferencesState()
+                    .refreshLinksWorkerTag,
         )
     }
 
@@ -233,8 +235,8 @@ actual class NativeUtils(
                     .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                     .build()
 
-            DependencyContainer.preferencesRepo.changePreferenceValue(
-                preferenceKey = AppPreferences.WEB_CAPTURE_ALL_LINKS_WORKER_UUID,
+            DependencyContainer.preferencesRepo.writePreferenceToDisk(
+                preference = AppPreferences.WEB_CAPTURE_ALL_LINKS_WORKER_UUID,
                 newValue = request.id.toString(),
             )
 
@@ -251,11 +253,11 @@ actual class NativeUtils(
 
         actual fun isWebCaptureWorkerEnqueued(): Flow<Boolean?> = channelFlow {
             val workerId =
-                DependencyContainer.preferencesRepo.readPreferenceValue(
-                    preferenceKey = AppPreferences.WEB_CAPTURE_ALL_LINKS_WORKER_UUID,
+                DependencyContainer.preferencesRepo.readPreferenceFromDisk(
+                    preference = AppPreferences.WEB_CAPTURE_ALL_LINKS_WORKER_UUID,
                 )
                     ?: DependencyContainer.preferencesRepo
-                        .getPreferences()
+                        .getCurrentPreferencesState()
                         .allLinksWebCaptureWorkerTag
 
             WorkManager.getInstance(context)

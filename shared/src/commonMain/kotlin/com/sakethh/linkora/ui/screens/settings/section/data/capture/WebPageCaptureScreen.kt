@@ -126,7 +126,7 @@ fun WebPageCaptureScreen() {
                                 return@SettingComponentParam
 
                             dataSettingsScreenVM.changeSettingPreferenceValue(
-                                preferenceKey = AppPreferences.USE_WEB_CAPTURES,
+                                preference = AppPreferences.USE_WEB_CAPTURES,
                                 newValue = !preferences.useWebCaptures,
                             )
                             if (it) {
@@ -254,7 +254,7 @@ fun WebPageCaptureScreen() {
                                 checked = preferences.webCaptureSaveImages,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey = AppPreferences.WEB_CAPTURE_SAVE_IMAGES,
+                                        preference = AppPreferences.WEB_CAPTURE_SAVE_IMAGES,
                                         newValue = it,
                                     )
                                 },
@@ -264,7 +264,7 @@ fun WebPageCaptureScreen() {
                                 checked = preferences.webCaptureSaveFonts,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey = AppPreferences.WEB_CAPTURE_SAVE_FONTS,
+                                        preference = AppPreferences.WEB_CAPTURE_SAVE_FONTS,
                                         newValue = it,
                                     )
                                 },
@@ -274,7 +274,7 @@ fun WebPageCaptureScreen() {
                                 checked = preferences.webCaptureSaveCss,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey = AppPreferences.WEB_CAPTURE_SAVE_CSS,
+                                        preference = AppPreferences.WEB_CAPTURE_SAVE_CSS,
                                         newValue = it,
                                     )
                                 },
@@ -284,7 +284,7 @@ fun WebPageCaptureScreen() {
                                 checked = preferences.webCaptureSaveAudio,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey = AppPreferences.WEB_CAPTURE_SAVE_AUDIO,
+                                        preference = AppPreferences.WEB_CAPTURE_SAVE_AUDIO,
                                         newValue = it,
                                     )
                                 },
@@ -294,7 +294,7 @@ fun WebPageCaptureScreen() {
                                 checked = preferences.webCaptureSaveVideo,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey = AppPreferences.WEB_CAPTURE_SAVE_VIDEO,
+                                        preference = AppPreferences.WEB_CAPTURE_SAVE_VIDEO,
                                         newValue = it,
                                     )
                                 },
@@ -304,7 +304,7 @@ fun WebPageCaptureScreen() {
                                 checked = preferences.webCaptureSaveMetadata,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey = AppPreferences.WEB_CAPTURE_SAVE_METADATA,
+                                        preference = AppPreferences.WEB_CAPTURE_SAVE_METADATA,
                                         newValue = it,
                                     )
                                 },
@@ -314,7 +314,7 @@ fun WebPageCaptureScreen() {
                                 checked = preferences.webCaptureExecuteJs,
                                 onCheckedChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey = AppPreferences.WEB_CAPTURE_EXECUTE_JS,
+                                        preference = AppPreferences.WEB_CAPTURE_EXECUTE_JS,
                                         newValue = it,
                                     )
                                 },
@@ -347,7 +347,7 @@ fun WebPageCaptureScreen() {
                                             .padding(end = 5.dp),
                                     onClick = {
                                         dataSettingsScreenVM.changeSettingPreferenceValue(
-                                            preferenceKey =
+                                            preference =
                                                 AppPreferences.WEB_CAPTURE_WHITELIST_DOMAINS,
                                             newValue = whitelistDomains,
                                         )
@@ -394,7 +394,7 @@ fun WebPageCaptureScreen() {
                                             .padding(end = 5.dp),
                                     onClick = {
                                         dataSettingsScreenVM.changeSettingPreferenceValue(
-                                            preferenceKey =
+                                            preference =
                                                 AppPreferences.WEB_CAPTURE_BLACKLIST_DOMAINS,
                                             newValue = blacklistDomains,
                                         )
@@ -436,7 +436,7 @@ fun WebPageCaptureScreen() {
                             isSwitchEnabled = preferences.webCaptureSaveAsVersions,
                             onSwitchStateChange = {
                                 dataSettingsScreenVM.changeSettingPreferenceValue(
-                                    preferenceKey = AppPreferences.WEB_CAPTURE_SAVE_AS_VERSIONS,
+                                    preference = AppPreferences.WEB_CAPTURE_SAVE_AS_VERSIONS,
                                     newValue = !preferences.webCaptureSaveAsVersions,
                                 )
                             },
@@ -458,8 +458,7 @@ fun WebPageCaptureScreen() {
                                 isSwitchEnabled = preferences.webCaptureRetainAllVersions,
                                 onSwitchStateChange = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey =
-                                            AppPreferences.WEB_CAPTURE_RETAIN_ALL_VERSIONS,
+                                        preference = AppPreferences.WEB_CAPTURE_RETAIN_ALL_VERSIONS,
                                         newValue = !preferences.webCaptureRetainAllVersions,
                                     )
                                 },
@@ -475,7 +474,7 @@ fun WebPageCaptureScreen() {
                             value = preferences.webCaptureMaxVersions.toFloat(),
                             onValueChange = {
                                 dataSettingsScreenVM.changeSettingPreferenceValue(
-                                    preferenceKey = AppPreferences.WEB_CAPTURE_MAX_VERSIONS,
+                                    preference = AppPreferences.WEB_CAPTURE_MAX_VERSIONS,
                                     newValue = it.toInt(),
                                 )
                             },
@@ -510,7 +509,7 @@ fun WebPageCaptureScreen() {
                                         .padding(end = 5.dp),
                                 onClick = {
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey = AppPreferences.WEB_CAPTURE_MAX_CONCURRENCY,
+                                        preference = AppPreferences.WEB_CAPTURE_MAX_CONCURRENCY,
                                         newValue = maxConcurrentWebCaptureCount,
                                     )
                                     localFocusManager.clearFocus(force = true)

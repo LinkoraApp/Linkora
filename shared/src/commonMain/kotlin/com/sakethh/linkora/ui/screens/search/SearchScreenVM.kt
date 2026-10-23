@@ -52,7 +52,7 @@ class SearchScreenVM(
     private val preferencesRepository: PreferencesRepository,
     private val localizationRepo: LocalizationRepo.Local,
 ) : ViewModel() {
-    val preferencesAsFlow = preferencesRepository.preferencesAsFlow
+    val preferencesAsFlow = preferencesRepository.currentPreferencesStateAsFlow
     val localizedStrings
         get() = localizationRepo.localizedStrings.value
 
@@ -109,7 +109,8 @@ class SearchScreenVM(
                 val lastSortNum = parts?.getOrNull(2)?.toLongOrNull() ?: 0L
                 val lastId = lastSeenId ?: Constants.EMPTY_LAST_SEEN_ID
 
-                val currentSort = preferencesRepository.getPreferences().selectedSortingType
+                val currentSort =
+                    preferencesRepository.getCurrentPreferencesState().selectedSortingType
                 val appliedFolderFilters = _appliedFolderFilters.toList()
                 val appliedLinkFilters = _appliedLinkFilters.toList()
                 val isTagFilteringApplied = _appliedTagFiltering.value
@@ -157,11 +158,13 @@ class SearchScreenVM(
                 )
             },
             onRetrieved = { currentKey, orderedData ->
-                val sortOption = preferencesRepository.getPreferences().selectedSortingType
+                val sortOption =
+                    preferencesRepository.getCurrentPreferencesState().selectedSortingType
                 _searchResultsState.onRetrieved(
                     currentKey = currentKey,
                     data = orderedData,
-                    shouldShuffle = preferencesRepository.getPreferences().forceShuffleLinks,
+                    shouldShuffle =
+                        preferencesRepository.getCurrentPreferencesState().forceShuffleLinks,
                     idSelector = { item ->
                         when (item.itemType) {
                             Constants.TAG -> item.tagLocalId
@@ -226,9 +229,8 @@ class SearchScreenVM(
                     }
 
                     if (query.isNotBlank()) {
-                        retrieveNextSearchPage() // will always start as a "new instance", since we
-                        // canceled
-                        // and reset the state above
+                        retrieveNextSearchPage() /* will always start as a "new instance", since we
+                                                 canceled and reset the state above */
                     } else {
                         _searchResultsState.update { it.copy(isRetrieving = false) }
                     }
@@ -273,7 +275,7 @@ class SearchScreenVM(
         tagIds: List<Long>?,
     ) {
         viewModelScope.launch {
-            val preferences = preferencesRepository.getPreferences()
+            val preferences = preferencesRepository.getCurrentPreferencesState()
             localLinksRepo
                 .addANewLink(
                     link =
@@ -372,7 +374,8 @@ class SearchScreenVM(
                 _historyLinkTagsPairsState.onRetrieved(
                     currentKey = currentKey,
                     data = retrievedData,
-                    shouldShuffle = preferencesRepository.getPreferences().forceShuffleLinks,
+                    shouldShuffle =
+                        preferencesRepository.getCurrentPreferencesState().forceShuffleLinks,
                     idSelector = { it.link.localId },
                     stringSelector = { it.link.title },
                 )

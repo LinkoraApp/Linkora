@@ -91,8 +91,9 @@ fun MobileBottomNavBar(
                             )
                             if (!isSelected) {
                                 localNavController.navigate(navRouteItem) {
-                                    // pop up to the initial route on every navigation via bottom
-                                    // nav bar
+                                    /*
+                                    pop up to the initial route on every navigation via bottom nav bar
+                                    */
                                     popUpTo(localNavController.graph.findStartDestination().id) {
                                         saveState = true
                                     }

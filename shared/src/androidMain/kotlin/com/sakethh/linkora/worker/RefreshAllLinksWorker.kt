@@ -68,10 +68,10 @@ class RefreshAllLinksWorker(
     private var processedLinksCount: Long = -1
 
     override suspend fun doWork(): Result = coroutineScope {
-        val preferences = DependencyContainer.preferencesRepo.getPreferences()
+        val preferences = DependencyContainer.preferencesRepo.getCurrentPreferencesState()
         processedLinksCount =
-            DependencyContainer.preferencesRepo.readPreferenceValue(
-                preferenceKey = AppPreferences.REFRESHED_LINKS_COUNT,
+            DependencyContainer.preferencesRepo.readPreferenceFromDisk(
+                preference = AppPreferences.REFRESHED_LINKS_COUNT,
             ) ?: 0
 
         refreshAllLinksNotificationService.clearNotifications()
@@ -86,8 +86,8 @@ class RefreshAllLinksWorker(
                     cleanUp()
                     return@collect
                 }
-                DependencyContainer.preferencesRepo.changePreferenceValue(
-                    preferenceKey = AppPreferences.REFRESHED_LINKS_COUNT,
+                DependencyContainer.preferencesRepo.writePreferenceToDisk(
+                    preference = AppPreferences.REFRESHED_LINKS_COUNT,
                     newValue = ++processedLinksCount,
                 )
 
@@ -170,7 +170,7 @@ class RefreshAllLinksWorker(
     }
 
     private suspend fun cleanUp() {
-        val preferences = DependencyContainer.preferencesRepo.getPreferences()
+        val preferences = DependencyContainer.preferencesRepo.getCurrentPreferencesState()
         cancelLinksRefreshing(
             applicationContext,
             refreshLinksWorkerTag = preferences.refreshLinksWorkerTag,

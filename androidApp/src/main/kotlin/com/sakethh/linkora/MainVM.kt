@@ -18,7 +18,7 @@ class MainVM(
     localizationRepo: LocalizationRepo.Local = DependencyContainer.localizationRepo,
     launchAction: (Action) -> Unit,
 ) : ViewModel() {
-    val preferencesAsFlow = preferencesRepository.preferencesAsFlow
+    val preferencesAsFlow = preferencesRepository.currentPreferencesStateAsFlow
     val localizedStrings = localizationRepo.localizedStrings
 
     init {

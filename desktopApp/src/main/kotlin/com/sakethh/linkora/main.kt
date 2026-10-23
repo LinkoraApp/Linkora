@@ -108,8 +108,8 @@ suspend fun main() {
             ),
     )
 
-    DependencyContainer.preferencesRepo.loadPersistedPreferences()
-    val preferences = DependencyContainer.preferencesRepo.getPreferences()
+    DependencyContainer.preferencesRepo.readAllPreferencesFromDisk()
+    val preferences = DependencyContainer.preferencesRepo.getCurrentPreferencesState()
     DependencyContainer.localizationRepo.loadLanguage(preferences.preferredAppLanguageCode)
 
     application {
@@ -129,7 +129,8 @@ suspend fun main() {
         ) {
             val localizedStrings by localizedStrings.collectAsStateWithLifecycle()
             val preferences by
-                DependencyContainer.preferencesRepo.preferencesAsFlow.collectAsStateWithLifecycle()
+                DependencyContainer.preferencesRepo.currentPreferencesStateAsFlow
+                    .collectAsStateWithLifecycle()
             window.minimumSize = Dimension(1054, 600)
             CompositionLocalProvider(
                 LocalNavController provides navController,

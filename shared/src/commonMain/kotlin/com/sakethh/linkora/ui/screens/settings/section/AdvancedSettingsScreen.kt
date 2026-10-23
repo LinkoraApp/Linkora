@@ -95,7 +95,7 @@ fun AdvancedSettingsScreen() {
                                 isSwitchEnabled = useProxy,
                                 onSwitchStateChange = {
                                     settingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey = AppPreferences.USE_PROXY,
+                                        preference = AppPreferences.USE_PROXY,
                                         newValue = it,
                                     )
                                 },
@@ -114,7 +114,7 @@ fun AdvancedSettingsScreen() {
                         textFieldValue = proxyServerUrl,
                         onResetButtonClick = {
                             settingsScreenVM.changeSettingPreferenceValue(
-                                preferenceKey = AppPreferences.PROXY_URL,
+                                preference = AppPreferences.PROXY_URL,
                                 newValue = Constants.PROXY_SERVER_URL,
                             )
                         },

@@ -37,7 +37,7 @@ open class ServerManagementViewModel(
     private val network: Network,
     private val localizationRepo: LocalizationRepo.Local,
 ) : ViewModel() {
-    val preferencesAsFlow = preferencesRepository.preferencesAsFlow
+    val preferencesAsFlow = preferencesRepository.currentPreferencesStateAsFlow
     val localizedStrings
         get() = localizationRepo.localizedStrings.value
 
@@ -58,7 +58,8 @@ open class ServerManagementViewModel(
             try {
                 network.closeSyncServerClient()
                 network.configureSyncServerClient(
-                    bypassCertCheck = preferencesRepository.getPreferences().skipCertCheckForSync,
+                    bypassCertCheck =
+                        preferencesRepository.getCurrentPreferencesState().skipCertCheckForSync,
                 )
 
                 networkRepo.testServerConnection(serverUrl, token).collectLatest {
@@ -105,12 +106,12 @@ open class ServerManagementViewModel(
             return
         }
         viewModelScope.launch {
-            preferencesRepository.changePreferenceValue(
-                preferenceKey = AppPreferences.SERVER_URL,
+            preferencesRepository.writePreferenceToDisk(
+                preference = AppPreferences.SERVER_URL,
                 newValue = "",
             )
-            preferencesRepository.changePreferenceValue(
-                preferenceKey = AppPreferences.SERVER_AUTH_TOKEN,
+            preferencesRepository.writePreferenceToDisk(
+                preference = AppPreferences.SERVER_AUTH_TOKEN,
                 newValue = "",
             )
         }
@@ -128,22 +129,22 @@ open class ServerManagementViewModel(
         saveServerConnectionAndSyncJob?.cancel()
         dataSyncLogs.clear()
         saveServerConnectionAndSyncJob = viewModelScope.launch {
-            preferencesRepository.changePreferenceValue(
-                preferenceKey = AppPreferences.SERVER_URL,
+            preferencesRepository.writePreferenceToDisk(
+                preference = AppPreferences.SERVER_URL,
                 newValue = serverConnection.serverUrl,
             )
 
-            preferencesRepository.changePreferenceValue(
-                preferenceKey = AppPreferences.SERVER_AUTH_TOKEN,
+            preferencesRepository.writePreferenceToDisk(
+                preference = AppPreferences.SERVER_AUTH_TOKEN,
                 newValue = serverConnection.authToken,
             )
 
-            preferencesRepository.changePreferenceValue(
-                preferenceKey = AppPreferences.SERVER_SYNC_TYPE,
+            preferencesRepository.writePreferenceToDisk(
+                preference = AppPreferences.SERVER_SYNC_TYPE,
                 newValue = serverConnection.syncType.name,
             )
             onSyncStart()
-            val preferences = preferencesRepository.getPreferences()
+            val preferences = preferencesRepository.getCurrentPreferencesState()
             if (preferences.canReadFromServer()) {
                 remoteSyncRepo.applyUpdatesFromRemote(timeStampAfter()).collectLatest {
                     it.onLoading {
@@ -200,18 +201,18 @@ open class ServerManagementViewModel(
     fun deleteTheConnection(onDeleted: () -> Unit) {
         viewModelScope
             .launch {
-                preferencesRepository.changePreferenceValue(
-                    preferenceKey = AppPreferences.SERVER_URL,
+                preferencesRepository.writePreferenceToDisk(
+                    preference = AppPreferences.SERVER_URL,
                     newValue = "",
                 )
 
-                preferencesRepository.changePreferenceValue(
-                    preferenceKey = AppPreferences.SERVER_AUTH_TOKEN,
+                preferencesRepository.writePreferenceToDisk(
+                    preference = AppPreferences.SERVER_AUTH_TOKEN,
                     newValue = "",
                 )
 
-                preferencesRepository.changePreferenceValue(
-                    preferenceKey = AppPreferences.SERVER_SYNC_TYPE,
+                preferencesRepository.writePreferenceToDisk(
+                    preference = AppPreferences.SERVER_SYNC_TYPE,
                     newValue = "",
                 )
 
@@ -264,8 +265,8 @@ open class ServerManagementViewModel(
 
     fun updateCertificateBypassRule(bypass: Boolean) {
         viewModelScope.launch {
-            preferencesRepository.changePreferenceValue(
-                preferenceKey = AppPreferences.SKIP_CERT_CHECK_FOR_SYNC_SERVER,
+            preferencesRepository.writePreferenceToDisk(
+                preference = AppPreferences.SKIP_CERT_CHECK_FOR_SYNC_SERVER,
                 newValue = bypass,
             )
         }

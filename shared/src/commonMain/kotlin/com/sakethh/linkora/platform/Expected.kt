@@ -9,7 +9,7 @@ import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ExportFileType
 import com.sakethh.linkora.domain.HostOS
 import com.sakethh.linkora.domain.PermissionStatus
-import com.sakethh.linkora.domain.PreferenceKey
+import com.sakethh.linkora.domain.Preference
 import com.sakethh.linkora.domain.RawExportString
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.model.JSONExportSchema
@@ -157,14 +157,14 @@ expect class NativeUtils {
 }
 
 expect class PlatformPreference {
-    suspend fun <T> writePreferenceValue(
-        preferenceKey: PreferenceKey<T>,
+    suspend fun <T> writePreferenceToDisk(
+        preference: Preference<T>,
         newValue: T,
     )
 
-    suspend fun readAllPreferences(): AppPreferences
+    suspend fun readAllPreferencesFromDisk(): AppPreferences
 
-    suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T?
+    suspend fun <T> readPreferenceFromDisk(preference: Preference<T>): T?
 }
 
 expect fun defaultExportLocation(): String?

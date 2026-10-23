@@ -72,7 +72,9 @@ class CancelRefreshingActionReceiver : BroadcastReceiver() {
             RefreshAllLinksWorker.cancelLinksRefreshing(
                 context,
                 refreshLinksWorkerTag =
-                    DependencyContainer.preferencesRepo.getPreferences().refreshLinksWorkerTag,
+                    DependencyContainer.preferencesRepo
+                        .getCurrentPreferencesState()
+                        .refreshLinksWorkerTag,
             )
         }
     }

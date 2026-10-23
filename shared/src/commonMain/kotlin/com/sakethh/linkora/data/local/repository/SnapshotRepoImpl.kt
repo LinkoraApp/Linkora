@@ -80,7 +80,7 @@ class SnapshotRepoImpl(
     override fun collectLatestAndExport() {
         snapshotsJob?.cancel()
         coroutineScope.launch {
-            preferencesRepository.preferencesAsFlow
+            preferencesRepository.currentPreferencesStateAsFlow
                 .map {
                     it.areSnapshotsEnabled
                 }
@@ -101,7 +101,7 @@ class SnapshotRepoImpl(
                                         },
                                         localTagsRepo.getAllTags(
                                             preferencesRepository
-                                                .getPreferences()
+                                                .getCurrentPreferencesState()
                                                 .selectedSortingType,
                                         ),
                                         localTagsRepo.getAllLinkTags(),
@@ -167,7 +167,7 @@ class SnapshotRepoImpl(
         allLinkTagsPairs: List<LinkTag>,
         onCompletion: () -> Unit,
     ) {
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         if (preferences.backupAutoDeletionEnabled) {
             fileManager.deleteAutoBackups(
                 backupLocation = preferences.currentBackupLocation,

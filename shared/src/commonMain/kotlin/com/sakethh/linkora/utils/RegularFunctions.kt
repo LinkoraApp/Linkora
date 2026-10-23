@@ -6,7 +6,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.unit.dp
-import com.sakethh.linkora.domain.PreferenceKey
+import com.sakethh.linkora.domain.AppPreferences
+import com.sakethh.linkora.domain.Preference
 import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.Quadruple
@@ -224,13 +225,29 @@ fun epochToReadableDateTime(
         null
     }
 
-fun longPreferencesKey(key: String) = PreferenceKey.LongPreferencesKey(key)
+fun longPreference(
+    key: String,
+    readFromCurrentState: (AppPreferences) -> Long,
+    writeToCurrentState: (AppPreferences, Long) -> AppPreferences,
+) = Preference.LongKey(key, readFromCurrentState, writeToCurrentState)
 
-fun intPreferencesKey(key: String) = PreferenceKey.IntPreferencesKey(key)
+fun intPreference(
+    key: String,
+    readFromCurrentState: (AppPreferences) -> Int,
+    writeToCurrentState: (AppPreferences, Int) -> AppPreferences,
+) = Preference.IntKey(key, readFromCurrentState, writeToCurrentState)
 
-fun stringPreferencesKey(key: String) = PreferenceKey.StringPreferencesKey(key)
+fun stringPreference(
+    key: String,
+    readFromCurrentState: (AppPreferences) -> String,
+    writeToCurrentState: (AppPreferences, String) -> AppPreferences,
+) = Preference.StringKey(key, readFromCurrentState, writeToCurrentState)
 
-fun booleanPreferencesKey(key: String) = PreferenceKey.BooleanPreferencesKey(key)
+fun booleanPreference(
+    key: String,
+    readFromCurrentState: (AppPreferences) -> Boolean,
+    writeToCurrentState: (AppPreferences, Boolean) -> AppPreferences,
+) = Preference.BooleanKey(key, readFromCurrentState, writeToCurrentState)
 
 @Composable
 fun supportsWideDisplay(): Boolean =

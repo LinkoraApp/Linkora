@@ -42,7 +42,7 @@ class SpecificPanelManagerScreenVM(
     currentBackStackEntryFlow: Flow<NavBackStackEntry>,
     onAndroidMobile: Boolean,
 ) : ViewModel() {
-    val preferencesAsFlow = preferencesRepository.preferencesAsFlow
+    val preferencesAsFlow = preferencesRepository.currentPreferencesStateAsFlow
     val localizedStrings
         get() = localizationRepo.localizedStrings.value
 
@@ -89,14 +89,16 @@ class SpecificPanelManagerScreenVM(
                     } else {
                         linkoraLog("specificPanelManagerScreenDataJob?.cancel()")
                         specificPanelManagerScreenDataJob?.cancel()
-                        // We don't emit anything here because we don't want the emission
-                        // or the other side effects that `updateSpecificPanelManagerScreenData`
-                        // triggers.
-                        // This logic exists purely by choice. just because I can do it
-                        // doesn't mean i should... but i'm doing it anyway.
-                        // but anyway, you get the idea.
-                        // A clearer approach would be to apply conditions directly in the
-                        // collection
+                        /*
+                        We don't emit anything here because we don't want the emission
+                        or the other side effects that `updateSpecificPanelManagerScreenData`
+                        triggers.
+                        This logic exists purely by choice. just because I can do it
+                        doesn't mean i should... but i'm doing it anyway.
+                        but anyway, you get the idea.
+                        A clearer approach would be to apply conditions directly in the
+                        collection
+                        */
                     }
                 }
                 .collectLatest {
@@ -254,18 +256,18 @@ class SpecificPanelManagerScreenVM(
         viewModelScope
             .launch {
                 if (
-                    preferencesRepository.readPreferenceValue(
-                        preferenceKey = AppPreferences.LAST_SELECTED_PANEL_ID,
+                    preferencesRepository.readPreferenceFromDisk(
+                        preference = AppPreferences.LAST_SELECTED_PANEL_ID,
                     ) == panelId
                 ) {
-                    preferencesRepository.changePreferenceValue(
-                        preferenceKey = AppPreferences.LAST_SELECTED_PANEL_ID,
+                    preferencesRepository.writePreferenceToDisk(
+                        preference = AppPreferences.LAST_SELECTED_PANEL_ID,
                         newValue = Constants.DEFAULT_PANELS_ID,
                     )
                 }
                 localPanelsRepo.deleteAPanel(panelId).collectLatest {
                     it.onSuccess {
-                            pushUIEvent(
+                            this@launch.pushUIEvent(
                                 UIEvent.Type.ShowSnackbar(
                                     message =
                                         localizedStrings.DeletedPanelSuccessfully +
@@ -296,7 +298,9 @@ class SpecificPanelManagerScreenVM(
                                 UIEvent.Type.ShowSnackbar(
                                     message =
                                         localizedStrings.UpdatedThePanelNameSuccessfully
-                                            .replaceActual(newName) +
+                                            .replaceActual(
+                                                newName,
+                                            ) +
                                             it.getRemoteOnlyFailureMsg(
                                                 localizedStrings.RemoteExecutionFailed,
                                             ),

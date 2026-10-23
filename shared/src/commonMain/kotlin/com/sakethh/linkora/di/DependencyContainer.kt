@@ -34,7 +34,7 @@ object DependencyContainer {
         LocalizationRepoImpl(
             standardClient = LinkoraSDK.getInstance().network.standardClient,
             localizationServerURL = {
-                preferencesRepo.getPreferences().localizationServerURL
+                preferencesRepo.getCurrentPreferencesState().localizationServerURL
             },
             localizationDao = LinkoraSDK.getInstance().localDatabase.localizationDao,
         )
@@ -53,8 +53,8 @@ object DependencyContainer {
             syncServerClient = {
                 LinkoraSDK.getInstance().network.getSyncServerClient()
             },
-            baseUrl = { preferencesRepo.getPreferences().serverBaseUrl },
-            authToken = { preferencesRepo.getPreferences().serverSecurityToken },
+            baseUrl = { preferencesRepo.getCurrentPreferencesState().serverBaseUrl },
+            authToken = { preferencesRepo.getCurrentPreferencesState().serverSecurityToken },
         )
     }
 
@@ -74,10 +74,10 @@ object DependencyContainer {
             localLinksRepo = localLinksRepo,
             localPanelsRepo = localPanelsRepo,
             authToken = {
-                preferencesRepo.getPreferences().serverSecurityToken
+                preferencesRepo.getCurrentPreferencesState().serverSecurityToken
             },
             baseUrl = {
-                preferencesRepo.getPreferences().serverBaseUrl
+                preferencesRepo.getCurrentPreferencesState().serverBaseUrl
             },
             pendingSyncQueueRepo = pendingSyncQueueRepo,
             remoteFoldersRepo = remoteFoldersRepo,
@@ -120,7 +120,7 @@ object DependencyContainer {
         LocalLinksRepoImpl(
             linksDao = LinkoraSDK.getInstance().localDatabase.linksDao,
             primaryUserAgent = {
-                preferencesRepo.getPreferences().primaryJsoupUserAgent
+                preferencesRepo.getCurrentPreferencesState().primaryJsoupUserAgent
             },
             remoteLinksRepo = remoteLinksRepo,
             foldersDao = LinkoraSDK.getInstance().localDatabase.foldersDao,
@@ -129,7 +129,7 @@ object DependencyContainer {
             standardClient = LinkoraSDK.getInstance().network.standardClient,
             tagsDao = LinkoraSDK.getInstance().localDatabase.tagsDao,
             proxyUrl = {
-                preferencesRepo.getPreferences().proxyUrl
+                preferencesRepo.getCurrentPreferencesState().proxyUrl
             },
             webCapture = LinkoraSDK.getInstance().webCapture,
         )
@@ -141,10 +141,10 @@ object DependencyContainer {
                 LinkoraSDK.getInstance().network.getSyncServerClient()
             },
             baseUrl = {
-                preferencesRepo.getPreferences().serverBaseUrl
+                preferencesRepo.getCurrentPreferencesState().serverBaseUrl
             },
             authToken = {
-                preferencesRepo.getPreferences().serverSecurityToken
+                preferencesRepo.getCurrentPreferencesState().serverSecurityToken
             },
         )
     }
@@ -162,10 +162,10 @@ object DependencyContainer {
         RemoteLinksRepoImpl(
             syncServerClient = { LinkoraSDK.getInstance().network.getSyncServerClient() },
             baseUrl = {
-                preferencesRepo.getPreferences().serverBaseUrl
+                preferencesRepo.getCurrentPreferencesState().serverBaseUrl
             },
             authToken = {
-                preferencesRepo.getPreferences().serverSecurityToken
+                preferencesRepo.getCurrentPreferencesState().serverSecurityToken
             },
         )
     }
@@ -178,10 +178,10 @@ object DependencyContainer {
         RemotePanelsRepoImpl(
             syncServerClient = { LinkoraSDK.getInstance().network.getSyncServerClient() },
             baseUrl = {
-                preferencesRepo.getPreferences().serverBaseUrl
+                preferencesRepo.getCurrentPreferencesState().serverBaseUrl
             },
             authToken = {
-                preferencesRepo.getPreferences().serverSecurityToken
+                preferencesRepo.getCurrentPreferencesState().serverSecurityToken
             },
         )
     }
@@ -206,7 +206,7 @@ object DependencyContainer {
             localFoldersRepo,
             localPanelsRepo,
             canPushToServer = {
-                preferencesRepo.getPreferences().canPushToServer()
+                preferencesRepo.getCurrentPreferencesState().canPushToServer()
             },
             remoteSyncRepo = remoteSyncRepo,
             localTagsRepo = localTagsRepo,
@@ -221,10 +221,10 @@ object DependencyContainer {
         RemoteMultiActionRepoImpl(
             syncServerClient = { LinkoraSDK.getInstance().network.getSyncServerClient() },
             baseUrl = {
-                preferencesRepo.getPreferences().serverBaseUrl
+                preferencesRepo.getCurrentPreferencesState().serverBaseUrl
             },
             authToken = {
-                preferencesRepo.getPreferences().serverSecurityToken
+                preferencesRepo.getCurrentPreferencesState().serverSecurityToken
             },
         )
     }
@@ -251,7 +251,7 @@ object DependencyContainer {
                 LinkoraSDK.getInstance()
                     .webCaptureDatabaseManager
                     .initAndGetDatabase(
-                        preferencesRepo.getPreferences().webCapturesLocation,
+                        preferencesRepo.getCurrentPreferencesState().webCapturesLocation,
                     )
                     .webCaptureMetadataDao
             },

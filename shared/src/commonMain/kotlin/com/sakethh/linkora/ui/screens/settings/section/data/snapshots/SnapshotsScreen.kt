@@ -123,7 +123,7 @@ fun SnapshotsScreen() {
                                         return@invokeOnCompletion
                                     }
                                     dataSettingsScreenVM.changeSettingPreferenceValue(
-                                        preferenceKey = AppPreferences.USE_SNAPSHOTS,
+                                        preference = AppPreferences.USE_SNAPSHOTS,
                                         newValue = it,
                                     )
                                 }
@@ -352,7 +352,7 @@ fun SnapshotsScreen() {
                                             checked = checked,
                                             onCheckedChange = {
                                                 dataSettingsScreenVM.changeSettingPreferenceValue(
-                                                    preferenceKey =
+                                                    preference =
                                                         AppPreferences.SNAPSHOTS_EXPORT_TYPE,
                                                     newValue = snapshotFormatID.toString(),
                                                 )

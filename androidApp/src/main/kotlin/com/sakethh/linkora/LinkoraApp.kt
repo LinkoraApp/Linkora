@@ -127,8 +127,8 @@ class LinkoraApp : Application() {
                 ),
         )
         runBlocking {
-            DependencyContainer.preferencesRepo.loadPersistedPreferences()
-            val preferences = DependencyContainer.preferencesRepo.getPreferences()
+            DependencyContainer.preferencesRepo.readAllPreferencesFromDisk()
+            val preferences = DependencyContainer.preferencesRepo.getCurrentPreferencesState()
             DependencyContainer.localizationRepo.loadLanguage(preferences.preferredAppLanguageCode)
         }
         Thread.setDefaultUncaughtExceptionHandler { _, throwable ->

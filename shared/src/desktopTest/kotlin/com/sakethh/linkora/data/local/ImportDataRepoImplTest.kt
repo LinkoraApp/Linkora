@@ -131,7 +131,8 @@ class ImportDataRepoImplTest {
 
         remoteSyncRepo = mockk<RemoteSyncRepo>(relaxed = true)
         preferencesRepository = mockk<PreferencesRepository>(relaxed = true)
-        every { preferencesRepository.getPreferences().primaryJsoupUserAgent } returns "TestAgent"
+        every { preferencesRepository.getCurrentPreferencesState().primaryJsoupUserAgent } returns
+            "TestAgent"
 
         importDataRepo =
             ImportDataRepoImpl(

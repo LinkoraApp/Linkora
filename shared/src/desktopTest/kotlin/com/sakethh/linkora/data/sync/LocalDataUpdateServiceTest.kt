@@ -64,9 +64,9 @@ class LocalDataUpdateServiceTest {
                         clientName = "TestClient",
                     )
             }
-        coEvery { preferencesRepository.getPreferences() } returns mockPrefs
-        coEvery { preferencesRepository.readPreferenceValue<Long>(any()) } returns 0L
-        coEvery { preferencesRepository.changePreferenceValue<Long>(any(), any()) } returns Unit
+        coEvery { preferencesRepository.getCurrentPreferencesState() } returns mockPrefs
+        coEvery { preferencesRepository.readPreferenceFromDisk<Long>(any()) } returns 0L
+        coEvery { preferencesRepository.writePreferenceToDisk<Long>(any(), any()) } returns Unit
 
         localDataUpdateService =
             LocalDataUpdateService(
@@ -106,7 +106,7 @@ class LocalDataUpdateServiceTest {
 
             coVerify(exactly = 0) { localTagsRepo.createATag(any(), any()) }
             coVerify(exactly = 1) {
-                preferencesRepository.changePreferenceValue(
+                preferencesRepository.writePreferenceToDisk(
                     match { it.key == AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key },
                     5000L,
                 )
@@ -153,7 +153,7 @@ class LocalDataUpdateServiceTest {
                 )
             }
             coVerify(exactly = 1) {
-                preferencesRepository.changePreferenceValue(
+                preferencesRepository.writePreferenceToDisk(
                     match { it.key == AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key },
                     6000L,
                 )
@@ -209,7 +209,7 @@ class LocalDataUpdateServiceTest {
 
         coVerify(exactly = 1) { localLinksRepo.updateLinkTitle(42L, "Updated Title", true) }
         coVerify(exactly = 1) {
-            preferencesRepository.changePreferenceValue(
+            preferencesRepository.writePreferenceToDisk(
                 match { it.key == AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key },
                 8000L,
             )
@@ -252,7 +252,7 @@ class LocalDataUpdateServiceTest {
             )
         }
         coVerify(exactly = 1) {
-            preferencesRepository.changePreferenceValue(
+            preferencesRepository.writePreferenceToDisk(
                 match { it.key == AppPreferences.LAST_TIME_SYNCED_WITH_SERVER.key },
                 9000L,
             )

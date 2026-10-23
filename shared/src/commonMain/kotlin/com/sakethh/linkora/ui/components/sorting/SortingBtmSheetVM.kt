@@ -33,7 +33,7 @@ class SortingBtmSheetVM(
                 sortingName = localizedStrings.NewestToOldest,
                 onClick = {
                     changeSettingPreferenceValue(
-                        preferenceKey = AppPreferences.SORTING_PREFERENCE,
+                        preference = AppPreferences.SORTING_PREFERENCE,
                         newValue = SortingType.NEW_TO_OLD.name,
                     )
                 },
@@ -43,7 +43,7 @@ class SortingBtmSheetVM(
                 sortingName = localizedStrings.OldestToNewest,
                 onClick = {
                     changeSettingPreferenceValue(
-                        preferenceKey = AppPreferences.SORTING_PREFERENCE,
+                        preference = AppPreferences.SORTING_PREFERENCE,
                         newValue = SortingType.OLD_TO_NEW.name,
                     )
                 },
@@ -53,7 +53,7 @@ class SortingBtmSheetVM(
                 sortingName = localizedStrings.AToZSequence,
                 onClick = {
                     changeSettingPreferenceValue(
-                        preferenceKey = AppPreferences.SORTING_PREFERENCE,
+                        preference = AppPreferences.SORTING_PREFERENCE,
                         newValue = SortingType.A_TO_Z.name,
                     )
                 },
@@ -64,7 +64,7 @@ class SortingBtmSheetVM(
                 sortingName = localizedStrings.ZToASequence,
                 onClick = {
                     changeSettingPreferenceValue(
-                        preferenceKey = AppPreferences.SORTING_PREFERENCE,
+                        preference = AppPreferences.SORTING_PREFERENCE,
                         newValue = SortingType.Z_TO_A.name,
                     )
                 },

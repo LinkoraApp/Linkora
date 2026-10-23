@@ -28,7 +28,7 @@ class LanguageSettingsScreenVM(
     private val localizationRepoLocal: LocalizationRepo.Local,
     private val nativeUtils: NativeUtils,
 ) : ViewModel() {
-    val preferencesAsFlow = preferencesRepository.preferencesAsFlow
+    val preferencesAsFlow = preferencesRepository.currentPreferencesStateAsFlow
     private val localizedStrings
         get() = localizationRepoLocal.localizedStrings.value
 
@@ -37,12 +37,12 @@ class LanguageSettingsScreenVM(
 
     fun loadLocalizedStrings(languageCode: String, languageName: String) {
         viewModelScope.launch {
-            preferencesRepository.changePreferenceValue(
-                preferenceKey = AppPreferences.APP_LANGUAGE_CODE,
+            preferencesRepository.writePreferenceToDisk(
+                preference = AppPreferences.APP_LANGUAGE_CODE,
                 newValue = languageCode,
             )
-            preferencesRepository.changePreferenceValue(
-                preferenceKey = AppPreferences.APP_LANGUAGE_NAME,
+            preferencesRepository.writePreferenceToDisk(
+                preference = AppPreferences.APP_LANGUAGE_NAME,
                 newValue = languageName,
             )
             localizationRepoLocal.loadLanguage(languageCode)

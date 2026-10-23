@@ -78,8 +78,8 @@ class PendingQueueServiceTest {
         foldersDao = mockk(relaxed = true)
         tagsDao = mockk(relaxed = true)
 
-        coEvery { preferencesRepository.readPreferenceValue<Long>(any()) } returns 0L
-        coEvery { preferencesRepository.changePreferenceValue<Long>(any(), any()) } returns Unit
+        coEvery { preferencesRepository.readPreferenceFromDisk<Long>(any()) } returns 0L
+        coEvery { preferencesRepository.writePreferenceToDisk<Long>(any(), any()) } returns Unit
 
         pendingQueueService =
             PendingQueueService(
@@ -123,7 +123,7 @@ class PendingQueueServiceTest {
             coVerify(exactly = 0) { remoteTagsRepo.createATag(any()) }
             coVerify(exactly = 0) { remoteLinksRepo.addANewLink(any()) }
             coVerify(exactly = 0) {
-                preferencesRepository.changePreferenceValue<Long>(
+                preferencesRepository.writePreferenceToDisk<Long>(
                     any(),
                     any(),
                 )
@@ -160,7 +160,7 @@ class PendingQueueServiceTest {
 
         coVerify(exactly = 1) { tagsDao.updateRemoteId(localId = 42L, newRemoteId = 99L) }
         coVerify(exactly = 1) { pendingSyncQueueRepo.removeFromQueue(1L) }
-        coVerify(exactly = 1) { preferencesRepository.changePreferenceValue(any(), 2000L) }
+        coVerify(exactly = 1) { preferencesRepository.writePreferenceToDisk(any(), 2000L) }
     }
 
     @Test
@@ -187,7 +187,7 @@ class PendingQueueServiceTest {
 
         coVerify(exactly = 1) { remoteTagsRepo.deleteATag(any()) }
         coVerify(exactly = 1) { pendingSyncQueueRepo.removeFromQueue(2L) }
-        coVerify(exactly = 1) { preferencesRepository.changePreferenceValue(any(), 2000L) }
+        coVerify(exactly = 1) { preferencesRepository.writePreferenceToDisk(any(), 2000L) }
     }
 
     @Test
@@ -244,7 +244,7 @@ class PendingQueueServiceTest {
 
         coVerify(exactly = 1) { localLinksRepo.updateALink(any(), null, true) }
         coVerify(exactly = 1) { pendingSyncQueueRepo.removeFromQueue(3L) }
-        coVerify(exactly = 1) { preferencesRepository.changePreferenceValue(any(), 2000L) }
+        coVerify(exactly = 1) { preferencesRepository.writePreferenceToDisk(any(), 2000L) }
     }
 
     @Test
@@ -298,6 +298,6 @@ class PendingQueueServiceTest {
         }
         coVerify(exactly = 1) { localPanelsRepo.updateAPanelFolder(any()) }
         coVerify(exactly = 1) { pendingSyncQueueRepo.removeFromQueue(4L) }
-        coVerify(exactly = 1) { preferencesRepository.changePreferenceValue(any(), 2000L) }
+        coVerify(exactly = 1) { preferencesRepository.writePreferenceToDisk(any(), 2000L) }
     }
 }

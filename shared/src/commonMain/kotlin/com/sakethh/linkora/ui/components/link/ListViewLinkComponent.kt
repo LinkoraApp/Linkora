@@ -446,8 +446,8 @@ fun FoldersRow(
     folders:
         List<
             Folder,
-        >, // this can be changed to a persistent list since we guarantee that the path doesn't
-    // change once the list is built.
+        > /* this can be changed to a persistent list since we guarantee that the path doesn't
+          change once the list is built.*/,
     onFolderClick: (Folder) -> Unit,
     chipColorOpacity: Float = 0.5f,
 ) {

@@ -54,7 +54,7 @@ class CollectionDetailPaneVM(
     private val preferencesRepository: PreferencesRepository,
     private val localizationRepo: LocalizationRepo.Local,
 ) : ViewModel() {
-    val preferencesAsFlow = preferencesRepository.preferencesAsFlow
+    val preferencesAsFlow = preferencesRepository.currentPreferencesStateAsFlow
     val localizedStrings
         get() = localizationRepo.localizedStrings.value
 
@@ -185,19 +185,23 @@ class CollectionDetailPaneVM(
     }
 
     val appPreferencesCombined =
-        preferencesRepository.preferencesAsFlow
-            .map { Pair(it.forceShuffleLinks, it.selectedSortingType) }
+        preferencesRepository.currentPreferencesStateAsFlow
+            .map {
+                Pair(
+                    it.forceShuffleLinks,
+                    it.selectedSortingType,
+                )
+            }
             .distinctUntilChanged()
 
     val sortingType
-        get() = preferencesRepository.getPreferences().selectedSortingType
+        get() = preferencesRepository.getCurrentPreferencesState().selectedSortingType
 
     val shuffleLinks
-        get() = preferencesRepository.getPreferences().forceShuffleLinks
+        get() = preferencesRepository.getCurrentPreferencesState().forceShuffleLinks
 
-    // localDatabaseUtilsRepo#getChildFolderData supports this directly, since it directly queries
-    // and
-    // returns the result. This can be replaced with it, but this should be fine.
+    /* localDatabaseUtilsRepo#getChildFolderData supports this directly, since it directly queries
+    and returns the result. This can be replaced with it, but this should be fine.*/
     fun Flow<Result<List<Link>>>.mapToLinkTagsPair(): Flow<Result<List<LinkTagsPair>>> =
         flatMapLatest { result ->
             when (result) {

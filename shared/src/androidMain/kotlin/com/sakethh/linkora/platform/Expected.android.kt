@@ -11,7 +11,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.HostOS
-import com.sakethh.linkora.domain.PreferenceKey
+import com.sakethh.linkora.domain.Preference
 import com.sakethh.linkora.ui.AppVM
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.utils.UIEvent
@@ -41,8 +41,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import readAllPreferences
-import readPreferenceValue
-import writePreferenceValue
+import readPreferenceFromDisk
+import writePreferenceToDisk
 
 actual val showFollowSystemThemeOption: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
 
@@ -194,21 +194,21 @@ actual class Network(
 }
 
 actual class PlatformPreference(private val dataStore: DataStore<Preferences>) {
-    actual suspend fun <T> writePreferenceValue(
-        preferenceKey: PreferenceKey<T>,
+    actual suspend fun <T> writePreferenceToDisk(
+        preference: Preference<T>,
         newValue: T,
     ) {
-        writePreferenceValue(
+        writePreferenceToDisk(
             dataStore = dataStore,
-            preferenceKey = preferenceKey,
+            preference = preference,
             newValue = newValue,
         )
     }
 
-    actual suspend fun <T> readPreferenceValue(preferenceKey: PreferenceKey<T>): T? =
-        readPreferenceValue(dataStore = dataStore, preferenceKey = preferenceKey)
+    actual suspend fun <T> readPreferenceFromDisk(preference: Preference<T>): T? =
+        readPreferenceFromDisk(dataStore = dataStore, preference = preference)
 
-    actual suspend fun readAllPreferences(): AppPreferences {
+    actual suspend fun readAllPreferencesFromDisk(): AppPreferences {
         val prefs = dataStore.data.first()
         return readAllPreferences(
             prefs,

@@ -81,7 +81,7 @@ class LocalMultiActionRepoImplTest {
                         clientName = "test-client",
                     )
             }
-        coEvery { preferencesRepository.getPreferences() } returns mockPrefs
+        coEvery { preferencesRepository.getCurrentPreferencesState() } returns mockPrefs
 
         mockkStatic("com.sakethh.linkora.utils.ExtensionsKt")
         every { any<AppPreferences>().canPushToServer() } returns true

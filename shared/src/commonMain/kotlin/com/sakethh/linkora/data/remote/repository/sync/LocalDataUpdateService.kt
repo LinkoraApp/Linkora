@@ -70,7 +70,7 @@ class LocalDataUpdateService(
     }
 
     fun Correlation?.isSameAsCurrentClient(): Boolean =
-        this?.id == preferencesRepository.getPreferences().correlation.id
+        this?.id == preferencesRepository.getCurrentPreferencesState().correlation.id
 
     suspend fun updateLocalDBAccordingToEvent(deserializedWebSocketEvent: WebSocketEvent) {
         val currentRoute =

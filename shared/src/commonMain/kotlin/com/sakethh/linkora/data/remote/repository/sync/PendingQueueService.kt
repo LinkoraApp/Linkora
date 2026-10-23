@@ -381,7 +381,9 @@ class PendingQueueService(
                                     remoteId = localFolder.remoteId,
                                     remoteParentFolderId = remoteParentFolderId,
                                     correlation =
-                                        preferencesRepository.getPreferences().correlation,
+                                        preferencesRepository
+                                            .getCurrentPreferencesState()
+                                            .correlation,
                                 )
                             remoteFoldersRepo
                                 .updateFolder(remoteFolderDTO)

@@ -35,7 +35,7 @@ class LocalTagsRepoImpl(
     ): Flow<Result<Long>> {
         var newTagId: Long? = null
         val eventTimestamp = getSystemEpochSeconds()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -110,7 +110,7 @@ class LocalTagsRepoImpl(
     ): Flow<Result<Unit>> {
         val tag = tagsDao.getATag(id)
         val eventTimestamp = getSystemEpochSeconds()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
@@ -185,7 +185,7 @@ class LocalTagsRepoImpl(
     ): Flow<Result<Unit>> {
         val tag = tagsDao.getATag(localTagId)
         val eventTimestamp = getSystemEpochSeconds()
-        val preferences = preferencesRepository.getPreferences()
+        val preferences = preferencesRepository.getCurrentPreferencesState()
         return performLocalOperationWithRemoteSyncFlow(
             canPushToServer = {
                 preferences.canPushToServer()
