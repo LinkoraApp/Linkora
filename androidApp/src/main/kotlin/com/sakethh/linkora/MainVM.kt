@@ -11,6 +11,12 @@ import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.utils.AndroidUIEvent
 import com.sakethh.linkora.utils.ifNot
 import com.sakethh.linkora.utils.ifTrue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class MainVM(
@@ -20,6 +26,21 @@ class MainVM(
 ) : ViewModel() {
     val preferencesAsFlow = preferencesRepository.currentPreferencesStateAsFlow
     val localizedStrings = localizationRepo.localizedStrings
+
+    /** it's this or blocking the main thread for a couple of milliseconds in [LinkoraApp] */
+    val shouldKeepSplashScreen = flow {
+        DependencyContainer.preferencesRepo.readAllPreferencesFromDisk()
+        val preferences = DependencyContainer.preferencesRepo.getCurrentPreferencesState()
+        DependencyContainer.localizationRepo.loadLanguage(preferences.preferredAppLanguageCode)
+        emit(false)
+    }
+        .catch { emit(false) }
+        .flowOn(Dispatchers.IO)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = true,
+        )
 
     init {
         viewModelScope.launch {

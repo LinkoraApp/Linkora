@@ -110,6 +110,7 @@ dependencies {
     implementation(libs.ktor.client.okhttp)
     implementation(libs.androidx.datastore.preferences.core)
     implementation(project(":shared"))
+    implementation(libs.androidx.core.splashscreen)
 }
 
 room3 {

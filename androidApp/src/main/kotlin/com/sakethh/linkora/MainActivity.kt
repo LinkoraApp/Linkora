@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
@@ -48,6 +49,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -154,6 +156,9 @@ class MainActivity : ComponentActivity() {
                             }
                         },
                 )
+            splashScreen.setKeepOnScreenCondition {
+                mainVM.shouldKeepSplashScreen.value
+            }
             val preferences by mainVM.preferencesAsFlow.collectAsStateWithLifecycle()
             val localizedStrings by mainVM.localizedStrings.collectAsStateWithLifecycle()
             CompositionLocalProvider(

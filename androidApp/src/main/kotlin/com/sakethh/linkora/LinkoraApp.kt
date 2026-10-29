@@ -15,6 +15,8 @@ import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.AppPreferences
+import com.sakethh.linkora.domain.SyncType
+import com.sakethh.linkora.domain.dto.server.Correlation
 import com.sakethh.linkora.domain.model.ServerConnection
 import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.NativeUtils
@@ -22,8 +24,10 @@ import com.sakethh.linkora.platform.Network
 import com.sakethh.linkora.platform.PermissionManager
 import com.sakethh.linkora.platform.PlatformPreference
 import com.sakethh.linkora.ui.screens.settings.section.data.ExportLocationType
+import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.AndroidConstants
 import com.sakethh.linkora.utils.Constants
+import com.sakethh.linkora.utils.collectIndefinitelyAndReportToUI
 import com.sakethh.linkora.utils.currentAndroidPlatform
 import com.sakethh.linkora.utils.getDefaultFolder
 import com.sakethh.linkora.utils.getPOSIXPathFromSafUri
@@ -31,9 +35,8 @@ import com.sakethh.linkora.utils.onTV
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
 
 class LinkoraApp : Application() {
@@ -128,27 +131,55 @@ class LinkoraApp : Application() {
                         ),
                 ),
         )
-        runBlocking {
-            DependencyContainer.preferencesRepo.readAllPreferencesFromDisk()
-            val preferences = DependencyContainer.preferencesRepo.getCurrentPreferencesState()
-            DependencyContainer.localizationRepo.loadLanguage(preferences.preferredAppLanguageCode)
-            applicationScope.launch(Dispatchers.IO) {
+
+        applicationScope.launch(Dispatchers.IO) {
+            val preferencesRepository = DependencyContainer.preferencesRepo
+
+            val serverBaseUrl =
+                preferencesRepository.readPreferenceFromDisk(AppPreferences.SERVER_URL)
+                    ?: return@launch
+
+            val authToken =
+                preferencesRepository.readPreferenceFromDisk(AppPreferences.SERVER_AUTH_TOKEN)
+                    ?: return@launch
+
+            val syncType =
+                preferencesRepository.readPreferenceFromDisk(AppPreferences.SERVER_SYNC_TYPE)?.run {
+                    SyncType.valueOf(this)
+                } ?: return@launch
+
+            val skipCertCheckForSync =
+                preferencesRepository.readPreferenceFromDisk(
+                    AppPreferences.SKIP_CERT_CHECK_FOR_SYNC_SERVER,
+                ) ?: return@launch
+
+            val correlation =
+                preferencesRepository
+                    .readPreferenceFromDisk(
+                        AppPreferences.SERVER_CORRELATION,
+                    )
+                    ?.run {
+                        Json.decodeFromString<Correlation>(this)
+                    } ?: return@launch
+
+            linkoraLog("syncing data...")
+            with({ DependencyContainer.localizationRepo.localizedStrings.value }) {
                 DependencyContainer.syncSessionService
                     .start(
                         lastSynced =
                             DependencyContainer.preferencesRepo.readPreferenceFromDisk(
                                 AppPreferences.LAST_TIME_SYNCED_WITH_SERVER,
                             ) ?: 0,
-                        correlation = preferences.correlation,
+                        correlation = correlation,
                         serverConnection =
                             ServerConnection(
-                                serverUrl = preferences.serverBaseUrl,
-                                authToken = preferences.serverSecurityToken,
-                                syncType = preferences.serverSyncType,
+                                serverUrl = serverBaseUrl,
+                                authToken = authToken,
+                                syncType = syncType,
                             ),
-                        bypassCertCheck = preferences.skipCertCheckForSync,
+                        bypassCertCheck = skipCertCheckForSync,
                     )
-                    .collect()
+                    .collectIndefinitelyAndReportToUI({}, {}, {}, {})
             }
         }
 
