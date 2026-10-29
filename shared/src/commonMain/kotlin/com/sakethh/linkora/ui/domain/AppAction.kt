@@ -1,7 +1,5 @@
 package com.sakethh.linkora.ui.domain
 
-import com.sakethh.linkora.ui.domain.model.ServerConnection
-
 sealed interface AppAction {
     data class CopySelectedItems(
         val folderId: Long,
@@ -30,10 +28,5 @@ sealed interface AppAction {
         val onCompletion: () -> Unit,
     ) : AppAction
 
-    data class SaveServerConnectionAndSync(
-        val serverConnection: ServerConnection,
-        val timeStampAfter: suspend () -> Long,
-        val onSyncStart: () -> Unit,
-        val onCompletion: () -> Unit,
-    ) : AppAction
+    data class ForceDataSync(val onStart: () -> Unit, val onCompletion: () -> Unit) : AppAction
 }

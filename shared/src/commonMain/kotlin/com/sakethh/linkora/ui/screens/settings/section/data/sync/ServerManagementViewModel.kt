@@ -5,33 +5,29 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.domain.AppPreferences
-import com.sakethh.linkora.domain.onFailure
-import com.sakethh.linkora.domain.onLoading
-import com.sakethh.linkora.domain.onSuccess
+import com.sakethh.linkora.domain.SaveServerConnectionAndSyncUseCase
+import com.sakethh.linkora.domain.model.ServerConnection
 import com.sakethh.linkora.domain.repository.LocalizationRepo
 import com.sakethh.linkora.domain.repository.NetworkRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
-import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
+import com.sakethh.linkora.domain.repository.remote.SyncSessionService
 import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.Network
 import com.sakethh.linkora.platform.PermissionManager
 import com.sakethh.linkora.ui.AppVM
-import com.sakethh.linkora.ui.domain.model.ServerConnection
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
-import com.sakethh.linkora.utils.canPushToServer
-import com.sakethh.linkora.utils.canReadFromServer
-import com.sakethh.linkora.utils.pushSnackbarOnFailure
+import com.sakethh.linkora.utils.collectIndefinitelyAndReportToUI
+import com.sakethh.linkora.utils.pushSnackbar
+import com.sakethh.linkora.utils.runSuspendCatching
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 open class ServerManagementViewModel(
     private val networkRepo: NetworkRepo,
     val preferencesRepository: PreferencesRepository,
-    private val remoteSyncRepo: RemoteSyncRepo,
+    private val serverConnectionAndSyncUseCase: SaveServerConnectionAndSyncUseCase,
+    private val syncSessionService: SyncSessionService,
     private val fileManager: FileManager,
     private val permissionManager: PermissionManager,
     private val network: Network,
@@ -50,7 +46,7 @@ open class ServerManagementViewModel(
             ),
         )
 
-    fun testServerConnection(
+    fun reconfigureSyncServerClientAndTestConnection(
         serverUrl: String,
         token: String,
     ) {
@@ -62,33 +58,36 @@ open class ServerManagementViewModel(
                         preferencesRepository.getCurrentPreferencesState().skipCertCheckForSync,
                 )
 
-                networkRepo.testServerConnection(serverUrl, token).collectLatest {
-                    it.onSuccess {
-                            serverSetupState.value =
-                                ServerSetupState(
-                                    isConnecting = false,
-                                    isConnectedSuccessfully = true,
-                                    isError = false,
-                                )
-                            permissionManager.permittedToShowNotification()
-                        }
-                        .onFailure { exception ->
-                            serverSetupState.value =
-                                ServerSetupState(
-                                    isConnecting = false,
-                                    isConnectedSuccessfully = false,
-                                    isError = true,
-                                )
-                            pushUIEvent(UIEvent.Type.ShowSnackbar(exception.message.toString()))
-                        }
-                        .onLoading {
-                            serverSetupState.value =
-                                ServerSetupState(
-                                    isConnecting = true,
-                                    isConnectedSuccessfully = false,
-                                    isError = false,
-                                )
-                        }
+                serverSetupState.value =
+                    ServerSetupState(
+                        isConnecting = true,
+                        isConnectedSuccessfully = false,
+                        isError = false,
+                    )
+
+                val isSyncServerReachable =
+                    try {
+                        networkRepo.isSyncServerReachable(serverUrl, token)
+                    } catch (e: Exception) {
+                        pushUIEvent(UIEvent.Type.ShowSnackbar(e.message.toString()))
+                        false
+                    }
+
+                if (isSyncServerReachable) {
+                    serverSetupState.value =
+                        ServerSetupState(
+                            isConnecting = false,
+                            isConnectedSuccessfully = true,
+                            isError = false,
+                        )
+                    permissionManager.permittedToShowNotification()
+                } else {
+                    serverSetupState.value =
+                        ServerSetupState(
+                            isConnecting = false,
+                            isConnectedSuccessfully = false,
+                            isError = true,
+                        )
                 }
             } catch (e: Exception) {
                 pushUIEvent(UIEvent.Type.ShowSnackbar(e.message.toString()))
@@ -121,78 +120,59 @@ open class ServerManagementViewModel(
 
     fun saveServerConnectionAndSync(
         serverConnection: ServerConnection,
-        timeStampAfter: suspend () -> Long = { 0 },
+        timeStampAfter: suspend () -> Long,
         onSyncStart: () -> Unit,
         onCompletion: () -> Unit,
     ) {
-        AppVM.pauseSnapshots = true
-        saveServerConnectionAndSyncJob?.cancel()
-        dataSyncLogs.clear()
-        saveServerConnectionAndSyncJob = viewModelScope.launch {
-            preferencesRepository.writePreferenceToDisk(
-                preference = AppPreferences.SERVER_URL,
-                newValue = serverConnection.serverUrl,
-            )
-
-            preferencesRepository.writePreferenceToDisk(
-                preference = AppPreferences.SERVER_AUTH_TOKEN,
-                newValue = serverConnection.authToken,
-            )
-
-            preferencesRepository.writePreferenceToDisk(
-                preference = AppPreferences.SERVER_SYNC_TYPE,
-                newValue = serverConnection.syncType.name,
-            )
-            onSyncStart()
-            val preferences = preferencesRepository.getCurrentPreferencesState()
-            if (preferences.canReadFromServer()) {
-                remoteSyncRepo.applyUpdatesFromRemote(timeStampAfter()).collectLatest {
-                    it.onLoading {
-                            dataSyncLogs.add(it)
-                        }
-                        .onSuccess {
-                            AppVM.readSocketEvents(remoteSyncRepo, preferences)
-                        }
-                        .onFailure { _ ->
-                            it.pushSnackbarOnFailure()
-                            cancel()
-                        }
-                }
-            }
-            if (preferences.canPushToServer()) {
-                with(remoteSyncRepo) {
-                    channelFlow {
-                        this.pushNonSyncedDataToServer<Unit>()
-                    }
-                        .collectLatest {
-                            it.onLoading {
-                                dataSyncLogs.add(it)
-                            }
-                            it.onSuccess {
-                                onCompletion()
-                            }
-                            it.onFailure {
-                                    cancel()
-                                }
-                                .pushSnackbarOnFailure()
-                        }
-                }
-            }
-        }
-        saveServerConnectionAndSyncJob?.invokeOnCompletion {
-            if (it == null) {
-                viewModelScope.launch {
-                    pushUIEvent(
-                        UIEvent.Type.ShowSnackbar(
-                            localizedStrings.DataSynchronizationCompletedSuccessfully,
-                        ),
-                    )
-                }
-            }
+        fun finalInvocation() {
             AppVM.pauseSnapshots = false
             AppVM.forceSnapshot()
             onCompletion()
             dataSyncLogs.clear()
+        }
+        AppVM.pauseSnapshots = true
+        saveServerConnectionAndSyncJob?.cancel()
+        dataSyncLogs.clear()
+        saveServerConnectionAndSyncJob = viewModelScope.launch {
+            onSyncStart()
+            runSuspendCatching {
+                with({ localizedStrings }) {
+                    serverConnectionAndSyncUseCase(
+                            lastSynced = timeStampAfter(),
+                            serverConnection = serverConnection,
+                        )
+                        .collectIndefinitelyAndReportToUI(
+                            onConnectionFailure = { finalInvocation() },
+                            onNewLog = { str ->
+                                dataSyncLogs.add(str)
+                            },
+                            onSyncBatchHadFailure = {
+                                pushUIEvent(
+                                    UIEvent.Type.ShowSnackbar(
+                                        "onSyncBatchHadFailure",
+                                    ),
+                                )
+                                finalInvocation()
+                            },
+                            onSyncBatchSuccessful = {
+                                pushUIEvent(
+                                    UIEvent.Type.ShowSnackbar(
+                                        localizedStrings.DataSynchronizationCompletedSuccessfully,
+                                    ),
+                                )
+                                finalInvocation()
+                            },
+                        )
+                }
+            }
+                .onSuccess {
+                    // sync session has been cancelled/stopped
+                    finalInvocation()
+                }
+                .onFailure {
+                    finalInvocation()
+                    it.pushSnackbar(this)
+                }
         }
     }
 
@@ -201,6 +181,10 @@ open class ServerManagementViewModel(
     fun deleteTheConnection(onDeleted: () -> Unit) {
         viewModelScope
             .launch {
+                syncSessionService.stop()
+
+                network.closeSyncServerClient()
+
                 preferencesRepository.writePreferenceToDisk(
                     preference = AppPreferences.SERVER_URL,
                     newValue = "",
@@ -210,14 +194,6 @@ open class ServerManagementViewModel(
                     preference = AppPreferences.SERVER_AUTH_TOKEN,
                     newValue = "",
                 )
-
-                preferencesRepository.writePreferenceToDisk(
-                    preference = AppPreferences.SERVER_SYNC_TYPE,
-                    newValue = "",
-                )
-
-                AppVM.shutdownSocketConnection()
-                network.closeSyncServerClient()
 
                 pushUIEvent(
                     UIEvent.Type.ShowSnackbar(

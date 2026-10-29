@@ -592,9 +592,8 @@ fun DataSettingsScreen() {
                                 serverManagementViewModel.saveServerConnectionAndSync(
                                     serverConnection = preferences.currentSavedServerConfig(),
                                     timeStampAfter = {
-                                        preferences.lastSyncedLocally(
-                                            serverManagementViewModel.preferencesRepository,
-                                        )
+                                        serverManagementViewModel.preferencesRepository
+                                            .lastSyncedLocally()
                                     },
                                     onSyncStart = {
                                         isForcePushAndPullProgressUIVisible = true

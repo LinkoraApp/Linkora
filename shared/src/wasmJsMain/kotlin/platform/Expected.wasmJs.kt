@@ -361,7 +361,10 @@ actual object PlatformPreference {
             serverSecurityToken = localStorage.getItem(AppPreferences.SERVER_AUTH_TOKEN.key) ?: "",
             serverSyncType =
                 localStorage.getItem(AppPreferences.SERVER_SYNC_TYPE.key)?.let {
-                    SyncType.valueOf(it)
+                    runCatching {
+                        SyncType.valueOf(it)
+                    }
+                        .getOrNull()
                 } ?: SyncType.TwoWay,
             useLinkoraTopDecoratorOnDesktop =
                 localStorage

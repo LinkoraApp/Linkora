@@ -55,11 +55,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sakethh.linkora.di.linkoraViewModel
 import com.sakethh.linkora.domain.SyncServerRoute
 import com.sakethh.linkora.domain.SyncType
+import com.sakethh.linkora.domain.model.ServerConnection
 import com.sakethh.linkora.domain.model.settings.SettingComponentParam
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.HorizontalInfoCard
-import com.sakethh.linkora.ui.domain.model.ServerConnection
 import com.sakethh.linkora.ui.screens.collections.components.ItemDivider
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingComponent
 import com.sakethh.linkora.ui.screens.settings.common.composables.SettingsSectionScaffold
@@ -349,7 +349,7 @@ fun ServerSetupScreen() {
                 } else {
                     Button(
                         onClick = {
-                            serverManagementViewModel.testServerConnection(
+                            serverManagementViewModel.reconfigureSyncServerClientAndTestConnection(
                                 serverUrl = serverUrl.value,
                                 token = securityToken.value,
                             )
@@ -433,6 +433,9 @@ fun ServerSetupScreen() {
                 Button(
                     onClick = {
                         serverManagementViewModel.saveServerConnectionAndSync(
+                            timeStampAfter = {
+                                0 // new connection, so we gotta pull/push everything
+                            },
                             serverConnection =
                                 ServerConnection(
                                     serverUrl =

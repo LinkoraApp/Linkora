@@ -46,6 +46,7 @@ import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.Utils.json
 import com.sakethh.linkora.utils.updateLastSyncedWithServerTimeStamp
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
@@ -76,6 +77,8 @@ class LocalDataUpdateService(
         val currentRoute =
             try {
                 SyncServerRoute.valueOf(deserializedWebSocketEvent.operation)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 e.printStackTrace()
                 return

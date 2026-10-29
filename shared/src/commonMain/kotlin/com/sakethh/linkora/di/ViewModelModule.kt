@@ -85,9 +85,11 @@ object LinkoraViewModelFactory : ViewModelProvider.Factory {
 
             ServerManagementViewModel::class ->
                 ServerManagementViewModel(
-                    DependencyContainer.networkRepo,
-                    DependencyContainer.preferencesRepo,
-                    DependencyContainer.remoteSyncRepo,
+                    networkRepo = DependencyContainer.networkRepo,
+                    preferencesRepository = DependencyContainer.preferencesRepo,
+                    syncSessionService = DependencyContainer.syncSessionService,
+                    serverConnectionAndSyncUseCase =
+                        DependencyContainer.saveServerConnectionAndSyncUseCase,
                     fileManager = LinkoraSDK.getInstance().fileManager,
                     permissionManager = LinkoraSDK.getInstance().permissionManager,
                     network = LinkoraSDK.getInstance().network,

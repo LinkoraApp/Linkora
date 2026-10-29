@@ -50,17 +50,19 @@ import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.SyncType
 import com.sakethh.linkora.domain.model.FlatChildFolderData
 import com.sakethh.linkora.domain.model.FlatSearchResult
+import com.sakethh.linkora.domain.model.ServerConnection
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.WebCaptureRepo
+import com.sakethh.linkora.domain.repository.remote.SyncSessionService
 import com.sakethh.linkora.ui.LastSeenId
 import com.sakethh.linkora.ui.LastSeenString
 import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.domain.PaginationState
-import com.sakethh.linkora.ui.domain.model.ServerConnection
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.utils.UIEvent
+import com.sakethh.linkora.ui.utils.UIEvent.Type.ShowSnackbar
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
@@ -71,6 +73,7 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -318,8 +321,8 @@ fun AppPreferences.canReadFromServer(): Boolean =
         isServerConfigured() && serverSyncType == it
     }
 
-suspend fun AppPreferences.lastSyncedLocally(preferencesRepository: PreferencesRepository): Long =
-    preferencesRepository.readPreferenceFromDisk(
+suspend fun PreferencesRepository.lastSyncedLocally(): Long =
+    readPreferenceFromDisk(
         preference = AppPreferences.LAST_TIME_SYNCED_WITH_SERVER,
     ) ?: 0
 
@@ -574,6 +577,68 @@ fun Int.toInitialRoutePair(localizedStrings: LocalizedStrings): Pair<String, Int
         Constants.HOME_SCREEN_ROUTE_ID -> localizedStrings.Home to Constants.HOME_SCREEN_ROUTE_ID
         Constants.SEARCH_SCREEN_ROUTE_ID ->
             localizedStrings.Search to Constants.SEARCH_SCREEN_ROUTE_ID
+
         else -> localizedStrings.Collections to Constants.COLLECTIONS_SCREEN_ROUTE_ID
+    }
+}
+
+suspend inline fun <T> runSuspendCatching(block: suspend () -> T): kotlin.Result<T> {
+    return try {
+        kotlin.Result.success(block())
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        kotlin.Result.failure(e)
+    }
+}
+
+context(coroutineScope: CoroutineScope, localizedStrings: () -> LocalizedStrings)
+suspend fun Flow<SyncSessionService.SyncState>.collectIndefinitelyAndReportToUI(
+    onNewLog: (String) -> Unit,
+    onSyncBatchSuccessful: () -> Unit,
+    onSyncBatchHadFailure: () -> Unit,
+    onConnectionFailure: () -> Unit,
+) {
+    collect { syncState ->
+        when (syncState) {
+            is SyncSessionService.SyncState.ConnectionFailed -> {
+                onConnectionFailure()
+                pushUIEvent(ShowSnackbar(localizedStrings().ConnectionToServerFailed))
+            }
+
+            SyncSessionService.SyncState.InvalidServerConfiguration,
+            SyncSessionService.SyncState.InvalidSyncServerClientConfiguration -> {
+                onConnectionFailure()
+                pushUIEvent(
+                    ShowSnackbar(localizedStrings().SyncServerConfigurationError),
+                )
+            }
+
+            is SyncSessionService.SyncState.SocketFailure -> {
+                syncState.throwable.pushSnackbar(
+                    coroutineScope,
+                )
+                onConnectionFailure()
+            }
+
+            is SyncSessionService.SyncState.SyncOpFailed ->
+                syncState.throwable.pushSnackbar(
+                    coroutineScope,
+                )
+
+            is SyncSessionService.SyncState.SyncLog -> onNewLog(syncState.str)
+
+            SyncSessionService.SyncState.SyncBatchSuccessful -> {
+                pushUIEvent(
+                    ShowSnackbar(localizedStrings().DataSynchronizationCompletedSuccessfully),
+                )
+                onSyncBatchSuccessful()
+            }
+
+            SyncSessionService.SyncState.SyncBatchHadFailure -> {
+                pushUIEvent(ShowSnackbar(localizedStrings().BatchSyncPartialFailureMsg))
+                onSyncBatchHadFailure()
+            }
+        }
     }
 }

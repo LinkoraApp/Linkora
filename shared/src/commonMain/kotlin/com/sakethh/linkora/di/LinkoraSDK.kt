@@ -17,7 +17,6 @@ class LinkoraSDK(
     val localDatabase: LocalDatabase,
     val platformPreference: PlatformPreference,
     val network: Network,
-    val dataSyncingNotificationService: NativeUtils.DataSyncingNotificationService,
     val webCapture: NativeUtils.WebCapture,
     val webCaptureDatabaseManager: WebCaptureDatabaseManager,
 ) {

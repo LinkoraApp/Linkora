@@ -43,7 +43,6 @@ import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.domain.AppAction
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.utils.asLocalizedString
-import com.sakethh.linkora.utils.currentSavedServerConfig
 
 @Composable
 fun DesktopNavigationRail(
@@ -52,7 +51,6 @@ fun DesktopNavigationRail(
     isDataSyncingFromPullRefresh: MutableState<Boolean>,
     onNavigate: () -> Unit,
     isPerformingStartupSync: Boolean,
-    getLastSyncedTime: suspend () -> Long,
     isAnySnapshotOngoing: Boolean,
     isWebCaptureInProgress: Boolean,
     performAction: (AppAction) -> Unit,
@@ -108,8 +106,10 @@ fun DesktopNavigationRail(
                                             Navigation.Root.SearchScreen -> Icons.Outlined.Search
                                             Navigation.Root.CollectionsScreen ->
                                                 Icons.Outlined.Folder
+
                                             Navigation.Root.SettingsScreen ->
                                                 Icons.Outlined.Settings
+
                                             else -> return@NavigationRailItem
                                         }
                                     },
@@ -139,23 +139,16 @@ fun DesktopNavigationRail(
                     ) {
                         IconButton(
                             onClick = {
-                                if (
-                                    !isPerformingStartupSync && !isDataSyncingFromPullRefresh.value
-                                ) {
-                                    performAction(
-                                        AppAction.SaveServerConnectionAndSync(
-                                            serverConnection =
-                                                preferences.currentSavedServerConfig(),
-                                            timeStampAfter = getLastSyncedTime,
-                                            onSyncStart = {
-                                                isDataSyncingFromPullRefresh.value = true
-                                            },
-                                            onCompletion = {
-                                                isDataSyncingFromPullRefresh.value = false
-                                            },
-                                        ),
-                                    )
-                                }
+                                performAction(
+                                    AppAction.ForceDataSync(
+                                        onStart = {
+                                            isDataSyncingFromPullRefresh.value = true
+                                        },
+                                        onCompletion = {
+                                            isDataSyncingFromPullRefresh.value = false
+                                        },
+                                    ),
+                                )
                             },
                             modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
                         ) {

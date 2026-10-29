@@ -1,4 +1,4 @@
-package com.sakethh.linkora.ui.domain.model
+package com.sakethh.linkora.domain.model
 
 import com.sakethh.linkora.domain.SyncType
 

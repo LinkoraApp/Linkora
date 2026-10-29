@@ -14,6 +14,8 @@ import com.sakethh.linkora.data.local.LocalDatabase
 import com.sakethh.linkora.data.local.WebCaptureDatabaseManager
 import com.sakethh.linkora.di.DependencyContainer
 import com.sakethh.linkora.di.LinkoraSDK
+import com.sakethh.linkora.domain.AppPreferences
+import com.sakethh.linkora.domain.model.ServerConnection
 import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.Network
@@ -26,11 +28,18 @@ import com.sakethh.linkora.utils.currentAndroidPlatform
 import com.sakethh.linkora.utils.getDefaultFolder
 import com.sakethh.linkora.utils.getPOSIXPathFromSafUri
 import com.sakethh.linkora.utils.onTV
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import okio.Path.Companion.toPath
 
 class LinkoraApp : Application() {
+
+    private val applicationScope = CoroutineScope(SupervisorJob())
+
     override fun onCreate() {
         super.onCreate()
         LinkoraSDK.set(
@@ -73,13 +82,6 @@ class LinkoraApp : Application() {
                                 )
                                 .build()
                         },
-                    dataSyncingNotificationService =
-                        NativeUtils.DataSyncingNotificationService(
-                            applicationContext,
-                            localizedStrings = {
-                                DependencyContainer.localizationRepo.localizedStrings.value
-                            },
-                        ),
                     network =
                         Network(
                             applicationContext,
@@ -130,7 +132,26 @@ class LinkoraApp : Application() {
             DependencyContainer.preferencesRepo.readAllPreferencesFromDisk()
             val preferences = DependencyContainer.preferencesRepo.getCurrentPreferencesState()
             DependencyContainer.localizationRepo.loadLanguage(preferences.preferredAppLanguageCode)
+            applicationScope.launch(Dispatchers.IO) {
+                DependencyContainer.syncSessionService
+                    .start(
+                        lastSynced =
+                            DependencyContainer.preferencesRepo.readPreferenceFromDisk(
+                                AppPreferences.LAST_TIME_SYNCED_WITH_SERVER,
+                            ) ?: 0,
+                        correlation = preferences.correlation,
+                        serverConnection =
+                            ServerConnection(
+                                serverUrl = preferences.serverBaseUrl,
+                                authToken = preferences.serverSecurityToken,
+                                syncType = preferences.serverSyncType,
+                            ),
+                        bypassCertCheck = preferences.skipCertCheckForSync,
+                    )
+                    .collect()
+            }
         }
+
         Thread.setDefaultUncaughtExceptionHandler { _, throwable ->
             val crashLogActivityIntent = Intent(this, CrashLogActivity::class.java)
             crashLogActivityIntent.putExtra(

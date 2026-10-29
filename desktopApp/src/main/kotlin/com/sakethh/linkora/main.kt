@@ -52,11 +52,16 @@ import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.theme.DarkColors
 import com.sakethh.linkora.ui.theme.LightColors
 import com.sakethh.linkora.ui.theme.LinkoraTheme
+import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Icons
+import com.sakethh.linkora.utils.collectIndefinitelyAndReportToUI
+import com.sakethh.linkora.utils.currentSavedServerConfig
 import com.sakethh.linkora.utils.isServerConfigured
 import java.awt.Dimension
 import java.io.File
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 suspend fun main() {
     LinkoraSDK.set(
@@ -92,7 +97,6 @@ suspend fun main() {
                             DependencyContainer.localizationRepo.localizedStrings.value
                         },
                     ),
-                dataSyncingNotificationService = NativeUtils.DataSyncingNotificationService(),
                 webCapture = NativeUtils.WebCapture(),
                 webCaptureDatabaseManager =
                     WebCaptureDatabaseManager(
@@ -111,6 +115,28 @@ suspend fun main() {
     DependencyContainer.preferencesRepo.readAllPreferencesFromDisk()
     val preferences = DependencyContainer.preferencesRepo.getCurrentPreferencesState()
     DependencyContainer.localizationRepo.loadLanguage(preferences.preferredAppLanguageCode)
+
+    if (preferences.isServerConfigured()) {
+        linkoraLog("syncing data...")
+
+        // JVM-specific: unhandled exceptions (if any, hopefully not) will be sent to the console,
+        // we don't need to externally handle them
+        CoroutineScope(Dispatchers.IO).launch {
+            with({ DependencyContainer.localizationRepo.localizedStrings.value }) {
+                DependencyContainer.syncSessionService
+                    .start(
+                        lastSynced =
+                            DependencyContainer.preferencesRepo.readPreferenceFromDisk(
+                                AppPreferences.LAST_TIME_SYNCED_WITH_SERVER,
+                            ) ?: 0,
+                        correlation = preferences.correlation,
+                        serverConnection = preferences.currentSavedServerConfig(),
+                        bypassCertCheck = preferences.skipCertCheckForSync,
+                    )
+                    .collectIndefinitelyAndReportToUI({}, {}, {}, onConnectionFailure = {})
+            }
+        }
+    }
 
     application {
         val localizedStrings = DependencyContainer.localizationRepo.localizedStrings

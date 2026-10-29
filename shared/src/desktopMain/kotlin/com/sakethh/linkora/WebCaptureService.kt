@@ -76,11 +76,16 @@ object WebCaptureService {
                                     ),
                                 )
                             withContext(Dispatchers.IO) {
-                                captureFile.createNewFile()
-                                androidDesktopWebCapture.saveHTMLPage(
-                                    url = request.url,
-                                    filePath = captureFile.absolutePath,
-                                )
+                                runCatching {
+                                    captureFile.createNewFile()
+                                    androidDesktopWebCapture.saveHTMLPage(
+                                        url = request.url,
+                                        filePath = captureFile.absolutePath,
+                                    )
+                                }
+                                    .onFailure {
+                                        captureFile.delete()
+                                    }
                             }
                             emit(Unit)
                         } catch (e: Exception) {

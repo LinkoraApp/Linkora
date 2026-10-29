@@ -22,8 +22,6 @@ import com.sakethh.linkora.domain.repository.local.WebCaptureRepo
 import com.sakethh.linkora.linkoraSpecificFolder
 import com.sakethh.linkora.model.WebCaptureRequest
 import com.sakethh.linkora.ui.screens.settings.section.data.DataSettingsScreenVM
-import com.sakethh.linkora.ui.utils.UIEvent
-import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.Constants
 import io.ktor.client.HttpClient
@@ -227,13 +225,7 @@ actual class Network(private val localizedStrings: () -> LocalizedStrings) {
 
         if (syncServerCert.exists() && !bypassCertCheck) {
             syncServerCert.inputStream().use {
-                try {
-                    signedCertificate =
-                        certificateFactory.generateCertificate(it) as X509Certificate
-                } catch (e: Exception) {
-                    pushUIEvent(UIEvent.Type.ShowSnackbar(e.message.toString()))
-                    null
-                }
+                signedCertificate = certificateFactory.generateCertificate(it) as X509Certificate
             }
         }
 

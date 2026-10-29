@@ -6,7 +6,7 @@ import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.Flow
 
 interface RemoteSyncRepo {
-    suspend fun readSocketEvents(currentCorrelation: Correlation): Flow<Result<Unit>>
+    suspend fun readSocketEvents(currentCorrelation: Correlation)
 
     suspend fun applyUpdatesBasedOnRemoteTombstones(timeStampAfter: Long): Flow<Result<Unit>>
 

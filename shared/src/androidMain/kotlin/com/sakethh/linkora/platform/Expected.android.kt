@@ -15,7 +15,6 @@ import com.sakethh.linkora.domain.Preference
 import com.sakethh.linkora.ui.AppVM
 import com.sakethh.linkora.ui.LocalNavController
 import com.sakethh.linkora.ui.utils.UIEvent
-import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
@@ -126,13 +125,7 @@ actual class Network(
 
         if (syncServerCert.exists() && !bypassCertCheck) {
             syncServerCert.inputStream().use {
-                try {
-                    signedCertificate =
-                        certificateFactory.generateCertificate(it) as X509Certificate
-                } catch (e: Exception) {
-                    pushUIEvent(UIEvent.Type.ShowSnackbar(e.message.toString()))
-                    null
-                }
+                signedCertificate = certificateFactory.generateCertificate(it) as X509Certificate
             }
         }
 

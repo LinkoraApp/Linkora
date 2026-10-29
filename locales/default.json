@@ -1556,6 +1556,10 @@
     "defaultValue": "Data synchronization completed successfully."
   },
   {
+    "key": "BatchSyncPartialFailureMsg",
+    "defaultValue": "Batch sync had partial failures."
+  },
+  {
     "key": "InitiateManualSync",
     "defaultValue": "Initiate Manual Sync"
   },

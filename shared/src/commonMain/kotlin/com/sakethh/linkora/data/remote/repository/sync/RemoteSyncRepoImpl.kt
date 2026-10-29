@@ -54,7 +54,6 @@ import io.ktor.client.request.parameter
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.websocket.Frame
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -117,43 +116,41 @@ class RemoteSyncRepoImpl(
             this,
         )
 
-    override suspend fun readSocketEvents(currentCorrelation: Correlation): Flow<Result<Unit>> {
+    override suspend fun readSocketEvents(currentCorrelation: Correlation) {
         val authToken = authToken()
-        return wrappedResultFlow {
-            network.getSyncServerClient().webSocket(
-                urlString = run {
-                        websocketScheme() +
-                            baseUrl.invoke().run {
-                                if (startsWith(prefix = "https")) {
-                                        substringAfter("https")
-                                    } else {
-                                        substringAfter("http")
-                                    }
-                                    .run {
-                                        if (endsWith("/")) this else "$this/"
-                                    } + "events"
-                            }
-                    }
-                        .also {
-                            linkoraLog("Connecting to the websocket at $it")
-                        },
-                request = {
-                    bearerAuth(authToken)
-                    parameter(
-                        key = "correlation",
-                        value = Json.encodeToString(currentCorrelation),
+        network.getSyncServerClient().webSocket(
+            urlString = run {
+                    websocketScheme() +
+                        baseUrl.invoke().run {
+                            if (startsWith(prefix = "https")) {
+                                    substringAfter("https")
+                                } else {
+                                    substringAfter("http")
+                                }
+                                .run {
+                                    if (endsWith("/")) this else "$this/"
+                                } + "events"
+                        }
+                }
+                    .also {
+                        linkoraLog("Connecting to the websocket at $it")
+                    },
+            request = {
+                bearerAuth(authToken)
+                parameter(
+                    key = "correlation",
+                    value = Json.encodeToString(currentCorrelation),
+                )
+            },
+        ) {
+            this.incoming.consumeAsFlow().collect {
+                if (it is Frame.Text) {
+                    val deserializedWebSocketEvent =
+                        json.decodeFromString<WebSocketEvent>((it.data).decodeToString())
+                    linkoraLog(deserializedWebSocketEvent)
+                    localDataUpdateService.updateLocalDBAccordingToEvent(
+                        deserializedWebSocketEvent,
                     )
-                },
-            ) {
-                this.incoming.consumeAsFlow().collect {
-                    if (it is Frame.Text) {
-                        val deserializedWebSocketEvent =
-                            json.decodeFromString<WebSocketEvent>((it.data).decodeToString())
-                        linkoraLog(deserializedWebSocketEvent)
-                        localDataUpdateService.updateLocalDBAccordingToEvent(
-                            deserializedWebSocketEvent,
-                        )
-                    }
                 }
             }
         }
@@ -167,7 +164,6 @@ class RemoteSyncRepoImpl(
         }
     }
 
-    @OptIn(ExperimentalUuidApi::class)
     override suspend fun applyUpdatesFromRemote(timeStampAfter: Long): Flow<Result<Unit>> {
         /**
          * `localDataUpdateService.updateLocalDBAccordingToEvent` is supposed to handle "events"

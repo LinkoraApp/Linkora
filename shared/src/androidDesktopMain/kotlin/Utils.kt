@@ -136,9 +136,12 @@ suspend fun readAllPreferences(
         serverSecurityToken = prefs[dsStringKey(AppPreferences.SERVER_AUTH_TOKEN.key)] ?: "",
         serverSyncType =
             prefs[dsStringKey(AppPreferences.SERVER_SYNC_TYPE.key)]?.let {
-                SyncType.valueOf(
-                    it,
-                )
+                runCatching {
+                    SyncType.valueOf(
+                        it,
+                    )
+                }
+                    .getOrNull()
             } ?: SyncType.TwoWay,
         useLinkoraTopDecoratorOnDesktop =
             prefs[dsBooleanKey(AppPreferences.DESKTOP_TOP_DECORATOR.key)] ?: true,

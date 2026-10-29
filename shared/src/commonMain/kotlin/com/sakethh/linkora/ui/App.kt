@@ -112,12 +112,9 @@ import com.sakethh.linkora.ui.navigation.LinkoraNavHost
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.collections.CollectionScreenParams
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM
-import com.sakethh.linkora.ui.utils.UIEvent
-import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.Constants
-import com.sakethh.linkora.utils.currentSavedServerConfig
 import com.sakethh.linkora.utils.host
 import com.sakethh.linkora.utils.ifServerConfigured
 import com.sakethh.linkora.utils.inRootScreen
@@ -192,6 +189,7 @@ fun App(modifier: Modifier = Modifier) {
     }
     val isWebCapturesInProgress by appVM.isWebCaptureWorkerEnqueued.collectAsStateWithLifecycle()
     val isAnySnapshotInProgress by appVM.isAnySnapshotOngoing.collectAsStateWithLifecycle()
+    val isPerformingDataSync by appVM.isPerformingDataSync.collectAsStateWithLifecycle()
     Row(modifier = Modifier.fillMaxSize().then(modifier)) {
         AnimatedVisibility(
             visible =
@@ -204,10 +202,7 @@ fun App(modifier: Modifier = Modifier) {
                 rootRouteList = rootRouteList,
                 isDataSyncingFromPullRefresh = isDataSyncingFromPullRefresh,
                 onNavigate = {},
-                isPerformingStartupSync = appVM.isPerformingStartupSync,
-                getLastSyncedTime = {
-                    appVM.getLastSyncedTime()
-                },
+                isPerformingStartupSync = isPerformingDataSync,
                 isAnySnapshotOngoing = isAnySnapshotInProgress,
                 preferences = preferences,
                 performAction = appVM::performAppAction,
@@ -248,7 +243,7 @@ fun App(modifier: Modifier = Modifier) {
                 }
                 MobileBottomNavBar(
                     rootRouteList = rootRouteList,
-                    isPerformingStartupSync = appVM.isPerformingStartupSync,
+                    isPerformingStartupSync = isPerformingDataSync,
                     inRootScreen = inRootScreen,
                     preferences = preferences,
                     onDoubleTap = { navigationRoot ->
@@ -372,23 +367,8 @@ fun App(modifier: Modifier = Modifier) {
                                     preferences.serverBaseUrl.isNotBlank() && onAndroidMobile
                                 },
                             onRefresh = {
-                                if (
-                                    appVM.isPerformingStartupSync ||
-                                        isDataSyncingFromPullRefresh.value
-                                ) {
-                                    coroutineScope.pushUIEvent(
-                                        UIEvent.Type.ShowSnackbar(
-                                            localizedStrings.SyncInProgress,
-                                        ),
-                                    )
-                                    return@pullToRefresh
-                                }
-                                appVM.saveServerConnectionAndSync(
-                                    serverConnection = preferences.currentSavedServerConfig(),
-                                    timeStampAfter = {
-                                        appVM.getLastSyncedTime()
-                                    },
-                                    onSyncStart = {
+                                appVM.forceSync(
+                                    onStart = {
                                         isDataSyncingFromPullRefresh.value = true
                                     },
                                     onCompletion = {

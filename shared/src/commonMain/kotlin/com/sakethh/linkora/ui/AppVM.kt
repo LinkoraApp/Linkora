@@ -9,32 +9,29 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.KaptureOptions
 import com.sakethh.linkora.data.local.repository.SnapshotRepoImpl
-import com.sakethh.linkora.di.LinkoraSDK
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.HostOS
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.PermissionStatus
 import com.sakethh.linkora.domain.Preference
-import com.sakethh.linkora.domain.SyncServerRoute
 import com.sakethh.linkora.domain.asLinkType
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.link.Link
 import com.sakethh.linkora.domain.model.tag.Tag
-import com.sakethh.linkora.domain.onFailure
 import com.sakethh.linkora.domain.onLoading
 import com.sakethh.linkora.domain.onSuccess
 import com.sakethh.linkora.domain.repository.LocalizationRepo
-import com.sakethh.linkora.domain.repository.NetworkRepo
 import com.sakethh.linkora.domain.repository.local.LocalFoldersRepo
 import com.sakethh.linkora.domain.repository.local.LocalLinksRepo
 import com.sakethh.linkora.domain.repository.local.LocalMultiActionRepo
 import com.sakethh.linkora.domain.repository.local.LocalPanelsRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.local.SnapshotRepo
-import com.sakethh.linkora.domain.repository.remote.RemoteSyncRepo
+import com.sakethh.linkora.domain.repository.remote.SyncSessionService
 import com.sakethh.linkora.platform.FileManager
 import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.PermissionManager
@@ -47,57 +44,46 @@ import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM.Companion.clearAllSelections
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM.Companion.selectedFoldersViaLongClick
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM.Companion.selectedLinkTagPairsViaLongClick
-import com.sakethh.linkora.ui.screens.settings.section.data.sync.ServerManagementViewModel
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
 import com.sakethh.linkora.utils.Constants
-import com.sakethh.linkora.utils.canPushToServer
-import com.sakethh.linkora.utils.canReadFromServer
+import com.sakethh.linkora.utils.collectIndefinitelyAndReportToUI
+import com.sakethh.linkora.utils.currentSavedServerConfig
 import com.sakethh.linkora.utils.getRemoteOnlyFailureMsg
-import com.sakethh.linkora.utils.isServerConfigured
 import com.sakethh.linkora.utils.lastSyncedLocally
 import com.sakethh.linkora.utils.pushSnackbar
 import com.sakethh.linkora.utils.pushSnackbarOnFailure
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
+import com.sakethh.linkora.utils.runSuspendCatching
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 class AppVM(
     private val density: Density,
-    private val remoteSyncRepo: RemoteSyncRepo,
-    preferencesRepository: PreferencesRepository,
-    private val networkRepo: NetworkRepo,
+    private val preferencesRepository: PreferencesRepository,
     private val linksRepo: LocalLinksRepo,
     private val foldersRepo: LocalFoldersRepo,
     private val localMultiActionRepo: LocalMultiActionRepo,
     private val localPanelsRepo: LocalPanelsRepo,
     private val permissionManager: PermissionManager,
     private val fileManager: FileManager,
-    private val dataSyncingNotificationService: NativeUtils.DataSyncingNotificationService,
     private val snapshotRepo: SnapshotRepo,
     private val localizationRepo: LocalizationRepo.Local,
     nativeUtils: NativeUtils,
     private val webCapture: NativeUtils.WebCapture,
-) :
-    ServerManagementViewModel(
-        networkRepo = networkRepo,
-        preferencesRepository = preferencesRepository,
-        remoteSyncRepo = remoteSyncRepo,
-        permissionManager = permissionManager,
-        fileManager = fileManager,
-        network = LinkoraSDK.getInstance().network,
-        localizationRepo = localizationRepo,
-    ) {
-    var isPerformingStartupSync by mutableStateOf(false)
+    private val syncSessionService: SyncSessionService,
+) : ViewModel() {
+    val preferencesAsFlow = preferencesRepository.currentPreferencesStateAsFlow
+
+    val localizedStrings
+        get() = localizationRepo.localizedStrings.value
+
+    var isPerformingDataSync = syncSessionService.isBatchSyncRunning
 
     val transferActionType = mutableStateOf(TransferActionType.NONE)
 
@@ -183,20 +169,13 @@ class AppVM(
                     onCompletion = appAction.onCompletion,
                 )
 
-            is AppAction.SaveServerConnectionAndSync ->
-                saveServerConnectionAndSync(
-                    serverConnection = appAction.serverConnection,
-                    timeStampAfter = appAction.timeStampAfter,
-                    onSyncStart = appAction.onSyncStart,
+            is AppAction.ForceDataSync ->
+                forceSync(
+                    onStart = appAction.onStart,
                     onCompletion = appAction.onCompletion,
                 )
         }
     }
-
-    suspend fun getLastSyncedTime(): Long =
-        preferencesRepository.readPreferenceFromDisk(
-            preference = AppPreferences.LAST_TIME_SYNCED_WITH_SERVER,
-        ) ?: 0
 
     var isAnySnapshotOngoing = snapshotFlow {
         snapshotRepo.isAnySnapshotOngoing.value
@@ -226,96 +205,6 @@ class AppVM(
                     }
                 }
         }
-
-        viewModelScope
-            .launch {
-                val preferences = preferencesRepository.getCurrentPreferencesState()
-                readSocketEvents(remoteSyncRepo, preferences)
-
-                if (preferences.isServerConfigured()) {
-                    try {
-                        LinkoraSDK.getInstance()
-                            .network
-                            .configureSyncServerClient(
-                                bypassCertCheck = preferences.skipCertCheckForSync,
-                            )
-                    } catch (e: Exception) {
-                        pushUIEvent(UIEvent.Type.ShowSnackbar(e.message.toString()))
-                    }
-                    isPerformingStartupSync = true
-                    // TODO: NESTED collectLatest
-                    networkRepo
-                        .testServerConnection(
-                            serverUrl =
-                                preferences.serverBaseUrl + SyncServerRoute.TEST_BEARER.name,
-                            token = preferences.serverSecurityToken,
-                        )
-                        .collectLatest {
-                            it.onSuccess {
-                                    pushUIEvent(
-                                        UIEvent.Type.ShowSnackbar(
-                                            localizedStrings.SuccessfullyConnectedToTheServer,
-                                        ),
-                                    )
-                                    dataSyncingNotificationService.showNotification()
-                                    launch {
-                                        if (preferences.canPushToServer()) {
-                                            with(remoteSyncRepo) {
-                                                channelFlow {
-                                                    pushPendingSyncQueueToServer<Unit>()
-                                                        .collectLatest {
-                                                            it.pushSnackbarOnFailure()
-                                                        }
-                                                }
-                                                    .collect()
-                                            }
-                                        }
-                                    }
-
-                                    listOf(
-                                            launch {
-                                                if (preferences.canReadFromServer()) {
-                                                    remoteSyncRepo
-                                                        .applyUpdatesBasedOnRemoteTombstones(
-                                                            preferences.lastSyncedLocally(
-                                                                preferencesRepository,
-                                                            ),
-                                                        )
-                                                        .collectLatest {
-                                                            it.pushSnackbarOnFailure()
-                                                        }
-                                                }
-                                            },
-                                            launch {
-                                                if (preferences.canReadFromServer()) {
-                                                    remoteSyncRepo
-                                                        .applyUpdatesFromRemote(
-                                                            preferences.lastSyncedLocally(
-                                                                preferencesRepository,
-                                                            ),
-                                                        )
-                                                        .collectLatest {
-                                                            it.pushSnackbarOnFailure()
-                                                        }
-                                                }
-                                            },
-                                        )
-                                        .joinAll()
-                                }
-                                .onFailure {
-                                    pushUIEvent(
-                                        UIEvent.Type.ShowSnackbar(
-                                            localizedStrings.ConnectionToServerFailed + "\n" + it,
-                                        ),
-                                    )
-                                }
-                        }
-                }
-            }
-            .invokeOnCompletion {
-                isPerformingStartupSync = false
-                dataSyncingNotificationService.clearNotification()
-            }
 
         viewModelScope.launch(Dispatchers.Default) {
             val preferences = preferencesAsFlow.value
@@ -369,37 +258,10 @@ class AppVM(
     }
 
     companion object {
-        private var socketEventJob: Job? = null
-        private val coroutineScope = CoroutineScope(Dispatchers.Default)
-
         var pauseSnapshots = false
 
         fun forceSnapshot() {
             SnapshotRepoImpl.forceTriggerASnapshot()
-        }
-
-        fun shutdownSocketConnection() {
-            socketEventJob?.cancel()
-        }
-
-        fun readSocketEvents(
-            remoteSyncRepo: RemoteSyncRepo,
-            preferences: AppPreferences,
-        ) {
-            if (!preferences.canReadFromServer()) return
-
-            socketEventJob?.cancel()
-            socketEventJob =
-                coroutineScope.launch(
-                    CoroutineExceptionHandler { _, throwable ->
-                        throwable.printStackTrace()
-                        throwable.pushSnackbar(coroutineScope)
-                    },
-                ) {
-                    remoteSyncRepo.readSocketEvents(preferences.correlation).collectLatest {
-                        it.pushSnackbarOnFailure()
-                    }
-                }
         }
 
         val isMainFabRotated = mutableStateOf(false)
@@ -486,7 +348,7 @@ class AppVM(
                     )
                     .collectLatest {
                         it.onSuccess {
-                            pushUIEvent(
+                            this@launch.pushUIEvent(
                                 UIEvent.Type.ShowSnackbar(
                                     localizedStrings.ArchivedSuccessfully +
                                         it.getRemoteOnlyFailureMsg(
@@ -518,7 +380,7 @@ class AppVM(
                     )
                     .collectLatest {
                         it.onSuccess {
-                            pushUIEvent(
+                            this@launch.pushUIEvent(
                                 UIEvent.Type.ShowSnackbar(
                                     localizedStrings.DeletedSuccessfully +
                                         it.getRemoteOnlyFailureMsg(
@@ -544,7 +406,9 @@ class AppVM(
         viewModelScope
             .launch {
                 foldersRepo
-                    .markFoldersAsRoot(selectedFoldersViaLongClick.toList().map { it.localId })
+                    .markFoldersAsRoot(
+                        selectedFoldersViaLongClick.toList().map { it.localId },
+                    )
                     .collect()
             }
             .invokeOnCompletion {
@@ -661,7 +525,9 @@ class AppVM(
             UIEvent.uiEvents.collectLatest { eventType ->
                 when (eventType) {
                     is UIEvent.Type.ShowSnackbar -> {
-                        snackbarHostState.showSnackbar(message = eventType.message)
+                        withContext(Dispatchers.Main.immediate) {
+                            snackbarHostState.showSnackbar(message = eventType.message)
+                        }
                     }
 
                     is UIEvent.Type.ShowAddANewFolderDialogBox -> showNewFolderDialog = true
@@ -710,6 +576,34 @@ class AppVM(
                     else -> Unit
                 }
             }
+        }
+    }
+
+    fun forceSync(onStart: () -> Unit, onCompletion: () -> Unit) {
+        onStart()
+        viewModelScope.launch {
+            runSuspendCatching {
+                syncSessionService.stop()
+                with({ localizedStrings }) {
+                    syncSessionService
+                        .start(
+                            lastSynced = preferencesRepository.lastSyncedLocally(),
+                            serverConnection = preferencesAsFlow.value.currentSavedServerConfig(),
+                            correlation = preferencesAsFlow.value.correlation,
+                            bypassCertCheck = preferencesAsFlow.value.skipCertCheckForSync,
+                        )
+                        .collectIndefinitelyAndReportToUI(
+                            onConnectionFailure = onCompletion,
+                            onNewLog = {},
+                            onSyncBatchSuccessful = onCompletion,
+                            onSyncBatchHadFailure = onCompletion,
+                        )
+                }
+            }
+                .onFailure {
+                    it.printStackTrace()
+                    it.pushSnackbar(this)
+                }
         }
     }
 }

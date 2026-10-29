@@ -4,8 +4,11 @@ import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.tag.Tag
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 
 /**
@@ -16,26 +19,29 @@ import kotlinx.coroutines.launch
  * this single `UIEvent` object. For now, it's not a problem.
  */
 object UIEvent {
-    private val _uiEvents =
-        MutableSharedFlow<
-            Type,
-        >() // `StateFlow` won't emit the same value again, so to make sure we're playing it safe,
 
-    // `SharedFlow` is the way 🤪
-    val uiEvents = _uiEvents.asSharedFlow()
+    // MutableSharedFlow with proper capacity and replay will also work in this case
+    private val _uiEvents = Channel<Type>(capacity = Channel.UNLIMITED)
+    val uiEvents =
+        _uiEvents
+            .receiveAsFlow()
+            .shareIn(
+                scope = CoroutineScope(Dispatchers.Default),
+                started = SharingStarted.WhileSubscribed(),
+            )
 
     suspend fun pushUIEvent(type: Type) {
-        _uiEvents.emit(type)
+        _uiEvents.send(type)
     }
 
     fun CoroutineScope.pushUIEvent(type: Type) {
         this.launch {
-            _uiEvents.emit(type)
+            _uiEvents.send(type)
         }
     }
 
     suspend fun String.pushLocalizedSnackbar(append: String = "") {
-        _uiEvents.emit(Type.ShowSnackbar(this + append))
+        _uiEvents.send(Type.ShowSnackbar(this + append))
     }
 
     sealed interface Type {

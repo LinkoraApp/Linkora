@@ -22,6 +22,8 @@ import com.sakethh.linkora.data.remote.repository.RemoteMultiActionRepoImpl
 import com.sakethh.linkora.data.remote.repository.RemotePanelsRepoImpl
 import com.sakethh.linkora.data.remote.repository.RemoteTagsRepoImpl
 import com.sakethh.linkora.data.remote.repository.sync.RemoteSyncRepoImpl
+import com.sakethh.linkora.data.remote.repository.sync.SyncSessionServiceImpl
+import com.sakethh.linkora.domain.SaveServerConnectionAndSyncUseCase
 import com.sakethh.linkora.network.repository.NetworkRepoImpl
 import com.sakethh.linkora.utils.canPushToServer
 
@@ -268,6 +270,20 @@ object DependencyContainer {
             localTagsRepo = localTagsRepo,
             fileManager = LinkoraSDK.getInstance().fileManager,
             preferencesRepository = preferencesRepo,
+        )
+    }
+
+    val syncSessionService by lazy {
+        SyncSessionServiceImpl(
+            remoteSyncRepo = remoteSyncRepo,
+            networkRepo = networkRepo,
+            network = LinkoraSDK.getInstance().network,
+        )
+    }
+    val saveServerConnectionAndSyncUseCase by lazy {
+        SaveServerConnectionAndSyncUseCase(
+            preferencesRepository = preferencesRepo,
+            syncSessionService = syncSessionService,
         )
     }
 }

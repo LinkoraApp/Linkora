@@ -10,21 +10,18 @@ object APPVMAssistedFactory {
         initializer {
             AppVM(
                 density = localDensity,
-                remoteSyncRepo = DependencyContainer.remoteSyncRepo,
                 preferencesRepository = DependencyContainer.preferencesRepo,
-                networkRepo = DependencyContainer.networkRepo,
                 linksRepo = DependencyContainer.localLinksRepo,
                 foldersRepo = DependencyContainer.localFoldersRepo,
                 localMultiActionRepo = DependencyContainer.localMultiActionRepo,
                 localPanelsRepo = DependencyContainer.localPanelsRepo,
                 permissionManager = LinkoraSDK.getInstance().permissionManager,
                 fileManager = LinkoraSDK.getInstance().fileManager,
-                dataSyncingNotificationService =
-                    LinkoraSDK.getInstance().dataSyncingNotificationService,
                 snapshotRepo = DependencyContainer.snapshotRepo,
                 nativeUtils = LinkoraSDK.getInstance().nativeUtils,
                 webCapture = LinkoraSDK.getInstance().webCapture,
                 localizationRepo = DependencyContainer.localizationRepo,
+                syncSessionService = DependencyContainer.syncSessionService,
             )
         }
     }
