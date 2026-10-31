@@ -43,7 +43,16 @@ class PreferencesImpl(
         newValue: T,
     ) {
         _preferences.update { currentPref ->
-            key.writeToCurrentState(currentPref, newValue)
+            runCatching {
+                key.writeToCurrentState(currentPref, newValue)
+            }
+                .getOrElse { throwable ->
+                    if (throwable is Preference.WriteToDiskOnlyException) {
+                        currentPref
+                    } else {
+                        throw throwable
+                    }
+                }
         }
     }
 }

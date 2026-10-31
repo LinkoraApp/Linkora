@@ -29,14 +29,18 @@ sealed class Preference<T>(
         writeToCurrentState: (AppPreferences, String) -> AppPreferences,
     ) : Preference<String>(key, readFromCurrentState, writeToCurrentState)
 
+    class ReadFromDiskOnlyException(msg: String) : Exception(msg)
+
+    class WriteToDiskOnlyException(msg: String) : Exception(msg)
+
     companion object {
         fun requiresDiskRead(key: String): Nothing =
-            error(
+            throw ReadFromDiskOnlyException(
                 "$key is supposed to be read only from the disk, not from current state, and no implementation exists for it",
             )
 
         fun requiresDiskWrite(key: String): Nothing =
-            error(
+            throw WriteToDiskOnlyException(
                 "$key is supposed to be written only to the disk, not to current state, and no implementation exists for it",
             )
     }
