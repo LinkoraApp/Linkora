@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.ComposableContent
 import com.sakethh.linkora.domain.Platform
+import com.sakethh.linkora.ui.LocalPlatform
 import com.sakethh.linkora.ui.LocalizedStrings
 import com.sakethh.linkora.ui.components.menu.IndividualMenuComponent
 import com.sakethh.linkora.utils.bottomNavPaddingAcrossPlatforms
@@ -51,13 +52,16 @@ fun FolderMenuBtmSheet(
 ) {
     val localizedStrings = LocalizedStrings.current
     val coroutineScope = rememberCoroutineScope()
-
+    var shareInLoadingState by rememberSaveable {
+        mutableStateOf(false)
+    }
     LaunchedEffect(
         menuBtmSheetParam.showProgressBarDuringRemoteSave.value,
         menuBtmSheetParam.btmModalSheetState.isVisible,
+        shareInLoadingState,
     ) {
         if (
-            menuBtmSheetParam.showProgressBarDuringRemoteSave.value &&
+            (shareInLoadingState || menuBtmSheetParam.showProgressBarDuringRemoteSave.value) &&
                 !menuBtmSheetParam.btmModalSheetState.isVisible
         ) {
             menuBtmSheetParam.btmModalSheetState.expand()
@@ -85,7 +89,6 @@ fun FolderMenuBtmSheet(
     }
 
     val onAndroidMobile = Platform.Android.onMobile()
-
     val commonContent: ComposableContent = {
         Column(
             modifier =
@@ -126,14 +129,24 @@ fun FolderMenuBtmSheet(
                 elementName = localizedStrings.Edit,
                 elementImageVector = Icons.Outlined.Edit,
             )
-            IndividualMenuComponent(
-                onClick = {
-                    menuBtmSheetParam.onShare(currentFolder.name)
-                    hideContent()
-                },
-                elementName = localizedStrings.Share,
-                elementImageVector = Icons.Outlined.Share,
-            )
+
+            if (LocalPlatform.current is Platform.Android) {
+                IndividualMenuComponent(
+                    inLoadingState = shareInLoadingState,
+                    onClick = {
+                        shareInLoadingState = true
+                        menuBtmSheetParam.onShare(
+                            currentFolder,
+                            {
+                                shareInLoadingState = false
+                                hideContent()
+                            },
+                        )
+                    },
+                    elementName = localizedStrings.Share,
+                    elementImageVector = Icons.Outlined.Share,
+                )
+            }
 
             val isArchived = currentFolder.isArchived
             val inChildFolder = currentFolder.parentFolderId != null
@@ -189,10 +202,13 @@ fun FolderMenuBtmSheet(
         sheetGesturesEnabled = !Platform.Android.onTV(),
         properties =
             ModalBottomSheetProperties(
-                shouldDismissOnBackPress = !menuBtmSheetParam.showProgressBarDuringRemoteSave.value,
+                shouldDismissOnBackPress =
+                    !shareInLoadingState &&
+                        !menuBtmSheetParam.showProgressBarDuringRemoteSave.value,
             ),
         onDismissRequest = {
-            if (menuBtmSheetParam.showProgressBarDuringRemoteSave.value) return@ModalBottomSheet
+            if (shareInLoadingState || menuBtmSheetParam.showProgressBarDuringRemoteSave.value)
+                return@ModalBottomSheet
             hideContent()
         },
         dragHandle = {

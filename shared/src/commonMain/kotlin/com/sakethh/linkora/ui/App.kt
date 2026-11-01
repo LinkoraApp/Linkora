@@ -112,6 +112,7 @@ import com.sakethh.linkora.ui.navigation.LinkoraNavHost
 import com.sakethh.linkora.ui.navigation.Navigation
 import com.sakethh.linkora.ui.screens.collections.CollectionScreenParams
 import com.sakethh.linkora.ui.screens.collections.CollectionsScreenVM
+import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.ui.utils.pressScaleEffect
 import com.sakethh.linkora.utils.Constants
@@ -120,6 +121,7 @@ import com.sakethh.linkora.utils.ifServerConfigured
 import com.sakethh.linkora.utils.inRootScreen
 import com.sakethh.linkora.utils.isServerConfigured
 import com.sakethh.linkora.utils.openUriOrNotify
+import com.sakethh.linkora.utils.replaceActual
 import com.sakethh.linkora.utils.supportsWideDisplay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -675,8 +677,28 @@ fun App(modifier: Modifier = Modifier) {
                                     },
                                 )
                             },
-                            onShare = {
-                                TODO()
+                            onShare = { folder, onShared ->
+                                appVM.getAllLinksFromFolder(
+                                    folderId = folder.localId,
+                                    onLinksFetched = { str ->
+                                        if (str.isBlank()) {
+                                            coroutineScope.launch {
+                                                UIEvent.pushUIEvent(
+                                                    UIEvent.Type.ShowSnackbar(
+                                                        localizedStrings.FolderShareNoLinksMsg
+                                                            .replaceActual(
+                                                                folder.name,
+                                                            ),
+                                                    ),
+                                                )
+                                            }
+                                        } else {
+                                            LinkoraSDK.getInstance().nativeUtils.onShare(str)
+                                        }
+                                        onShared()
+                                        hideMenuSheet()
+                                    },
+                                )
                             },
                             folder = appVM.selectedFolderForMenuBtmSheet,
                             showProgressBarDuringRemoteSave = showProgressBarDuringRemoteSave,

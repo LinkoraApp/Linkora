@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DriveFileRenameOutline
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -42,6 +43,7 @@ fun IndividualMenuComponent(
     isSelected: Boolean = false,
     onRenameClick: () -> Unit = {},
     onDeleteClick: () -> Unit = {},
+    inLoadingState: Boolean = false,
 ) {
     val currentOnClick by rememberUpdatedState(onClick)
 
@@ -60,7 +62,9 @@ fun IndividualMenuComponent(
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onTap = {
-                            currentOnClick()
+                            if (!inLoadingState) {
+                                currentOnClick()
+                            }
                         },
                     )
                 }
@@ -77,7 +81,11 @@ fun IndividualMenuComponent(
                 onClick = { onClick() },
                 colors = IconButtonDefaults.filledTonalIconButtonColors(),
             ) {
-                Icon(imageVector = elementImageVector, contentDescription = null)
+                if (inLoadingState) {
+                    CircularProgressIndicator()
+                } else {
+                    Icon(imageVector = elementImageVector, contentDescription = null)
+                }
             }
             Text(
                 text = elementName,

@@ -50,11 +50,11 @@ import kotlinx.coroutines.withContext
 actual class NativeUtils(
     private val context: Context,
 ) {
-    actual fun onShare(url: String) {
+    actual fun onShare(str: String) {
         val intent =
             Intent().apply {
                 action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_TEXT, url)
+                putExtra(Intent.EXTRA_TEXT, str)
                 type = "text/plain"
             }
         val shareIntent = Intent.createChooser(intent, null)

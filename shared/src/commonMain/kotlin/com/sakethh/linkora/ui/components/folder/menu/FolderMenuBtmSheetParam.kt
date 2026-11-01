@@ -17,6 +17,6 @@ constructor(
     val onDeleteNote: () -> Unit,
     val onRename: () -> Unit,
     val onArchive: () -> Unit,
-    val onShare: (folderName: String) -> Unit,
+    val onShare: (folder: Folder, onShared: () -> Unit) -> Unit,
     val showProgressBarDuringRemoteSave: MutableState<Boolean>,
 )

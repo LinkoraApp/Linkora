@@ -93,7 +93,7 @@ expect class FileManager {
 }
 
 expect class NativeUtils {
-    fun onShare(url: String)
+    fun onShare(str: String)
 
     class WebCapture {
         suspend fun init(options: KaptureOptions)

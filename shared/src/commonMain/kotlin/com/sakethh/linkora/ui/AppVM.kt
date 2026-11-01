@@ -606,4 +606,14 @@ class AppVM(
                 }
         }
     }
+
+    fun getAllLinksFromFolder(folderId: Long, onLinksFetched: (String) -> Unit) {
+        viewModelScope.launch {
+            val joinedLinks =
+                linksRepo.getLinksOfThisFolderAsList(folderId).joinToString(separator = "\n") {
+                    it.url
+                }
+            onLinksFetched(joinedLinks)
+        }
+    }
 }

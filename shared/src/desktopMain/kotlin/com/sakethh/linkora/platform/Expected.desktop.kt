@@ -76,7 +76,7 @@ actual class PermissionManager {
 
 actual class NativeUtils {
 
-    actual fun onShare(url: String) = Unit
+    actual fun onShare(str: String) = Unit
 
     actual suspend fun onRefreshAllLinks(
         localLinksRepo: LocalLinksRepo,

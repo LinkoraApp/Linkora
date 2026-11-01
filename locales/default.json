@@ -2158,5 +2158,9 @@
   {
     "key": "CaptureSuccess",
     "defaultValue": "Captured Successfully"
+  },
+  {
+    "key": "FolderShareNoLinksMsg",
+    "defaultValue": "No links found in >{0}"
   }
 ]
