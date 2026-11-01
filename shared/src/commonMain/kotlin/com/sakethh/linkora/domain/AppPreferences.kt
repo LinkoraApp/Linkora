@@ -88,8 +88,29 @@ data class AppPreferences(
     val webCaptureMaxVersions: Int = 3,
     val webCaptureMaxConcurrency: Int = 15,
     val captureWhenRefreshAllLink: Boolean = false,
+    val suggestLastSavedFolderWhenSavingLink: Boolean = false,
 ) {
     companion object {
+        val LAST_SAVED_FOLDER_WHEN_SAVING_LINK_ID =
+            longPreference(
+                key = "LAST_SAVED_FOLDER_WHEN_SAVING_LINK_ID",
+                readFromCurrentState = {
+                    Preference.requiresDiskRead("LAST_SAVED_FOLDER_WHEN_SAVING_LINK_ID")
+                },
+                writeToCurrentState = { _, _ ->
+                    Preference.requiresDiskWrite("LAST_SAVED_FOLDER_WHEN_SAVING_LINK_ID")
+                },
+            )
+
+        val SUGGEST_LAST_SAVED_FOLDER_WHEN_SAVING_LINK =
+            booleanPreference(
+                key = "SUGGEST_LAST_SAVED_FOLDER_WHEN_SAVING_LINK",
+                readFromCurrentState = AppPreferences::suggestLastSavedFolderWhenSavingLink,
+                writeToCurrentState = { currentPreferences, newBool ->
+                    currentPreferences.copy(suggestLastSavedFolderWhenSavingLink = newBool)
+                },
+            )
+
         val DARK_THEME =
             booleanPreference(
                 key = "DARK_THEME",

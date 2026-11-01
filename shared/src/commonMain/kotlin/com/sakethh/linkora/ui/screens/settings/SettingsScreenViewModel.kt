@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.PriorityHigh
 import androidx.compose.material.icons.filled.PublicOff
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.runtime.mutableStateOf
@@ -157,6 +158,24 @@ open class SettingsScreenViewModel(
                 },
                 isIconNeeded = true,
                 icon = Icons.Default.PriorityHigh,
+            ),
+        )
+
+        add(
+            SettingComponentParam(
+                title = localizedStrings.SuggestLastSavedInFolderLabel,
+                description = localizedStrings.SuggestLastSavedInFolderDesc,
+                doesDescriptionExists = true,
+                isSwitchNeeded = true,
+                isSwitchEnabled = preferences.suggestLastSavedFolderWhenSavingLink,
+                onSwitchStateChange = {
+                    changeSettingPreferenceValue(
+                        preference = AppPreferences.SUGGEST_LAST_SAVED_FOLDER_WHEN_SAVING_LINK,
+                        newValue = it,
+                    )
+                },
+                isIconNeeded = true,
+                icon = Icons.Default.Save,
             ),
         )
 

@@ -286,6 +286,10 @@ actual object PlatformPreference {
             useDarkTheme =
                 localStorage.getItem(AppPreferences.DARK_THEME.key)?.toBooleanStrictOrNull()
                     ?: true,
+            suggestLastSavedFolderWhenSavingLink =
+                localStorage
+                    .getItem(AppPreferences.SUGGEST_LAST_SAVED_FOLDER_WHEN_SAVING_LINK.key)
+                    ?.toBooleanStrictOrNull() ?: false,
             useSystemTheme =
                 localStorage
                     .getItem(AppPreferences.FOLLOW_SYSTEM_THEME.key)

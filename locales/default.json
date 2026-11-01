@@ -2162,5 +2162,17 @@
   {
     "key": "FolderShareNoLinksMsg",
     "defaultValue": "No links found in >{0}"
+  },
+  {
+    "key": "SuggestLastSavedInFolderLabel",
+    "defaultValue": "Suggest Saving to \"Last Saved In\" Folder"
+  },
+  {
+    "key": "SuggestLastSavedInFolderDesc",
+    "defaultValue": "Suggests the folder you last saved to when saving a link. Tapping the suggestion starts saving to that folder automatically, so no separate save tap is needed."
+  },
+  {
+    "key": "LastSavedInLabel",
+    "defaultValue": "Last Saved In"
   }
 ]

@@ -45,6 +45,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SubdirectoryArrowRight
 import androidx.compose.material.icons.outlined.Folder
@@ -87,6 +88,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -114,6 +116,7 @@ import com.sakethh.linkora.domain.ComposableContent
 import com.sakethh.linkora.domain.LinkSaveConfig
 import com.sakethh.linkora.domain.LinkType
 import com.sakethh.linkora.domain.Platform
+import com.sakethh.linkora.domain.Result
 import com.sakethh.linkora.domain.asUnifiedLazyState
 import com.sakethh.linkora.domain.model.Folder
 import com.sakethh.linkora.domain.model.link.Link
@@ -151,12 +154,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -675,6 +682,16 @@ private fun BottomPartOfAddANewLinkDialogBox(
     foldersSearchQueryResult: StateFlow<List<Folder>>,
     performAction: (AddANewLinkDialogBoxAction) -> Unit,
 ) {
+    val lastSavedFolder by AddANewLinkDialog.lastSavedFolder.collectAsStateWithLifecycle()
+    var showLastSavedFolderSuggestion by
+        rememberSaveable(
+            preferences.suggestLastSavedFolderWhenSavingLink,
+            lastSavedFolder,
+        ) {
+            mutableStateOf(
+                lastSavedFolder != null && preferences.suggestLastSavedFolderWhenSavingLink,
+            )
+        }
     val lazyColumnState = rememberLazyListState()
     val localizedStrings = LocalizedStrings.current
 
@@ -716,19 +733,68 @@ private fun BottomPartOfAddANewLinkDialogBox(
     val foldersSearchQueryResult by foldersSearchQueryResult.collectAsStateWithLifecycle()
     val selectedFolderForSavingTheLink = rememberDeserializableMutableObject {
         mutableStateOf(
-            Folder(
-                name = localizedStrings.SavedLinks,
-                note = "",
-                parentFolderId = null,
-                localId = Constants.SAVED_LINKS_ID,
-                remoteId = null,
-                isArchived = false,
-            ),
+            defaultSavedLinksFolder(localizedStrings),
         )
     }
+
     val searchFocusRequester = remember {
         FocusRequester()
     }
+
+    val currentOnSave by
+        rememberUpdatedState(
+            newValue = {
+                showLastSavedFolderSuggestion = false
+                isDataExtractingForTheLink.value = true
+                val linkType =
+                    when (currentFolder?.localId ?: selectedFolderForSavingTheLink.value.localId) {
+                        Constants.SAVED_LINKS_ID -> LinkType.SAVED_LINK
+                        Constants.IMPORTANT_LINKS_ID -> LinkType.IMPORTANT_LINK
+                        else -> LinkType.FOLDER_LINK
+                    }
+                AddANewLinkDialog.updateLastSavedFolder(
+                    folderId =
+                        currentFolder?.localId ?: selectedFolderForSavingTheLink.value.localId,
+                    onCompletion = {
+                        performAction(
+                            AddANewLinkDialogBoxAction.AddANewLink(
+                                link =
+                                    Link(
+                                        linkType = linkType,
+                                        title = titleTextFieldValue.value.trim(),
+                                        url = linkTextFieldValue.value.trim(),
+                                        imgURL = imgUrlTextFieldValue.value.trim(),
+                                        note = noteTextFieldValue.value,
+                                        idOfLinkedFolder =
+                                            currentFolder?.localId
+                                                ?: selectedFolderForSavingTheLink.value.localId,
+                                        userAgent = preferences.primaryJsoupUserAgent,
+                                    ),
+                                linkSaveConfig =
+                                    LinkSaveConfig(
+                                        forceAutoDetectTitle =
+                                            isAutoDetectTitleEnabled.value ||
+                                                preferences.isAutoDetectTitleForLinksEnabled,
+                                        forceSaveWithoutRetrievingData =
+                                            isForceSaveWithoutFetchingMetaDataEnabled.value ||
+                                                preferences.forceSaveWithoutFetchingAnyMetaData,
+                                        useProxy = preferences.useProxy,
+                                        skipSavingIfExists = preferences.skipSavingExistingLink,
+                                        forceSaveIfRetrievalFails =
+                                            preferences.forceSaveIfRetrievalFails,
+                                    ),
+                                onCompletion = onDismiss,
+                                selectedTags = selectedTags,
+                                pushSnackbarOnSuccess = true,
+                            ),
+                        )
+                    },
+                )
+            },
+        )
+
+    val onSave: () -> Unit = remember { { currentOnSave() } }
+
     if (isDataExtractingForTheLink.value) {
         if (Platform.Android.onMobile()) {
             Spacer(modifier = Modifier.height(30.dp))
@@ -796,51 +862,128 @@ private fun BottomPartOfAddANewLinkDialogBox(
         }
 
         AnimatedVisibility(preferences.showTagsInAddNewLinkDialogBox) {
-            TagSelectionComponent(
-                showCreateNewTagSheet = {
-                    showBtmSheetForNewTagAddition = true
-                },
-                paddingValues = PaddingValues(start = 15.dp, end = 25.dp),
-                allTags = allTags,
-                selectedTags = selectedTags,
-                onTagClick = {
-                    if (selectedTags.contains(it)) {
-                        performAction(AddANewLinkDialogBoxAction.UnSelectATag(it))
-                    } else {
-                        performAction(AddANewLinkDialogBoxAction.SelectATag(it))
-                    }
-                },
-                onRetrieveNextTagsPage = {
-                    performAction(AddANewLinkDialogBoxAction.OnRetrieveNextTagsPage)
-                },
-                onFirstVisibleIndexChange = {
-                    performAction(
-                        AddANewLinkDialogBoxAction.OnFirstVisibleIndexChangeOfTags(it.toLong()),
-                    )
-                },
-            )
+            Column {
+                TagSelectionComponent(
+                    showCreateNewTagSheet = {
+                        showBtmSheetForNewTagAddition = true
+                    },
+                    paddingValues = PaddingValues(start = 15.dp, end = 15.dp),
+                    allTags = allTags,
+                    selectedTags = selectedTags,
+                    onTagClick = {
+                        if (selectedTags.contains(it)) {
+                            performAction(AddANewLinkDialogBoxAction.UnSelectATag(it))
+                        } else {
+                            performAction(AddANewLinkDialogBoxAction.SelectATag(it))
+                        }
+                    },
+                    onRetrieveNextTagsPage = {
+                        performAction(AddANewLinkDialogBoxAction.OnRetrieveNextTagsPage)
+                    },
+                    onFirstVisibleIndexChange = {
+                        performAction(
+                            AddANewLinkDialogBoxAction.OnFirstVisibleIndexChangeOfTags(it.toLong()),
+                        )
+                    },
+                )
+                if (showLastSavedFolderSuggestion) {
+                    Spacer(Modifier.height(10.dp))
+                }
+            }
         }
 
         if (currentFolder == null) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(
-                    modifier =
-                        Modifier.pointerHoverIcon(icon = PointerIcon.Hand).padding(start = 5.dp),
-                    onClick = {
-                        showFolderSearchBtmSheet = true
-                    },
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null,
+            Column(
+                modifier =
+                    Modifier.animateContentSize()
+                        .then(
+                            if (showLastSavedFolderSuggestion) {
+                                Modifier.padding(start = 15.dp, end = 15.dp)
+                                    .clip(RoundedCornerShape(15.dp))
+                                    .border(
+                                        width = 1.dp,
+                                        shape = RoundedCornerShape(15.dp),
+                                        color = MaterialTheme.colorScheme.outline.copy(0.5f),
+                                    )
+                            } else Modifier,
+                        )
+                        .fillMaxWidth(),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        modifier =
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                                .animateContentSize()
+                                .then(
+                                    if (showLastSavedFolderSuggestion) Modifier
+                                    else
+                                        Modifier.padding(
+                                            start = 5.dp,
+                                        ),
+                                ),
+                        onClick = {
+                            showFolderSearchBtmSheet = true
+                        },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                        )
+                    }
+                    Text(
+                        text = localizedStrings.AddIn,
+                        color = MaterialTheme.colorScheme.secondary,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontSize = 18.sp,
                     )
                 }
-                Text(
-                    text = localizedStrings.AddIn,
-                    color = MaterialTheme.colorScheme.secondary,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontSize = 18.sp,
-                )
+                if (showLastSavedFolderSuggestion && lastSavedFolder != null) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(start = 2.5.dp, bottom = 2.5.dp).fillMaxWidth(),
+                    )
+                    Text(
+                        text = localizedStrings.LastSavedInLabel,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontSize = 15.sp,
+                        modifier = Modifier.padding(start = 10.dp, top = 5.dp),
+                    )
+                    Button(
+                        onClick = {
+                            lastSavedFolder?.let { lastSavedFolder ->
+                                selectedFolderForSavingTheLink.value = lastSavedFolder
+                                onSave()
+                            }
+                        },
+                        modifier =
+                            Modifier.padding(
+                                    start = 10.dp,
+                                    end = 10.dp,
+                                    bottom = 10.dp,
+                                    top = 5.dp,
+                                )
+                                .pointerHoverIcon(icon = PointerIcon.Hand)
+                                .highlightOnFocused(shape = ButtonDefaults.shape)
+                                .pressScaleEffect()
+                                .fillMaxWidth(),
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Save,
+                                contentDescription = null,
+                            )
+                            Spacer(Modifier.width(5.dp))
+                            Text(
+                                text = lastSavedFolder?.name ?: "This should not be shown",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontSize = 16.sp,
+                            )
+                        }
+                    }
+                }
+            }
+            if (showLastSavedFolderSuggestion) {
+                Spacer(Modifier.height(10.dp))
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -1067,6 +1210,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                 fontSize = 16.sp,
             )
         }
+
         Button(
             colors =
                 ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
@@ -1080,46 +1224,7 @@ private fun BottomPartOfAddANewLinkDialogBox(
                     .fillMaxWidth()
                     .pressScaleEffect()
                     .highlightOnFocused(shape = ButtonDefaults.shape),
-            onClick = {
-                isDataExtractingForTheLink.value = true
-                val linkType =
-                    when (currentFolder?.localId ?: selectedFolderForSavingTheLink.value.localId) {
-                        Constants.SAVED_LINKS_ID -> LinkType.SAVED_LINK
-                        Constants.IMPORTANT_LINKS_ID -> LinkType.IMPORTANT_LINK
-                        else -> LinkType.FOLDER_LINK
-                    }
-                performAction(
-                    AddANewLinkDialogBoxAction.AddANewLink(
-                        link =
-                            Link(
-                                linkType = linkType,
-                                title = titleTextFieldValue.value.trim(),
-                                url = linkTextFieldValue.value.trim(),
-                                imgURL = imgUrlTextFieldValue.value.trim(),
-                                note = noteTextFieldValue.value,
-                                idOfLinkedFolder =
-                                    currentFolder?.localId
-                                        ?: selectedFolderForSavingTheLink.value.localId,
-                                userAgent = preferences.primaryJsoupUserAgent,
-                            ),
-                        linkSaveConfig =
-                            LinkSaveConfig(
-                                forceAutoDetectTitle =
-                                    isAutoDetectTitleEnabled.value ||
-                                        preferences.isAutoDetectTitleForLinksEnabled,
-                                forceSaveWithoutRetrievingData =
-                                    isForceSaveWithoutFetchingMetaDataEnabled.value ||
-                                        preferences.forceSaveWithoutFetchingAnyMetaData,
-                                useProxy = preferences.useProxy,
-                                skipSavingIfExists = preferences.skipSavingExistingLink,
-                                forceSaveIfRetrievalFails = preferences.forceSaveIfRetrievalFails,
-                            ),
-                        onCompletion = onDismiss,
-                        selectedTags = selectedTags,
-                        pushSnackbarOnSuccess = true,
-                    ),
-                )
-            },
+            onClick = onSave,
         ) {
             Text(
                 text = localizedStrings.Save,
@@ -1650,6 +1755,52 @@ private fun FolderSelectorComponent(
 
 // TODO: get rid of this
 private object AddANewLinkDialog {
+    private val addANewLinkDialogBoxScope = CoroutineScope(Dispatchers.Default)
+
+    private val _lastSavedFolder: MutableStateFlow<Long?> = MutableStateFlow(null)
+    val lastSavedFolder =
+        _lastSavedFolder
+            .flatMapLatest { folderId ->
+                if (folderId == null) {
+                    return@flatMapLatest flowOf(null)
+                }
+
+                DependencyContainer.localFoldersRepo.getThisFolderData(folderId).flatMapLatest {
+                    when (it) {
+                        is Result.Loading,
+                        is Result.Failure -> flowOf(null)
+                        is Result.Success -> flowOf(it.data)
+                    }
+                }
+            }
+            .stateIn(
+                addANewLinkDialogBoxScope,
+                SharingStarted.WhileSubscribed(5000L),
+                initialValue = null,
+            )
+
+    init {
+        addANewLinkDialogBoxScope.launch {
+            _lastSavedFolder.value =
+                DependencyContainer.preferencesRepo.readPreferenceFromDisk(
+                    AppPreferences.LAST_SAVED_FOLDER_WHEN_SAVING_LINK_ID,
+                )
+        }
+    }
+
+    fun updateLastSavedFolder(folderId: Long, onCompletion: () -> Unit) {
+        addANewLinkDialogBoxScope
+            .launch {
+                DependencyContainer.preferencesRepo.writePreferenceToDisk(
+                    preference = AppPreferences.LAST_SAVED_FOLDER_WHEN_SAVING_LINK_ID,
+                    newValue = folderId,
+                )
+                _lastSavedFolder.value = folderId
+            }
+            .invokeOnCompletion {
+                onCompletion()
+            }
+    }
 
     val subFoldersList = mutableStateListOf<Folder>()
 
@@ -1660,7 +1811,6 @@ private object AddANewLinkDialog {
 
     fun cancelCollectionOfChildFolders() = changeParentFolderIdJob?.cancel()
 
-    private val addANewLinkDialogBoxScope = CoroutineScope(Dispatchers.Default)
     private var updateTagSectionVisibilityJob: Job? = null
 
     fun updateTagSectionVisibility(show: Boolean) {

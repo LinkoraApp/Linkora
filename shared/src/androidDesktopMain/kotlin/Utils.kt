@@ -226,6 +226,9 @@ suspend fun readAllPreferences(
         alwaysShowOpenWebCaptureFolderInMenu =
             prefs[dsBooleanKey(AppPreferences.ALWAYS_SHOW_OPEN_WEB_CAPTURE_FOLDER_IN_MENU.key)]
                 ?: true,
+        suggestLastSavedFolderWhenSavingLink =
+            prefs[dsBooleanKey(AppPreferences.SUGGEST_LAST_SAVED_FOLDER_WHEN_SAVING_LINK.key)]
+                ?: false,
     )
 
 suspend fun <T> writePreferenceToDisk(
