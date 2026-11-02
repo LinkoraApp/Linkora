@@ -28,8 +28,8 @@ android {
 
         targetSdk = libs.versions.android.targetSdk.get().toInt()
 
-        versionCode = 56
-        versionName = "0.22.0"
+        versionCode = 57
+        versionName = "0.23.0"
     }
 
     packaging {
