@@ -20,6 +20,7 @@ import com.sakethh.linkora.domain.repository.local.PendingSyncQueueRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.remote.RemoteLinksRepo
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
+import com.sakethh.linkora.utils.Sorting
 import com.sakethh.linkora.utils.canPushToServer
 import com.sakethh.linkora.utils.isAValidLink
 import io.ktor.client.HttpClient
@@ -35,6 +36,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
@@ -354,4 +356,48 @@ class LocalLinksRepoImplTest {
             assertEquals(1, historyLinks.size, "Expected exactly 1 duplicate purged in HISTORY")
             assertEquals(1, historyLinks.filter { it.url == "https://hist.com" }.size)
         }
+
+    @Test
+    fun `paging saved links by title returns every link once regardless of title case`() = runTest {
+        val titles = listOf("apple", "Banana", "cherry", "Date", "egg")
+        titles.forEach {
+            linksDao.addANewLink(
+                Link(
+                    url = "https://$it.com",
+                    title = it,
+                    linkType = LinkType.SAVED_LINK,
+                    idOfLinkedFolder = null,
+                    imgURL = "",
+                    note = "",
+                    lastModified = 0L,
+                    userAgent = "",
+                ),
+            )
+        }
+
+        assertEquals(titles, pageSavedLinkTitles(Sorting.A_TO_Z))
+        assertEquals(titles.reversed(), pageSavedLinkTitles(Sorting.Z_TO_A))
+    }
+
+    private suspend fun pageSavedLinkTitles(sortOption: String): List<String> {
+        val pageSize = 2
+        val titles = mutableListOf<String>()
+        var lastSeen: Link? = null
+        do {
+            val page =
+                (localLinksRepo
+                        .getLinks(
+                            linkType = LinkType.SAVED_LINK,
+                            sortOption = sortOption,
+                            pageSize = pageSize,
+                            lastSeenTitle = lastSeen?.title,
+                            lastSeenId = lastSeen?.localId,
+                        )
+                        .first() as Result.Success)
+                    .data
+            titles += page.map { it.title }
+            lastSeen = page.lastOrNull()
+        } while (page.size == pageSize)
+        return titles
+    }
 }

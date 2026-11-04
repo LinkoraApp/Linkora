@@ -123,8 +123,8 @@ interface LinksDao {
     WHERE (linkType = :linkType OR ${Constants.LINK_TYPE_PARAM_TO_FOLDER_ID_CASE})
     AND (
         :lastSeenTitle IS NULL OR :lastSeenTitle = '' OR
-        (:isAscending = 1 AND (title > :lastSeenTitle OR (title = :lastSeenTitle AND localId > :lastSeenId))) OR
-        (:isAscending = 0 AND (title < :lastSeenTitle OR (title = :lastSeenTitle AND localId > :lastSeenId)))
+        (:isAscending = 1 AND (title COLLATE NOCASE > :lastSeenTitle OR (title COLLATE NOCASE = :lastSeenTitle AND localId > :lastSeenId))) OR
+        (:isAscending = 0 AND (title COLLATE NOCASE < :lastSeenTitle OR (title COLLATE NOCASE = :lastSeenTitle AND localId > :lastSeenId)))
     )
     ORDER BY
         CASE WHEN :isAscending = 1 THEN title END COLLATE NOCASE ASC,
