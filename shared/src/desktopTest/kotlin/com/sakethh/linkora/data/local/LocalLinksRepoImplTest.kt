@@ -20,6 +20,7 @@ import com.sakethh.linkora.domain.repository.local.PendingSyncQueueRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.domain.repository.remote.RemoteLinksRepo
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
+import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.Sorting
 import com.sakethh.linkora.utils.canPushToServer
 import com.sakethh.linkora.utils.isAValidLink
@@ -162,6 +163,57 @@ class LocalLinksRepoImplTest {
                 }
             }
         }
+
+    @Test
+    fun `opening a saved link adds it to history without listing it twice in saved links`() =
+        runTest {
+            val savedLinkId =
+                linksDao.addANewLink(
+                    Link(
+                        url = "https://google.com",
+                        title = "google",
+                        linkType = LinkType.SAVED_LINK,
+                        idOfLinkedFolder = Constants.SAVED_LINKS_ID,
+                        imgURL = "",
+                        note = "",
+                        lastModified = 0L,
+                        userAgent = "",
+                    ),
+                )
+            val config =
+                mockk<LinkSaveConfig>(relaxed = true) {
+                    every { forceSaveWithoutRetrievingData } returns true
+                }
+
+            // what the collection screens do when a link is opened
+            localLinksRepo
+                .addANewLink(
+                    link =
+                        linksDao
+                            .getLink(savedLinkId)
+                            .copy(linkType = LinkType.HISTORY_LINK, localId = 0),
+                    selectedTagIds = null,
+                    linkSaveConfig = config,
+                    viaSocket = true,
+                )
+                .toList()
+
+            assertEquals(listOf(savedLinkId), linkIdsOf(LinkType.SAVED_LINK))
+            assertEquals(1, linkIdsOf(LinkType.HISTORY_LINK).size)
+        }
+
+    private suspend fun linkIdsOf(linkType: LinkType): List<Long> =
+        (localLinksRepo
+                .getLinks(
+                    linkType = linkType,
+                    sortOption = Sorting.OLD_TO_NEW,
+                    pageSize = 20,
+                    lastSeenTitle = null,
+                    lastSeenId = null,
+                )
+                .first() as Result.Success)
+            .data
+            .map { it.localId }
 
     @Test
     fun `network failure during remote link creation explicitly captures dto to pending sync queue`() =

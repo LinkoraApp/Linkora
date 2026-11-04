@@ -32,6 +32,7 @@ import com.sakethh.linkora.domain.repository.remote.RemoteLinksRepo
 import com.sakethh.linkora.platform.NativeUtils
 import com.sakethh.linkora.platform.PlatformIODispatcher
 import com.sakethh.linkora.ui.domain.model.LinkTagsPair
+import com.sakethh.linkora.utils.Constants
 import com.sakethh.linkora.utils.Sorting
 import com.sakethh.linkora.utils.canPushToServer
 import com.sakethh.linkora.utils.defaultFolderIds
@@ -86,9 +87,15 @@ class LocalLinksRepoImpl(
         linkSaveConfig: LinkSaveConfig,
         viaSocket: Boolean,
     ): Flow<Result<Unit>> {
-        if (link.linkType == LinkType.HISTORY_LINK) {
-            linksDao.deleteLinksFromHistory(link.url)
-        }
+        val link =
+            if (link.linkType == LinkType.HISTORY_LINK) {
+                linksDao.deleteLinksFromHistory(link.url)
+                // history entries are mostly copies of the opened link and carry its parent id,
+                // which would also list them in that collection (#168)
+                link.copy(idOfLinkedFolder = Constants.HISTORY_ID)
+            } else {
+                link
+            }
         var newLinkId: Long? = null
         val eventTimestamp = getSystemEpochSeconds()
         val remoteTagIds =
