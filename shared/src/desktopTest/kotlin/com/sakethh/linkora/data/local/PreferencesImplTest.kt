@@ -23,6 +23,7 @@ class PreferencesImplTest {
 
     private val ignoredStateKeys =
         listOf(
+            "DID_AUTO_FORCE_STRICT_FOLDER_IDS_ON_DEFAULT_FOLDERS",
             "LAST_SAVED_FOLDER_WHEN_SAVING_LINK_ID",
             "SERVER_CORRELATION",
             "LAST_TIME_SYNCED_WITH_SERVER",

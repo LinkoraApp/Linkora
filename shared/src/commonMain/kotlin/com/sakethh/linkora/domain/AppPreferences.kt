@@ -91,6 +91,23 @@ data class AppPreferences(
     val suggestLastSavedFolderWhenSavingLink: Boolean = false,
 ) {
     companion object {
+
+        // added in v0.23.0
+        val DID_AUTO_FORCE_STRICT_FOLDER_IDS_ON_DEFAULT_FOLDERS =
+            booleanPreference(
+                key = "DID_AUTO_FORCE_STRICT_FOLDER_IDS_ON_DEFAULT_FOLDERS",
+                readFromCurrentState = {
+                    Preference.requiresDiskRead(
+                        "DID_AUTO_FORCE_STRICT_FOLDER_IDS_ON_DEFAULT_FOLDERS",
+                    )
+                },
+                writeToCurrentState = { _, _ ->
+                    Preference.requiresDiskWrite(
+                        "DID_AUTO_FORCE_STRICT_FOLDER_IDS_ON_DEFAULT_FOLDERS",
+                    )
+                },
+            )
+
         val LAST_SAVED_FOLDER_WHEN_SAVING_LINK_ID =
             longPreference(
                 key = "LAST_SAVED_FOLDER_WHEN_SAVING_LINK_ID",

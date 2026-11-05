@@ -4,16 +4,19 @@ import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.linkora.di.DependencyContainer
+import com.sakethh.linkora.domain.AppPreferences
 import com.sakethh.linkora.domain.repository.LocalizationRepo
 import com.sakethh.linkora.domain.repository.local.PreferencesRepository
 import com.sakethh.linkora.ui.utils.UIEvent
 import com.sakethh.linkora.ui.utils.UIEvent.pushUIEvent
+import com.sakethh.linkora.ui.utils.linkoraLog
 import com.sakethh.linkora.utils.AndroidUIEvent
 import com.sakethh.linkora.utils.ifNot
 import com.sakethh.linkora.utils.ifTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
@@ -32,6 +35,22 @@ class MainVM(
         DependencyContainer.preferencesRepo.readAllPreferencesFromDisk()
         val preferences = DependencyContainer.preferencesRepo.getCurrentPreferencesState()
         DependencyContainer.localizationRepo.loadLanguage(preferences.preferredAppLanguageCode)
+
+        if (
+            DependencyContainer.preferencesRepo.readPreferenceFromDisk(
+                AppPreferences.DID_AUTO_FORCE_STRICT_FOLDER_IDS_ON_DEFAULT_FOLDERS,
+            ) == null
+        ) {
+            DependencyContainer.localLinksRepo
+                .forceSetDefaultFolderToInternalIds(viaSocket = false)
+                .collect()
+            DependencyContainer.preferencesRepo.writePreferenceToDisk(
+                preference = AppPreferences.DID_AUTO_FORCE_STRICT_FOLDER_IDS_ON_DEFAULT_FOLDERS,
+                newValue = true,
+            )
+            linkoraLog("applied DID_AUTO_FORCE_STRICT_FOLDER_IDS_ON_DEFAULT_FOLDERS")
+        }
+
         emit(false)
     }
         .catch { emit(false) }

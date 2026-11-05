@@ -61,6 +61,7 @@ import java.awt.Dimension
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 suspend fun main() {
@@ -115,6 +116,21 @@ suspend fun main() {
     DependencyContainer.preferencesRepo.readAllPreferencesFromDisk()
     val preferences = DependencyContainer.preferencesRepo.getCurrentPreferencesState()
     DependencyContainer.localizationRepo.loadLanguage(preferences.preferredAppLanguageCode)
+
+    if (
+        DependencyContainer.preferencesRepo.readPreferenceFromDisk(
+            AppPreferences.DID_AUTO_FORCE_STRICT_FOLDER_IDS_ON_DEFAULT_FOLDERS,
+        ) == null
+    ) {
+        DependencyContainer.localLinksRepo
+            .forceSetDefaultFolderToInternalIds(viaSocket = false)
+            .collect()
+        DependencyContainer.preferencesRepo.writePreferenceToDisk(
+            preference = AppPreferences.DID_AUTO_FORCE_STRICT_FOLDER_IDS_ON_DEFAULT_FOLDERS,
+            newValue = true,
+        )
+        linkoraLog("applied DID_AUTO_FORCE_STRICT_FOLDER_IDS_ON_DEFAULT_FOLDERS")
+    }
 
     if (preferences.isServerConfigured()) {
         linkoraLog("syncing data...")
